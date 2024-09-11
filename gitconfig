@@ -9,6 +9,7 @@ ds = diff --staged
 f = fetch origin
 fd = !git branch | fzf | xargs git checkout
 l = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph
+la = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph --all --date-order
 p = pull
 po = push origin HEAD
 s = status
