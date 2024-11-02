@@ -6,13 +6,13 @@
     "lint:fix": "biome check . --write"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.8.3",
-    "@commitlint/cli": "19.4.0",
-    "@commitlint/config-conventional": "19.2.2",
+    "@biomejs/biome": "1.9.4",
+    "@commitlint/cli": "19.5.0",
+    "@commitlint/config-conventional": "19.5.0",
     "@types/bun": "latest",
-    "lefthook": "^1.7.14"
+    "lefthook": "^1.8.2"
   },
   "peerDependencies": {
-    "typescript": "^5.5.2"
+    "typescript": "^5.6.3"
   }
 }
