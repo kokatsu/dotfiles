@@ -1,0 +1,133 @@
+"$schema" = "https://starship.rs/config-schema.json"
+
+add_newline = true
+
+palette = "catppuccin_mocha"
+
+format = """
+$directory\
+$git_branch\
+$git_metrics\
+$git_status\
+$line_break\
+$battery\
+$character"""
+
+right_format = """
+$cmd_duration\
+$time\
+"""
+
+# https://github.com/catppuccin/starship/blob/main/themes/mocha.toml
+[palettes.catppuccin_mocha]
+rosewater = "#f5e0dc"
+flamingo = "#f2cdcd"
+pink = "#f5c2e7"
+mauve = "#cba6f7"
+red = "#f38ba8"
+maroon = "#eba0ac"
+peach = "#fab387"
+yellow = "#f9e2af"
+green = "#a6e3a1"
+teal = "#94e2d5"
+sky = "#89dceb"
+sapphire = "#74c7ec"
+blue = "#89b4fa"
+lavender = "#b4befe"
+text = "#cdd6f4"
+subtext1 = "#bac2de"
+subtext0 = "#a6adc8"
+overlay2 = "#9399b2"
+overlay1 = "#7f849c"
+overlay0 = "#6c7086"
+surface2 = "#585b70"
+surface1 = "#45475a"
+surface0 = "#313244"
+base = "#1e1e2e"
+mantle = "#181825"
+crust = "#11111b"
+
+# format
+# https://www.nerdfonts.com/cheat-sheet
+
+[directory]
+truncation_symbol = " " # nf-fa-folder_open
+truncate_to_repo = false
+home_symbol = " ~" # nf-fa-home
+read_only = "  " # nf-fa-lock
+format = """
+[](fg:lavender)\
+[$path]($style)\
+[$read_only]($read_only_style)\
+[](fg:lavender)\
+""" # nf-ple-lower_right_triangle nf-ple-upper_left_triangle
+style = "bold fg:surface0 bg:lavender"
+read_only_style = "bold fg:surface0 bg:lavender"
+
+[git_branch]
+symbol = " "
+truncation_symbol = ""
+style = "bold fg:sky bg:surface1"
+format = """
+[](fg:surface1)\
+[$symbol$branch(:$remote_branch)]($style)\
+""" # nf-ple-lower_right_triangle
+
+[git_metrics]
+disabled = false
+added_style = "bold fg:green bg:surface1"
+deleted_style = "bold fg:blue  bg:surface1"
+format = """
+[ 󰿟  ](fg:sky bg:surface1)\
+[+$added]($added_style)[-$deleted]($deleted_style)\
+""" # nf-md-slash_forward nf-md-plus_minus
+
+[git_status]
+conflicted = "󰞇 " # nf-md-sword_cross
+ahead = " × ${count} " # nf-fa-cloud_arrow_up
+behind = " × ${count} " # nf-fa-cloud_arrow_down
+diverged = " ×${ahead_count}  ×${behind_count} " # nf-fa-cloud_arrow_up nf-fa-cloud_arrow_down
+untracked = "󰛑 ×${count} " # nf-md-eye_off_outline
+stashed = "󰛪 " # nf-md-lock_pattern
+modified = "󰏫 ×${count} " # nf-md-pencil
+staged = "󰄴 ×${count} " # nf-md-checkbox_marked_circle_outline
+renamed = "󰁔 ×${count} " # nf-md-arrow_right
+deleted = "󰮘 ×${count} " # nf-md-file_remove
+style = "bold fg:maroon bg:surface1"
+format = """
+[ 󰿟  ](fg:sky bg:surface1)\
+[$all_status$ahead_behind]($style)\
+[](fg:surface1)\
+""" # nf-md-slash_forward nf-fa-file_arrow_up
+
+[cmd_duration]
+show_milliseconds = true
+min_time = 100
+format = '[󰞌 $duration  ](fg:yellow)' # nf-md-timer_sand_full
+
+[time]
+disabled = false
+format = '[ $time](bold fg:overlay0)' # nf-oct-clock
+time_format = '%T'
+
+[battery]
+full_symbol = "󰁹 " # nf-md-battery
+charging_symbol = "󰂄 " # nf-md-battery_charging
+discharging_symbol = "󰂃 " # nf-md-battery_alert
+empty_symbol = "󰂎 " # nf-md-battery_outline
+
+[[battery.display]]
+threshold = 100
+style = "bold green"
+
+[[battery.display]]
+threshold = 50
+style = "bold yellow"
+
+[[battery.display]]
+threshold = 20
+style = "bold red"
+
+[character]
+success_symbol = "[](bold green)" # nf-fa-check
+error_symbol = "[](bold red)" # nf-fa-times

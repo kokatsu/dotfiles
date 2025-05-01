@@ -1,0 +1,13 @@
+\pset border 1
+\pset linestyle unicode
+\pset null '[NULL]'
+\pset pager off
+
+\set HISTSIZE 10000
+\set PROMPT1 '%[%033[1;32m%]%/ [%`date +%H:%M:%S`] %R%#%[%033[0m%] '
+\set PROMPT2 '[more] %R > '
+\set VERBOSITY verbose
+
+\timing
+
+\x auto

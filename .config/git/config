@@ -1,0 +1,164 @@
+# 参考:
+#   - https://blog.gitbutler.com/how-git-core-devs-configure-git/
+
+[include]
+path = ../delta/catppuccin.gitconfig
+
+[alias]
+a = add
+aa = add --all
+au = add -u
+b = branch --list
+# https://github.com/sharkdp/bat#git-diff
+bd = !git diff --name-only --relative --diff-filter=d | xargs bat --diff
+cm = commit -m
+co = checkout
+cp = cherry-pick
+d = diff
+dd = "!f() { git diff \"$@\" | delta --side-by-side --paging=never; }; f"
+ds = diff --staged
+dsd = "!f() { git diff --staged \"$@\" | delta --side-by-side --paging=never; }; f"
+d1 = diff HEAD^
+d1d = "!f() { git diff HEAD^ \"$@\" | delta --side-by-side --paging=never; }; f"
+f = fetch origin
+fd = !git branch | fzf | xargs git checkout
+l = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph
+la = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph --all --date-order
+lf = log --pretty=fuller
+# https://www.nerdfonts.com/cheat-sheet
+# https://catppuccin.com/palette/
+# feat: nf-md-shimmer rgb(137, 220, 235)
+# fix: nf-md-bug rgb(243, 139, 168)
+# chore: nf-md-broom rgb(203, 166, 247)
+# docs: nf-md-file_document rgb(148, 226, 213)
+# style: nf-md-palette rgb(250, 179, 135)
+# test: nf-md-test_tube rgb(180, 190, 254)
+# refactor: nf-fa-recycle rgb(166, 227, 161)
+# ci: nf-md-rocket_launch rgb(137, 180, 250)
+# build: nf-md-crane rgb(245, 194, 231)
+# perf: nf-fa-bolt rgb(249, 226, 175)
+lg = "!f() { \
+        git log --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' -n 30 --color=always \"$@\" | \
+        sed -E \
+            -e 's/(feat)(\\(.*\\))?:/\\x1b[48;2;137;220;235m\\x1b[30m 󱕅 \\1\\2: \\x1b[0m/' \
+            -e 's/(fix)(\\(.*\\))?:/\\x1b[48;2;243;139;168m\\x1b[30m 󰃤 \\1\\2: \\x1b[0m/' \
+            -e 's/(chore)(\\(.*\\))?:/\\x1b[48;2;203;166;247m\\x1b[30m 󰃢 \\1\\2: \\x1b[0m/' \
+            -e 's/(docs)(\\(.*\\))?:/\\x1b[48;2;148;226;213m\\x1b[30m 󰈙 \\1\\2: \\x1b[0m/' \
+            -e 's/(style)(\\(.*\\))?:/\\x1b[48;2;250;179;135m\\x1b[30m 󰏘 \\1\\2: \\x1b[0m/' \
+            -e 's/(test)(\\(.*\\))?:/\\x1b[48;2;180;190;254m\\x1b[30m 󰙨 \\1\\2: \\x1b[0m/' \
+            -e 's/(refactor)(\\(.*\\))?:/\\x1b[48;2;166;227;161m\\x1b[30m  \\1\\2: \\x1b[0m/' \
+            -e 's/(ci)(\\(.*\\))?:/\\x1b[48;2;137;180;250m\\x1b[30m 󱓞 \\1\\2: \\x1b[0m/' \
+            -e 's/(build)(\\(.*\\))?:/\\x1b[48;2;245;194;231m\\x1b[30m 󰡢 \\1\\2: \\x1b[0m/' \
+            -e 's/(perf)(\\(.*\\))?:/\\x1b[48;2;249;226;175m\\x1b[30m  \\1\\2: \\x1b[0m/' ; \
+    }; f"
+lm = "!f() { author=$(git config user.name); git log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s' --author=\"$author\" --graph; }; f"
+ls = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad) %C(reset)%C(brightblack)[%cd]%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph
+m = merge
+now = "!f() { git commit --amend --no-edit --date=\"$(date -R)\"; git rebase HEAD~1 --committer-date-is-author-date; }; f"
+p = pull
+po = push origin HEAD
+rb = rebase
+rh = reset --hard
+rh0 = reset --hard HEAD
+rs = reset --soft
+rs1 = reset --soft HEAD^
+s = status
+sw = switch
+swc = switch -c
+wip = commit -am 'chore(wip): :construction: work in progress'
+
+[branch]
+# ブランチを表示する際、最新のコミット日時順にソートする
+sort = -committerdate
+
+[color]
+ui = true
+
+[color "status"]
+added = green
+changed = yellow
+untracked = red
+
+[column]
+# `git branch` や `git tag` などのコマンド出力を自動的にカラム表示する
+ui = auto
+
+[commit]
+# コミットメッセージを詳細に表示する
+verbose = true
+
+[core]
+# 未追跡ファイルのキャッシュを有効にする
+untrackedCache = true
+# デフォルトのページャーをlessに設定する
+# pager = "less -+X -+F -+S --quit-if-one-screen -+G --no-init --raw-control-chars -K"
+# デフォルトのページャーをdeltaに設定する
+pager = delta
+
+[delta]
+# デフォルトのテーマをcatppuccin-mochaに設定する
+features = catppuccin-mocha
+# 異なるセクション間を移動するには、n と N を使用
+navigate = true
+# ダークモードを有効にする
+dark = true
+
+[diff]
+# 差分を表示する際、差分アルゴリズムをhistogramに設定する
+algorithm = histogram
+# コードの移動を検出し、色付けして表示する
+colorMoved = plain
+# 差分表示のプレフィックスをわかりやすくする
+mnemonicPrefix = true
+# 差分を表示する際、名前の変更を有効にする
+renames = true
+
+[fetch]
+# フェッチする時に、不要なブランチを削除する
+prune = true
+# フェッチする時に、不要なタグを削除する
+pruneTags = true
+# フェッチする時に、すべてのブランチを取得する
+all = true
+
+[help]
+# `git help` コマンドでヘルプを表示する際、自動で補正を行う
+autocorrect = prompt
+
+[init]
+# `git init` コマンドでリポジトリを初期化する際、デフォルトのブランチ名をmainに設定する
+defaultBranch = main
+
+[interactive]
+# インタラクティブなコマンドで差分を表示する際、deltaを使用する
+diffFilter = delta
+
+[pull]
+# プルのデフォルト動作をrebaseに設定し、リモートリポジトリからデータを取得する際、リベースを有効にする
+default = rebase
+
+[push]
+# プッシュのデフォルト動作をsimpleに設定し、現在のブランチを対応するリモートブランチにプッシュする
+default = simple
+# 新しいブランチを作成した際、自動的にリモートブランチを設定する
+autoSetupRemote = true
+# プッシュ時に、関連するタグも一緒にプッシュする
+followTags = true
+
+[rebase]
+# インタラクティブリベース時に、fixup!やsquash!で始まるコミットを自動的に適切な位置に移動
+autoSquash = true
+# リベース前に作業中の変更を一時的にスタッシュし、リベース後に復元する
+autoStash = true
+# リベース時に、関連するリファレンスを自動的に更新する
+updateRefs = true
+
+[rerere]
+# ​マージやリベース時のコンフリクト解消を記録し、同じコンフリクトが再発した際に自動的に解決する
+enabled = true
+# rerereが有効な場合、コンフリクト解消後に自動的にインデックスを更新する
+autoupdate = true
+
+[tag]
+# タグを表示する際、タグをバージョン順にソートする
+sort = version:refname
