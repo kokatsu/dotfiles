@@ -1,11 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
-  "organizeImports": {
-    "enabled": true
-  },
-  "files": {
-    "ignore": ["**/node_modules/**"]
-  },
+  "$schema": "https://biomejs.dev/schemas/2.3.4/schema.json",
   "linter": {
     "enabled": true,
     "rules": {
@@ -13,8 +7,7 @@
     }
   },
   "formatter": {
-    "indentStyle": "space",
-    "indentWidth": 2
+    "useEditorconfig": true
   },
   "javascript": {
     "formatter": {

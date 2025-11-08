@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/evilmartians/lefthook/refs/heads/master/schema.json",
+  "pre-commit": {
+    "commands": {
+      "biome": {
+        "glob": ["*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"],
+        "run": "bun biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files} && git update-index --again"
+      }
+    }
+  },
+  "pre-push": {
+    "commands": {
+      "biome": {
+        "glob": ["*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"],
+        "run": "bun biome check --no-errors-on-unmatched --files-ignore-unknown=true {push_files}"
+      }
+    }
+  },
+  "commit-msg": {
+    "skip": ["merge"],
+    "commands": {
+      "commitlint": {
+        "run": "bun commitlint --edit {1}"
+      }
+    }
+  }
+}
