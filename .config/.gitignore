@@ -21,6 +21,10 @@
 !git/
 !git/**
 
+# git-graph (https://github.com/mlange-42/git-graph)
+!git-graph/
+!git-graph/**
+
 # Neovim (https://github.com/neovim/neovim)
 !nvim/
 !nvim/**
