@@ -1,7 +1,3 @@
-local os_utils = require('utils.os')
-
-local os_name = os_utils.detect_os()
-
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -25,36 +21,38 @@ vim.opt.rtp:prepend(lazypath)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = '\\'
 
-local deferred_clipboard = nil
-if os_name == 'wsl' and vim.fn.executable('win32yank.exe') == 1 then
-  deferred_clipboard = require('plugins.deferred-clipboard')
-end
-
 -- Setup lazy.nvim
 require('lazy').setup({
   spec = {
     -- import your plugins
-    require('plugins.aerial'),
-    require('plugins.autoclose'),
+    -- { import = 'plugins' },
     require('plugins.barbar'),
+    require('plugins.blink'),
     require('plugins.catppuccin'),
+    require('plugins.copilot-chat'),
     require('plugins.copilot'),
-    require('plugins.copilot-cmp'),
-    require('plugins.diagram'),
+    require('plugins.fidget'),
     require('plugins.git-blame'),
     require('plugins.gitsigns'),
-    require('plugins.hlchunk'),
+    require('plugins.lazydev'),
     require('plugins.lualine'),
-    require('plugins.neo-tree'),
-    require('plugins.nvim-cmp'),
+    require('plugins.mini'),
+    require('plugins.nvim-autopairs'),
     require('plugins.nvim-lspconfig'),
     require('plugins.nvim-treesitter'),
-    require('plugins.render-markdown'),
-    deferred_clipboard,
+    require('plugins.peek'),
+    require('plugins.rustaceanvim'),
+    require('plugins.snacks'),
+    require('plugins.swagger-preview'),
+    require('plugins.which-key'),
   },
   -- Configure any other settings here. See the documentation for more details.
   -- colorscheme that will be used when installing plugins.
   install = { colorscheme = { 'catppuccin-mocha' } },
   -- automatically check for plugin updates
   checker = { enabled = true },
+  change_detection = {
+    enabled = true,
+    notify = false,
+  },
 })
