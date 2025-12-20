@@ -11,7 +11,7 @@
       },
       "typos": {
         "exclude": ["*.png"],
-        "run": "mise exec -- typos {staged_files}"
+        "run": "typos {staged_files}"
       }
     }
   },
@@ -26,7 +26,7 @@
       },
       "typos": {
         "exclude": ["*.png"],
-        "run": "mise exec -- typos {push_files}"
+        "run": "typos {push_files}"
       }
     }
   },
