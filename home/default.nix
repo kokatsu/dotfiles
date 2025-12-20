@@ -46,6 +46,7 @@ in {
       bun
       claude-code
       deno
+      dformat # D言語フォーマッター
       nil # Nix LSP
       nixd
       alejandra # Nix formatter
