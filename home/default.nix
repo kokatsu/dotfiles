@@ -15,6 +15,7 @@ in {
     ./programs/fzf.nix
     ./programs/git.nix
     ./programs/starship.nix
+    ./programs/zoxide.nix
     ./programs/zsh.nix
   ];
 
