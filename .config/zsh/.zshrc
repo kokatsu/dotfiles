@@ -16,7 +16,7 @@ if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
 fi
 # Install missing modules and update ${ZIM_HOME}/init.zsh if missing or outdated.
 if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE} ]]; then
-  source "$(brew --prefix zimfw)/share/zimfw.zsh" init
+  source ${ZIM_HOME}/zimfw.zsh init -q
 fi
 # Initialize modules.
 source ${ZIM_HOME}/init.zsh
@@ -57,6 +57,14 @@ setopt share_history
 . $ZDOTDIR/aliases.zsh
 
 # ------------------------------------------------------------------------------
+# Nix
+# ------------------------------------------------------------------------------
+
+# macOSではHOSTNAMEが設定されていないことがあるので設定
+export HOSTNAME="${HOSTNAME:-$(hostname -s)}"
+alias rebuild='sudo HOSTNAME=$(hostname -s) USER=$USER darwin-rebuild switch --flake ~/workspace/dotfiles --impure'
+
+# ------------------------------------------------------------------------------
 # Bat (https://github.com/sharkdp/bat)
 # ------------------------------------------------------------------------------
 
@@ -82,6 +90,17 @@ fastfetch
 # ------------------------------------------------------------------------------
 # fzf (https://github.com/junegunn/fzf)
 # ------------------------------------------------------------------------------
+
+# fzf keybindings and completion
+if [[ $options[zle] = on ]]; then
+  source <(fzf --zsh)
+fi
+
+# ------------------------------------------------------------------------------
+# Completion (Zimのcompletionモジュールの代わり)
+# ------------------------------------------------------------------------------
+
+autoload -Uz compinit && compinit
 
 # https://github.com/catppuccin/fzf
 export FZF_DEFAULT_OPTS=" \
