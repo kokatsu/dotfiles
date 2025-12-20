@@ -43,6 +43,7 @@ in {
 
       # 開発ツール
       bun
+      claude-code
       deno
       nil # Nix LSP
       nixd
