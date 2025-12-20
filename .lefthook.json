@@ -10,7 +10,7 @@
         "run": "bun secretlint {staged_files}"
       },
       "typos": {
-        "exclude": ["*.png"],
+        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "typos {staged_files}"
       }
     }
@@ -25,7 +25,7 @@
         "run": "bun secretlint {push_files}"
       },
       "typos": {
-        "exclude": ["*.png"],
+        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "typos {push_files}"
       }
     }
