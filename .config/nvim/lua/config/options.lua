@@ -42,3 +42,17 @@ vim.opt.smartcase = true
 
 -- スワップファイルを作成しない
 vim.opt.swapfile = false
+
+-- ファイル変更を自動で読み込む
+-- https://x.com/ryoppippi/status/1996135164938760291
+vim.opt.autoread = true
+
+-- 永続的なundo履歴
+vim.opt.undofile = true
+
+-- 診断サインでレイアウトシフト防止
+vim.opt.signcolumn = 'yes'
+
+-- スクロール時の余白
+vim.opt.scrolloff = 8
+vim.opt.sidescrolloff = 8

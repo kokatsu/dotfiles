@@ -5,6 +5,7 @@ return {
   version = '*',
   config = function()
     require('mini.move').setup()
+    require('mini.surround').setup()
 
     local gen_loader = require('mini.snippets').gen_loader
     local snippets = {

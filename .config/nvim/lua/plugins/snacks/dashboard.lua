@@ -8,14 +8,20 @@ M.opts = {
   preset = {
     ---@type snacks.dashboard.Item[] | fun(items:snacks.dashboard.Item[]): snacks.dashboard.Item[]?
     keys = {
+      -- nf-md-file_tree
       { icon = '󰙅 ', key = 'e', desc = 'File Explorer', action = explorer.action },
-      { icon = ' ', key = 'f', desc = 'Smart Find Files', action = picker.smart_action },
-      { icon = ' ', key = 'g', desc = 'Grep', action = picker.grep_action },
+      -- nf-md-file_search
+      { icon = '󰱼 ', key = 'f', desc = 'Smart Find Files', action = picker.smart_action },
+      -- nf-md-text_search
+      { icon = '󱎸 ', key = 'g', desc = 'Grep', action = picker.grep_action },
+      -- nf-md-sleep
       { icon = '󰒲 ', key = 'l', desc = 'Lazy', action = ':Lazy', enabled = package.loaded.lazy ~= nil },
-      { icon = ' ', key = 'q', desc = 'Quit', action = ':qa' },
-      { icon = ' ', key = 'r', desc = 'Recent Files', action = ":lua Snacks.dashboard.pick('oldfiles')" },
+      -- nf-md-exit_to_app
+      { icon = '󰈆 ', key = 'q', desc = 'Quit', action = ':qa' },
+      -- nf-md-undo
+      { icon = '󰕌 ', key = 'r', desc = 'Recent Files', action = ":lua Snacks.dashboard.pick('oldfiles')" },
       {
-        icon = '󰁯 ',
+        icon = '󰁯 ', -- nf-md-backup_restore
         key = 's',
         desc = 'Restore Session',
         action = function()

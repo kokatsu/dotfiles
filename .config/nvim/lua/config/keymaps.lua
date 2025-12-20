@@ -1,9 +1,15 @@
 -- キーマップ設定
 
 -- 挿入モードでescを押したら保存する
-vim.keymap.set('i', '<ESC>', '<ESC>:<C-u>w<CR>', {
+vim.keymap.set('i', '<ESC>', function()
+  vim.cmd('stopinsert')
+  if vim.bo.modifiable and not vim.bo.readonly and vim.bo.buftype == '' then
+    vim.cmd('silent! write')
+  end
+end, {
   desc = 'Save file and exit insert mode',
   noremap = true,
+  silent = true,
 })
 
 -- 日付を挿入するキーマップ

@@ -17,7 +17,7 @@ return {
     -- …etc.
     auto_hide = false, -- タブラインの自動非表示を無効化
   },
-  version = '^1.0.0', -- optional: only update when a new 1.x version is released
+  -- version = '^1.0.0', -- optional: only update when a new 1.x version is released
   keys = {
     {
       '[b',
