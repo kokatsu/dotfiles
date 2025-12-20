@@ -50,7 +50,7 @@
     "skip": ["merge"],
     "commands": {
       "commitlint": {
-        "run": "commitlint --edit {1}"
+        "run": "NODE_PATH=$(nix eval --raw .#darwinConfigurations.$(hostname -s).config.home-manager.users.$USER.home.sessionVariables.NODE_PATH --impure 2>/dev/null) commitlint --edit {1}"
       }
     }
   }

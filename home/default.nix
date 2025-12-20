@@ -75,6 +75,7 @@ in {
       XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
       ZDOTDIR = "${config.xdg.configHome}/zsh";
       BAT_CONFIG_DIR = "${config.xdg.configHome}/bat";
+      CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
       PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
       RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
       # node2nix でインストールした npm パッケージを解決するため
@@ -86,6 +87,7 @@ in {
       ".config/nvim".source = ../. + "/.config/nvim";
       ".config/bat".source = ../. + "/.config/bat";
       ".config/btop".source = ../. + "/.config/btop";
+      ".config/claude".source = ../. + "/.config/claude";
       ".config/delta".source = ../. + "/.config/delta";
       ".config/fastfetch".source = ../. + "/.config/fastfetch";
       ".config/git-graph".source = ../. + "/.config/git-graph";

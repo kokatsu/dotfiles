@@ -9,6 +9,10 @@
 !btop/
 !btop/**
 
+# Claude Code (https://github.com/anthropics/claude-code)
+!claude/
+!claude/**
+
 # Delta (https://github.com/dandavison/delta)
 !delta/
 !delta/**
