@@ -77,6 +77,8 @@ in {
       BAT_CONFIG_DIR = "${config.xdg.configHome}/bat";
       PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
       RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
+      # node2nix でインストールした npm パッケージを解決するため
+      NODE_PATH = "${nodePackages.nodeDependencies}/lib/node_modules";
     };
 
     # .config へのシンボリックリンク

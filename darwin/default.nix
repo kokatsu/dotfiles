@@ -82,6 +82,9 @@
     home = "/Users/${username}";
   };
 
+  # root ユーザーの home を明示的に設定 (nix-darwin の assertion を満たすため)
+  users.users.root.home = "/var/root";
+
   # フォント
   fonts.packages = with pkgs; [
     hackgen-nf-font
