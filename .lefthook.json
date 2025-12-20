@@ -10,7 +10,15 @@
         "run": "secretlint {staged_files}"
       },
       "typos": {
-        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
+        "exclude": [
+          "*.png",
+          "*.jpg",
+          "*.jpeg",
+          "*.gif",
+          "*.webp",
+          "*.ico",
+          "nix/node2nix/*"
+        ],
         "run": "typos {staged_files}"
       }
     }
@@ -25,7 +33,15 @@
         "run": "secretlint {push_files}"
       },
       "typos": {
-        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
+        "exclude": [
+          "*.png",
+          "*.jpg",
+          "*.jpeg",
+          "*.gif",
+          "*.webp",
+          "*.ico",
+          "nix/node2nix/*"
+        ],
         "run": "typos {push_files}"
       }
     }
