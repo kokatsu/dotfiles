@@ -9,11 +9,8 @@ local vue_plugin = {
 }
 
 local tsserver_filetypes = {
-  'javascript',
-  'javascriptreact',
-  'typescript',
-  'typescriptreact',
   'vue',
+  'svelte',
 }
 
 ---@type vim.lsp.Config

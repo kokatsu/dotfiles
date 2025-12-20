@@ -1,0 +1,26 @@
+---@type vim.lsp.Config
+return {
+  filetypes = {
+    'astro',
+    'css',
+    'eruby',
+    'haml',
+    'html',
+    'htmlangular',
+    'heex',
+    'javascript',
+    'javascriptreact',
+    'less',
+    'liquid',
+    'markdown',
+    'php',
+    'sass',
+    'scss',
+    'stylus',
+    'svelte',
+    'twig',
+    'typescript',
+    'typescriptreact',
+    'vue',
+  },
+}

@@ -3,6 +3,13 @@ local denols_config = {
   cmd = { 'deno', 'lsp' },
   filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
   root_dir = function(bufnr, on_dir)
+    -- If shebang indicates deno, start LSP unconditionally
+    if vim.b[bufnr].is_deno then
+      local file_dir = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':h')
+      on_dir(file_dir)
+      return
+    end
+
     local deno_root_markers = {
       'deno.json',
       'deno.jsonc',

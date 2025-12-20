@@ -5,6 +5,7 @@ local picker = require('plugins.snacks.picker')
 local lazygit = require('plugins.snacks.lazygit')
 local terminal = require('plugins.snacks.terminal')
 local dashboard = require('plugins.snacks.dashboard')
+local indent = require('plugins.snacks.indent')
 
 return {
   'folke/snacks.nvim',
@@ -34,6 +35,9 @@ return {
     },
     ---@class snacks.dashboard.Config
     dashboard = dashboard.opts,
+    indent = indent.opts,
+    -- Snacks.toggle.profiler():map(',pp'),
+    -- Snacks.toggle.profiler_highlights():map(',ph'),
   },
   keys = {
     {
@@ -82,14 +86,42 @@ return {
       function()
         Snacks.picker.buffers()
       end,
-      desc = 'Diagnostics in Buffer',
+      desc = 'Buffers',
     },
     {
-      '<leader>g',
+      '<leader>gf',
       function()
         Snacks.picker.git_diff()
       end,
-      desc = 'Git Diff',
+      desc = 'Git Diff (Files)',
+    },
+    {
+      '<leader>gs',
+      function()
+        Snacks.picker.git_status()
+      end,
+      desc = 'Git Status',
+    },
+    {
+      '<leader>gl',
+      function()
+        Snacks.picker.git_log()
+      end,
+      desc = 'Git Log',
+    },
+    {
+      '<leader>gb',
+      function()
+        Snacks.picker.git_branches()
+      end,
+      desc = 'Git Branches',
+    },
+    {
+      ',ps',
+      function()
+        Snacks.profiler.scratch()
+      end,
+      desc = 'Profiler Scratch',
     },
   },
 }
