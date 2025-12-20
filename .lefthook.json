@@ -4,10 +4,10 @@
     "commands": {
       "biome": {
         "glob": ["*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"],
-        "run": "bun biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files} && git update-index --again"
+        "run": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files} && git update-index --again"
       },
       "secretlint": {
-        "run": "bun secretlint {staged_files}"
+        "run": "secretlint {staged_files}"
       },
       "typos": {
         "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
@@ -19,10 +19,10 @@
     "commands": {
       "biome": {
         "glob": ["*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"],
-        "run": "bun biome check --no-errors-on-unmatched --files-ignore-unknown=true {push_files}"
+        "run": "biome check --no-errors-on-unmatched --files-ignore-unknown=true {push_files}"
       },
       "secretlint": {
-        "run": "bun secretlint {push_files}"
+        "run": "secretlint {push_files}"
       },
       "typos": {
         "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
@@ -34,7 +34,7 @@
     "skip": ["merge"],
     "commands": {
       "commitlint": {
-        "run": "bun commitlint --edit {1}"
+        "run": "commitlint --edit {1}"
       }
     }
   }

@@ -54,6 +54,14 @@
     # システムごとにpkgsを取得するヘルパー
     forAllSystems = nixpkgs.lib.genAttrs allSystems;
     pkgsFor = system: nixpkgs.legacyPackages.${system};
+
+    # node2nixで管理されるnpmパッケージ
+    nodePackagesFor = system:
+      import ./nix/node2nix {
+        pkgs = pkgsFor system;
+        inherit system;
+        nodejs = (pkgsFor system).nodejs_22;
+      };
   in {
     # macOS (nix-darwin + home-manager)
     darwinConfigurations.${finalHostname} = nix-darwin.lib.darwinSystem {
@@ -69,7 +77,10 @@
           home-manager.useUserPackages = true;
           home-manager.backupFileExtension = "backup";
           home-manager.users.${finalUsername} = import ./home;
-          home-manager.extraSpecialArgs = {inherit inputs;};
+          home-manager.extraSpecialArgs = {
+            inherit inputs;
+            nodePackages = nodePackagesFor "aarch64-darwin";
+          };
         }
       ];
       specialArgs = {
@@ -85,6 +96,7 @@
       extraSpecialArgs = {
         inherit inputs;
         username = finalUsername;
+        nodePackages = nodePackagesFor "x86_64-linux";
       };
     };
 
@@ -101,5 +113,16 @@
 
     # フォーマッター
     formatter = forAllSystems (system: (pkgsFor system).alejandra);
+
+    # node2nix更新用アプリ
+    apps = forAllSystems (system: {
+      update-node2nix = {
+        type = "app";
+        program = toString ((pkgsFor system).writeShellScript "update-node2nix" ''
+          cd nix/node2nix
+          exec ${(pkgsFor system).node2nix}/bin/node2nix -l package-lock.json
+        '');
+      };
+    });
   };
 }

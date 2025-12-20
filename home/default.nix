@@ -3,6 +3,7 @@
   lib,
   config,
   inputs,
+  nodePackages,
   ...
 }: let
   isDarwin = pkgs.stdenv.isDarwin;
@@ -47,6 +48,13 @@ in {
       nixd
       alejandra # Nix formatter
       typos
+
+      # Git hooks/lint ツール (Nixpkgs)
+      biome
+      lefthook
+
+      # Git hooks/lint ツール (node2nix)
+      nodePackages.nodeDependencies
 
       # Neovim nightly (overlay適用済み)
       neovim
