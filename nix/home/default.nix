@@ -87,8 +87,11 @@ in {
         zig
       ]
       ++ lib.optionals isX86_64 [
-        # D言語 (x86_64のみ対応)
+        # D言語コンパイラ (dmdはx86_64のみ対応)
         dmd
+      ]
+      ++ [
+        # D言語ツール (arm64対応)
         ldc
         dub
         dformat
