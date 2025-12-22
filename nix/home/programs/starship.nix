@@ -5,5 +5,5 @@
   };
 
   # starship.toml を直接シンボリックリンク
-  xdg.configFile."starship.toml".source = ../../.config/starship.toml;
+  xdg.configFile."starship.toml".source = ../../../.config/starship.toml;
 }

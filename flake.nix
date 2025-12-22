@@ -75,13 +75,13 @@
       };
 
     # カスタムオーバーレイ
-    customOverlays = import ./overlays;
+    customOverlays = import ./nix/overlays;
   in {
     # macOS (nix-darwin + home-manager)
     darwinConfigurations.${finalHostname} = nix-darwin.lib.darwinSystem {
       system = "aarch64-darwin";
       modules = [
-        ./darwin
+        ./nix/darwin
         home-manager.darwinModules.home-manager
         {
           nixpkgs.overlays = [
@@ -92,7 +92,7 @@
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           home-manager.backupFileExtension = "backup";
-          home-manager.users.${finalUsername} = import ./home;
+          home-manager.users.${finalUsername} = import ./nix/home;
           home-manager.extraSpecialArgs = {
             inherit inputs;
             username = finalUsername;
@@ -110,7 +110,7 @@
     # Linux/WSL (home-manager standalone)
     homeConfigurations.${finalUsername} = home-manager.lib.homeManagerConfiguration {
       pkgs = pkgsFor "x86_64-linux";
-      modules = [./home];
+      modules = [./nix/home];
       extraSpecialArgs = {
         inherit inputs;
         username = finalUsername;

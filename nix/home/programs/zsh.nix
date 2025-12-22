@@ -9,12 +9,12 @@
 
   # 既存のzsh設定をシンボリックリンク
   home.file = {
-    "${config.xdg.configHome}/zsh/.zshrc".source = ../../.config/zsh/.zshrc;
-    "${config.xdg.configHome}/zsh/.zimrc".source = ../../.config/zsh/.zimrc;
-    "${config.xdg.configHome}/zsh/aliases.zsh".source = ../../.config/zsh/aliases.zsh;
-    "${config.xdg.configHome}/zsh/darwin.zsh".source = ../../.config/zsh/darwin.zsh;
-    "${config.xdg.configHome}/zsh/linux.zsh".source = ../../.config/zsh/linux.zsh;
-    "${config.xdg.configHome}/zsh/wezterm-integration.sh".source = ../../.config/zsh/wezterm-integration.sh;
+    "${config.xdg.configHome}/zsh/.zshrc".source = ../../../.config/zsh/.zshrc;
+    "${config.xdg.configHome}/zsh/.zimrc".source = ../../../.config/zsh/.zimrc;
+    "${config.xdg.configHome}/zsh/aliases.zsh".source = ../../../.config/zsh/aliases.zsh;
+    "${config.xdg.configHome}/zsh/darwin.zsh".source = ../../../.config/zsh/darwin.zsh;
+    "${config.xdg.configHome}/zsh/linux.zsh".source = ../../../.config/zsh/linux.zsh;
+    "${config.xdg.configHome}/zsh/wezterm-integration.sh".source = ../../../.config/zsh/wezterm-integration.sh;
 
     # .zshenv - Nix環境とZDOTDIR設定
     ".zshenv".text = ''

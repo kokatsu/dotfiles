@@ -9,5 +9,5 @@
   };
 
   # 既存の git/config を使用
-  xdg.configFile."git/config".source = ../../.config/git/config;
+  xdg.configFile."git/config".source = ../../../.config/git/config;
 }

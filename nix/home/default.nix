@@ -165,29 +165,29 @@ in {
     # .config へのシンボリックリンク
     file = {
       ".config/nvim" = {
-        source = ../. + "/.config/nvim";
+        source = ../../.config/nvim;
         force = true;
         onChange = ''
           # lazy-lock.json を書き込み可能にする
           chmod u+w ~/.config/nvim/lazy-lock.json || true
         '';
       };
-      ".config/bat".source = ../. + "/.config/bat";
-      ".config/btop".source = ../. + "/.config/btop";
-      ".config/claude/settings.json".source = ../. + "/.config/claude/settings.json";
-      ".config/delta".source = ../. + "/.config/delta";
-      ".config/fastfetch".source = ../. + "/.config/fastfetch";
-      ".config/git-graph".source = ../. + "/.config/git-graph";
-      ".config/pg".source = ../. + "/.config/pg";
-      ".config/wezterm".source = ../. + "/.config/wezterm";
+      ".config/bat".source = ../../.config/bat;
+      ".config/btop".source = ../../.config/btop;
+      ".config/claude/settings.json".source = ../../.config/claude/settings.json;
+      ".config/delta".source = ../../.config/delta;
+      ".config/fastfetch".source = ../../.config/fastfetch;
+      ".config/git-graph".source = ../../.config/git-graph;
+      ".config/pg".source = ../../.config/pg;
+      ".config/wezterm".source = ../../.config/wezterm;
 
       # 新規追加
-      ".config/yazi".source = ../. + "/.config/yazi";
-      ".config/gh".source = ../. + "/.config/gh";
-      ".config/helix".source = ../. + "/.config/helix";
-      ".config/lazydocker".source = ../. + "/.config/lazydocker";
-      ".config/lazygit".source = ../. + "/.config/lazygit";
-      ".config/readline".source = ../. + "/.config/readline";
+      ".config/yazi".source = ../../.config/yazi;
+      ".config/gh".source = ../../.config/gh;
+      ".config/helix".source = ../../.config/helix;
+      ".config/lazydocker".source = ../../.config/lazydocker;
+      ".config/lazygit".source = ../../.config/lazygit;
+      ".config/readline".source = ../../.config/readline;
     };
   };
 
