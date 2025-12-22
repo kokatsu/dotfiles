@@ -186,8 +186,8 @@ in {
       ".config/wezterm/stylua.toml".source = ../../.config/wezterm/stylua.toml;
       ".config/wezterm/wezterm.lua".source = ../../.config/wezterm/wezterm.lua;
       ".config/wezterm/windows.lua".source = ../../.config/wezterm/windows.lua;
-      # backgrounds ディレクトリは Pictures からリンク
-      ".config/wezterm/backgrounds".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/Pictures/wezterm-backgrounds";
+      # backgrounds ディレクトリは dotfiles リポジトリからリンク (画像は .gitignore で除外)
+      ".config/wezterm/backgrounds".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/workspace/dotfiles/.config/wezterm/backgrounds";
 
       # 新規追加
       ".config/yazi".source = ../../.config/yazi;
