@@ -32,122 +32,122 @@ in {
     homeDirectory = homeDir;
     stateVersion = "24.11";
 
-    packages = with pkgs; [
-      # ランタイム (グローバルデフォルト)
-      go
-      nodejs_24
-      pnpm
-      stablePkgs.ruby_3_1 # nixpkgs-stable (24.05) から取得
-      rustup
+    packages = with pkgs;
+      [
+        # ランタイム (グローバルデフォルト)
+        go
+        nodejs_24
+        pnpm
+        stablePkgs.ruby_3_1 # nixpkgs-stable (24.05) から取得
+        rustup
 
-      # CLIツール
-      bat
-      btop
-      chafa # 画像→テキスト
-      curl
-      delta
-      eza
-      fastfetch
-      fd
-      figlet # ASCIIアート
-      fzf
-      gh
-      git
-      git-graph
-      helix
-      jq
-      lazydocker
-      lazygit
-      nb # ノート管理
-      nmap # ネットワーク
-      ov # ページャー
-      ripgrep
-      scc # コード統計
-      tig # Git TUI
-      vivid
-      w3m # テキストブラウザ
-      wget
-      yazi
-      zimfw # Zsh framework
+        # CLIツール
+        bat
+        btop
+        chafa # 画像→テキスト
+        curl
+        delta
+        eza
+        fastfetch
+        fd
+        figlet # ASCIIアート
+        fzf
+        gh
+        git
+        git-graph
+        helix
+        jq
+        lazydocker
+        lazygit
+        nb # ノート管理
+        nmap # ネットワーク
+        ov # ページャー
+        ripgrep
+        scc # コード統計
+        tig # Git TUI
+        vivid
+        w3m # テキストブラウザ
+        wget
+        yazi
+        zimfw # Zsh framework
 
-      # メディア/画像処理
-      cava # 音声ビジュアライザ
-      cfonts # ASCIIアート
-      imagemagick
-      imgcat # 画像表示
-      tesseract # OCR
-      ueberzugpp # 画像表示
-      vips # 画像処理
+        # メディア/画像処理
+        cava # 音声ビジュアライザ
+        cfonts # ASCIIアート
+        imagemagick
+        imgcat # 画像表示
+        tesseract # OCR
+        ueberzugpp # 画像表示
+        vips # 画像処理
 
-      # ドキュメント
-      pandoc
+        # ドキュメント
+        pandoc
 
-      # その他言語/ツール
-      zig
-    ]
-    ++ lib.optionals isX86_64 [
-      # D言語 (x86_64のみ対応)
-      dmd
-      ldc
-      dub
-      dformat
-    ]
-    ++ [
-      # 開発ツール
-      bun
-      claude-code
-      deno
-      docker-compose
-      pipx # Python CLI管理
-      alejandra # Nix formatter
-      stylua # Lua formatter
-      typos
+        # その他言語/ツール
+        zig
+      ]
+      ++ lib.optionals isX86_64 [
+        # D言語 (x86_64のみ対応)
+        dmd
+        ldc
+        dub
+        dformat
+      ]
+      ++ [
+        # 開発ツール
+        bun
+        claude-code
+        deno
+        docker-compose
+        pipx # Python CLI管理
+        alejandra # Nix formatter
+        stylua # Lua formatter
+        typos
 
-      # プレゼン
-      presenterm
+        # プレゼン
+        presenterm
 
-      # Spotify
-      spotify-player
+        # Spotify
+        spotify-player
 
-      # Language Servers
-      astro-language-server
-      copilot-language-server
-      dockerfile-language-server
-      lua-language-server
-      nil # Nix LSP
-      nixd
-      svelte-language-server
-      tailwindcss-language-server
-      taplo # TOML LSP
-      vscode-langservers-extracted # HTML/CSS/JSON/ESLint
-      vtsls # TypeScript LSP
-      vue-language-server
-      yaml-language-server
+        # Language Servers
+        astro-language-server
+        copilot-language-server
+        dockerfile-language-server
+        lua-language-server
+        nil # Nix LSP
+        nixd
+        svelte-language-server
+        tailwindcss-language-server
+        taplo # TOML LSP
+        vscode-langservers-extracted # HTML/CSS/JSON/ESLint
+        vtsls # TypeScript LSP
+        vue-language-server
+        yaml-language-server
 
-      # Git hooks/lint ツール (Nixpkgs)
-      biome
-      lefthook
+        # Git hooks/lint ツール (Nixpkgs)
+        biome
+        lefthook
 
-      # Git hooks/lint ツール (node2nix)
-      nodePackages.nodeDependencies
+        # Git hooks/lint ツール (node2nix)
+        nodePackages.nodeDependencies
 
-      # Neovim nightly (overlay適用済み)
-      neovim
+        # Neovim nightly (overlay適用済み)
+        neovim
 
-      # フォント (Nerd Fonts)
-      nerd-fonts.fira-code
-      nerd-fonts.hack
-      nerd-fonts.symbols-only
-    ]
-    ++ lib.optionals isDarwin [
-      # macOS専用
-      vscode
+        # フォント (Nerd Fonts)
+        nerd-fonts.fira-code
+        nerd-fonts.hack
+        nerd-fonts.symbols-only
+      ]
+      ++ lib.optionals isDarwin [
+        # macOS専用
+        vscode
 
-      # ターミナル (flake inputからnightly)
-      # WSLではWindows側にインストールするためLinuxでは除外
-      inputs.wezterm.packages.${system}.default
-    ]
-;
+        # ターミナル (flake inputからnightly)
+        # WSLではWindows側にインストールするためLinuxでは除外
+        inputs.wezterm.packages.${system}.default
+      ];
 
     sessionVariables = {
       EDITOR = "nvim";
