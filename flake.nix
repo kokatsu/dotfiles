@@ -94,7 +94,7 @@
           home-manager.backupFileExtension = "backup";
           home-manager.users.${finalUsername} = import ./nix/home;
           home-manager.extraSpecialArgs = {
-            inherit inputs;
+            inherit inputs self;
             username = finalUsername;
             nodePackages = nodePackagesFor "aarch64-darwin";
             stablePkgs = stablePkgsFor "aarch64-darwin";
@@ -112,7 +112,7 @@
       pkgs = pkgsFor "x86_64-linux";
       modules = [./nix/home];
       extraSpecialArgs = {
-        inherit inputs;
+        inherit inputs self;
         username = finalUsername;
         nodePackages = nodePackagesFor "x86_64-linux";
         stablePkgs = stablePkgsFor "x86_64-linux";

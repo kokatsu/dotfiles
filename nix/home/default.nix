@@ -3,6 +3,7 @@
   lib,
   config,
   inputs,
+  self,
   nodePackages,
   stablePkgs,
   username ? "user",
@@ -166,11 +167,7 @@ in {
     file = {
       ".config/nvim" = {
         source = ../../.config/nvim;
-        force = true;
-        onChange = ''
-          # lazy-lock.json を書き込み可能にする
-          chmod u+w ~/.config/nvim/lazy-lock.json || true
-        '';
+        recursive = true;
       };
       ".config/bat".source = ../../.config/bat;
       ".config/btop".source = ../../.config/btop;
@@ -197,18 +194,21 @@ in {
 
   # Home Manager 適用後に実行されるスクリプト
   home.activation = {
-    fixNvimLockFile = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      # lazy-lock.json を書き込み可能にする
-      if [ -f "$HOME/.config/nvim/lazy-lock.json" ]; then
+    fixNvimLockFile = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      # lazy-lock.json をコピーして書き込み可能にする
+      if [ -L "$HOME/.config/nvim/lazy-lock.json" ]; then
+        LOCK_TARGET=$(readlink "$HOME/.config/nvim/lazy-lock.json")
+        $DRY_RUN_CMD rm "$HOME/.config/nvim/lazy-lock.json"
+        $DRY_RUN_CMD cp "$LOCK_TARGET" "$HOME/.config/nvim/lazy-lock.json"
         $DRY_RUN_CMD chmod u+w "$HOME/.config/nvim/lazy-lock.json"
       fi
     '';
 
     setupNvimAssets = lib.hm.dag.entryAfter ["linkGeneration"] ''
       # Create a separate nvim-assets directory that's not managed by Nix
-      if [ -d "${homeDir}/kokatsu/dotfiles/.config/nvim/assets" ]; then
+      if [ -d "${self}/.config/nvim/assets" ]; then
         $DRY_RUN_CMD mkdir -p "$HOME/.config/nvim-assets"
-        $DRY_RUN_CMD cp -r "${homeDir}/kokatsu/dotfiles/.config/nvim/assets/"* "$HOME/.config/nvim-assets/" 2>/dev/null || true
+        $DRY_RUN_CMD cp -r "${self}/.config/nvim/assets/"* "$HOME/.config/nvim-assets/" 2>/dev/null || true
       fi
     '';
   };
