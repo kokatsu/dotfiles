@@ -176,7 +176,18 @@ in {
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/git-graph".source = ../../.config/git-graph;
       ".config/pg".source = ../../.config/pg;
-      ".config/wezterm".source = ../../.config/wezterm;
+
+      # WezTerm: 個別ファイルをリンク (backgroundsは別途リンク)
+      ".config/wezterm/background.lua".source = ../../.config/wezterm/background.lua;
+      ".config/wezterm/colors.lua".source = ../../.config/wezterm/colors.lua;
+      ".config/wezterm/format.lua".source = ../../.config/wezterm/format.lua;
+      ".config/wezterm/keybinds.lua".source = ../../.config/wezterm/keybinds.lua;
+      ".config/wezterm/mac.lua".source = ../../.config/wezterm/mac.lua;
+      ".config/wezterm/stylua.toml".source = ../../.config/wezterm/stylua.toml;
+      ".config/wezterm/wezterm.lua".source = ../../.config/wezterm/wezterm.lua;
+      ".config/wezterm/windows.lua".source = ../../.config/wezterm/windows.lua;
+      # backgrounds ディレクトリは Pictures からリンク
+      ".config/wezterm/backgrounds".source = config.lib.file.mkOutOfStoreSymlink "${homeDir}/Pictures/wezterm-backgrounds";
 
       # 新規追加
       ".config/yazi".source = ../../.config/yazi;
