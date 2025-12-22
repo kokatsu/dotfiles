@@ -18,7 +18,9 @@
 
     # .zshenv - Nix環境とZDOTDIR設定
     ".zshenv".text = ''
-      # システムのcompinit呼び出しを無効化 (Zimfwが管理)
+      # /etc/zshrcをスキップ (nix-darwinが生成するcompinit呼び出しを回避)
+      # Zimfwのcompletionモジュールが補完を管理する
+      export NOSYSZSHRC=1
       skip_global_compinit=1
 
       # Nix

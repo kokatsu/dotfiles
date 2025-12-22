@@ -37,13 +37,11 @@ source ${ZIM_HOME}/init.zsh
 local os=$(uname | tr '[:upper:]' '[:lower:]')
 [ -f $ZDOTDIR/"$os".zsh ] && . $ZDOTDIR/"$os".zsh
 
-# 分離された設定ファイルを読み込む
-if [ -d "$ZDOTDIR/config.d" ]; then
-  for conf in "$ZDOTDIR/config.d/"*.zsh; do
-    [ -e "$conf" ] || break
-    source "${conf}"
-  done
-fi
+# 分離された設定ファイルを読み込む (ディレクトリがなければ作成)
+[ -d "$ZDOTDIR/config.d" ] || mkdir -p "$ZDOTDIR/config.d"
+for conf in "$ZDOTDIR/config.d/"*.zsh(N); do
+  source "${conf}"
+done
 
 # ------------------------------------------------------------------------------
 # mise (https://github.com/jdx/mise)
@@ -91,9 +89,9 @@ export BAT_CONFIG_DIR="${XDG_CONFIG_HOME}/bat"
 export BUN_INSTALL="$HOME/.bun"
 export PATH=$BUN_INSTALL/bin:$PATH
 
-# bun completions
+# bun completions (zsh-deferで遅延読み込み)
 # https://github.com/oven-sh/bun/issues/7641
-[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+zsh-defer -c '[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"'
 
 # ------------------------------------------------------------------------------
 # Cargo (https://github.com/rust-lang/cargo)
@@ -127,7 +125,7 @@ fi
 # Delta (https://github.com/dandavison/delta)
 # ------------------------------------------------------------------------------
 
-[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || delta --generate-completion zsh >$ZIM_HOME/modules/zsh-completions/src/_delta
+zsh-defer -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || delta --generate-completion zsh >$ZIM_HOME/modules/zsh-completions/src/_delta'
 
 # ------------------------------------------------------------------------------
 # Deno (https://github.com/denoland/deno)
