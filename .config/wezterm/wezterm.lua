@@ -8,6 +8,7 @@ local config = wezterm.config_builder()
 config.audible_bell = 'SystemBeep'
 config.automatically_reload_config = true
 config.disable_default_key_bindings = true
+config.scrollback_lines = 10000
 config.font = wezterm.font_with_fallback({
   'Firge35Nerd Console',
   'HackGen35 Console',

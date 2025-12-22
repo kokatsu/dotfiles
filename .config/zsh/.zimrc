@@ -39,8 +39,9 @@ zmodule asciiship
 
 # Additional completion definitions for Zsh.
 zmodule zsh-users/zsh-completions --fpath src
-# Note: completion module disabled to avoid conflict with fzf
-# compinitは.zshrcで手動実行
+# Enables and configures smart and extensive tab completion.
+# completion must be sourced after all modules that add completion definitions.
+zmodule completion
 
 #
 # Modules that must be initialized last
@@ -55,3 +56,9 @@ zmodule zsh-users/zsh-history-substring-search
 # Fish-like autosuggestions for Zsh.
 zmodule zsh-users/zsh-autosuggestions
 # }}} End configuration added by Zim install
+
+# https://github.com/mroth/evalcache
+zmodule mroth/evalcache
+
+# https://www.joshyin.cc/blog/speeding-up-zsh
+zmodule romkatv/zsh-defer

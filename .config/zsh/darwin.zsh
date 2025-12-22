@@ -2,4 +2,4 @@
 # Homebrew
 # ------------------------------------------------------------------------------
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
+_evalcache /opt/homebrew/bin/brew shellenv

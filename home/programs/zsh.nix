@@ -14,12 +14,21 @@
     "${config.xdg.configHome}/zsh/aliases.zsh".source = ../../.config/zsh/aliases.zsh;
     "${config.xdg.configHome}/zsh/darwin.zsh".source = ../../.config/zsh/darwin.zsh;
     "${config.xdg.configHome}/zsh/linux.zsh".source = ../../.config/zsh/linux.zsh;
+    "${config.xdg.configHome}/zsh/wezterm-integration.sh".source = ../../.config/zsh/wezterm-integration.sh;
 
     # .zshenv - Nix環境とZDOTDIR設定
     ".zshenv".text = ''
+      # システムのcompinit呼び出しを無効化 (Zimfwが管理)
+      skip_global_compinit=1
+
       # Nix
       if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
         . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+      fi
+
+      # Nix profile PATH (シングルユーザーインストール用)
+      if [ -e "$HOME/.nix-profile/bin" ]; then
+        export PATH="$HOME/.nix-profile/bin:$PATH"
       fi
 
       # Home Manager session variables

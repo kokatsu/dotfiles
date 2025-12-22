@@ -1,0 +1,37 @@
+# Search hidden files and directories.
+--hidden
+
+# Follow symbolic links.
+--follow
+
+# Don't respect ignore files (.gitignore, .ignore, etc.).
+--no-ignore
+
+# Exclude directories.
+--glob=!{.anyenv,.bun,.bundle,.cache,.cargo,.cursor-server,.git,.vite.vscode-server,asset.*,debug,dist,node_modules,public,target,tmp,Trash,vendor}
+
+# Exclude file types.
+--glob=!*.{lock,log}
+
+# Exclude files.
+--glob=!{package-lock.json}
+
+# Don't print lines longer than this limit.
+--max-columns=10000
+
+# Searches case insensitively.
+--smart-case
+
+# Sort by file path.
+--sort=path
+
+# Configure color settings and styles.
+## #89b4fa
+--colors=path:fg:0x89,0xb4,0xfa
+## #a6e3a1
+--colors=line:fg:0xa6,0xe3,0xa1
+## #f9e2af
+--colors=match:bg:0xf9,0xe2,0xaf
+## #1e1e2e
+--colors=match:fg:0x1e,0x1e,0x2e
+--colors=match:style:nobold

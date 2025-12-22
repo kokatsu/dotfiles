@@ -1,4 +1,10 @@
 # ------------------------------------------------------------------------------
+# Zsh Profiling
+# ------------------------------------------------------------------------------
+
+# zmodload zsh/zprof && zprof
+
+# ------------------------------------------------------------------------------
 # Zim (https://github.com/zimfw/zimfw)
 # ------------------------------------------------------------------------------
 
@@ -14,11 +20,13 @@ if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
       https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
   fi
 fi
-# Install missing modules and update ${ZIM_HOME}/init.zsh if missing or outdated.
-if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE} ]]; then
+
+# zimfwの初期化（init.zshが古い場合は再生成）
+if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
   source ${ZIM_HOME}/zimfw.zsh init -q
 fi
-# Initialize modules.
+
+# _evalcacheを利用可能にするため、最小限のモジュールを読み込み
 source ${ZIM_HOME}/init.zsh
 
 # ------------------------------------------------------------------------------
@@ -37,6 +45,14 @@ if [ -d "$ZDOTDIR/config.d" ]; then
   done
 fi
 
+# ------------------------------------------------------------------------------
+# mise (https://github.com/jdx/mise)
+# ------------------------------------------------------------------------------
+
+if command -v mise &>/dev/null; then
+  _evalcache mise activate zsh
+fi
+
 # History
 # History file
 export HISTFILE="$ZDOTDIR/.zsh_history"
@@ -52,29 +68,81 @@ setopt hist_ignore_all_dups
 setopt hist_reduce_blanks
 # Share history
 setopt share_history
+# Disable beep
+setopt no_beep
 
 # Alias
 . $ZDOTDIR/aliases.zsh
 
-# ------------------------------------------------------------------------------
-# Nix
-# ------------------------------------------------------------------------------
-
-# macOSではHOSTNAMEが設定されていないことがあるので設定
-export HOSTNAME="${HOSTNAME:-$(hostname -s)}"
-alias rebuild='sudo HOSTNAME=$(hostname -s) USER=$USER darwin-rebuild switch --flake ~/workspace/dotfiles --impure'
+# Editor
+export EDITOR="nvim"
+# export EDITOR="hx"
 
 # ------------------------------------------------------------------------------
-# Bat (https://github.com/sharkdp/bat)
+# bat (https://github.com/sharkdp/bat)
 # ------------------------------------------------------------------------------
 
 export BAT_CONFIG_DIR="${XDG_CONFIG_HOME}/bat"
+
+# ------------------------------------------------------------------------------
+# Bun (https://github.com/oven-sh/bun)
+# ------------------------------------------------------------------------------
+
+export BUN_INSTALL="$HOME/.bun"
+export PATH=$BUN_INSTALL/bin:$PATH
+
+# bun completions
+# https://github.com/oven-sh/bun/issues/7641
+[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
+
+# ------------------------------------------------------------------------------
+# Cargo (https://github.com/rust-lang/cargo)
+# ------------------------------------------------------------------------------
+
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+# ------------------------------------------------------------------------------
+# Claude Code (https://docs.anthropic.com/ja/docs/claude-code/overview)
+# ------------------------------------------------------------------------------
+
+export CLAUDE_CONFIG_DIR="$XDG_CONFIG_HOME/claude"
+export CLAUDE_CODE_TERMINAL=0
+# alias ccup="bun update --cwd $CLAUDE_CONFIG_DIR/local @anthropic-ai/claude-code --latest"
+
+# ------------------------------------------------------------------------------
+# Cursor (https://www.cursor.com)
+# ------------------------------------------------------------------------------
+
+# https://zenn.dev/rasuharu/articles/b2e5333b29fbcd
+export TERM_PROGRAM="${TERM_PROGRAM:-unknown}"
+export CURSOR_TERMINAL="${CURSOR_TERMINAL:-0}"
+
+# Cursor環境でのみ追加設定を適用
+if [[ "$TERM_PROGRAM" == "vscode" ]] || [[ -n "$CURSOR_TERMINAL" ]]; then
+  # Shell integrationを無効化（競合回避）
+  export VSCODE_SHELL_INTEGRATION=0
+fi
 
 # ------------------------------------------------------------------------------
 # Delta (https://github.com/dandavison/delta)
 # ------------------------------------------------------------------------------
 
 [ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || delta --generate-completion zsh >$ZIM_HOME/modules/zsh-completions/src/_delta
+
+# ------------------------------------------------------------------------------
+# Deno (https://github.com/denoland/deno)
+# ------------------------------------------------------------------------------
+
+export DENO_INSTALL="$HOME/.deno"
+export PATH="$DENO_INSTALL/bin:$PATH"
+
+# ------------------------------------------------------------------------------
+# DuckDB (https://github.com/duckdb/duckdb)
+# ------------------------------------------------------------------------------
+
+[ -e "$HOME/.duckdbrc" ] || {
+  ln -s "$XDG_CONFIG_HOME/duckdb/duckdbrc" "$HOME/.duckdbrc"
+}
 
 # ------------------------------------------------------------------------------
 # fastfetch (https://github.com/fastfetch-cli/fastfetch)
@@ -85,22 +153,14 @@ export BAT_CONFIG_DIR="${XDG_CONFIG_HOME}/bat"
   ln -s "$XDG_CONFIG_HOME/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"
 }
 
-fastfetch
+# Cursor環境の場合はスキップ
+# if [[ "$TERM_PROGRAM" != "vscode" ]] && [[ "$CURSOR_TERMINAL" == "0" ]]; then
+#   fastfetch
+# fi
 
 # ------------------------------------------------------------------------------
 # fzf (https://github.com/junegunn/fzf)
 # ------------------------------------------------------------------------------
-
-# fzf keybindings and completion
-if [[ $options[zle] = on ]]; then
-  source <(fzf --zsh)
-fi
-
-# ------------------------------------------------------------------------------
-# Completion (Zimのcompletionモジュールの代わり)
-# ------------------------------------------------------------------------------
-
-autoload -Uz compinit && compinit
 
 # https://github.com/catppuccin/fzf
 export FZF_DEFAULT_OPTS=" \
@@ -108,22 +168,24 @@ export FZF_DEFAULT_OPTS=" \
 --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
 --color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
 --color=selected-bg:#45475a \
---color=border:#313244,label:#cdd6f4"
+--color=border:#6c7086,label:#cdd6f4"
 
 # ------------------------------------------------------------------------------
 # Lazygit (https://github.com/jesseduffield/lazygit)
 # ------------------------------------------------------------------------------
 
-lg() {
-  export LAZYGIT_NEW_DIR_FILE=~/.lazygit/newdir
+export LG_CONFIG_FILE=$XDG_CONFIG_HOME/lazygit/config.yml,$XDG_CONFIG_HOME/lazygit/catppuccin-mocha-blue.yml
 
-  lazygit "$@"
+# lg() {
+#   export LAZYGIT_NEW_DIR_FILE=~/.lazygit/newdir
 
-  if [ -f $LAZYGIT_NEW_DIR_FILE ]; then
-    cd "$(cat $LAZYGIT_NEW_DIR_FILE)"
-    rm -f $LAZYGIT_NEW_DIR_FILE >/dev/null
-  fi
-}
+#   lazygit "$@"
+
+#   if [ -f $LAZYGIT_NEW_DIR_FILE ]; then
+#     cd "$(cat $LAZYGIT_NEW_DIR_FILE)"
+#     rm -f $LAZYGIT_NEW_DIR_FILE >/dev/null
+#   fi
+# }
 
 # ------------------------------------------------------------------------------
 # ls
@@ -137,7 +199,7 @@ export LS_COLORS="$(vivid generate catppuccin-mocha)"
 # psql (https://www.postgresql.org/docs/current/app-psql.html)
 # ------------------------------------------------------------------------------
 
-export PSQLRC="${XDG_CONFIG_HOME}/pg/.psqlrc"
+export PSQLRC=${XDG_CONFIG_HOME}/pg/.psqlrc
 
 # ------------------------------------------------------------------------------
 # ripgrep (https://github.com/BurntSushi/ripgrep)
@@ -149,7 +211,14 @@ export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/.ripgreprc
 # Starship (https://github.com/starship/starship)
 # ------------------------------------------------------------------------------
 
-eval "$(starship init zsh)"
+_evalcache starship init zsh
+
+# ------------------------------------------------------------------------------
+# WezTerm (https://github.com/wezterm/wezterm)
+# ------------------------------------------------------------------------------
+
+zsh-defer _evalcache wezterm shell-completion --shell zsh
+. $ZDOTDIR/wezterm-integration.sh
 
 # ------------------------------------------------------------------------------
 # Yazi (https://github.com/sxyazi/yazi)
@@ -169,4 +238,22 @@ function y() {
 # zoxide (https://github.com/ajeetdsouza/zoxide)
 # ------------------------------------------------------------------------------
 
-eval "$(zoxide init zsh)"
+export _ZO_FZF_OPTS='
+--no-sort --height 75% --reverse --margin=0,1 --exit-0 --select-1
+--prompt="❯ "
+--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
+--color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
+--color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
+--color=selected-bg:#45475a
+--color=border:#6c7086,label:#cdd6f4
+--preview "([[ -e '{2..}/README.md' ]] && bat --color=always --style=numbers --line-range=:50 '{2..}/README.md') || eza --color=always --group-directories-first --oneline {2..}"
+'
+zsh-defer _evalcache zoxide init zsh
+
+# ------------------------------------------------------------------------------
+# Zsh Profiling
+# ------------------------------------------------------------------------------
+
+# if (which zprof > /dev/null) ;then
+#   zprof | bat --language=zsh --style="grid"
+# fi

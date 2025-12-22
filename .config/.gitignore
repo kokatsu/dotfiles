@@ -21,6 +21,10 @@
 !fastfetch/
 !fastfetch/**
 
+# gh (https://cli.github.com/)
+!gh/
+!gh/**
+
 # git (https://git-scm.com/)
 !git/
 !git/**
@@ -28,6 +32,18 @@
 # git-graph (https://github.com/mlange-42/git-graph)
 !git-graph/
 !git-graph/**
+
+# helix (https://github.com/helix-editor/helix)
+!helix/
+!helix/**
+
+# lazydocker (https://github.com/jesseduffield/lazydocker)
+!lazydocker/
+!lazydocker/**
+
+# lazygit (https://github.com/jesseduffield/lazygit)
+!lazygit/
+!lazygit/**
 
 # Neovim (https://github.com/neovim/neovim)
 !nvim/
@@ -37,6 +53,10 @@
 !pg/
 !pg/**
 
+# readline (https://tiswww.case.edu/php/chet/readline/rltop.html)
+!readline/
+!readline/**
+
 # spotify-player (https://github.com/aome510/spotify-player)
 !spotify-player/
 !spotify-player/**
@@ -45,9 +65,16 @@
 !wezterm/
 !wezterm/**
 
+# Yazi (https://github.com/sxyazi/yazi)
+!yazi/
+!yazi/**
+
 # Zsh (https://www.zsh.org/)
 !zsh/
 !zsh/**
+
+# ripgrep (https://github.com/BurntSushi/ripgrep)
+!.ripgreprc
 
 # Starship (https://github.com/starship/starship)
 !starship.toml

@@ -82,6 +82,21 @@ M.apply = function()
     local title = get_cwd_name(pane)
     local pane_id = pane:pane_id()
 
+    -- 現在存在するペインIDを収集
+    local active_pane_ids = {}
+    for _, tab in ipairs(window:mux_window():tabs()) do
+      for _, p in ipairs(tab:panes()) do
+        active_pane_ids[p:pane_id()] = true
+      end
+    end
+
+    -- 存在しないペインのキャッシュをクリーンアップ
+    for cached_id in pairs(title_cache) do
+      if not active_pane_ids[cached_id] then
+        title_cache[cached_id] = nil
+      end
+    end
+
     title_cache[pane_id] = title
 
     local border_color = default_color

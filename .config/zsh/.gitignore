@@ -14,3 +14,7 @@
 # OS依存の設定ファイル
 !darwin.zsh
 !linux.zsh
+
+# WezTermの設定ファイル
+!wezterm-completion.zsh
+!wezterm-integration.sh

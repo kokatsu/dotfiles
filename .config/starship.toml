@@ -4,19 +4,19 @@ add_newline = true
 
 palette = "catppuccin_mocha"
 
+command_timeout = 1000
+
 format = """
 $directory\
 $git_branch\
 $git_metrics\
 $git_status\
+$fill\
+$cmd_duration\
+$time\
 $line_break\
 $battery\
 $character"""
-
-right_format = """
-$cmd_duration\
-$time\
-"""
 
 # https://github.com/catppuccin/starship/blob/main/themes/mocha.toml
 [palettes.catppuccin_mocha]
@@ -100,6 +100,9 @@ format = """
 [](fg:surface1)\
 """ # nf-md-slash_forward nf-fa-file_arrow_up
 
+[fill]
+symbol = " "
+
 [cmd_duration]
 show_milliseconds = true
 min_time = 100
@@ -111,10 +114,10 @@ format = '[ $time](bold fg:overlay0)' # nf-oct-clock
 time_format = '%T'
 
 [battery]
-full_symbol = "󰁹 " # nf-md-battery
-charging_symbol = "󰂄 " # nf-md-battery_charging
-discharging_symbol = "󰂃 " # nf-md-battery_alert
-empty_symbol = "󰂎 " # nf-md-battery_outline
+full_symbol = "  " # nf-fa-battery_full
+charging_symbol = "  " # nf-fa-plug
+discharging_symbol = "  " # nf-fa-battery_half
+empty_symbol = "  " # nf-fa-battery_empty
 
 [[battery.display]]
 threshold = 100

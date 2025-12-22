@@ -4,3 +4,8 @@ extend-exclude = [
   "nix/node2nix/node-packages.nix",
   "nix/node2nix/node-env.nix",
 ]
+
+[default]
+extend-ignore-identifiers-re = [
+  "iterm"  # iTerm2 image protocol type in fastfetch config
+]

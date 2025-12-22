@@ -1,0 +1,79 @@
+[language-server.rust-analyzer.config]
+check.command = "clippy"
+
+[language-server.biome]
+command = "biome"
+args = ["lsp-proxy"]
+
+[language-server.tsgo]
+command = "tsgo"
+args = ["--lsp", "--stdio"]
+required-root-patterns = ["package.json", "tsconfig.json"]
+
+[language-server.tsgo.config.typescript.inlayHints]
+includeInlayEnumMemberValueHints = true
+includeInlayFunctionLikeReturnTypeHints = true
+includeInlayFunctionParameterTypeHints = true
+includeInlayParameterNameHints = "all"
+includeInlayParameterNameHintsWhenArgumentMatchesName = true
+includeInlayPropertyDeclarationTypeHints = true
+includeInlayVariableTypeHints = true
+
+# https://docs.deno.com/runtime/getting_started/setup_your_environment/#helix
+[language-server.deno-lsp]
+command = "deno"
+args = ["lsp"]
+required-root-patterns = ["deno.json", "deno.jsonc"]
+
+[language-server.deno-lsp.config.deno]
+enable = true
+suggest.imports.hosts = { "https://deno.land" = true }
+inlayHints.parameterNames.enabled = "all"
+inlayHints.parameterTypes.enabled = true
+inlayHints.variableTypes.enabled = true
+inlayHints.propertyDeclarationTypes.enabled  = true
+inlayHints.functionLikeReturnTypes.enabled = true
+inlayHints.enumMemberValues.enabled = true
+
+[language-server.gpt]
+command = "helix-gpt"
+
+[[language]]
+name = "typescript"
+language-id = "typescript"
+scope = "source.ts"
+file-types = ["ts"]
+shebangs = ["node", "deno", "bun"]
+roots = ["deno.json", "deno.jsonc", "package.json", "tsconfig.json"]
+language-servers = [
+  "deno-lsp",
+  "tsgo",
+  "biome",
+  "gpt",
+]
+
+[[language]]
+name = "rust"
+language-id = "rust"
+scope = "source.rs"
+file-types = ["rs"]
+roots = ["Cargo.toml", "Cargo.lock"]
+language-servers = [
+  "rust-analyzer",
+  "gpt",
+]
+
+[[language]]
+name = "d"
+language-id = "d"
+scope = "source.d"
+file-types = ["d"]
+auto-format = true
+formatter = { command = "dfmt" }
+
+[[language]]
+name = "json"
+language-id = "json"
+scope = "source.json"
+file-types = ["json"]
+auto-format = false

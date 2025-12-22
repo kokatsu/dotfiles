@@ -1,0 +1,9 @@
+[[mgr.prepend_keymap]]
+on = "<C-h>"
+run = "hidden toggle"
+desc = "Toggle hidden files"
+
+[[mgr.prepend_keymap]]
+on   = "T"
+run  = "plugin toggle-pane max-preview"
+desc = "Maximize or restore the preview pane"

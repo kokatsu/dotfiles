@@ -43,10 +43,6 @@ end
 
 -- 背景画像の配列（1~9まで対応）
 local background_images = {}
--- 最初に長さ9で初期化
-for i = 1, 9 do
-  background_images[i] = nil
-end
 
 -- 存在する画像ファイルのみを設定
 for i = 1, 9 do

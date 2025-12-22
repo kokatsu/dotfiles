@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.05"; # Ruby 3.1用
 
     nix-darwin = {
       url = "github:LnL7/nix-darwin";
@@ -28,6 +29,7 @@
   outputs = inputs @ {
     self,
     nixpkgs,
+    nixpkgs-stable,
     nix-darwin,
     home-manager,
     ...
@@ -53,7 +55,12 @@
 
     # システムごとにpkgsを取得するヘルパー
     forAllSystems = nixpkgs.lib.genAttrs allSystems;
-    pkgsFor = system: nixpkgs.legacyPackages.${system};
+    pkgsFor = system:
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+      };
+    stablePkgsFor = system: nixpkgs-stable.legacyPackages.${system};
 
     # node2nixで管理されるnpmパッケージ
     nodePackagesFor = system:
@@ -80,6 +87,7 @@
           home-manager.extraSpecialArgs = {
             inherit inputs;
             nodePackages = nodePackagesFor "aarch64-darwin";
+            stablePkgs = stablePkgsFor "aarch64-darwin";
           };
         }
       ];
@@ -97,6 +105,7 @@
         inherit inputs;
         username = finalUsername;
         nodePackages = nodePackagesFor "x86_64-linux";
+        stablePkgs = stablePkgsFor "x86_64-linux";
       };
     };
 

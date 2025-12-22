@@ -140,14 +140,14 @@ local darwin_specific_keys = {
   { key = 'n', mods = 'CTRL|SHIFT', action = act.SpawnWindow },
   -- `Control + w` で現在のペインを閉じる(確認ダイアログを表示しない)
   { key = 'w', mods = 'CTRL', action = act.CloseCurrentPane({ confirm = false }) },
-  -- `Control + 左矢印` で左のペインに移動
-  { key = 'LeftArrow', mods = 'CTRL', action = act.ActivatePaneDirection('Left') },
-  -- `Control + 右矢印` で右のペインに移動
-  { key = 'RightArrow', mods = 'CTRL', action = act.ActivatePaneDirection('Right') },
-  -- `Control + 上矢印` で上のペインに移動
-  { key = 'UpArrow', mods = 'CTRL', action = act.ActivatePaneDirection('Up') },
-  -- `Control + 下矢印` で下のペインに移動
-  { key = 'DownArrow', mods = 'CTRL', action = act.ActivatePaneDirection('Down') },
+  -- `Option + 左矢印` で左のペインに移動
+  { key = 'LeftArrow', mods = 'OPT', action = act.ActivatePaneDirection('Left') },
+  -- `Option + 右矢印` で右のペインに移動
+  { key = 'RightArrow', mods = 'OPT', action = act.ActivatePaneDirection('Right') },
+  -- `Option + 上矢印` で上のペインに移動
+  { key = 'UpArrow', mods = 'OPT', action = act.ActivatePaneDirection('Up') },
+  -- `Option + 下矢印` で下のペインに移動
+  { key = 'DownArrow', mods = 'OPT', action = act.ActivatePaneDirection('Down') },
   -- `Control + 左矢印` で前の単語に移動
   { key = 'LeftArrow', mods = 'CTRL', action = act.SendKey({ key = 'b', mods = 'META' }) },
   -- `Control + 右矢印` で次の単語に移動
