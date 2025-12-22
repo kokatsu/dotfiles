@@ -35,12 +35,16 @@
     ...
   }: let
     # 環境変数から読み込み (--impure フラグが必要)
+    # sudo実行時はSUDO_USERを優先
+    sudoUser = builtins.getEnv "SUDO_USER";
     username = builtins.getEnv "USER";
     hostname = builtins.getEnv "HOSTNAME";
 
-    # フォールバック: 環境変数が空の場合
+    # フォールバック: SUDO_USER > USER > "user"
     finalUsername =
-      if username == ""
+      if sudoUser != ""
+      then sudoUser
+      else if username == "" || username == "root"
       then "user"
       else username;
     finalHostname =
@@ -69,6 +73,9 @@
         inherit system;
         nodejs = (pkgsFor system).nodejs_22;
       };
+
+    # カスタムオーバーレイ
+    customOverlays = import ./overlays;
   in {
     # macOS (nix-darwin + home-manager)
     darwinConfigurations.${finalHostname} = nix-darwin.lib.darwinSystem {
@@ -79,6 +86,8 @@
         {
           nixpkgs.overlays = [
             inputs.neovim-nightly-overlay.overlays.default
+            customOverlays.cava-darwin-fix
+            customOverlays.git-graph-darwin-fix
           ];
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
@@ -86,6 +95,7 @@
           home-manager.users.${finalUsername} = import ./home;
           home-manager.extraSpecialArgs = {
             inherit inputs;
+            username = finalUsername;
             nodePackages = nodePackagesFor "aarch64-darwin";
             stablePkgs = stablePkgsFor "aarch64-darwin";
           };

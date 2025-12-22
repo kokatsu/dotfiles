@@ -10,6 +10,7 @@
 }: let
   isDarwin = pkgs.stdenv.isDarwin;
   system = pkgs.stdenv.hostPlatform.system;
+  isX86_64 = builtins.elem system ["x86_64-linux" "x86_64-darwin"];
   homeDir =
     if isDarwin
     then "/Users/${username}"
@@ -80,15 +81,17 @@ in {
       # ドキュメント
       pandoc
 
-      # D言語
+      # その他言語/ツール
+      zig
+    ]
+    ++ lib.optionals isX86_64 [
+      # D言語 (x86_64のみ対応)
       dmd
       ldc
       dub
       dformat
-
-      # その他言語/ツール
-      zig
-
+    ]
+    ++ [
       # 開発ツール
       bun
       claude-code
@@ -142,7 +145,8 @@ in {
       # ターミナル (flake inputからnightly)
       # WSLではWindows側にインストールするためLinuxでは除外
       inputs.wezterm.packages.${system}.default
-    ];
+    ]
+;
 
     sessionVariables = {
       EDITOR = "nvim";
