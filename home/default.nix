@@ -162,6 +162,7 @@ in {
     file = {
       ".config/nvim" = {
         source = ../. + "/.config/nvim";
+        force = true;
         onChange = ''
           # lazy-lock.json を書き込み可能にする
           chmod u+w ~/.config/nvim/lazy-lock.json || true
@@ -196,6 +197,14 @@ in {
       # lazy-lock.json を書き込み可能にする
       if [ -f "$HOME/.config/nvim/lazy-lock.json" ]; then
         $DRY_RUN_CMD chmod u+w "$HOME/.config/nvim/lazy-lock.json"
+      fi
+    '';
+
+    setupNvimAssets = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      # Create a separate nvim-assets directory that's not managed by Nix
+      if [ -d "${homeDir}/kokatsu/dotfiles/.config/nvim/assets" ]; then
+        $DRY_RUN_CMD mkdir -p "$HOME/.config/nvim-assets"
+        $DRY_RUN_CMD cp -r "${homeDir}/kokatsu/dotfiles/.config/nvim/assets/"* "$HOME/.config/nvim-assets/" 2>/dev/null || true
       fi
     '';
   };
