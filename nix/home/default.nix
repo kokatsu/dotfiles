@@ -6,6 +6,7 @@
   self,
   nodePackages,
   stablePkgs,
+  dotfilesDir ? "",
   username ? "user",
   ...
 }: let
@@ -194,7 +195,7 @@ in {
       ".config/git-graph".source = ../../.config/git-graph;
       ".config/pg".source = ../../.config/pg;
 
-      # WezTerm: 個別ファイルをリンク (backgroundsは別途リンク)
+      # WezTerm: 個別ファイルをリンク
       ".config/wezterm/background.lua".source = ../../.config/wezterm/background.lua;
       ".config/wezterm/colors.lua".source = ../../.config/wezterm/colors.lua;
       ".config/wezterm/format.lua".source = ../../.config/wezterm/format.lua;
@@ -235,6 +236,16 @@ in {
       if [ -d "${self}/.config/nvim/assets" ]; then
         $DRY_RUN_CMD mkdir -p "$HOME/.config/nvim-assets"
         $DRY_RUN_CMD cp -r "${self}/.config/nvim/assets/"* "$HOME/.config/nvim-assets/" 2>/dev/null || true
+      fi
+    '';
+
+    # WezTerm backgrounds をコピー (git管理外の画像ファイル)
+    setupWeztermBackgrounds = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      DOTFILES_BACKGROUNDS="${dotfilesDir}/.config/wezterm/backgrounds"
+      TARGET_BACKGROUNDS="$HOME/.config/wezterm/backgrounds"
+      if [ -d "$DOTFILES_BACKGROUNDS" ]; then
+        $DRY_RUN_CMD mkdir -p "$TARGET_BACKGROUNDS"
+        $DRY_RUN_CMD cp -r "$DOTFILES_BACKGROUNDS/"* "$TARGET_BACKGROUNDS/" 2>/dev/null || true
       fi
     '';
 

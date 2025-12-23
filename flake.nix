@@ -39,6 +39,7 @@
     sudoUser = builtins.getEnv "SUDO_USER";
     username = builtins.getEnv "USER";
     hostname = builtins.getEnv "HOSTNAME";
+    dotfilesDir = builtins.getEnv "PWD"; # dotfilesディレクトリ (git管理外ファイル用)
 
     # サポートするシステム
     darwinSystems = ["aarch64-darwin" "x86_64-darwin"];
@@ -99,7 +100,7 @@
           home-manager.backupFileExtension = "backup";
           home-manager.users.${finalUsername} = import ./nix/home;
           home-manager.extraSpecialArgs = {
-            inherit inputs self;
+            inherit inputs self dotfilesDir;
             username = finalUsername;
             nodePackages = nodePackagesFor "aarch64-darwin";
             stablePkgs = stablePkgsFor "aarch64-darwin";
@@ -131,7 +132,7 @@
       };
       modules = [./nix/home];
       extraSpecialArgs = {
-        inherit inputs self;
+        inherit inputs self dotfilesDir;
         username = finalUsername;
         nodePackages = nodePackagesFor currentSystem;
         stablePkgs = stablePkgsFor currentSystem;
