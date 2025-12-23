@@ -7,6 +7,11 @@
   # Home ManagerのZsh管理を無効化し、既存設定を使用
   programs.zsh.enable = false;
 
+  # config.d ディレクトリを作成（存在しない場合）
+  home.activation.createZshConfigD = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    $DRY_RUN_CMD mkdir -p "${config.xdg.configHome}/zsh/config.d"
+  '';
+
   # 既存のzsh設定をシンボリックリンク
   home.file = {
     "${config.xdg.configHome}/zsh/.zshrc".source = ../../../.config/zsh/.zshrc;

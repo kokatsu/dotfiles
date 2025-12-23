@@ -109,7 +109,13 @@
 
     # Linux/WSL (home-manager standalone)
     homeConfigurations.${finalUsername} = home-manager.lib.homeManagerConfiguration {
-      pkgs = pkgsFor "x86_64-linux";
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+        overlays = [
+          inputs.neovim-nightly-overlay.overlays.default
+        ];
+      };
       modules = [./nix/home];
       extraSpecialArgs = {
         inherit inputs self;

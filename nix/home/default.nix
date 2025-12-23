@@ -42,11 +42,14 @@ in {
         rustup
 
         # CLIツール
+        _7zz # 7-Zip アーカイバ
+        mise # ランタイム管理
         bat
         btop
         chafa # 画像→テキスト
         curl
         delta
+        duckdb # OLAP DB
         eza
         fastfetch
         fd
@@ -55,6 +58,7 @@ in {
         gh
         git
         git-graph
+        graphviz # グラフ可視化
         helix
         jq
         lazydocker
@@ -64,10 +68,12 @@ in {
         ov # ページャー
         ripgrep
         scc # コード統計
+        termshot # ターミナルスクリーンショット
         tig # Git TUI
         vivid
         w3m # テキストブラウザ
         wget
+        xleak # Excel TUI viewer
         yazi
         zimfw # Zsh framework
 
@@ -76,14 +82,21 @@ in {
         cfonts # ASCIIアート
         imagemagick
         imgcat # 画像表示
+        jp2a # JPG→ASCII変換
+        libcaca # テキストグラフィックス
+        potrace # ビットマップ→ベクター変換
         tesseract # OCR
         ueberzugpp # 画像表示
         vips # 画像処理
 
         # ドキュメント
+        ghostscript
         pandoc
+        poppler-utils # PDF操作ツール (pdftotext, pdfimages等)
 
         # その他言語/ツール
+        coursier # Scala依存関係管理
+        luarocks # Luaパッケージマネージャ
         zig
       ]
       ++ lib.optionals isX86_64 [
@@ -100,6 +113,7 @@ in {
         # 開発ツール
         bun
         claude-code
+        gitleaks # シークレット検出
         deno
         docker-compose
         pipx # Python CLI管理
@@ -192,7 +206,7 @@ in {
 
       # 新規追加
       ".config/yazi".source = ../../.config/yazi;
-      ".config/gh".source = ../../.config/gh;
+      ".config/gh/config.yml".source = ../../.config/gh/config.yml;
       ".config/helix".source = ../../.config/helix;
       ".config/lazydocker".source = ../../.config/lazydocker;
       ".config/lazygit".source = ../../.config/lazygit;
@@ -221,6 +235,25 @@ in {
       if [ -d "${self}/.config/nvim/assets" ]; then
         $DRY_RUN_CMD mkdir -p "$HOME/.config/nvim-assets"
         $DRY_RUN_CMD cp -r "${self}/.config/nvim/assets/"* "$HOME/.config/nvim-assets/" 2>/dev/null || true
+      fi
+    '';
+
+    # gh ディレクトリを書き込み可能にする
+    # config.yml をコピーし、hosts.yml を gh auth login で作成できるようにする
+    fixGhDirectory = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      if [ -L "$HOME/.config/gh" ]; then
+        GH_TARGET=$(readlink "$HOME/.config/gh")
+        $DRY_RUN_CMD rm "$HOME/.config/gh"
+        $DRY_RUN_CMD mkdir -p "$HOME/.config/gh"
+        if [ -f "$GH_TARGET/config.yml" ]; then
+          $DRY_RUN_CMD cp "$GH_TARGET/config.yml" "$HOME/.config/gh/config.yml"
+          $DRY_RUN_CMD chmod u+w "$HOME/.config/gh/config.yml"
+        fi
+      elif [ -L "$HOME/.config/gh/config.yml" ]; then
+        CONFIG_TARGET=$(readlink "$HOME/.config/gh/config.yml")
+        $DRY_RUN_CMD rm "$HOME/.config/gh/config.yml"
+        $DRY_RUN_CMD cp "$CONFIG_TARGET" "$HOME/.config/gh/config.yml"
+        $DRY_RUN_CMD chmod u+w "$HOME/.config/gh/config.yml"
       fi
     '';
   };

@@ -1,5 +1,7 @@
 -- Neovim オプション設定
 
+local os_utils = require('utils.os')
+
 -- 行末の1文字先までカーソルを移動できる
 vim.o.virtualedit = 'onemore'
 
@@ -11,6 +13,22 @@ vim.o.winbar = '%=%m %f' -- ウィンドウバーの表示設定
 vim.opt.mouse = 'a'
 -- クリップボードを共有
 vim.opt.clipboard = 'unnamed,unnamedplus'
+
+-- WSL2環境でwin32yankを使用（wl-copyのprimary selection問題を回避）
+if os_utils.detect_os() == 'wsl' and vim.fn.executable('win32yank.exe') == 1 then
+  vim.g.clipboard = {
+    name = 'win32yank-wsl',
+    copy = {
+      ['+'] = 'win32yank.exe -i --crlf',
+      ['*'] = 'win32yank.exe -i --crlf',
+    },
+    paste = {
+      ['+'] = 'win32yank.exe -o --lf',
+      ['*'] = 'win32yank.exe -o --lf',
+    },
+    cache_enabled = 0,
+  }
+end
 
 -- 行頭行末の左右移動で行をまたぐ
 vim.opt.whichwrap = 'b,s,h,l,<,>,[,],~'
