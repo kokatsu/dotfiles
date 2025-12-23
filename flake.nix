@@ -40,6 +40,11 @@
     username = builtins.getEnv "USER";
     hostname = builtins.getEnv "HOSTNAME";
 
+    # サポートするシステム
+    darwinSystems = ["aarch64-darwin" "x86_64-darwin"];
+    linuxSystems = ["x86_64-linux" "aarch64-linux"];
+    allSystems = darwinSystems ++ linuxSystems;
+
     # フォールバック: SUDO_USER > USER > "user"
     finalUsername =
       if sudoUser != ""
@@ -52,10 +57,9 @@
       then "nixos"
       else hostname;
 
-    # サポートするシステム
-    darwinSystems = ["aarch64-darwin" "x86_64-darwin"];
-    linuxSystems = ["x86_64-linux" "aarch64-linux"];
-    allSystems = darwinSystems ++ linuxSystems;
+    # 現在のシステムを検出 (--impure 必須)
+    currentSystem = builtins.currentSystem;
+    isCurrentDarwin = builtins.elem currentSystem darwinSystems;
 
     # システムごとにpkgsを取得するヘルパー
     forAllSystems = nixpkgs.lib.genAttrs allSystems;
@@ -88,6 +92,7 @@
             inputs.neovim-nightly-overlay.overlays.default
             customOverlays.cava-darwin-fix
             customOverlays.git-graph-darwin-fix
+            customOverlays.jp2a-darwin-fix
           ];
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
@@ -107,21 +112,29 @@
       };
     };
 
-    # Linux/WSL (home-manager standalone)
+    # home-manager standalone (自動システム検出)
     homeConfigurations.${finalUsername} = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs {
-        system = "x86_64-linux";
+        system = currentSystem;
         config.allowUnfree = true;
-        overlays = [
-          inputs.neovim-nightly-overlay.overlays.default
-        ];
+        overlays =
+          [inputs.neovim-nightly-overlay.overlays.default]
+          ++ (
+            if isCurrentDarwin
+            then [
+              customOverlays.cava-darwin-fix
+              customOverlays.git-graph-darwin-fix
+              customOverlays.jp2a-darwin-fix
+            ]
+            else []
+          );
       };
       modules = [./nix/home];
       extraSpecialArgs = {
         inherit inputs self;
         username = finalUsername;
-        nodePackages = nodePackagesFor "x86_64-linux";
-        stablePkgs = stablePkgsFor "x86_64-linux";
+        nodePackages = nodePackagesFor currentSystem;
+        stablePkgs = stablePkgsFor currentSystem;
       };
     };
 

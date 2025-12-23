@@ -23,4 +23,11 @@
       PKG_CONFIG_PATH = "${prev.zlib.dev}/lib/pkgconfig";
     });
   };
+
+  # Fix jp2a build on darwin (marked as broken)
+  jp2a-darwin-fix = final: prev: {
+    jp2a = prev.jp2a.overrideAttrs (old: {
+      meta = old.meta // {broken = false;};
+    });
+  };
 }
