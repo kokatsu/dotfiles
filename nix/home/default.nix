@@ -221,6 +221,11 @@ in {
 
   # Home Manager 適用後に実行されるスクリプト
   home.activation = {
+    # WSL2 で不要な PulseAudio サービスをマスク
+    maskPulseAudio = lib.mkIf (!isDarwin) (lib.hm.dag.entryAfter ["writeBoundary"] ''
+      $DRY_RUN_CMD ${pkgs.systemd}/bin/systemctl --user mask --now pulseaudio.service pulseaudio.socket 2>/dev/null || true
+    '');
+
     fixNvimLockFile = lib.hm.dag.entryAfter ["linkGeneration"] ''
       # lazy-lock.json をコピーして書き込み可能にする
       if [ -L "$HOME/.config/nvim/lazy-lock.json" ]; then

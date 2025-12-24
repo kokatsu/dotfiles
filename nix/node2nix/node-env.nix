@@ -10,11 +10,8 @@
   writeTextFile,
   writeShellScript,
 }: let
-  # Workaround to cope with utillinux in Nixpkgs 20.09 and util-linux in Nixpkgs master
-  utillinux =
-    if pkgs ? utillinux
-    then pkgs.utillinux
-    else pkgs.util-linux;
+  # util-linux (formerly util-linux)
+  util-linux = pkgs.util-linux;
 
   python =
     if nodejs ? python
@@ -542,7 +539,7 @@
         }";
         buildInputs =
           [tarWrapper python nodejs]
-          ++ lib.optional (stdenv.isLinux) utillinux
+          ++ lib.optional (stdenv.isLinux) util-linux
           ++ lib.optional (stdenv.isDarwin) libtool
           ++ buildInputs;
 
@@ -641,7 +638,7 @@
 
         buildInputs =
           [tarWrapper python nodejs]
-          ++ lib.optional (stdenv.isLinux) utillinux
+          ++ lib.optional (stdenv.isLinux) util-linux
           ++ lib.optional (stdenv.isDarwin) libtool
           ++ buildInputs;
 
@@ -716,7 +713,7 @@
           else "-${version}"
         }";
 
-        buildInputs = [python nodejs] ++ lib.optional (stdenv.isLinux) utillinux ++ buildInputs;
+        buildInputs = [python nodejs] ++ lib.optional (stdenv.isLinux) util-linux ++ buildInputs;
         buildCommand = ''
           mkdir -p $out/bin
           cat > $out/bin/shell <<EOF
