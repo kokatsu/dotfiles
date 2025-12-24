@@ -51,8 +51,10 @@ lg = "!f() { \
             -e 's/(build)(\\(.*\\))?:/\\x1b[48;2;245;194;231m\\x1b[30m 󰡢 \\1\\2: \\x1b[0m/' \
             -e 's/(perf)(\\(.*\\))?:/\\x1b[48;2;249;226;175m\\x1b[30m  \\1\\2: \\x1b[0m/' ; \
     }; f"
+lh = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%H %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph
 lm = "!f() { author=$(git config user.name); git log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s' --author=\"$author\" --graph; }; f"
 ls = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad) %C(reset)%C(brightblack)[%cd]%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph
+l1 = log -1
 m = merge
 now = "!f() { git commit --amend --no-edit --date=\"$(date -R)\"; git rebase HEAD~1 --committer-date-is-author-date; }; f"
 p = pull
@@ -88,6 +90,8 @@ ui = auto
 verbose = true
 
 [core]
+# 日本語ファイル名をエスケープせずそのまま表示する
+quotepath = false
 # 未追跡ファイルのキャッシュを有効にする
 untrackedCache = true
 # デフォルトのページャーをlessに設定する
@@ -102,6 +106,8 @@ features = catppuccin-mocha
 navigate = true
 # ダークモードを有効にする
 dark = true
+# deltaのページャーをlessに設定し、ベル音を抑制する
+pager = less --quiet
 
 [diff]
 # 差分を表示する際、差分アルゴリズムをhistogramに設定する
@@ -160,5 +166,5 @@ enabled = true
 autoupdate = true
 
 [tag]
-# タグを表示する際、タグをバージョン順にソートする
-sort = version:refname
+# タグを表示する際、タグを最新のコミット日時順にソートする
+sort = -committerdate
