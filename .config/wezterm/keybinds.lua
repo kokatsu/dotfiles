@@ -20,6 +20,18 @@ end
 
 -- 共通キーバインド（プラットフォーム非依存）
 local common_keys = {
+  -- `Alt + o` で前回の出力をクリップボードにコピー
+  {
+    key = 'o',
+    mods = 'ALT',
+    action = wezterm.action_callback(function(window, pane)
+      local zones = pane:get_semantic_zones('Output')
+      if #zones > 0 then
+        local txt = pane:get_text_from_semantic_zone(zones[#zones])
+        window:copy_to_clipboard(txt)
+      end
+    end),
+  },
   -- `Control + s` で水平分割
   { key = 's', mods = 'CTRL', action = act.SplitHorizontal({}) },
   -- `Control + t` で新しいタブを作成
