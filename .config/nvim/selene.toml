@@ -1,0 +1,5 @@
+std = "vim"
+
+[lints]
+# lazy.nvimのプラグイン定義形式 { 'plugin-name', opts = {} } を許可
+mixed_table = "allow"

@@ -10,8 +10,8 @@
   username ? "user",
   ...
 }: let
-  isDarwin = pkgs.stdenv.isDarwin;
-  system = pkgs.stdenv.hostPlatform.system;
+  inherit (pkgs.stdenv) isDarwin;
+  inherit (pkgs.stdenv.hostPlatform) system;
   isX86_64 = builtins.elem system ["x86_64-linux" "x86_64-darwin"];
   homeDir =
     if isDarwin
@@ -29,7 +29,7 @@ in {
   ];
 
   home = {
-    username = username;
+    inherit username;
     homeDirectory = homeDir;
     stateVersion = "24.11";
 
@@ -119,7 +119,10 @@ in {
         docker-compose
         pipx # Python CLI管理
         alejandra # Nix formatter
+        statix # Nix linter
+        deadnix # Nix dead code finder
         stylua # Lua formatter
+        selene # Lua linter
         typos
 
         # プレゼン

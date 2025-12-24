@@ -29,6 +29,11 @@ return {
 
     -- :LspInfo command (removed in nvim-lspconfig 2024)
     vim.api.nvim_create_user_command('LspInfo', function()
+      -- https://github.com/neovim/nvim-lspconfig/commit/eefb0030c7c5f795ed2b1b0cd498d2670d7513f8
+      if vim.fn.has('nvim-0.12') == 1 then
+        vim.cmd('checkhealth vim.lsp')
+        return
+      end
       local clients = vim.lsp.get_clients({ bufnr = 0 })
       if #clients == 0 then
         print('No LSP clients attached to this buffer')

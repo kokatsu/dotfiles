@@ -59,11 +59,12 @@
       else hostname;
 
     # 現在のシステムを検出 (--impure 必須)
-    currentSystem = builtins.currentSystem;
+    inherit (builtins) currentSystem;
     isCurrentDarwin = builtins.elem currentSystem darwinSystems;
 
     # システムごとにpkgsを取得するヘルパー
-    forAllSystems = nixpkgs.lib.genAttrs allSystems;
+    inherit (nixpkgs) lib;
+    forAllSystems = lib.genAttrs allSystems;
     pkgsFor = system:
       import nixpkgs {
         inherit system;
@@ -95,15 +96,17 @@
             customOverlays.git-graph-darwin-fix
             customOverlays.jp2a-darwin-fix
           ];
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.backupFileExtension = "backup";
-          home-manager.users.${finalUsername} = import ./nix/home;
-          home-manager.extraSpecialArgs = {
-            inherit inputs self dotfilesDir;
-            username = finalUsername;
-            nodePackages = nodePackagesFor "aarch64-darwin";
-            stablePkgs = stablePkgsFor "aarch64-darwin";
+          home-manager = {
+            useGlobalPkgs = true;
+            useUserPackages = true;
+            backupFileExtension = "backup";
+            users.${finalUsername} = import ./nix/home;
+            extraSpecialArgs = {
+              inherit inputs self dotfilesDir;
+              username = finalUsername;
+              nodePackages = nodePackagesFor "aarch64-darwin";
+              stablePkgs = stablePkgsFor "aarch64-darwin";
+            };
           };
         }
       ];

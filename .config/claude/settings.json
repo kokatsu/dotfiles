@@ -3,5 +3,10 @@
     "frontend-design@claude-code-plugins": true
   },
   "alwaysThinkingEnabled": true,
-  "includeCoAuthoredBy": false
+  "includeCoAuthoredBy": false,
+  "statusLine": {
+    "type": "command",
+    "command": "bun x ccusage statusline",
+    "padding": 0
+  }
 }

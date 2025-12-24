@@ -62,8 +62,10 @@ local windows_specific_keys = {
   -- `Alt + 下矢印` で下のペインに移動
   { key = 'DownArrow', mods = 'ALT', action = act.ActivatePaneDirection('Down') },
   -- `Control + 左矢印` で前の単語に移動
+  -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5D') },
   -- `Control + 右矢印` で次の単語に移動
+  -- selene: allow(bad_string_escape)
   { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5C') },
   -- `Control + L` でデバッグオーバーレイを表示
   { key = 'L', mods = 'CTRL', action = act.ShowDebugOverlay },
@@ -149,8 +151,10 @@ local darwin_specific_keys = {
   -- `Option + 下矢印` で下のペインに移動
   { key = 'DownArrow', mods = 'OPT', action = act.ActivatePaneDirection('Down') },
   -- `Control + 左矢印` で前の単語に移動
+  -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5D') },
   -- `Control + 右矢印` で次の単語に移動
+  -- selene: allow(bad_string_escape)
   { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5C') },
   -- `Control + Shift + l` でデバッグオーバーレイを表示
   { key = 'l', mods = 'CTRL|SHIFT', action = act.ShowDebugOverlay },

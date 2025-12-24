@@ -6,6 +6,28 @@
         "glob": ["*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"],
         "run": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files} && git update-index --again"
       },
+      "nix-lint": {
+        "glob": ["*.nix"],
+        "exclude": ["nix/node2nix/*", "node_modules/**/*"],
+        "run": "echo {staged_files} | xargs -n1 statix check && deadnix {staged_files}"
+      },
+      "nix-format": {
+        "glob": ["*.nix"],
+        "exclude": ["nix/node2nix/*", "node_modules/**/*"],
+        "run": "alejandra {staged_files} && git update-index --again"
+      },
+      "lua-lint-nvim": {
+        "glob": [".config/nvim/**/*.lua"],
+        "run": "selene --config .config/nvim/selene.toml {staged_files}"
+      },
+      "lua-lint-wezterm": {
+        "glob": [".config/wezterm/**/*.lua"],
+        "run": "selene --config .config/wezterm/selene.toml {staged_files}"
+      },
+      "lua-format": {
+        "glob": ["*.lua"],
+        "run": "stylua {staged_files} && git update-index --again"
+      },
       "secretlint": {
         "run": "secretlint {staged_files}"
       },
@@ -28,6 +50,19 @@
       "biome": {
         "glob": ["*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"],
         "run": "biome check --no-errors-on-unmatched --files-ignore-unknown=true {push_files}"
+      },
+      "nix-lint": {
+        "glob": ["*.nix"],
+        "exclude": ["nix/node2nix/*", "node_modules/**/*"],
+        "run": "echo {push_files} | xargs -n1 statix check && deadnix {push_files}"
+      },
+      "lua-lint-nvim": {
+        "glob": [".config/nvim/**/*.lua"],
+        "run": "selene --config .config/nvim/selene.toml {push_files}"
+      },
+      "lua-lint-wezterm": {
+        "glob": [".config/wezterm/**/*.lua"],
+        "run": "selene --config .config/wezterm/selene.toml {push_files}"
       },
       "secretlint": {
         "run": "secretlint {push_files}"
