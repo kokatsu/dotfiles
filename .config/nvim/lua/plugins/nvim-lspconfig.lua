@@ -66,6 +66,7 @@ return {
       'html',
       'jsonls',
       'lua_ls',
+      'nixd',
       'postgres_lsp',
       'ruby_lsp',
       'svelte',

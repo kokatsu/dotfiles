@@ -189,14 +189,19 @@ in {
       ".config/nvim" = {
         source = ../../.config/nvim;
         recursive = true;
+        force = true;
       };
       ".config/bat".source = ../../.config/bat;
-      ".config/btop".source = ../../.config/btop;
+      ".config/btop" = {
+        source = ../../.config/btop;
+        force = true;
+      };
       ".config/claude/settings.json".source = ../../.config/claude/settings.json;
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/git-graph".source = ../../.config/git-graph;
       ".config/pg".source = ../../.config/pg;
+      ".config/.ripgreprc".source = ../../.config/.ripgreprc;
 
       # WezTerm: 個別ファイルをリンク
       ".config/wezterm/background.lua".source = ../../.config/wezterm/background.lua;
@@ -273,6 +278,17 @@ in {
         $DRY_RUN_CMD rm "$HOME/.config/gh/config.yml"
         $DRY_RUN_CMD cp "$CONFIG_TARGET" "$HOME/.config/gh/config.yml"
         $DRY_RUN_CMD chmod u+w "$HOME/.config/gh/config.yml"
+      fi
+    '';
+
+    # btop ディレクトリを書き込み可能にする (btopが設定を書き込むため)
+    fixBtopConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      if [ -L "$HOME/.config/btop" ]; then
+        BTOP_TARGET=$(readlink "$HOME/.config/btop")
+        $DRY_RUN_CMD rm "$HOME/.config/btop"
+        $DRY_RUN_CMD mkdir -p "$HOME/.config/btop"
+        $DRY_RUN_CMD cp -r "$BTOP_TARGET/"* "$HOME/.config/btop/"
+        $DRY_RUN_CMD chmod -R u+w "$HOME/.config/btop"
       fi
     '';
   };

@@ -105,7 +105,6 @@ zsh-defer -c '[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"'
 
 export CLAUDE_CONFIG_DIR="$XDG_CONFIG_HOME/claude"
 export CLAUDE_CODE_TERMINAL=0
-# alias ccup="bun update --cwd $CLAUDE_CONFIG_DIR/local @anthropic-ai/claude-code --latest"
 
 # ------------------------------------------------------------------------------
 # Cursor (https://www.cursor.com)
@@ -173,17 +172,6 @@ export FZF_DEFAULT_OPTS=" \
 # ------------------------------------------------------------------------------
 
 export LG_CONFIG_FILE=$XDG_CONFIG_HOME/lazygit/config.yml,$XDG_CONFIG_HOME/lazygit/catppuccin-mocha-blue.yml
-
-# lg() {
-#   export LAZYGIT_NEW_DIR_FILE=~/.lazygit/newdir
-
-#   lazygit "$@"
-
-#   if [ -f $LAZYGIT_NEW_DIR_FILE ]; then
-#     cd "$(cat $LAZYGIT_NEW_DIR_FILE)"
-#     rm -f $LAZYGIT_NEW_DIR_FILE >/dev/null
-#   fi
-# }
 
 # ------------------------------------------------------------------------------
 # ls
