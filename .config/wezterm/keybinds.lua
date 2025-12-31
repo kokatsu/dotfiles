@@ -136,12 +136,16 @@ local windows_specific_keys = {
     mods = 'ALT',
     action = act.SpawnCommandInNewTab({ args = { 'powershell.exe' }, domain = { DomainName = 'local' } }),
   },
+  -- QuickSelect モード（URLやパスを素早く選択）
+  { key = 'q', mods = 'ALT', action = act.QuickSelect },
 }
 
 -- macOS 固有キーバインド
 local darwin_specific_keys = {
-  -- `Command + c` でシェルに Ctrl+C を送信
-  { key = 'c', mods = 'CMD', action = act.SendKey({ key = 'c', mods = 'CMD' }) },
+  -- `Control + x` でコピーモードをアクティブにする
+  { key = 'x', mods = 'CTRL', action = act.ActivateCopyMode },
+  -- `Command + c` でシェルに Ctrl+C (SIGINT) を送信
+  { key = 'c', mods = 'CMD', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
   -- `Command + Shift + c` でクリップボードにコピー
   { key = 'c', mods = 'CMD|SHIFT', action = act.CopyTo('Clipboard') },
   -- `Command + v` でクリップボードからペースト
@@ -180,9 +184,109 @@ local darwin_specific_keys = {
   { key = 'l', mods = 'CTRL|SHIFT', action = act.ShowDebugOverlay },
   -- `Control + f` で画面を最大化
   { key = 'f', mods = 'CTRL', action = act.EmitEvent('maximize-window') },
+  -- タブ切替 Cmd + 数字
+  { key = '1', mods = 'CMD', action = act.ActivateTab(0) },
+  { key = '2', mods = 'CMD', action = act.ActivateTab(1) },
+  { key = '3', mods = 'CMD', action = act.ActivateTab(2) },
+  { key = '4', mods = 'CMD', action = act.ActivateTab(3) },
+  { key = '5', mods = 'CMD', action = act.ActivateTab(4) },
+  { key = '6', mods = 'CMD', action = act.ActivateTab(5) },
+  { key = '7', mods = 'CMD', action = act.ActivateTab(6) },
+  { key = '8', mods = 'CMD', action = act.ActivateTab(7) },
+  { key = '9', mods = 'CMD', action = act.ActivateTab(-1) },
+  -- フォントサイズ調整
+  { key = '+', mods = 'CMD', action = act.IncreaseFontSize },
+  { key = '-', mods = 'CMD', action = act.DecreaseFontSize },
+  { key = '0', mods = 'CMD', action = act.ResetFontSize },
+  -- タブ順序変更
+  { key = '[', mods = 'CMD|SHIFT', action = act.MoveTabRelative(-1) },
+  { key = ']', mods = 'CMD|SHIFT', action = act.MoveTabRelative(1) },
+  -- ペインリサイズ
+  { key = 'LeftArrow', mods = 'CMD|SHIFT', action = act.AdjustPaneSize({ 'Left', 1 }) },
+  { key = 'RightArrow', mods = 'CMD|SHIFT', action = act.AdjustPaneSize({ 'Right', 1 }) },
+  { key = 'UpArrow', mods = 'CMD|SHIFT', action = act.AdjustPaneSize({ 'Up', 1 }) },
+  { key = 'DownArrow', mods = 'CMD|SHIFT', action = act.AdjustPaneSize({ 'Down', 1 }) },
+  -- ペイン回転
+  { key = 'l', mods = 'CMD|OPT', action = act.RotatePanes('CounterClockwise') },
+  { key = 'r', mods = 'CMD|OPT', action = act.RotatePanes('Clockwise') },
+  -- QuickSelect モード（URLやパスを素早く選択）
+  { key = 'q', mods = 'CTRL', action = act.QuickSelect },
+}
+
+-- コピーモードのキーテーブル（Vim風操作）
+local copy_mode = {
+  -- 移動
+  { key = 'h', mods = 'NONE', action = act.CopyMode('MoveLeft') },
+  { key = 'j', mods = 'NONE', action = act.CopyMode('MoveDown') },
+  { key = 'k', mods = 'NONE', action = act.CopyMode('MoveUp') },
+  { key = 'l', mods = 'NONE', action = act.CopyMode('MoveRight') },
+  -- 行頭・行末に移動
+  { key = '^', mods = 'NONE', action = act.CopyMode('MoveToStartOfLineContent') },
+  { key = '$', mods = 'NONE', action = act.CopyMode('MoveToEndOfLineContent') },
+  { key = '0', mods = 'NONE', action = act.CopyMode('MoveToStartOfLine') },
+  -- 選択範囲の端に移動
+  { key = 'o', mods = 'NONE', action = act.CopyMode('MoveToSelectionOtherEnd') },
+  { key = 'O', mods = 'NONE', action = act.CopyMode('MoveToSelectionOtherEndHoriz') },
+  -- ジャンプを繰り返す
+  { key = ';', mods = 'NONE', action = act.CopyMode('JumpAgain') },
+  -- 単語ごと移動
+  { key = 'w', mods = 'NONE', action = act.CopyMode('MoveForwardWord') },
+  { key = 'b', mods = 'NONE', action = act.CopyMode('MoveBackwardWord') },
+  { key = 'e', mods = 'NONE', action = act.CopyMode('MoveForwardWordEnd') },
+  -- ジャンプ機能 t f
+  { key = 't', mods = 'NONE', action = act.CopyMode({ JumpForward = { prev_char = true } }) },
+  { key = 'f', mods = 'NONE', action = act.CopyMode({ JumpForward = { prev_char = false } }) },
+  { key = 'T', mods = 'NONE', action = act.CopyMode({ JumpBackward = { prev_char = true } }) },
+  { key = 'F', mods = 'NONE', action = act.CopyMode({ JumpBackward = { prev_char = false } }) },
+  -- 一番下・一番上へ
+  { key = 'G', mods = 'NONE', action = act.CopyMode('MoveToScrollbackBottom') },
+  { key = 'g', mods = 'NONE', action = act.CopyMode('MoveToScrollbackTop') },
+  -- Viewport内移動
+  { key = 'H', mods = 'NONE', action = act.CopyMode('MoveToViewportTop') },
+  { key = 'L', mods = 'NONE', action = act.CopyMode('MoveToViewportBottom') },
+  { key = 'M', mods = 'NONE', action = act.CopyMode('MoveToViewportMiddle') },
+  -- スクロール
+  { key = 'b', mods = 'CTRL', action = act.CopyMode('PageUp') },
+  { key = 'f', mods = 'CTRL', action = act.CopyMode('PageDown') },
+  { key = 'd', mods = 'CTRL', action = act.CopyMode({ MoveByPage = 0.5 }) },
+  { key = 'u', mods = 'CTRL', action = act.CopyMode({ MoveByPage = -0.5 }) },
+  -- 範囲選択モード
+  { key = 'v', mods = 'NONE', action = act.CopyMode({ SetSelectionMode = 'Cell' }) },
+  { key = 'v', mods = 'CTRL', action = act.CopyMode({ SetSelectionMode = 'Block' }) },
+  { key = 'V', mods = 'NONE', action = act.CopyMode({ SetSelectionMode = 'Line' }) },
+  -- コピー
+  { key = 'y', mods = 'NONE', action = act.CopyTo('Clipboard') },
+  -- 検索
+  { key = '/', mods = 'NONE', action = act.Search({ CaseSensitiveString = '' }) },
+  { key = '?', mods = 'NONE', action = act.Search({ CaseSensitiveString = '' }) },
+  { key = 'n', mods = 'NONE', action = act.CopyMode('NextMatch') },
+  { key = 'N', mods = 'NONE', action = act.CopyMode('PriorMatch') },
+  -- コピーモードを終了
+  {
+    key = 'Enter',
+    mods = 'NONE',
+    action = act.Multiple({ { CopyTo = 'ClipboardAndPrimarySelection' }, { CopyMode = 'Close' } }),
+  },
+  { key = 'Escape', mods = 'NONE', action = act.CopyMode('Close') },
+  { key = 'c', mods = 'CTRL', action = act.CopyMode('Close') },
+  { key = 'q', mods = 'NONE', action = act.CopyMode('Close') },
+}
+
+-- 検索モードのキーテーブル
+local search_mode = {
+  { key = 'Enter', mods = 'NONE', action = act.CopyMode('PriorMatch') },
+  { key = 'Escape', mods = 'NONE', action = act.CopyMode('Close') },
+  { key = 'n', mods = 'CTRL', action = act.CopyMode('NextMatch') },
+  { key = 'p', mods = 'CTRL', action = act.CopyMode('PriorMatch') },
+  { key = 'r', mods = 'CTRL', action = act.CopyMode('CycleMatchType') },
+  { key = 'u', mods = 'CTRL', action = act.CopyMode('ClearPattern') },
 }
 
 return {
   windows_keys = merge_keys(common_keys, windows_specific_keys),
   darwin_keys = merge_keys(common_keys, darwin_specific_keys),
+  key_tables = {
+    copy_mode = copy_mode,
+    search_mode = search_mode,
+  },
 }

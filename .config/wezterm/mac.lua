@@ -7,8 +7,10 @@ M.apply_to_config = function(config)
   config.send_composed_key_when_left_alt_is_pressed = false
   config.send_composed_key_when_right_alt_is_pressed = false
 
-  local keys = require('keybinds').darwin_keys
+  local keybinds = require('keybinds')
+  local keys = keybinds.darwin_keys
   config.keys = keys
+  config.key_tables = keybinds.key_tables
 
   local background = require('background')
   background.apply_to_keys(keys, 'CMD', 'OPT')

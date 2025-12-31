@@ -15,8 +15,10 @@ M.apply_to_config = function(config)
   config.default_domain = wsl_domains[1].name
   wezterm.home_dir = '~'
 
-  local keys = require('keybinds').windows_keys
+  local keybinds = require('keybinds')
+  local keys = keybinds.windows_keys
   config.keys = keys
+  config.key_tables = keybinds.key_tables
 
   local background = require('background')
   background.apply_to_keys(keys, 'ALT', 'CTRL')
