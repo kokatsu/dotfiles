@@ -165,7 +165,8 @@ in {
         # macOS専用
         vscode
 
-        # ターミナル (flake inputからnightly)
+        # ターミナル (WezTerm nightly)
+        # Ghostty は Homebrew cask で管理 (nix/darwin/default.nix)
         # WSLではWindows側にインストールするためLinuxでは除外
         inputs.wezterm.packages.${system}.default
       ];
@@ -214,6 +215,10 @@ in {
       ".config/wezterm/windows.lua".source = ../../.config/wezterm/windows.lua;
 
       # 新規追加
+      # Ghostty: 個別ファイルをリンク
+      ".config/ghostty/config".source = ../../.config/ghostty/config;
+      ".config/ghostty/themes/catppuccin-mocha".source = ../../.config/ghostty/themes/catppuccin-mocha;
+
       ".config/yazi".source = ../../.config/yazi;
       ".config/gh/config.yml".source = ../../.config/gh/config.yml;
       ".config/helix".source = ../../.config/helix;
@@ -229,6 +234,13 @@ in {
 
   # Home Manager 適用後に実行されるスクリプト
   home.activation = {
+    # リンク作成前に衝突するディレクトリを削除
+    removeConflictingDirs = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
+      # btop ディレクトリが実ディレクトリの場合は削除
+      if [ -d "$HOME/.config/btop" ] && [ ! -L "$HOME/.config/btop" ]; then
+        $DRY_RUN_CMD rm -rf "$HOME/.config/btop"
+      fi
+    '';
     # WSL2 で不要な PulseAudio サービスをマスク
     maskPulseAudio = lib.mkIf (!isDarwin) (lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD ${pkgs.systemd}/bin/systemctl --user mask --now pulseaudio.service pulseaudio.socket 2>/dev/null || true
@@ -256,6 +268,16 @@ in {
     setupWeztermBackgrounds = lib.hm.dag.entryAfter ["linkGeneration"] ''
       DOTFILES_BACKGROUNDS="${dotfilesDir}/.config/wezterm/backgrounds"
       TARGET_BACKGROUNDS="$HOME/.config/wezterm/backgrounds"
+      if [ -d "$DOTFILES_BACKGROUNDS" ]; then
+        $DRY_RUN_CMD mkdir -p "$TARGET_BACKGROUNDS"
+        $DRY_RUN_CMD cp -r "$DOTFILES_BACKGROUNDS/"* "$TARGET_BACKGROUNDS/" 2>/dev/null || true
+      fi
+    '';
+
+    # Ghostty backgrounds をコピー (git管理外の画像ファイル)
+    setupGhosttyBackgrounds = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      DOTFILES_BACKGROUNDS="${dotfilesDir}/.config/ghostty/backgrounds"
+      TARGET_BACKGROUNDS="$HOME/.config/ghostty/backgrounds"
       if [ -d "$DOTFILES_BACKGROUNDS" ]; then
         $DRY_RUN_CMD mkdir -p "$TARGET_BACKGROUNDS"
         $DRY_RUN_CMD cp -r "$DOTFILES_BACKGROUNDS/"* "$TARGET_BACKGROUNDS/" 2>/dev/null || true

@@ -1,0 +1,138 @@
+# テーマ
+theme = catppuccin-mocha
+
+# フォント（WezTermと同様のフォールバック設定）
+font-family = "Firge35Nerd Console"
+font-family = "HackGen35 Console"
+font-size = 14
+adjust-cell-height = 10%
+
+# カーソル
+cursor-style = bar
+cursor-style-blink = true
+
+# 背景
+background-opacity = 0.75
+background-image = "./backgrounds/background.jpg"
+background-image-opacity = 0.3
+
+# ウィンドウ
+macos-titlebar-style = hidden
+window-save-state = always
+window-inherit-working-directory = true
+window-inherit-font-size = true
+confirm-close-surface = false
+
+# Quick Terminal
+quick-terminal-position = top
+quick-terminal-screen = mouse
+quick-terminal-animation-duration = 0.1
+
+# シェル統合
+shell-integration = detect
+shell-integration-features = cursor,sudo,title
+
+# スクロール
+scrollback-limit = 10000
+
+# マウス
+mouse-hide-while-typing = true
+
+# クリップボード
+copy-on-select = true
+clipboard-trim-trailing-spaces = true
+clipboard-paste-protection = true
+
+# ========================================
+# キーバインド（macOS）
+# ========================================
+
+# クリップボード
+keybind = super+shift+c=copy_to_clipboard
+keybind = super+v=paste_from_clipboard
+
+# ペイン分割
+keybind = ctrl+s=new_split:right
+keybind = ctrl+shift+s=new_split:down
+
+# タブ操作
+keybind = ctrl+t=new_tab
+keybind = ctrl+shift+t=new_tab
+keybind = ctrl+tab=next_tab
+keybind = ctrl+shift+tab=previous_tab
+
+# ウィンドウ操作
+keybind = ctrl+n=new_window
+keybind = super+f=toggle_maximize
+keybind = ctrl+f=toggle_maximize
+
+# ペイン操作
+keybind = ctrl+z=toggle_split_zoom
+keybind = ctrl+w=close_surface
+
+# ペイン移動 (Cmd+Option+矢印)
+keybind = super+alt+left=goto_split:left
+keybind = super+alt+right=goto_split:right
+keybind = super+alt+up=goto_split:top
+keybind = super+alt+down=goto_split:bottom
+
+# ペインリサイズ
+keybind = ctrl+shift+left=resize_split:left,10
+keybind = ctrl+shift+right=resize_split:right,10
+keybind = ctrl+shift+up=resize_split:up,10
+keybind = ctrl+shift+down=resize_split:down,10
+
+# タブ番号でジャンプ
+keybind = ctrl+one=goto_tab:1
+keybind = ctrl+two=goto_tab:2
+keybind = ctrl+three=goto_tab:3
+keybind = ctrl+four=goto_tab:4
+keybind = ctrl+five=goto_tab:5
+keybind = ctrl+six=goto_tab:6
+keybind = ctrl+seven=goto_tab:7
+keybind = ctrl+eight=goto_tab:8
+keybind = ctrl+nine=last_tab
+
+# 単語移動
+keybind = alt+left=text:\x1b[1;3D
+keybind = alt+right=text:\x1b[1;3C
+keybind = ctrl+left=text:\x1b[1;5D
+keybind = ctrl+right=text:\x1b[1;5C
+
+# 単語削除 (Option+Backspace)
+keybind = alt+backspace=text:\x17
+
+# デバッグ
+keybind = ctrl+shift+l=inspector:toggle
+
+# ========================================
+# 追加キーバインド
+# ========================================
+
+# Quick Terminal (Quake式) - グローバルホットキー
+keybind = global:ctrl+grave_accent=toggle_quick_terminal
+
+# プロンプト間ジャンプ（シェル統合必要）
+keybind = ctrl+shift+up=jump_to_prompt:-1
+keybind = ctrl+shift+down=jump_to_prompt:1
+
+# スクロール
+keybind = super+home=scroll_to_top
+keybind = super+end=scroll_to_bottom
+keybind = super+page_up=scroll_page_up
+keybind = super+page_down=scroll_page_down
+
+# ペイン均等化
+keybind = ctrl+shift+e=equalize_splits
+
+# フォントサイズ操作
+keybind = super+equal=increase_font_size:1
+keybind = super+minus=decrease_font_size:1
+keybind = super+zero=reset_font_size
+
+# スクリーン/履歴をファイルに保存
+keybind = super+shift+s=write_screen_file:file
+keybind = super+alt+s=write_scrollback_file:file
+
+# 画面クリア
+keybind = super+k=clear_screen

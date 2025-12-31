@@ -53,11 +53,11 @@ M.opts = {
     {
       section = 'terminal',
       -- https://github.com/hpjansson/chafa
-      cmd = 'chafa -p off --speed=0.9 --clear --passthrough=tmux --scale max "$HOME/.config/nvim-assets/logo.gif"',
+      cmd = 'chafa -p off --speed=0.9 --clear --passthrough=tmux --scale max "$HOME/.config/nvim/assets/logo.gif"',
       indent = 12,
       ttl = 0,
       enabled = function()
-        local logo_path = vim.fn.expand('$HOME/.config/nvim-assets/logo.gif')
+        local logo_path = vim.fn.expand('$HOME/.config/nvim/assets/logo.gif')
         return vim.fn.executable('chafa') == 1
           and vim.fn.environ()['SSH_CLIENT'] == nil
           and vim.fn.filereadable(logo_path) == 1

@@ -33,6 +33,11 @@
 !git-graph/
 !git-graph/**
 
+# Ghostty (https://github.com/ghostty-org/ghostty)
+!ghostty/
+!ghostty/**
+ghostty/backgrounds/
+
 # helix (https://github.com/helix-editor/helix)
 !helix/
 !helix/**

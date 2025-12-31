@@ -154,20 +154,28 @@ local darwin_specific_keys = {
   { key = 'n', mods = 'CTRL|SHIFT', action = act.SpawnWindow },
   -- `Control + w` で現在のペインを閉じる(確認ダイアログを表示しない)
   { key = 'w', mods = 'CTRL', action = act.CloseCurrentPane({ confirm = false }) },
-  -- `Option + 左矢印` で左のペインに移動
-  { key = 'LeftArrow', mods = 'OPT', action = act.ActivatePaneDirection('Left') },
-  -- `Option + 右矢印` で右のペインに移動
-  { key = 'RightArrow', mods = 'OPT', action = act.ActivatePaneDirection('Right') },
-  -- `Option + 上矢印` で上のペインに移動
-  { key = 'UpArrow', mods = 'OPT', action = act.ActivatePaneDirection('Up') },
-  -- `Option + 下矢印` で下のペインに移動
-  { key = 'DownArrow', mods = 'OPT', action = act.ActivatePaneDirection('Down') },
+  -- `Command + Option + 左矢印` で左のペインに移動
+  { key = 'LeftArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Left') },
+  -- `Command + Option + 右矢印` で右のペインに移動
+  { key = 'RightArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Right') },
+  -- `Command + Option + 上矢印` で上のペインに移動
+  { key = 'UpArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Up') },
+  -- `Command + Option + 下矢印` で下のペインに移動
+  { key = 'DownArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Down') },
+  -- `Option + 左矢印` で前の単語に移動 (CSI形式でzshに送信)
+  -- selene: allow(bad_string_escape)
+  { key = 'LeftArrow', mods = 'OPT', action = act.SendString('\x1b[1;3D') },
+  -- `Option + 右矢印` で次の単語に移動 (CSI形式でzshに送信)
+  -- selene: allow(bad_string_escape)
+  { key = 'RightArrow', mods = 'OPT', action = act.SendString('\x1b[1;3C') },
   -- `Control + 左矢印` で前の単語に移動
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5D') },
   -- `Control + 右矢印` で次の単語に移動
   -- selene: allow(bad_string_escape)
   { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5C') },
+  -- `Option + Backspace` で前の単語を削除
+  { key = 'Backspace', mods = 'OPT', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
   -- `Control + Shift + l` でデバッグオーバーレイを表示
   { key = 'l', mods = 'CTRL|SHIFT', action = act.ShowDebugOverlay },
   -- `Control + f` で画面を最大化
