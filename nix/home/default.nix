@@ -17,6 +17,12 @@
     if isDarwin
     then "/Users/${username}"
     else "/home/${username}";
+
+  # dotfilesDirが空の場合はエラーを出す（--impureフラグ忘れ防止）
+  validDotfilesDir =
+    if dotfilesDir == ""
+    then throw "dotfilesDir is empty. Did you forget --impure flag?"
+    else dotfilesDir;
 in {
   imports = [
     ./programs/bat.nix
@@ -191,9 +197,10 @@ in {
 
     # .config へのシンボリックリンク
     file = {
+      # nvim: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
+      # これによりlazy-lock.jsonへの書き込みがリポジトリに反映される
       ".config/nvim" = {
-        source = ../../.config/nvim;
-        recursive = true;
+        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/nvim";
         force = true;
       };
       ".config/bat".source = ../../.config/bat;
@@ -250,16 +257,6 @@ in {
     maskPulseAudio = lib.mkIf (!isDarwin) (lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD ${pkgs.systemd}/bin/systemctl --user mask --now pulseaudio.service pulseaudio.socket 2>/dev/null || true
     '');
-
-    fixNvimLockFile = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      # lazy-lock.json をコピーして書き込み可能にする
-      if [ -L "$HOME/.config/nvim/lazy-lock.json" ]; then
-        LOCK_TARGET=$(readlink "$HOME/.config/nvim/lazy-lock.json")
-        $DRY_RUN_CMD rm "$HOME/.config/nvim/lazy-lock.json"
-        $DRY_RUN_CMD cp "$LOCK_TARGET" "$HOME/.config/nvim/lazy-lock.json"
-        $DRY_RUN_CMD chmod u+w "$HOME/.config/nvim/lazy-lock.json"
-      fi
-    '';
 
     setupNvimAssets = lib.hm.dag.entryAfter ["linkGeneration"] ''
       # Create a separate nvim-assets directory that's not managed by Nix

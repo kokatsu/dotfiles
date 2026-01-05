@@ -13,11 +13,11 @@
   },
   "catppuccin": {
     "branch": "main",
-    "commit": "ce8d176faa4643e026e597ae3c31db59b63cef09"
+    "commit": "6efc53e42cfc97700f19043105bf73ba83c4ae7d"
   },
   "copilot.lua": {
     "branch": "master",
-    "commit": "508d8b00390ff3046323f61187a57069910c6e17"
+    "commit": "e78d1ffebdf6ccb6fd8be4e6898030c1cf5f9b64"
   },
   "diffview.nvim": {
     "branch": "main",
@@ -33,7 +33,7 @@
   },
   "gitsigns.nvim": {
     "branch": "main",
-    "commit": "5813e4878748805f1518cee7abb50fd7205a3a48"
+    "commit": "6bd29494e3f79ff08be1d35bc1926ed23c22ed9a"
   },
   "lazy.nvim": {
     "branch": "main",
@@ -73,7 +73,7 @@
   },
   "nvim-lspconfig": {
     "branch": "master",
-    "commit": "c4f67bf85b01a57e3c130352c0a0e453ab8cd5b9"
+    "commit": "0b38bc74487e73489624d61396af7805af9cc75f"
   },
   "nvim-notify": {
     "branch": "master",
@@ -85,11 +85,11 @@
   },
   "nvim-web-devicons": {
     "branch": "master",
-    "commit": "8dcb311b0c92d460fac00eac706abd43d94d68af"
+    "commit": "6788013bb9cb784e606ada44206b0e755e4323d7"
   },
   "octo.nvim": {
     "branch": "master",
-    "commit": "09ff70efd885fe1cdf62505dce3a9bc6baeb85e1"
+    "commit": "4a3a4fc5a9d3a372c91041f5b846f33b8d6b31fa"
   },
   "peek.nvim": {
     "branch": "master",
@@ -101,7 +101,7 @@
   },
   "rustaceanvim": {
     "branch": "master",
-    "commit": "6c3785d6a230bec63f70c98bf8e2842bed924245"
+    "commit": "f8bf440870c138bf45bc82c42f55d280569964b8"
   },
   "snacks.nvim": {
     "branch": "main",
