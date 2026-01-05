@@ -43,6 +43,7 @@ in {
         rustup
 
         # CLIツール
+        fontconfig # フォント管理 (fc-list等)
         _7zz # 7-Zip アーカイバ
         mise # ランタイム管理
         bat
@@ -69,7 +70,8 @@ in {
         ov # ページャー
         ripgrep
         scc # コード統計
-        termshot # ターミナルスクリーンショット
+        termframe # ターミナルスクリーンショット (SVG, Nerd Font対応)
+        termshot # ターミナルスクリーンショット (PNG)
         tig # Git TUI
         vivid
         w3m # テキストブラウザ
@@ -164,6 +166,7 @@ in {
       ++ lib.optionals isDarwin [
         # macOS専用
         vscode
+        terminal-notifier # macOS通知
 
         # ターミナル (WezTerm nightly)
         # Ghostty は Homebrew cask で管理 (nix/darwin/default.nix)
@@ -181,6 +184,7 @@ in {
       PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
       RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
       INPUTRC = "${config.xdg.configHome}/readline/inputrc";
+      TERMFRAME_CONFIG = "${config.xdg.configHome}/termframe/config.toml";
       # node2nix でインストールした npm パッケージを解決するため
       NODE_PATH = "${nodePackages.nodeDependencies}/lib/node_modules";
     };
@@ -225,6 +229,7 @@ in {
       ".config/lazydocker".source = ../../.config/lazydocker;
       ".config/lazygit".source = ../../.config/lazygit;
       ".config/readline".source = ../../.config/readline;
+      ".config/termframe".source = ../../.config/termframe;
     };
   };
 

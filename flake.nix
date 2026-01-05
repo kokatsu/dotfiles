@@ -95,6 +95,7 @@
             customOverlays.cava-darwin-fix
             customOverlays.git-graph-darwin-fix
             customOverlays.jp2a-darwin-fix
+            customOverlays.termframe
           ];
           home-manager = {
             useGlobalPkgs = true;
@@ -122,7 +123,10 @@
         system = currentSystem;
         config.allowUnfree = true;
         overlays =
-          [inputs.neovim-nightly-overlay.overlays.default]
+          [
+            inputs.neovim-nightly-overlay.overlays.default
+            customOverlays.termframe
+          ]
           ++ (
             if isCurrentDarwin
             then [

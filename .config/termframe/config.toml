@@ -1,0 +1,31 @@
+# termframe configuration
+# https://github.com/pamburus/termframe
+
+[font]
+# Use built-in Fira Code + Symbols Nerd Font Mono
+family = ["Fira Code", "Symbols Nerd Font Mono"]
+size = 14
+
+[font.weight]
+normal = "normal"
+bold = "bold"
+
+[output]
+# Embed fonts in SVG for proper rendering
+embed-fonts = true
+
+[style]
+# Line height (factor of font size)
+line-height = 1.2
+# Padding in em units
+padding = 0.8
+# Window style
+window-style = "macos"
+# Color mode
+mode = "auto"
+
+[colors]
+# Use bright colors for bold text
+bold-is-bright = false
+# Faint text opacity
+faint-opacity = 0.5

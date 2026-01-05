@@ -1,5 +1,34 @@
 # Custom overlays for fixing build issues
 {
+  # Add termframe package (not in nixpkgs)
+  termframe = final: prev: {
+    termframe = prev.rustPlatform.buildRustPackage rec {
+      pname = "termframe";
+      version = "0.7.4";
+
+      src = prev.fetchFromGitHub {
+        owner = "pamburus";
+        repo = "termframe";
+        rev = "v${version}";
+        hash = "sha256-jAcutfzHYLPTF37dZo9gbGQ9WjIxqsYq2RONZP+xsUo=";
+      };
+
+      cargoHash = "sha256-7KUG9qsMtm9utF7w6PQkCfjw0HVCXnZ0tMHprp+cS3o=";
+
+      nativeBuildInputs = [prev.pkg-config];
+      buildInputs = prev.lib.optionals prev.stdenv.hostPlatform.isDarwin [
+        prev.libiconv
+      ];
+
+      meta = with prev.lib; {
+        description = "Terminal output SVG screenshot tool";
+        homepage = "https://github.com/pamburus/termframe";
+        license = licenses.mit;
+        maintainers = [];
+      };
+    };
+  };
+
   # Fix cava build on aarch64-darwin
   # iniparser's dependency unity-test has C++ compilation issues with new clang
   cava-darwin-fix = final: prev: {

@@ -166,12 +166,12 @@ local darwin_specific_keys = {
   { key = 'UpArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Up') },
   -- `Command + Option + 下矢印` で下のペインに移動
   { key = 'DownArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Down') },
-  -- `Option + 左矢印` で前の単語に移動 (CSI形式でzshに送信)
+  -- `Option + 左矢印` で前の単語に移動 (Esc+b)
   -- selene: allow(bad_string_escape)
-  { key = 'LeftArrow', mods = 'OPT', action = act.SendString('\x1b[1;3D') },
-  -- `Option + 右矢印` で次の単語に移動 (CSI形式でzshに送信)
+  { key = 'LeftArrow', mods = 'OPT', action = act.SendString('\x1bb') },
+  -- `Option + 右矢印` で次の単語に移動 (Esc+f)
   -- selene: allow(bad_string_escape)
-  { key = 'RightArrow', mods = 'OPT', action = act.SendString('\x1b[1;3C') },
+  { key = 'RightArrow', mods = 'OPT', action = act.SendString('\x1bf') },
   -- `Control + 左矢印` で前の単語に移動
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5D') },

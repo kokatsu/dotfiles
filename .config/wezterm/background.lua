@@ -16,7 +16,7 @@ local base_background = {
   source = {
     Color = '#1e1e2e',
   },
-  opacity = 1.0,
+  opacity = 0.85,
   width = '100%',
   height = '100%',
 }
@@ -73,7 +73,7 @@ end
 
 local default_background = {
   base_background,
-  gif_background,
+  -- gif_background,
 }
 
 M.default_background = default_background

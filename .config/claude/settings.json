@@ -8,5 +8,29 @@
     "type": "command",
     "command": "bun x ccusage statusline",
     "padding": 0
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title 'Claude Code' -message 'タスクが完了しました' -sound Glass -activate com.github.wez.wezterm"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -title 'Claude Code' -message '権限の承認が必要です' -sound Glass -activate com.github.wez.wezterm"
+          }
+        ]
+      }
+    ]
   }
 }

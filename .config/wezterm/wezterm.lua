@@ -5,7 +5,12 @@ local is_mac = wezterm.target_triple == 'x86_64-apple-darwin' or wezterm.target_
 
 local config = wezterm.config_builder()
 
-config.audible_bell = 'SystemBeep'
+config.audible_bell = 'Disabled'
+config.visual_bell = {
+  fade_in_duration_ms = 0,
+  fade_out_duration_ms = 0,
+}
+config.notification_handling = 'AlwaysShow'
 config.automatically_reload_config = true
 config.disable_default_key_bindings = true
 config.scrollback_lines = 10000

@@ -66,6 +66,10 @@ ghostty/backgrounds/
 !spotify-player/
 !spotify-player/**
 
+# termframe (https://github.com/pamburus/termframe)
+!termframe/
+!termframe/**
+
 # WezTerm (https://github.com/wezterm/wezterm)
 !wezterm/
 !wezterm/**

@@ -172,6 +172,8 @@ M.apply = function()
   end)
 
   -- ベルを鳴らしたときに通知を出す
+  -- 注: macOSではtoast_notificationが動作しないため、
+  -- Claude Codeの通知はhooks + terminal-notifierを使用
   wezterm.on('bell', function(window, pane)
     if not is_claude(pane) then
       return
