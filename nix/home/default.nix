@@ -12,7 +12,6 @@
 }: let
   inherit (pkgs.stdenv) isDarwin;
   inherit (pkgs.stdenv.hostPlatform) system;
-  isX86_64 = builtins.elem system ["x86_64-linux" "x86_64-darwin"];
   homeDir =
     if isDarwin
     then "/Users/${username}"
@@ -110,15 +109,12 @@ in {
         luarocks # Luaパッケージマネージャ
         zig
       ]
-      ++ lib.optionals isX86_64 [
-        # D言語コンパイラ (dmdはx86_64のみ対応)
-        dmd
-      ]
       ++ [
-        # D言語ツール (arm64対応)
+        # D言語ツール
         ldc
         dub
         dformat
+        dtools # rdmd, dustmite など
       ]
       ++ [
         # 開発ツール
