@@ -26,6 +26,7 @@
       },
       "lua-format": {
         "glob": ["*.lua"],
+        "exclude": [".config/yazi/plugins/**/*"],
         "run": "stylua {staged_files} && git update-index --again"
       },
       "secretlint": {

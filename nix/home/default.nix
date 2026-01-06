@@ -69,6 +69,7 @@ in {
         graphviz # グラフ可視化
         helix
         jq
+        miller # CSV/JSON処理
         lazydocker
         lazygit
         nb # ノート管理
@@ -87,6 +88,7 @@ in {
         zimfw # Zsh framework
 
         # メディア/画像処理
+        ffmpegthumbnailer # 動画サムネイル (yazi プレビュー用)
         cava # 音声ビジュアライザ
         cfonts # ASCIIアート
         imagemagick
@@ -230,7 +232,12 @@ in {
       ".config/ghostty/config".source = ../../.config/ghostty/config;
       ".config/ghostty/themes/catppuccin-mocha".source = ../../.config/ghostty/themes/catppuccin-mocha;
 
-      ".config/yazi".source = ../../.config/yazi;
+      # yazi: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
+      # これにより ya pkg コマンドで package.toml への書き込みが可能
+      ".config/yazi" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
+        force = true;
+      };
       ".config/gh/config.yml".source = ../../.config/gh/config.yml;
       ".config/helix".source = ../../.config/helix;
       ".config/lazydocker".source = ../../.config/lazydocker;

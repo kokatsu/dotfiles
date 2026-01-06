@@ -1,6 +1,10 @@
 # termframe configuration
 # https://github.com/pamburus/termframe
 
+[terminal]
+width = "auto"
+height = "auto"
+
 [font]
 # Use built-in Fira Code + Symbols Nerd Font Mono
 family = ["Fira Code", "Symbols Nerd Font Mono"]
