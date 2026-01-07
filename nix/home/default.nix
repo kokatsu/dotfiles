@@ -68,7 +68,6 @@ in {
         fzf
         gh
         git
-        git-graph
         graphviz # グラフ可視化
         helix
         jq
@@ -80,7 +79,6 @@ in {
         ov # ページャー
         ripgrep
         scc # コード統計
-        termframe # ターミナルスクリーンショット (SVG, Nerd Font対応)
         termshot # ターミナルスクリーンショット (PNG)
         tig # Git TUI
         vivid
@@ -162,19 +160,28 @@ in {
 
         # Git hooks/lint ツール (node2nix)
         nodePackages.nodeDependencies
+      ]
+      ++ lib.optionals (!isCI) [
+        # CI ではスキップ (ビルド時間短縮)
+        # Rust 製パッケージ
+        git-graph
+        termframe # ターミナルスクリーンショット (SVG, Nerd Font対応)
 
-        # Neovim nightly (overlay適用済み)
+        # Neovim nightly (overlay適用済み、ソースビルド)
         neovim
 
-        # フォント (Nerd Fonts)
+        # フォント (Nerd Fonts、ダウンロードが大きい)
         nerd-fonts.fira-code
         nerd-fonts.hack
         nerd-fonts.symbols-only
       ]
       ++ lib.optionals isDarwin [
         # macOS専用
-        vscode
         terminal-notifier # macOS通知
+      ]
+      ++ lib.optionals (isDarwin && !isCI) [
+        # macOS専用 (CI ではスキップ)
+        vscode
 
         # ターミナル (WezTerm nightly)
         # Ghostty は Homebrew cask で管理 (nix/darwin/default.nix)
