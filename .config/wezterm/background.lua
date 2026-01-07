@@ -23,23 +23,23 @@ local base_background = {
 
 local backgrounds_dir = wezterm.config_dir .. '/backgrounds'
 
-local background_gif = backgrounds_dir .. '/background.gif'
-local gif_background = nil
-if file_exists(background_gif) then
-  gif_background = {
-    source = {
-      File = background_gif,
-    },
-    opacity = 0.3,
-    vertical_align = 'Bottom',
-    vertical_offset = '-1cell',
-    horizontal_align = 'Right',
-    repeat_x = 'NoRepeat',
-    repeat_y = 'NoRepeat',
-    width = '360px',
-    height = '360px',
-  }
-end
+-- local background_gif = backgrounds_dir .. '/background.gif'
+-- local gif_background = nil
+-- if file_exists(background_gif) then
+--   gif_background = {
+--     source = {
+--       File = background_gif,
+--     },
+--     opacity = 0.3,
+--     vertical_align = 'Bottom',
+--     vertical_offset = '-1cell',
+--     horizontal_align = 'Right',
+--     repeat_x = 'NoRepeat',
+--     repeat_y = 'NoRepeat',
+--     width = '360px',
+--     height = '360px',
+--   }
+-- end
 
 -- 背景画像の配列（1~9まで対応）
 local background_images = {}

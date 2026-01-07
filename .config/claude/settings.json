@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "terminal-notifier -title 'Claude Code' -message 'タスクが完了しました' -sound Glass -activate com.github.wez.wezterm"
+            "command": "[ \"$(uname)\" = \"Darwin\" ] && terminal-notifier -title 'Claude Code' -message 'タスクが完了しました' -sound Glass -activate com.github.wez.wezterm || true"
           }
         ]
       }
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "terminal-notifier -title 'Claude Code' -message '権限の承認が必要です' -sound Glass -activate com.github.wez.wezterm"
+            "command": "[ \"$(uname)\" = \"Darwin\" ] && terminal-notifier -title 'Claude Code' -message '権限の承認が必要です' -sound Glass -activate com.github.wez.wezterm || true"
           }
         ]
       }

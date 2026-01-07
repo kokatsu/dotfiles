@@ -73,12 +73,12 @@ local windows_specific_keys = {
   { key = 'UpArrow', mods = 'ALT', action = act.ActivatePaneDirection('Up') },
   -- `Alt + 下矢印` で下のペインに移動
   { key = 'DownArrow', mods = 'ALT', action = act.ActivatePaneDirection('Down') },
-  -- `Control + 左矢印` で前の単語に移動
+  -- `Control + 左矢印` で前の単語に移動 (Esc+b)
   -- selene: allow(bad_string_escape)
-  { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5D') },
-  -- `Control + 右矢印` で次の単語に移動
+  { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1bb') },
+  -- `Control + 右矢印` で次の単語に移動 (Esc+f)
   -- selene: allow(bad_string_escape)
-  { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5C') },
+  { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1bf') },
   -- `Control + L` でデバッグオーバーレイを表示
   { key = 'L', mods = 'CTRL', action = act.ShowDebugOverlay },
   -- `Control + ;` でフォントを大きくする

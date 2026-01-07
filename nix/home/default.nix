@@ -149,7 +149,7 @@ in {
         taplo # TOML LSP
         vscode-langservers-extracted # HTML/CSS/JSON/ESLint
         vtsls # TypeScript LSP
-        vue-language-server
+        vue-language-server # 3.0.8 - overlay でピン留め
         yaml-language-server
 
         # Git hooks/lint ツール (Nixpkgs)

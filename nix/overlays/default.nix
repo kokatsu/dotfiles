@@ -1,7 +1,25 @@
 # Custom overlays for fixing build issues
 {
+  # Pin vue-language-server to 3.0.8
+  vue-language-server-pin = _final: prev: {
+    vue-language-server = prev.vue-language-server.overrideAttrs (old: rec {
+      version = "3.0.8";
+      src = prev.fetchFromGitHub {
+        owner = "vuejs";
+        repo = "language-tools";
+        rev = "v${version}";
+        hash = "sha256-bUy1H481oxoddprj4WJaZdwbQA6a3SaJ92I/PJubltc=";
+      };
+      pnpmDeps = prev.fetchPnpmDeps {
+        inherit (old) pname;
+        inherit version src;
+        fetcherVersion = 1;
+        hash = "sha256-0H7j/TlVTkQ5dGlm1AgvtXYa+pPnkvadlNGygEaB85k=";
+      };
+    });
+  };
   # Add termframe package (not in nixpkgs)
-  termframe = final: prev: {
+  termframe = _final: prev: {
     termframe = prev.rustPlatform.buildRustPackage rec {
       pname = "termframe";
       version = "0.7.4";
@@ -31,8 +49,8 @@
 
   # Fix cava build on aarch64-darwin
   # iniparser's dependency unity-test has C++ compilation issues with new clang
-  cava-darwin-fix = final: prev: {
-    iniparser = prev.iniparser.overrideAttrs (old: {
+  cava-darwin-fix = _final: prev: {
+    iniparser = prev.iniparser.overrideAttrs (_old: {
       # Skip tests to avoid building unity-test
       doCheck = false;
     });
@@ -40,7 +58,7 @@
 
   # Fix git-graph build on aarch64-darwin
   # libz-sys crate can't find zlib.h
-  git-graph-darwin-fix = final: prev: {
+  git-graph-darwin-fix = _final: prev: {
     git-graph = prev.git-graph.overrideAttrs (old: {
       # Mark as not broken
       meta = old.meta // {broken = false;};
@@ -54,7 +72,7 @@
   };
 
   # Fix jp2a build on darwin (marked as broken)
-  jp2a-darwin-fix = final: prev: {
+  jp2a-darwin-fix = _final: prev: {
     jp2a = prev.jp2a.overrideAttrs (old: {
       meta = old.meta // {broken = false;};
     });

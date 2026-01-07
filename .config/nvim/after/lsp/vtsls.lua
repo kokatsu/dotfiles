@@ -1,13 +1,6 @@
-local vue_language_server_path =
-  vim.fn.expand('$HOME/.local/share/mise/installs/npm-vue-language-server/3.0.8/lib/node_modules/@vue/language-server')
-
-local vue_plugin = {
-  name = '@vue/typescript-plugin',
-  location = vue_language_server_path,
-  languages = { 'vue' },
-  configNamespace = 'typescript',
-}
-
+-- vue_ls は TypeScript サポートのために vtsls を必要とする
+-- vue-language-server 3.0.8 は @vue/typescript-plugin との互換性がないため、
+-- globalPlugins は設定せず、vue_ls の組み込み TypeScript サポートを使用
 local tsserver_filetypes = {
   'vue',
   'svelte',
@@ -21,15 +14,6 @@ local vtsls_config = {
     local project_root = vim.fs.root(bufnr, root_markers)
     on_dir(project_root)
   end,
-  settings = {
-    vtsls = {
-      tsserver = {
-        globalPlugins = {
-          vue_plugin,
-        },
-      },
-    },
-  },
   filetypes = tsserver_filetypes,
 }
 

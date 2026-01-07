@@ -126,6 +126,7 @@
           [
             inputs.neovim-nightly-overlay.overlays.default
             customOverlays.termframe
+            customOverlays.vue-language-server-pin
           ]
           ++ (
             if isCurrentDarwin
