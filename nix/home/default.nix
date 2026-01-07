@@ -8,6 +8,7 @@
   stablePkgs,
   dotfilesDir ? "",
   username ? "user",
+  isCI ? false, # CI環境フラグ
   ...
 }: let
   inherit (pkgs.stdenv) isDarwin;
@@ -18,8 +19,11 @@
     else "/home/${username}";
 
   # dotfilesDirが空の場合はエラーを出す（--impureフラグ忘れ防止）
+  # CI環境ではスキップ
   validDotfilesDir =
-    if dotfilesDir == ""
+    if isCI
+    then "/tmp/dotfiles" # CI用ダミーパス
+    else if dotfilesDir == ""
     then throw "dotfilesDir is empty. Did you forget --impure flag?"
     else dotfilesDir;
 in {

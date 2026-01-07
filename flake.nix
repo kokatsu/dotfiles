@@ -118,34 +118,84 @@
       };
     };
 
-    # home-manager standalone (自動システム検出)
-    homeConfigurations.${finalUsername} = home-manager.lib.homeManagerConfiguration {
-      pkgs = import nixpkgs {
-        system = currentSystem;
-        config.allowUnfree = true;
-        overlays =
-          [
+    # home-manager設定
+    homeConfigurations = {
+      # 実際のユーザー用 (自動システム検出、--impure必須)
+      ${finalUsername} = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = currentSystem;
+          config.allowUnfree = true;
+          overlays =
+            [
+              inputs.neovim-nightly-overlay.overlays.default
+              customOverlays.termframe
+              customOverlays.vue-language-server-pin
+            ]
+            ++ (
+              if isCurrentDarwin
+              then [
+                customOverlays.cava-darwin-fix
+                customOverlays.git-graph-darwin-fix
+                customOverlays.jp2a-darwin-fix
+                customOverlays.ldc-darwin-fix
+              ]
+              else []
+            );
+        };
+        modules = [./nix/home];
+        extraSpecialArgs = {
+          inherit inputs self dotfilesDir;
+          username = finalUsername;
+          nodePackages = nodePackagesFor currentSystem;
+          stablePkgs = stablePkgsFor currentSystem;
+        };
+      };
+
+      # CI用 (純粋評価、ビルドテスト用)
+      "ci-linux" = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = "x86_64-linux";
+          config.allowUnfree = true;
+          overlays = [
             inputs.neovim-nightly-overlay.overlays.default
             customOverlays.termframe
             customOverlays.vue-language-server-pin
-          ]
-          ++ (
-            if isCurrentDarwin
-            then [
-              customOverlays.cava-darwin-fix
-              customOverlays.git-graph-darwin-fix
-              customOverlays.jp2a-darwin-fix
-              customOverlays.ldc-darwin-fix
-            ]
-            else []
-          );
+          ];
+        };
+        modules = [./nix/home];
+        extraSpecialArgs = {
+          inherit inputs self;
+          username = "ci";
+          isCI = true;
+          dotfilesDir = "/tmp/dotfiles";
+          nodePackages = nodePackagesFor "x86_64-linux";
+          stablePkgs = stablePkgsFor "x86_64-linux";
+        };
       };
-      modules = [./nix/home];
-      extraSpecialArgs = {
-        inherit inputs self dotfilesDir;
-        username = finalUsername;
-        nodePackages = nodePackagesFor currentSystem;
-        stablePkgs = stablePkgsFor currentSystem;
+
+      "ci-darwin" = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = "aarch64-darwin";
+          config.allowUnfree = true;
+          overlays = [
+            inputs.neovim-nightly-overlay.overlays.default
+            customOverlays.termframe
+            customOverlays.vue-language-server-pin
+            customOverlays.cava-darwin-fix
+            customOverlays.git-graph-darwin-fix
+            customOverlays.jp2a-darwin-fix
+            customOverlays.ldc-darwin-fix
+          ];
+        };
+        modules = [./nix/home];
+        extraSpecialArgs = {
+          inherit inputs self;
+          username = "ci";
+          isCI = true;
+          dotfilesDir = "/tmp/dotfiles";
+          nodePackages = nodePackagesFor "aarch64-darwin";
+          stablePkgs = stablePkgsFor "aarch64-darwin";
+        };
       };
     };
 

@@ -17,16 +17,26 @@ jobs:
       - name: Check formatting
         run: nix fmt -- --check .
 
-  build:
-    name: Build (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+  build-linux:
+    name: Build (Linux)
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/magic-nix-cache-action@main
       - name: Build devShell
-        run: nix build .#devShells.$(nix eval --impure --raw --expr 'builtins.currentSystem').default
+        run: nix build .#devShells.x86_64-linux.default
+      - name: Build home-manager config
+        run: nix build .#homeConfigurations.ci-linux.activationPackage
+
+  build-darwin:
+    name: Build (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Build devShell
+        run: nix build .#devShells.aarch64-darwin.default
+      - name: Build home-manager config
+        run: nix build .#homeConfigurations.ci-darwin.activationPackage
