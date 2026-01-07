@@ -14,7 +14,7 @@
         inherit (old) pname;
         inherit version src;
         fetcherVersion = 1;
-        hash = "sha256-0H7j/TlVTkQ5dGlm1AgvtXYa+pPnkvadlNGygEaB85k=";
+        hash = "sha256-KTpi7aldU9GBDwRwh51foePvoDEmEKhYDhNFGRXgeko=";
       };
     });
   };
@@ -75,6 +75,22 @@
   jp2a-darwin-fix = _final: prev: {
     jp2a = prev.jp2a.overrideAttrs (old: {
       meta = old.meta // {broken = false;};
+    });
+  };
+
+  # Fix LDC on macOS 26+ (Darwin 25+)
+  # The ldc2.conf references a non-existent compiler-rt directory
+  # and the target triple conflicts with Nix cc-wrapper
+  ldc-darwin-fix = _final: prev: {
+    ldc = prev.ldc.overrideAttrs (old: {
+      postInstall =
+        (old.postInstall or "")
+        + prev.lib.optionalString prev.stdenv.hostPlatform.isDarwin ''
+          # Remove non-existent compiler-rt directory from lib-dirs
+          if [ -f "$out/etc/ldc2.conf" ]; then
+            sed -i.bak 's|"[^"]*lib/clang/[0-9]*/lib/darwin".*||' "$out/etc/ldc2.conf"
+          fi
+        '';
     });
   };
 }

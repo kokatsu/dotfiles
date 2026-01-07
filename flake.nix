@@ -95,6 +95,7 @@
             customOverlays.cava-darwin-fix
             customOverlays.git-graph-darwin-fix
             customOverlays.jp2a-darwin-fix
+            customOverlays.ldc-darwin-fix
             customOverlays.termframe
           ];
           home-manager = {
@@ -134,6 +135,7 @@
               customOverlays.cava-darwin-fix
               customOverlays.git-graph-darwin-fix
               customOverlays.jp2a-darwin-fix
+              customOverlays.ldc-darwin-fix
             ]
             else []
           );
