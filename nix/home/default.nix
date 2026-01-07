@@ -113,8 +113,8 @@ in {
         luarocks # Luaパッケージマネージャ
         zig
       ]
-      ++ [
-        # D言語ツール
+      ++ lib.optionals (!isCI) [
+        # D言語ツール (CI ではビルドが失敗するためスキップ)
         ldc
         dub
         dformat
