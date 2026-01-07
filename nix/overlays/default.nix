@@ -1,7 +1,13 @@
 # Custom overlays for fixing build issues
 {
   # Pin vue-language-server to 3.0.8
-  vue-language-server-pin = _final: prev: {
+  vue-language-server-pin = _final: prev: let
+    # pnpmDeps hash differs between platforms due to native dependencies
+    pnpmDepsHash =
+      if prev.stdenv.hostPlatform.isDarwin
+      then "sha256-KTpi7aldU9GBDwRwh51foePvoDEmEKhYDhNFGRXgeko="
+      else "sha256-0H7j/TlVTkQ5dGlm1AgvtXYa+pPnkvadlNGygEaB85k=";
+  in {
     vue-language-server = prev.vue-language-server.overrideAttrs (old: rec {
       version = "3.0.8";
       src = prev.fetchFromGitHub {
@@ -14,7 +20,7 @@
         inherit (old) pname;
         inherit version src;
         fetcherVersion = 1;
-        hash = "sha256-KTpi7aldU9GBDwRwh51foePvoDEmEKhYDhNFGRXgeko=";
+        hash = pnpmDepsHash;
       };
     });
   };
