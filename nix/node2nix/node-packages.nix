@@ -90,40 +90,40 @@
         sha512 = "qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==";
       };
     };
-    "@commitlint/cli-20.3.0" = {
+    "@commitlint/cli-20.3.1" = {
       name = "_at_commitlint_slash_cli";
       packageName = "@commitlint/cli";
-      version = "20.3.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/cli/-/cli-20.3.0.tgz";
-        sha512 = "HXO8YVfqdBK+MnlX2zqNrv6waGYPs6Ysjm5W2Y0GMagWXwiIKx7C8dcIX9ca+QdHq4WA0lcMnZLQ0pzQh1piZg==";
+        url = "https://registry.npmjs.org/@commitlint/cli/-/cli-20.3.1.tgz";
+        sha512 = "NtInjSlyev/+SLPvx/ulz8hRE25Wf5S9dLNDcIwazq0JyB4/w1ROF/5nV0ObPTX8YpRaKYeKtXDYWqumBNHWsw==";
       };
     };
-    "@commitlint/config-conventional-20.3.0" = {
+    "@commitlint/config-conventional-20.3.1" = {
       name = "_at_commitlint_slash_config-conventional";
       packageName = "@commitlint/config-conventional";
-      version = "20.3.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/config-conventional/-/config-conventional-20.3.0.tgz";
-        sha512 = "g1OXVl6E2v0xF1Ru2RpxQ+Vfy7XUcUsCmLKzGUrhFLS4hSNykje0QSy6djBtzOiOBQCepBrmIlqx/gRlzrSh5A==";
+        url = "https://registry.npmjs.org/@commitlint/config-conventional/-/config-conventional-20.3.1.tgz";
+        sha512 = "NCzwvxepstBZbmVXsvg49s+shCxlJDJPWxXqONVcAtJH9wWrOlkMQw/zyl+dJmt8lyVopt5mwQ3mR5M2N2rUWg==";
       };
     };
-    "@commitlint/config-validator-20.2.0" = {
+    "@commitlint/config-validator-20.3.1" = {
       name = "_at_commitlint_slash_config-validator";
       packageName = "@commitlint/config-validator";
-      version = "20.2.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/config-validator/-/config-validator-20.2.0.tgz";
-        sha512 = "SQCBGsL9MFk8utWNSthdxd9iOD1pIVZSHxGBwYIGfd67RTjxqzFOSAYeQVXOu3IxRC3YrTOH37ThnTLjUlyF2w==";
+        url = "https://registry.npmjs.org/@commitlint/config-validator/-/config-validator-20.3.1.tgz";
+        sha512 = "ErVLC/IsHhcvxCyh+FXo7jy12/nkQySjWXYgCoQbZLkFp4hysov8KS6CdxBB0cWjbZWjvNOKBMNoUVqkmGmahw==";
       };
     };
-    "@commitlint/ensure-20.2.0" = {
+    "@commitlint/ensure-20.3.1" = {
       name = "_at_commitlint_slash_ensure";
       packageName = "@commitlint/ensure";
-      version = "20.2.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/ensure/-/ensure-20.2.0.tgz";
-        sha512 = "+8TgIGv89rOWyt3eC6lcR1H7hqChAKkpawytlq9P1i/HYugFRVqgoKJ8dhd89fMnlrQTLjA5E97/4sF09QwdoA==";
+        url = "https://registry.npmjs.org/@commitlint/ensure/-/ensure-20.3.1.tgz";
+        sha512 = "h664FngOEd7bHAm0j8MEKq+qm2mH+V+hwJiIE2bWcw3pzJMlO0TPKtk0ATyRAtV6jQw+xviRYiIjjSjfajiB5w==";
       };
     };
     "@commitlint/execute-rule-20.0.0" = {
@@ -135,40 +135,40 @@
         sha512 = "xyCoOShoPuPL44gVa+5EdZsBVao/pNzpQhkzq3RdtlFdKZtjWcLlUFQHSWBuhk5utKYykeJPSz2i8ABHQA+ZZw==";
       };
     };
-    "@commitlint/format-20.2.0" = {
+    "@commitlint/format-20.3.1" = {
       name = "_at_commitlint_slash_format";
       packageName = "@commitlint/format";
-      version = "20.2.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/format/-/format-20.2.0.tgz";
-        sha512 = "PhNoLNhxpfIBlW/i90uZ3yG3hwSSYx7n4d9Yc+2FAorAHS0D9btYRK4ZZXX+Gm3W5tDtu911ow/eWRfcRVgNWg==";
+        url = "https://registry.npmjs.org/@commitlint/format/-/format-20.3.1.tgz";
+        sha512 = "jfsjGPFTd2Yti2YHwUH4SPRPbWKAJAwrfa3eNa9bXEdrXBb9mCwbIrgYX38LdEJK9zLJ3AsLBP4/FLEtxyu2AA==";
       };
     };
-    "@commitlint/is-ignored-20.2.0" = {
+    "@commitlint/is-ignored-20.3.1" = {
       name = "_at_commitlint_slash_is-ignored";
       packageName = "@commitlint/is-ignored";
-      version = "20.2.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/is-ignored/-/is-ignored-20.2.0.tgz";
-        sha512 = "Lz0OGeZCo/QHUDLx5LmZc0EocwanneYJUM8z0bfWexArk62HKMLfLIodwXuKTO5y0s6ddXaTexrYHs7v96EOmw==";
+        url = "https://registry.npmjs.org/@commitlint/is-ignored/-/is-ignored-20.3.1.tgz";
+        sha512 = "tWwAoh93QvAhxgp99CzCuHD86MgxE4NBtloKX+XxQxhfhSwHo7eloiar/yzx53YW9eqSLP95zgW2KDDk4/WX+A==";
       };
     };
-    "@commitlint/lint-20.3.0" = {
+    "@commitlint/lint-20.3.1" = {
       name = "_at_commitlint_slash_lint";
       packageName = "@commitlint/lint";
-      version = "20.3.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/lint/-/lint-20.3.0.tgz";
-        sha512 = "X19HOGU5nRo6i9DIY0kG0mhgtvpn1UGO1D6aLX1ILLyeqSM5yJyMcrRqNj8SLgeSeUDODhLY9QYsBIG0LdNHkA==";
+        url = "https://registry.npmjs.org/@commitlint/lint/-/lint-20.3.1.tgz";
+        sha512 = "LaOtrQ24+6SfUaWg8A+a+Wc77bvLbO5RIr6iy9F7CI3/0iq1uPEWgGRCwqWTuLGHkZDAcwaq0gZ01zpwZ1jCGw==";
       };
     };
-    "@commitlint/load-20.3.0" = {
+    "@commitlint/load-20.3.1" = {
       name = "_at_commitlint_slash_load";
       packageName = "@commitlint/load";
-      version = "20.3.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/load/-/load-20.3.0.tgz";
-        sha512 = "amkdVZTXp5R65bsRXRSCwoNXbJHR2aAIY/RGFkoyd63t8UEwqEgT3f0MgeLqYw4hwXyq+TYXKdaW133E29pnGQ==";
+        url = "https://registry.npmjs.org/@commitlint/load/-/load-20.3.1.tgz";
+        sha512 = "YDD9XA2XhgYgbjju8itZ/weIvOOobApDqwlPYCX5NLO/cPtw2UMO5Cmn44Ks8RQULUVI5fUT6roKvyxcoLbNmw==";
       };
     };
     "@commitlint/message-20.0.0" = {
@@ -180,40 +180,40 @@
         sha512 = "gLX4YmKnZqSwkmSB9OckQUrI5VyXEYiv3J5JKZRxIp8jOQsWjZgHSG/OgEfMQBK9ibdclEdAyIPYggwXoFGXjQ==";
       };
     };
-    "@commitlint/parse-20.2.0" = {
+    "@commitlint/parse-20.3.1" = {
       name = "_at_commitlint_slash_parse";
       packageName = "@commitlint/parse";
-      version = "20.2.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/parse/-/parse-20.2.0.tgz";
-        sha512 = "LXStagGU1ivh07X7sM+hnEr4BvzFYn1iBJ6DRg2QsIN8lBfSzyvkUcVCDwok9Ia4PWiEgei5HQjju6xfJ1YaSQ==";
+        url = "https://registry.npmjs.org/@commitlint/parse/-/parse-20.3.1.tgz";
+        sha512 = "TuUTdbLpyUNLgDzLDYlI2BeTE6V/COZbf3f8WwsV0K6eq/2nSpNTMw7wHtXb+YxeY9wwxBp/Ldad4P+YIxHJoA==";
       };
     };
-    "@commitlint/read-20.2.0" = {
+    "@commitlint/read-20.3.1" = {
       name = "_at_commitlint_slash_read";
       packageName = "@commitlint/read";
-      version = "20.2.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/read/-/read-20.2.0.tgz";
-        sha512 = "+SjF9mxm5JCbe+8grOpXCXMMRzAnE0WWijhhtasdrpJoAFJYd5UgRTj/oCq5W3HJTwbvTOsijEJ0SUGImECD7Q==";
+        url = "https://registry.npmjs.org/@commitlint/read/-/read-20.3.1.tgz";
+        sha512 = "nCmJAdIg3OdNVUpQW0Idk/eF/vfOo2W2xzmvRmNeptLrzFK7qhwwl/kIwy1Q1LZrKHUFNj7PGNpIT5INbgZWzA==";
       };
     };
-    "@commitlint/resolve-extends-20.2.0" = {
+    "@commitlint/resolve-extends-20.3.1" = {
       name = "_at_commitlint_slash_resolve-extends";
       packageName = "@commitlint/resolve-extends";
-      version = "20.2.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/resolve-extends/-/resolve-extends-20.2.0.tgz";
-        sha512 = "KVoLDi9BEuqeq+G0wRABn4azLRiCC22/YHR2aCquwx6bzCHAIN8hMt3Nuf1VFxq/c8ai6s8qBxE8+ZD4HeFTlQ==";
+        url = "https://registry.npmjs.org/@commitlint/resolve-extends/-/resolve-extends-20.3.1.tgz";
+        sha512 = "iGTGeyaoDyHDEZNjD8rKeosjSNs8zYanmuowY4ful7kFI0dnY4b5QilVYaFQJ6IM27S57LAeH5sKSsOHy4bw5w==";
       };
     };
-    "@commitlint/rules-20.3.0" = {
+    "@commitlint/rules-20.3.1" = {
       name = "_at_commitlint_slash_rules";
       packageName = "@commitlint/rules";
-      version = "20.3.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/rules/-/rules-20.3.0.tgz";
-        sha512 = "TGgXN/qBEhbzVD13crE1l7YSMJRrbPbUL0OBZALbUM5ER36RZmiZRu2ud2W/AA7HO9YLBRbyx6YVi2t/2Be0yQ==";
+        url = "https://registry.npmjs.org/@commitlint/rules/-/rules-20.3.1.tgz";
+        sha512 = "/uic4P+4jVNpqQxz02+Y6vvIC0A2J899DBztA1j6q3f3MOKwydlNrojSh0dQmGDxxT1bXByiRtDhgFnOFnM6Pg==";
       };
     };
     "@commitlint/to-lines-20.0.0" = {
@@ -234,13 +234,13 @@
         sha512 = "drXaPSP2EcopukrUXvUXmsQMu3Ey/FuJDc/5oiW4heoCfoE5BdLQyuc7veGeE3aoQaTVqZnh4D5WTWe2vefYKg==";
       };
     };
-    "@commitlint/types-20.2.0" = {
+    "@commitlint/types-20.3.1" = {
       name = "_at_commitlint_slash_types";
       packageName = "@commitlint/types";
-      version = "20.2.0";
+      version = "20.3.1";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@commitlint/types/-/types-20.2.0.tgz";
-        sha512 = "KTy0OqRDLR5y/zZMnizyx09z/rPlPC/zKhYgH8o/q6PuAjoQAKlRfY4zzv0M64yybQ//6//4H1n14pxaLZfUnA==";
+        url = "https://registry.npmjs.org/@commitlint/types/-/types-20.3.1.tgz";
+        sha512 = "VmIFV/JkBRhDRRv7N5B7zEUkNZIx9Mp+8Pe65erz0rKycXLsi8Epcw0XJ+btSeRXgTzE7DyOyA9bkJ9mn/yqVQ==";
       };
     };
     "@img/sharp-darwin-arm64-0.33.5" = {
@@ -2692,23 +2692,23 @@
       sources."@azu/style-format-1.0.1"
       sources."@babel/code-frame-7.27.1"
       sources."@babel/helper-validator-identifier-7.28.5"
-      sources."@commitlint/cli-20.3.0"
-      sources."@commitlint/config-conventional-20.3.0"
-      sources."@commitlint/config-validator-20.2.0"
-      sources."@commitlint/ensure-20.2.0"
+      sources."@commitlint/cli-20.3.1"
+      sources."@commitlint/config-conventional-20.3.1"
+      sources."@commitlint/config-validator-20.3.1"
+      sources."@commitlint/ensure-20.3.1"
       sources."@commitlint/execute-rule-20.0.0"
-      sources."@commitlint/format-20.2.0"
-      sources."@commitlint/is-ignored-20.2.0"
-      sources."@commitlint/lint-20.3.0"
-      sources."@commitlint/load-20.3.0"
+      sources."@commitlint/format-20.3.1"
+      sources."@commitlint/is-ignored-20.3.1"
+      sources."@commitlint/lint-20.3.1"
+      sources."@commitlint/load-20.3.1"
       sources."@commitlint/message-20.0.0"
-      sources."@commitlint/parse-20.2.0"
-      sources."@commitlint/read-20.2.0"
-      sources."@commitlint/resolve-extends-20.2.0"
-      sources."@commitlint/rules-20.3.0"
+      sources."@commitlint/parse-20.3.1"
+      sources."@commitlint/read-20.3.1"
+      sources."@commitlint/resolve-extends-20.3.1"
+      sources."@commitlint/rules-20.3.1"
       sources."@commitlint/to-lines-20.0.0"
       sources."@commitlint/top-level-20.0.0"
-      sources."@commitlint/types-20.2.0"
+      sources."@commitlint/types-20.3.1"
       sources."@img/sharp-darwin-arm64-0.33.5"
       sources."@img/sharp-darwin-x64-0.33.5"
       sources."@img/sharp-libvips-darwin-arm64-1.0.4"
