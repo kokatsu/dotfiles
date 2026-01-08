@@ -81,6 +81,7 @@ in {
         scc # コード統計
         termshot # ターミナルスクリーンショット (PNG)
         tig # Git TUI
+        tree-sitter # Treesitter CLI (nvim-treesitter パーサービルド用)
         vivid
         w3m # テキストブラウザ
         wget
