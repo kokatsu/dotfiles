@@ -106,6 +106,7 @@
             extraSpecialArgs = {
               inherit inputs self dotfilesDir;
               username = finalUsername;
+              isCI = false;
               nodePackages = nodePackagesFor "aarch64-darwin";
               stablePkgs = stablePkgsFor "aarch64-darwin";
             };
@@ -146,6 +147,7 @@
         extraSpecialArgs = {
           inherit inputs self dotfilesDir;
           username = finalUsername;
+          isCI = false;
           nodePackages = nodePackagesFor currentSystem;
           stablePkgs = stablePkgsFor currentSystem;
         };

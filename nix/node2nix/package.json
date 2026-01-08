@@ -2,6 +2,7 @@
   "name": "dotfiles-node-packages",
   "private": true,
   "dependencies": {
+    "@anthropic-ai/claude-code": "^2.1.1",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@secretlint/secretlint-rule-preset-recommend": "^11.2.5",

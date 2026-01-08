@@ -1,0 +1,53 @@
+name: Regenerate node2nix
+
+on:
+  pull_request:
+    paths:
+      - 'nix/node2nix/package-lock.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  regenerate:
+    name: Regenerate node2nix
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.actor == 'renovate[bot]'
+    steps:
+      # actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/nix-installer-action@ab0a9732c6464e5bb81efb82a2103c7d98f0946f
+
+      - name: Regenerate node2nix
+        run: |
+          cd nix/node2nix
+          nix-shell -p node2nix nodejs_22 --run "node2nix -l package-lock.json"
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet nix/node2nix/; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add nix/node2nix/
+          git commit -m "build(deps): regenerate node2nix"
+          git push

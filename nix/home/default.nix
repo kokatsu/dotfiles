@@ -121,7 +121,7 @@ in {
       ++ [
         # 開発ツール
         bun
-        claude-code
+        # claude-code は nodePackages.package で管理
         gitleaks # シークレット検出
         deno
         docker-compose
@@ -160,6 +160,7 @@ in {
 
         # Git hooks/lint ツール (node2nix)
         nodePackages.nodeDependencies
+        nodePackages.package # CLIバイナリ (claude-code等)
       ]
       ++ lib.optionals (!isCI) [
         # CI ではスキップ (ビルド時間短縮)
