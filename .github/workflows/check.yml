@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 10
     steps:
       # actions/checkout@v4
-      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       # DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/nix-installer-action@ab0a9732c6464e5bb81efb82a2103c7d98f0946f
       # cachix/cachix-action@v15
@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 30
     steps:
       # actions/checkout@v4
-      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       # DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/nix-installer-action@ab0a9732c6464e5bb81efb82a2103c7d98f0946f
       # cachix/cachix-action@v15
@@ -55,7 +55,7 @@ jobs:
     timeout-minutes: 30
     steps:
       # actions/checkout@v4
-      - uses: actions/checkout@064fe7f3312418007dea2b49a19844a9ee378f49
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       # DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/nix-installer-action@ab0a9732c6464e5bb81efb82a2103c7d98f0946f
       # cachix/cachix-action@v15
