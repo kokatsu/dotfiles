@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'nix/node2nix/package.json'
+      - 'nix/node2nix/package-lock.json'
+  workflow_call:
+    secrets:
+      CACHIX_AUTH_TOKEN:
+        required: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

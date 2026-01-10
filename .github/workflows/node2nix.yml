@@ -54,3 +54,9 @@ jobs:
           git add nix/node2nix/
           git commit -m "build(deps): regenerate node2nix"
           git push
+
+  check:
+    needs: regenerate
+    uses: ./.github/workflows/check.yml
+    secrets:
+      CACHIX_AUTH_TOKEN: '${{ secrets.CACHIX_AUTH_TOKEN }}'
