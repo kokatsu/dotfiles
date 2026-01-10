@@ -1044,13 +1044,13 @@
         sha512 = "P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==";
       };
     };
-    "ccusage-17.2.1" = {
+    "ccusage-18.0.5" = {
       name = "ccusage";
       packageName = "ccusage";
-      version = "17.2.1";
+      version = "18.0.5";
       src = fetchurl {
-        url = "https://registry.npmjs.org/ccusage/-/ccusage-17.2.1.tgz";
-        sha512 = "++F9rwk7EHsNyuCfs0D2vHyT/G0kaS3GVHhyh4BJ+dVKm0W4a/Mkld9lXGesgQzMnI6uE0V5RgmB/2Jf8zR7yg==";
+        url = "https://registry.npmjs.org/ccusage/-/ccusage-18.0.5.tgz";
+        sha512 = "bnZrVbGm5h7hIIOH3FZFaDxKgJLLHhWDWIv7/9M6/O373YM6RAwsG9hxZXA1ep+C2ISiNEX6MYVoXgkoSuFf9Q==";
       };
     };
     "chalk-4.1.2" = {
@@ -2799,7 +2799,7 @@
       sources."boundary-2.0.0"
       sources."braces-3.0.3"
       sources."callsites-3.1.0"
-      sources."ccusage-17.2.1"
+      sources."ccusage-18.0.5"
       sources."chalk-5.6.2"
       (sources."cliui-8.0.1"
         // {
