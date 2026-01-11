@@ -99,4 +99,30 @@
         '';
     });
   };
+
+  # k1LoW/deck - Markdown to Google Slides
+  deck = _final: prev: {
+    deck-slides = prev.buildGoModule rec {
+      pname = "deck-slides";
+      version = "1.22.1";
+
+      src = prev.fetchFromGitHub {
+        owner = "k1LoW";
+        repo = "deck";
+        rev = "v${version}";
+        hash = "sha256-3p3/xPtpTtVtNbyJrHyOVbJS4qPea98gFV6u7WSYzWs=";
+      };
+
+      vendorHash = "sha256-ae/WY+CnEMp0HJ5dlaloyEF2kSCRWUkBfIOv5baXxjg=";
+
+      # テストはvendorの不整合でfailするためスキップ
+      doCheck = false;
+
+      meta = with prev.lib; {
+        description = "A tool for creating deck using Markdown and Google Slides";
+        homepage = "https://github.com/k1LoW/deck";
+        license = licenses.mit;
+      };
+    };
+  };
 }
