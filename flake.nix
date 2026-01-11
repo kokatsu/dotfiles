@@ -93,6 +93,7 @@
           nixpkgs.overlays = [
             inputs.neovim-nightly-overlay.overlays.default
             customOverlays.cava-darwin-fix
+            customOverlays.deck
             customOverlays.git-graph-darwin-fix
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
@@ -129,6 +130,7 @@
           overlays =
             [
               inputs.neovim-nightly-overlay.overlays.default
+              customOverlays.deck
               customOverlays.termframe
               customOverlays.vue-language-server-pin
             ]
@@ -160,6 +162,7 @@
           config.allowUnfree = true;
           overlays = [
             inputs.neovim-nightly-overlay.overlays.default
+            customOverlays.deck
             customOverlays.termframe
             customOverlays.vue-language-server-pin
           ];
@@ -181,12 +184,13 @@
           config.allowUnfree = true;
           overlays = [
             inputs.neovim-nightly-overlay.overlays.default
-            customOverlays.termframe
-            customOverlays.vue-language-server-pin
             customOverlays.cava-darwin-fix
+            customOverlays.deck
             customOverlays.git-graph-darwin-fix
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
+            customOverlays.termframe
+            customOverlays.vue-language-server-pin
           ];
         };
         modules = [./nix/home];

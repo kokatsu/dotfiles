@@ -7,6 +7,63 @@ local M = {}
 local default_color = colors.palette.blue
 local zoomed_color = colors.palette.peach
 
+-- プロセス名に応じたアイコンと色の定義
+-- https://zenn.dev/gsy0911/articles/a7347e1a2d8d31
+local nf = wezterm.nerdfonts --[[@as table]]
+
+local process_icons = {
+  ['nvim'] = { icon = nf.linux_neovim, color = colors.palette.green },
+  ['vim'] = { icon = nf.dev_vim, color = colors.palette.green },
+  ['docker'] = { icon = nf.md_docker, color = colors.palette.blue },
+  ['docker-compose'] = { icon = nf.md_docker, color = colors.palette.blue },
+  ['python'] = { icon = nf.dev_python, color = colors.palette.yellow },
+  ['python3'] = { icon = nf.dev_python, color = colors.palette.yellow },
+  ['node'] = { icon = nf.md_nodejs, color = colors.palette.green },
+  ['npm'] = { icon = nf.md_npm, color = colors.palette.red },
+  ['pnpm'] = { icon = nf.md_npm, color = colors.palette.peach },
+  ['deno'] = { icon = nf.seti_typescript, color = colors.palette.yellow },
+  ['bun'] = { icon = nf.md_food_croissant, color = colors.palette.peach },
+  ['git'] = { icon = nf.dev_git, color = colors.palette.peach },
+  ['lazygit'] = { icon = nf.dev_git, color = colors.palette.peach },
+  ['gh'] = { icon = nf.dev_github_badge, color = colors.palette.lavender },
+  ['cargo'] = { icon = nf.dev_rust, color = colors.palette.peach },
+  ['rustc'] = { icon = nf.dev_rust, color = colors.palette.peach },
+  ['go'] = { icon = nf.md_language_go, color = colors.palette.sky },
+  ['kubectl'] = { icon = nf.md_kubernetes, color = colors.palette.blue },
+  ['make'] = { icon = nf.seti_makefile, color = colors.palette.peach },
+  ['nix'] = { icon = nf.linux_nixos, color = colors.palette.sky },
+  ['ssh'] = { icon = nf.md_ssh, color = colors.palette.mauve },
+  ['claude'] = { icon = nf.md_robot_happy, color = colors.palette.peach },
+  ['zsh'] = { icon = nf.dev_terminal, color = colors.palette.text },
+  ['bash'] = { icon = nf.dev_terminal, color = colors.palette.text },
+  ['fish'] = { icon = nf.dev_terminal, color = colors.palette.text },
+}
+
+local default_icon = { icon = nf.md_folder_marker, color = colors.palette.text }
+
+--- プロセス名からアイコンと色を取得する
+---@param pane any
+---@return { icon: string, color: string }
+local function get_process_icon(pane)
+  -- Claude CLIはNode.jsで動作するため、WEZTERM_PROGで判定
+  local wezterm_prog = pane.user_vars and pane.user_vars.WEZTERM_PROG or ''
+  if wezterm_prog:find('claude') then
+    return process_icons['claude']
+  end
+
+  local process_name = pane.foreground_process_name or ''
+  -- パスからプロセス名のみを取得
+  local name = process_name:match('([^/\\]+)$') or ''
+
+  for pattern, icon_info in pairs(process_icons) do
+    if name:find(pattern) then
+      return icon_info
+    end
+  end
+
+  return default_icon
+end
+
 -- https://qiita.com/showchan33/items/c91bb7f6f2b89e9ed57d
 -- 現在のディレクトリ名を取得する
 local function get_cwd_name(pane)
@@ -146,9 +203,13 @@ M.apply = function()
       title = title:sub(1, 13) .. '…'
     end
 
+    -- プロセスに応じたアイコンと色を取得
+    local icon_info = get_process_icon(pane)
+
     -- アクティブ/非アクティブとズーム状態に応じて背景色を変更
     local bg_color
     local fg_color
+    local icon_color
     if tab.is_active then
       -- アクティブタブ
       if tab.active_pane.is_zoomed then
@@ -157,17 +218,20 @@ M.apply = function()
         bg_color = default_color -- ズームしていないとき
       end
       fg_color = colors.palette.crust
+      icon_color = colors.palette.crust -- アクティブ時はアイコンも同じ色
     else
       -- 非アクティブタブ（薄い色）
       bg_color = colors.palette.base
       fg_color = colors.palette.text
+      icon_color = icon_info.color -- 非アクティブ時はプロセスの色
     end
 
     return {
       { Background = { Color = bg_color } },
+      { Foreground = { Color = icon_color } },
+      { Text = ' ' .. icon_info.icon .. ' ' },
       { Foreground = { Color = fg_color } },
-      -- nf-md-folder_marker
-      { Text = ' 󱉭 ' .. title .. ' ' },
+      { Text = title .. ' ' },
     }
   end)
 

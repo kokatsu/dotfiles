@@ -34,6 +34,20 @@ return {
       silent = true,
     },
     {
+      '[B',
+      '<Cmd>BufferMovePrevious<CR>',
+      desc = 'Move Buffer to Previous',
+      mode = 'n',
+      silent = true,
+    },
+    {
+      ']B',
+      '<Cmd>BufferMoveNext<CR>',
+      desc = 'Move Buffer to Next',
+      mode = 'n',
+      silent = true,
+    },
+    {
       ',b',
       '<Cmd>BufferClose<CR>',
       desc = 'Close Buffer',

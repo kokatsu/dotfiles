@@ -165,6 +165,9 @@ in {
       ]
       ++ lib.optionals (!isCI) [
         # CI ではスキップ (ビルド時間短縮)
+        # Go 製パッケージ
+        deck-slides # Markdown → Google Slides
+
         # Rust 製パッケージ
         git-graph
         termframe # ターミナルスクリーンショット (SVG, Nerd Font対応)
