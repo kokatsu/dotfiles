@@ -918,6 +918,15 @@
         sha512 = "E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==";
       };
     };
+    "agent-browser-0.4.3" = {
+      name = "agent-browser";
+      packageName = "agent-browser";
+      version = "0.4.3";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/agent-browser/-/agent-browser-0.4.3.tgz";
+        sha512 = "9CUBHMt9v7NbagALoZsXDQ+Wm1OyLZrDBHBFHV/oM/OCX6759kJm5GJn8sNwMHwBTdUi9Cbc5tjcO43MxP70kg==";
+      };
+    };
     "ajv-8.17.1" = {
       name = "ajv";
       packageName = "ajv";
@@ -1971,6 +1980,15 @@
         sha512 = "JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==";
       };
     };
+    "playwright-core-1.57.0" = {
+      name = "playwright-core";
+      packageName = "playwright-core";
+      version = "1.57.0";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/playwright-core/-/playwright-core-1.57.0.tgz";
+        sha512 = "agTcKlMw/mjBWOnD6kFZttAAGHgi/Nw0CZ2o6JqWSbMlI219lAFLZZCyqByTsvVAJq5XA5H8cA6PrvBRpBWEuQ==";
+      };
+    };
     "pluralize-2.0.0" = {
       name = "pluralize";
       packageName = "pluralize";
@@ -2619,6 +2637,15 @@
         sha512 = "4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ==";
       };
     };
+    "zod-3.25.76" = {
+      name = "zod";
+      packageName = "zod";
+      version = "3.25.76";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/zod/-/zod-3.25.76.tgz";
+        sha512 = "gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==";
+      };
+    };
   };
   args = {
     name = "dotfiles-node-packages";
@@ -2787,6 +2814,7 @@
       sources."@unocss/preset-wind3-66.5.10"
       sources."@unocss/rule-utils-66.5.10"
       sources."JSONStream-1.3.5"
+      sources."agent-browser-0.4.3"
       sources."ajv-8.17.1"
       sources."ansi-escapes-7.2.0"
       sources."ansi-regex-6.2.2"
@@ -2927,6 +2955,7 @@
       sources."path-type-6.0.0"
       sources."picocolors-1.1.1"
       sources."picomatch-2.3.1"
+      sources."playwright-core-1.57.0"
       sources."pluralize-8.0.0"
       sources."postcss-8.5.6"
       sources."postcss-less-6.0.0"
@@ -3013,6 +3042,7 @@
       sources."yargs-17.7.2"
       sources."yargs-parser-21.1.1"
       sources."yocto-queue-1.2.2"
+      sources."zod-3.25.76"
     ];
     buildInputs = globalBuildInputs;
     meta = {

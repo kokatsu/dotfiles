@@ -1,0 +1,18 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "labels": ["dependencies"],
+  "minimumReleaseAge": "1 day",
+  "packageRules": [
+    {
+      "matchFileNames": ["nix/node2nix/package.json"],
+      "groupName": "node2nix packages",
+      "semanticCommitType": "build",
+      "semanticCommitScope": "deps"
+    },
+    {
+      "matchPackageNames": ["@anthropic-ai/claude-code"],
+      "minimumReleaseAge": "0 days"
+    }
+  ]
+}
