@@ -184,6 +184,11 @@ in {
         # macOS専用
         terminal-notifier # macOS通知
       ]
+      ++ lib.optionals (!isDarwin) [
+        # Linux/WSL専用
+        google-chrome
+        noto-fonts-cjk-sans # 日本語フォント
+      ]
       ++ lib.optionals (isDarwin && !isCI) [
         # macOS専用 (CI ではスキップ)
         vscode

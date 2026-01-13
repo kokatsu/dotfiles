@@ -94,7 +94,7 @@
             inputs.neovim-nightly-overlay.overlays.default
             customOverlays.cava-darwin-fix
             customOverlays.deck
-            customOverlays.git-graph-darwin-fix
+            customOverlays.git-graph-fork
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
             customOverlays.termframe
@@ -131,6 +131,7 @@
             [
               inputs.neovim-nightly-overlay.overlays.default
               customOverlays.deck
+              customOverlays.git-graph-fork
               customOverlays.termframe
               customOverlays.vue-language-server-pin
             ]
@@ -138,7 +139,6 @@
               if isCurrentDarwin
               then [
                 customOverlays.cava-darwin-fix
-                customOverlays.git-graph-darwin-fix
                 customOverlays.jp2a-darwin-fix
                 customOverlays.ldc-darwin-fix
               ]
@@ -163,6 +163,7 @@
           overlays = [
             inputs.neovim-nightly-overlay.overlays.default
             customOverlays.deck
+            customOverlays.git-graph-fork
             customOverlays.termframe
             customOverlays.vue-language-server-pin
           ];
@@ -186,7 +187,7 @@
             inputs.neovim-nightly-overlay.overlays.default
             customOverlays.cava-darwin-fix
             customOverlays.deck
-            customOverlays.git-graph-darwin-fix
+            customOverlays.git-graph-fork
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
             customOverlays.termframe

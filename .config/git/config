@@ -4,6 +4,9 @@
 [include]
 path = ../delta/catppuccin.gitconfig
 
+[include]
+path = ./config.local
+
 [alias]
 a = add
 aa = add --all

@@ -23,6 +23,13 @@ alias ee="eza -aahl --icons --git"
 alias lzd="lazydocker"
 
 # ------------------------------------------------------------------------------
+# git-graph (https://github.com/mlange-42/git-graph)
+# Requires: https://github.com/kokatsu/git-graph/tree/feat/current-option
+# ------------------------------------------------------------------------------
+
+alias gg="git-graph --model catppuccin-mocha --style bold --color always --current --max-count 50 --format '%H%d %s'"
+
+# ------------------------------------------------------------------------------
 # Lazygit (https://github.com/jesseduffield/lazygit)
 # ------------------------------------------------------------------------------
 
