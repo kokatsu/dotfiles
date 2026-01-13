@@ -918,13 +918,13 @@
         sha512 = "E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==";
       };
     };
-    "agent-browser-0.4.3" = {
+    "agent-browser-0.4.4" = {
       name = "agent-browser";
       packageName = "agent-browser";
-      version = "0.4.3";
+      version = "0.4.4";
       src = fetchurl {
-        url = "https://registry.npmjs.org/agent-browser/-/agent-browser-0.4.3.tgz";
-        sha512 = "9CUBHMt9v7NbagALoZsXDQ+Wm1OyLZrDBHBFHV/oM/OCX6759kJm5GJn8sNwMHwBTdUi9Cbc5tjcO43MxP70kg==";
+        url = "https://registry.npmjs.org/agent-browser/-/agent-browser-0.4.4.tgz";
+        sha512 = "W4XzR4UjAfqbhxtSeCbdlKWQjQ432FXzTIxMhtDk3Rj9y/E97K9yPB5il4BSr63k8EukDp/UGpu4CCassA1RKw==";
       };
     };
     "ajv-8.17.1" = {
@@ -2814,7 +2814,7 @@
       sources."@unocss/preset-wind3-66.5.10"
       sources."@unocss/rule-utils-66.5.10"
       sources."JSONStream-1.3.5"
-      sources."agent-browser-0.4.3"
+      sources."agent-browser-0.4.4"
       sources."ajv-8.17.1"
       sources."ansi-escapes-7.2.0"
       sources."ansi-regex-6.2.2"
