@@ -24,6 +24,7 @@ return {
       },
     })
   end,
+
   config = function()
     vim.lsp.inlay_hint.enable()
 
@@ -76,6 +77,7 @@ return {
       'vtsls',
       'vue_ls',
       'yamlls',
+      'zls',
     })
   end,
 }
