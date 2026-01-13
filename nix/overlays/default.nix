@@ -62,13 +62,27 @@
     });
   };
 
-  # Fix git-graph build on aarch64-darwin
-  # libz-sys crate can't find zlib.h
-  git-graph-darwin-fix = _final: prev: {
+  # Use forked git-graph with --current option
+  # Also fixes build on aarch64-darwin (libz-sys crate can't find zlib.h)
+  git-graph-fork = _final: prev: let
+    forkedSrc = prev.fetchFromGitHub {
+      owner = "kokatsu";
+      repo = "git-graph";
+      rev = "feat/current-option";
+      hash = "sha256-EllzlOST6rAA0NoYa5AAeI8YpgHPQ1r9M3Imwoceamw=";
+    };
+  in {
     git-graph = prev.git-graph.overrideAttrs (old: {
+      src = forkedSrc;
+      cargoDeps = prev.rustPlatform.fetchCargoVendor {
+        inherit (old) pname;
+        version = "fork";
+        src = forkedSrc;
+        hash = "sha256-a7Jo/kHuQH7OQrzAMY63jFEOPfnYKAb4AW65V5BEfWM=";
+      };
       # Mark as not broken
       meta = old.meta // {broken = false;};
-      # Add zlib to build inputs
+      # Add zlib to build inputs (darwin fix)
       buildInputs = (old.buildInputs or []) ++ [prev.zlib];
       nativeBuildInputs = (old.nativeBuildInputs or []) ++ [prev.pkg-config];
       # Set environment variables for zlib
