@@ -675,94 +675,94 @@
         sha512 = "4TJ3DFtlf1L5LDMaM6CanJ/0lckGNtJcMjQ1NAV6zDmA0tEHKZtxNKin8EgPaVX1YzljbxckyT2tJrpQKAtngQ==";
       };
     };
-    "@secretlint/config-creator-11.2.5" = {
+    "@secretlint/config-creator-11.3.0" = {
       name = "_at_secretlint_slash_config-creator";
       packageName = "@secretlint/config-creator";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/config-creator/-/config-creator-11.2.5.tgz";
-        sha512 = "PR+xh8tK2jMlf+ynjBFq7MVBhQR869HtQWZTCSsRSBHoBQBgeoLmEqrgTgCyAt1KT4mtNs7/ReHmKc3K7G62Yg==";
+        url = "https://registry.npmjs.org/@secretlint/config-creator/-/config-creator-11.3.0.tgz";
+        sha512 = "KyqDEI8Ke1b72ls7enZqMB0bzP9NGHyFKBRbrJGAGEllsS481dWq3Rt7YyGJN+gLWRuNAYGTgWMnp5SUDtYMRA==";
       };
     };
-    "@secretlint/config-loader-11.2.5" = {
+    "@secretlint/config-loader-11.3.0" = {
       name = "_at_secretlint_slash_config-loader";
       packageName = "@secretlint/config-loader";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/config-loader/-/config-loader-11.2.5.tgz";
-        sha512 = "pUiH5xc3x8RLEDq+0dCz65v4kohtfp68I7qmYPuymTwHodzjyJ089ZbNdN1ZX8SZV4xZLQsFIrRLn1lJ55QyyQ==";
+        url = "https://registry.npmjs.org/@secretlint/config-loader/-/config-loader-11.3.0.tgz";
+        sha512 = "yBh+6E/W76Hcwd9/c1JW8EXtgcc+9jZUbUuYXunzDgKCmPT2DizeaDOzfNxy7F/zmE5FTcOvJA37+LLbW6IojQ==";
       };
     };
-    "@secretlint/core-11.2.5" = {
+    "@secretlint/core-11.3.0" = {
       name = "_at_secretlint_slash_core";
       packageName = "@secretlint/core";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/core/-/core-11.2.5.tgz";
-        sha512 = "PZNpBd6+KVya2tA3o1oC2kTWYKju8lZG9phXyQY7geWKf+a+fInN4/HSYfCQS495oyTSjhc9qI0mNQEw83PY2Q==";
+        url = "https://registry.npmjs.org/@secretlint/core/-/core-11.3.0.tgz";
+        sha512 = "/xvwTPW2RDLIsRLfdEPF6jNmRrHOVJqy761lA7zrzqOyQigZn6wZPGph5vLUzXqcaDNDR0NIuq2EAevkwEJbaA==";
       };
     };
-    "@secretlint/formatter-11.2.5" = {
+    "@secretlint/formatter-11.3.0" = {
       name = "_at_secretlint_slash_formatter";
       packageName = "@secretlint/formatter";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/formatter/-/formatter-11.2.5.tgz";
-        sha512 = "9XBMeveo1eKXMC9zLjA6nd2lb5JjUgjj8NUpCo1Il8jO4YJ12k7qXZk3T/QJup+Kh0ThpHO03D9C1xLDIPIEPQ==";
+        url = "https://registry.npmjs.org/@secretlint/formatter/-/formatter-11.3.0.tgz";
+        sha512 = "2mEcbtPHxXtomcUHV6ERM+v8deOMaSV1IG1kZsn/h4G/GiGEOZUULoEeTn8RixHDPCyhBafjPAW8K1Uud9P9vw==";
       };
     };
-    "@secretlint/node-11.2.5" = {
+    "@secretlint/node-11.3.0" = {
       name = "_at_secretlint_slash_node";
       packageName = "@secretlint/node";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/node/-/node-11.2.5.tgz";
-        sha512 = "nPdtUsTzDzBJzFiKh80/H5+2ZRRogtDuHhnNiGtF7LSHp8YsQHU5piAVbESdV0AmUjbWijAjscIsWqvtU+2JUQ==";
+        url = "https://registry.npmjs.org/@secretlint/node/-/node-11.3.0.tgz";
+        sha512 = "HT6eSWmyhxC+kb+UPVInV4EgvyfUk5LSMtCv4DSHulX0yECZ7gKcV+WKYPx4K2cByEk5Fz5r2AnpaUBPyCWdcw==";
       };
     };
-    "@secretlint/profiler-11.2.5" = {
+    "@secretlint/profiler-11.3.0" = {
       name = "_at_secretlint_slash_profiler";
       packageName = "@secretlint/profiler";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/profiler/-/profiler-11.2.5.tgz";
-        sha512 = "evQ2PeO3Ub0apWIPaXJy8lMDO1OFgvgQhZd+MhYLcLHgR559EtJ9V02Sh5c10wTLkLAtJ+czlJg2kmlt0nm8fw==";
+        url = "https://registry.npmjs.org/@secretlint/profiler/-/profiler-11.3.0.tgz";
+        sha512 = "gIic+1HNKFO2XgJVIy7U9++x8vyGTlBcXEYar+4+ZE0U5z6H7ioIQY8c6N1nC0QIhawGv2XRa6WbUViXKpOPXQ==";
       };
     };
-    "@secretlint/resolver-11.2.5" = {
+    "@secretlint/resolver-11.3.0" = {
       name = "_at_secretlint_slash_resolver";
       packageName = "@secretlint/resolver";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/resolver/-/resolver-11.2.5.tgz";
-        sha512 = "Zn9+Gj7cRNjEDX8d1NYZNjTG9/Wjlc8N+JvARFYYYu6JxfbtkabhFxzwxBLkRZ2ZCkPCCnuXJwepcgfVXSPsng==";
+        url = "https://registry.npmjs.org/@secretlint/resolver/-/resolver-11.3.0.tgz";
+        sha512 = "94uyNK6Nq3lu0Q+PIaR8EzzhYrmOTBJn5SVM/V5hafbbQbU0+XLYodTf3aefG2cIDdPy3yNYB66JskHIUZI9Ug==";
       };
     };
-    "@secretlint/secretlint-rule-preset-recommend-11.2.5" = {
+    "@secretlint/secretlint-rule-preset-recommend-11.3.0" = {
       name = "_at_secretlint_slash_secretlint-rule-preset-recommend";
       packageName = "@secretlint/secretlint-rule-preset-recommend";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/secretlint-rule-preset-recommend/-/secretlint-rule-preset-recommend-11.2.5.tgz";
-        sha512 = "FAnp/dPdbvHEw50aF9JMPF/OwW58ULvVXEsk+mXTtBD09VJZhG0vFum8WzxMbB98Eo4xDddGzYtE3g27pBOaQA==";
+        url = "https://registry.npmjs.org/@secretlint/secretlint-rule-preset-recommend/-/secretlint-rule-preset-recommend-11.3.0.tgz";
+        sha512 = "s+FHhtx5dSXSthpgVRQFLiK/nNkeKYh0Bxk6gFcKeWPbE9tCg8zDGGMfQqsUnxvfs6X+LRtEFt5vLnv4PPlnjg==";
       };
     };
-    "@secretlint/source-creator-11.2.5" = {
+    "@secretlint/source-creator-11.3.0" = {
       name = "_at_secretlint_slash_source-creator";
       packageName = "@secretlint/source-creator";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/source-creator/-/source-creator-11.2.5.tgz";
-        sha512 = "+ApoNDS4uIaLb2PG9PPEP9Zu1HDBWpxSd/+Qlb3MzKTwp2BG9sbUhvpGgxuIHFn7pMWQU60DhzYJJUBpbXZEHQ==";
+        url = "https://registry.npmjs.org/@secretlint/source-creator/-/source-creator-11.3.0.tgz";
+        sha512 = "VNPm/oCj93pwZmhXIHLrQHWCCOz/1rYDOSpaY6XRHH+7k/0JcQJaN9q+OIlFXFQfHoStDsJ6ZUWPG637i7oNlQ==";
       };
     };
-    "@secretlint/types-11.2.5" = {
+    "@secretlint/types-11.3.0" = {
       name = "_at_secretlint_slash_types";
       packageName = "@secretlint/types";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@secretlint/types/-/types-11.2.5.tgz";
-        sha512 = "iA7E+uXuiEydOwv8glEYM4tCHnl8C7wTgLxg+3upHhH/iSSnefWfoRqrJwVBhwxPg4MDoypVI7Oal7bX7/ne+w==";
+        url = "https://registry.npmjs.org/@secretlint/types/-/types-11.3.0.tgz";
+        sha512 = "1zv6pILw1LzyJshX8pK3rCvXeW9x/dRJeanVouMhvZUDJtF8friHk1cBtf9FcemK7ZTGly20JxqzUR148b9edg==";
       };
     };
     "@sindresorhus/merge-streams-2.3.0" = {
@@ -2133,13 +2133,13 @@
         sha512 = "5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==";
       };
     };
-    "secretlint-11.2.5" = {
+    "secretlint-11.3.0" = {
       name = "secretlint";
       packageName = "secretlint";
-      version = "11.2.5";
+      version = "11.3.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/secretlint/-/secretlint-11.2.5.tgz";
-        sha512 = "Vumt2+t2QXPYb5Yu3OLXMTq7drshE3fbzGGzUn//S9fMEl9sp053O0C3lhTIOsWeJJegy06xxIKP5s0QSmsEtA==";
+        url = "https://registry.npmjs.org/secretlint/-/secretlint-11.3.0.tgz";
+        sha512 = "O/7kCABalkBAI0qBERoSwihxnP2eZvvms5i/oKnjQIDW0sMXbG188eIxHccQuE4jyoNOl/hdubVETDZgMN3Fow==";
       };
     };
     "semver-7.7.3" = {
@@ -2774,16 +2774,16 @@
       sources."@octokit/tsconfig-1.0.2"
       sources."@octokit/types-9.3.2"
       sources."@quansync/fs-1.0.0"
-      sources."@secretlint/config-creator-11.2.5"
-      sources."@secretlint/config-loader-11.2.5"
-      sources."@secretlint/core-11.2.5"
-      sources."@secretlint/formatter-11.2.5"
-      sources."@secretlint/node-11.2.5"
-      sources."@secretlint/profiler-11.2.5"
-      sources."@secretlint/resolver-11.2.5"
-      sources."@secretlint/secretlint-rule-preset-recommend-11.2.5"
-      sources."@secretlint/source-creator-11.2.5"
-      sources."@secretlint/types-11.2.5"
+      sources."@secretlint/config-creator-11.3.0"
+      sources."@secretlint/config-loader-11.3.0"
+      sources."@secretlint/core-11.3.0"
+      sources."@secretlint/formatter-11.3.0"
+      sources."@secretlint/node-11.3.0"
+      sources."@secretlint/profiler-11.3.0"
+      sources."@secretlint/resolver-11.3.0"
+      sources."@secretlint/secretlint-rule-preset-recommend-11.3.0"
+      sources."@secretlint/source-creator-11.3.0"
+      sources."@secretlint/types-11.3.0"
       sources."@sindresorhus/merge-streams-2.3.0"
       sources."@textlint/ast-node-types-15.5.0"
       (sources."@textlint/linter-formatter-15.5.0"
@@ -2975,7 +2975,7 @@
       sources."resolve-from-5.0.0"
       sources."reusify-1.1.0"
       sources."run-parallel-1.2.0"
-      sources."secretlint-11.2.5"
+      sources."secretlint-11.3.0"
       sources."semver-7.7.3"
       sources."slash-5.1.0"
       sources."slice-ansi-4.0.0"
