@@ -918,13 +918,13 @@
         sha512 = "E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==";
       };
     };
-    "agent-browser-0.4.4" = {
+    "agent-browser-0.5.0" = {
       name = "agent-browser";
       packageName = "agent-browser";
-      version = "0.4.4";
+      version = "0.5.0";
       src = fetchurl {
-        url = "https://registry.npmjs.org/agent-browser/-/agent-browser-0.4.4.tgz";
-        sha512 = "W4XzR4UjAfqbhxtSeCbdlKWQjQ432FXzTIxMhtDk3Rj9y/E97K9yPB5il4BSr63k8EukDp/UGpu4CCassA1RKw==";
+        url = "https://registry.npmjs.org/agent-browser/-/agent-browser-0.5.0.tgz";
+        sha512 = "i0NGFBMwLMk7Q47vkyI8/DNxBmf3t5O+meq25rCJgxl4UbphwbnGamMmB/ZZBLLifXGYcU/joUnFEOxmV691zw==";
       };
     };
     "ajv-8.17.1" = {
@@ -2592,6 +2592,15 @@
         sha512 = "l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==";
       };
     };
+    "ws-8.19.0" = {
+      name = "ws";
+      packageName = "ws";
+      version = "8.19.0";
+      src = fetchurl {
+        url = "https://registry.npmjs.org/ws/-/ws-8.19.0.tgz";
+        sha512 = "blAT2mjOEIi0ZzruJfIhb3nps74PRWTCz1IjglWEEpQl5XS/UNama6u2/rjFkDDouqr4L67ry+1aGIALViWjDg==";
+      };
+    };
     "y18n-5.0.8" = {
       name = "y18n";
       packageName = "y18n";
@@ -2814,7 +2823,7 @@
       sources."@unocss/preset-wind3-66.5.10"
       sources."@unocss/rule-utils-66.5.10"
       sources."JSONStream-1.3.5"
-      sources."agent-browser-0.4.4"
+      sources."agent-browser-0.5.0"
       sources."ajv-8.17.1"
       sources."ansi-escapes-7.2.0"
       sources."ansi-regex-6.2.2"
@@ -3037,6 +3046,7 @@
           ];
         })
       sources."wrappy-1.0.2"
+      sources."ws-8.19.0"
       sources."y18n-5.0.8"
       sources."yaml-2.8.2"
       sources."yargs-17.7.2"
