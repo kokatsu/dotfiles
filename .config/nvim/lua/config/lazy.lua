@@ -44,6 +44,7 @@ require('lazy').setup({
     require('plugins.octo'),
     require('plugins.peek'),
     require('plugins.rustaceanvim'),
+    require('plugins.sidekick'),
     require('plugins.snacks'),
     require('plugins.swagger-preview'),
     require('plugins.typescript-tools'),
