@@ -44,6 +44,18 @@ in {
 
     packages = with pkgs;
       [
+        # agent-browser: node2nixのバイナリパスを修正するラッパー (hiPrioで競合解決)
+        (lib.hiPrio (writeShellScriptBin "agent-browser" ''
+          exec ${nodePackages.nodeDependencies}/lib/node_modules/agent-browser/bin/agent-browser-${
+            if stdenv.isDarwin
+            then "darwin"
+            else "linux"
+          }-${
+            if stdenv.hostPlatform.isAarch64
+            then "arm64"
+            else "x64"
+          } "$@"
+        ''))
         # ランタイム (グローバルデフォルト)
         go
         nodejs_24
@@ -87,6 +99,7 @@ in {
         wget
         xleak # Excel TUI viewer
         yazi
+        zellij # ターミナルマルチプレクサ
         zimfw # Zsh framework
 
         # メディア/画像処理

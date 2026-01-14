@@ -59,6 +59,7 @@ return {
 
     vim.lsp.enable({
       'biome',
+      'copilot',
       'cssmodules_ls',
       'denols',
       'dockerls',
