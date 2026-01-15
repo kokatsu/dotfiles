@@ -13,6 +13,10 @@
     {
       "matchPackageNames": ["@anthropic-ai/claude-code"],
       "minimumReleaseAge": "0 days"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "minimumReleaseAge": "7 days"
     }
   ]
 }
