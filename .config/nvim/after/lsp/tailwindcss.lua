@@ -23,4 +23,11 @@ return {
     'typescriptreact',
     'vue',
   },
+  settings = {
+    tailwindCSS = {
+      files = {
+        exclude = { '**/result/**' },
+      },
+    },
+  },
 }
