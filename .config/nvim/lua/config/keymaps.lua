@@ -35,7 +35,7 @@ vim.keymap.set('n', 'gh', vim.lsp.buf.hover, {
   silent = true,
 })
 
-vim.keymap.set('n', '<leader>p', function()
+vim.keymap.set('n', '<leader>yp', function()
   local absolute_path = vim.fn.expand('%:p')
 
   -- 現在の作業ディレクトリ（Neovimで開いている箇所）からの相対パスを取得

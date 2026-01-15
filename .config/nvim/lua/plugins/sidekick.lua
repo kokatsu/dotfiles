@@ -9,6 +9,12 @@ return {
         backend = 'zellij',
         enabled = true,
       },
+      win = {
+        layout = 'bottom',
+        split = {
+          height = 20,
+        },
+      },
     },
   },
   keys = {
