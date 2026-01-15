@@ -20,7 +20,13 @@
     "${config.xdg.configHome}/zsh/linux.zsh".source = ../../../.config/zsh/linux.zsh;
     "${config.xdg.configHome}/zsh/wezterm-integration.sh".source = ../../../.config/zsh/wezterm-integration.sh;
 
-    # .zshenv - Nix環境とZDOTDIR設定
+    # $ZDOTDIR/.zshenv - ZDOTDIRが既に設定されている場合に読み込まれる
+    "${config.xdg.configHome}/zsh/.zshenv".text = ''
+      # /etc/zsh/zshrc の compinit をスキップ
+      skip_global_compinit=1
+    '';
+
+    # ~/.zshenv - Nix環境とZDOTDIR設定
     ".zshenv".text = ''
       # /etc/zshrcをスキップ (nix-darwinが生成するcompinit呼び出しを回避)
       # Zimfwのcompletionモジュールが補完を管理する
