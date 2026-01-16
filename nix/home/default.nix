@@ -268,7 +268,12 @@ in {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
         force = true;
       };
-      ".config/gh/config.yml".source = ../../.config/gh/config.yml;
+      # gh: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
+      # hosts.yml は gh auth login で動的に作成されるため、ディレクトリではなくファイル単位でリンク
+      ".config/gh/config.yml" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/gh/config.yml";
+        force = true;
+      };
       ".config/helix".source = ../../.config/helix;
       ".config/lazydocker".source = ../../.config/lazydocker;
       ".config/lazygit".source = ../../.config/lazygit;
@@ -323,23 +328,10 @@ in {
       fi
     '';
 
-    # gh ディレクトリを書き込み可能にする
-    # config.yml をコピーし、hosts.yml を gh auth login で作成できるようにする
+    # gh ディレクトリを作成
+    # config.yml は mkOutOfStoreSymlink で管理、hosts.yml は gh auth login で動的に作成される
     fixGhDirectory = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      if [ -L "$HOME/.config/gh" ]; then
-        GH_TARGET=$(readlink "$HOME/.config/gh")
-        $DRY_RUN_CMD rm "$HOME/.config/gh"
-        $DRY_RUN_CMD mkdir -p "$HOME/.config/gh"
-        if [ -f "$GH_TARGET/config.yml" ]; then
-          $DRY_RUN_CMD cp "$GH_TARGET/config.yml" "$HOME/.config/gh/config.yml"
-          $DRY_RUN_CMD chmod u+w "$HOME/.config/gh/config.yml"
-        fi
-      elif [ -L "$HOME/.config/gh/config.yml" ]; then
-        CONFIG_TARGET=$(readlink "$HOME/.config/gh/config.yml")
-        $DRY_RUN_CMD rm "$HOME/.config/gh/config.yml"
-        $DRY_RUN_CMD cp "$CONFIG_TARGET" "$HOME/.config/gh/config.yml"
-        $DRY_RUN_CMD chmod u+w "$HOME/.config/gh/config.yml"
-      fi
+      $DRY_RUN_CMD mkdir -p "$HOME/.config/gh"
     '';
 
     # btop ディレクトリを書き込み可能にする (btopが設定を書き込むため)

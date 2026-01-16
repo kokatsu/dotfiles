@@ -10,6 +10,14 @@ edit = [
   { run = 'nvim "$@"', block = true, for = "unix" },
 ]
 
+[[plugin.prepend_previewers]]
+url = "*.ans"
+run = "ansi-preview"
+
+[[plugin.prepend_previewers]]
+url = "*.ansi"
+run = "ansi-preview"
+
 [[plugin.prepend_fetchers]]
 id   = "git"
 name = "*"

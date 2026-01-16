@@ -18,6 +18,11 @@ use = "yazi-rs/plugins:smart-filter"
 rev = "4e55902"
 hash = "407d19bc4fb46eff5fa8ff8337644847"
 
+[[plugin.deps]]
+use = "kokatsu/ansi-preview"
+rev = "865f404"
+hash = "7e4e530590e332611504df0b8c5821cc"
+
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
 rev = "3edeb49"
