@@ -96,6 +96,7 @@ in {
         scc # コード統計
         termshot # ターミナルスクリーンショット (PNG)
         tig # Git TUI
+        treemd # Markdown navigator TUI
         tree-sitter # Treesitter CLI (nvim-treesitter パーサービルド用)
         vivid
         w3m # テキストブラウザ
@@ -292,6 +293,7 @@ in {
       ".config/lazygit".source = ../../.config/lazygit;
       ".config/readline".source = ../../.config/readline;
       ".config/termframe".source = ../../.config/termframe;
+      ".config/treemd".source = ../../.config/treemd; # XDG_CONFIG_HOME で解決
     };
   };
 

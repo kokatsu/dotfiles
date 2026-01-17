@@ -70,6 +70,10 @@ ghostty/backgrounds/
 !termframe/
 !termframe/**
 
+# treemd (https://github.com/Epistates/treemd)
+!treemd/
+!treemd/**
+
 # WezTerm (https://github.com/wezterm/wezterm)
 !wezterm/
 !wezterm/**
