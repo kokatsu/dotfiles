@@ -45,13 +45,13 @@
         sha512 = "qT2iHKbYwp9gN0LvS8Nc44yNg8MZFpXOc/c3nB8FsZDmqOr1LCUQaXXT65MBPIl3DY/Isuv8hhitBt7cP3LnxQ==";
       };
     };
-    "@anthropic-ai/claude-code-2.1.9" = {
+    "@anthropic-ai/claude-code-2.1.11" = {
       name = "_at_anthropic-ai_slash_claude-code";
       packageName = "@anthropic-ai/claude-code";
-      version = "2.1.9";
+      version = "2.1.11";
       src = fetchurl {
-        url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-2.1.9.tgz";
-        sha512 = "ViGb9RoAQ8l+X5e0egsH64xGi7zHvlNgwx/Lwxez24XgfJSYa+cyjpVX7cSDlBfMb1uXXTDNbpo2RicmvP/BKg==";
+        url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-2.1.11.tgz";
+        sha512 = "xzvec3UloduvaCK5zfvtkIYaJHQk508enF2d8+T9+w148cyMU/ZZ0+Izj77oSan8MR4lXKTghflYQBWhf+FEfg==";
       };
     };
     "@azu/format-text-1.0.2" = {
@@ -2723,7 +2723,7 @@
         })
       sources."@actions/languageservice-0.3.27"
       sources."@actions/workflow-parser-0.3.27"
-      sources."@anthropic-ai/claude-code-2.1.9"
+      sources."@anthropic-ai/claude-code-2.1.11"
       sources."@azu/format-text-1.0.2"
       sources."@azu/style-format-1.0.1"
       sources."@babel/code-frame-7.27.1"
