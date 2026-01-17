@@ -9,18 +9,22 @@ return {
 
     -- mini.ai: テキストオブジェクト拡張
     local ai = require('mini.ai')
+    local gen_spec = ai.gen_spec
     ai.setup({
       n_lines = 500,
       custom_textobjects = {
         -- Treesitterベースのテキストオブジェクト
-        f = ai.gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }),
-        c = ai.gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }),
-        a = ai.gen_spec.treesitter({ a = '@parameter.outer', i = '@parameter.inner' }),
-        o = ai.gen_spec.treesitter({
+        f = gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }),
+        c = gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }),
+        -- 'a' は built-in の argument textobject と競合するため 'p' (parameter) を使用
+        p = gen_spec.treesitter({ a = '@parameter.outer', i = '@parameter.inner' }),
+        o = gen_spec.treesitter({
           a = { '@conditional.outer', '@loop.outer' },
           i = { '@conditional.inner', '@loop.inner' },
         }),
       },
+      -- 無効なテキストオブジェクトのエラーメッセージを抑制
+      silent = true,
     })
 
     local gen_loader = require('mini.snippets').gen_loader
