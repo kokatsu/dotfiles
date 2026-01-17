@@ -24,6 +24,9 @@ return {
         'vim',
         'vue',
       },
+      highlight = {
+        enable = true,
+      },
     })
 
     -- Treesitterハイライトを全ファイルタイプで有効化
