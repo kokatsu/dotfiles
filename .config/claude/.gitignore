@@ -1,4 +1,7 @@
-# settings.json以外を除外
 *
+
+!skills/
+!skills/**
+
 !.gitignore
 !settings.json

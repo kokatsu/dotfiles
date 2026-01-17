@@ -63,6 +63,9 @@ in {
         stablePkgs.ruby_3_1 # nixpkgs-stable (24.05) から取得
         rustup
 
+        # Playwright (ブラウザ自動化)
+        playwright-driver
+
         # CLIツール
         fontconfig # フォント管理 (fc-list等)
         _7zz # 7-Zip アーカイバ
@@ -212,20 +215,29 @@ in {
         inputs.wezterm.packages.${system}.default
       ];
 
-    sessionVariables = {
-      EDITOR = "nvim";
-      VISUAL = "nvim";
-      XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
-      ZDOTDIR = "${config.xdg.configHome}/zsh";
-      BAT_CONFIG_DIR = "${config.xdg.configHome}/bat";
-      CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
-      PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
-      RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
-      INPUTRC = "${config.xdg.configHome}/readline/inputrc";
-      TERMFRAME_CONFIG = "${config.xdg.configHome}/termframe/config.toml";
-      # node2nix でインストールした npm パッケージを解決するため
-      NODE_PATH = "${nodePackages.nodeDependencies}/lib/node_modules";
-    };
+    sessionVariables =
+      {
+        EDITOR = "nvim";
+        VISUAL = "nvim";
+        XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
+        ZDOTDIR = "${config.xdg.configHome}/zsh";
+        BAT_CONFIG_DIR = "${config.xdg.configHome}/bat";
+        CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
+        PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
+        RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
+        INPUTRC = "${config.xdg.configHome}/readline/inputrc";
+        TERMFRAME_CONFIG = "${config.xdg.configHome}/termframe/config.toml";
+        # node2nix でインストールした npm パッケージを解決するため
+        NODE_PATH = "${nodePackages.nodeDependencies}/lib/node_modules";
+        # Playwright ブラウザパス (Nix管理)
+        PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
+      }
+      // lib.optionalAttrs isDarwin {
+        # LDC (D言語コンパイラ) とNix clang-wrapperの互換性のため
+        # arm64-apple-darwinトリプルを指定してcc-wrapperとの不一致警告を回避
+        DFLAGS = "-mtriple=arm64-apple-darwin";
+      };
 
     # .config へのシンボリックリンク
     file = {
@@ -241,6 +253,7 @@ in {
         force = true;
       };
       ".config/claude/settings.json".source = ../../.config/claude/settings.json;
+      ".config/claude/skills".source = ../../.config/claude/skills;
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/git-graph".source = ../../.config/git-graph;
@@ -332,6 +345,26 @@ in {
     # config.yml は mkOutOfStoreSymlink で管理、hosts.yml は gh auth login で動的に作成される
     fixGhDirectory = lib.hm.dag.entryAfter ["linkGeneration"] ''
       $DRY_RUN_CMD mkdir -p "$HOME/.config/gh"
+    '';
+
+    # Playwright ブラウザを Nix store からシンボリックリンク (agent-browser 用)
+    # agent-browser は PLAYWRIGHT_BROWSERS_PATH を無視するため、デフォルトパスにリンクを作成
+    setupPlaywrightBrowsers = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      PLAYWRIGHT_CACHE="${
+        if isDarwin
+        then "$HOME/Library/Caches/ms-playwright"
+        else "$HOME/.cache/ms-playwright"
+      }"
+      PLAYWRIGHT_BROWSERS="${pkgs.playwright-driver.browsers}"
+      $DRY_RUN_CMD mkdir -p "$PLAYWRIGHT_CACHE"
+      for browser in "$PLAYWRIGHT_BROWSERS"/*; do
+        name=$(basename "$browser")
+        target="$PLAYWRIGHT_CACHE/$name"
+        if [ -L "$target" ]; then
+          $DRY_RUN_CMD rm "$target"
+        fi
+        $DRY_RUN_CMD ln -sf "$browser" "$target"
+      done
     '';
 
     # btop ディレクトリを書き込み可能にする (btopが設定を書き込むため)

@@ -74,3 +74,7 @@ vim.opt.signcolumn = 'yes'
 -- スクロール時の余白
 vim.opt.scrolloff = 8
 vim.opt.sidescrolloff = 8
+
+-- CursorHold等のイベント発火までの待機時間（デフォルト4000ms）
+-- 外部ツールによるファイル変更の検知を速くするため短く設定
+vim.opt.updatetime = 300
