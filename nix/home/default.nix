@@ -3,7 +3,6 @@
   lib,
   config,
   inputs,
-  self,
   nodePackages,
   stablePkgs,
   dotfilesDir ? "",
@@ -315,31 +314,17 @@ in {
       $DRY_RUN_CMD ${pkgs.systemd}/bin/systemctl --user mask --now pulseaudio.service pulseaudio.socket 2>/dev/null || true
     '');
 
-    setupNvimAssets = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      # Create a separate nvim-assets directory that's not managed by Nix
-      if [ -d "${self}/.config/nvim/assets" ]; then
-        $DRY_RUN_CMD mkdir -p "$HOME/.config/nvim-assets"
-        $DRY_RUN_CMD cp -r "${self}/.config/nvim/assets/"* "$HOME/.config/nvim-assets/" 2>/dev/null || true
-      fi
-    '';
-
-    # WezTerm backgrounds をコピー (git管理外の画像ファイル)
-    setupWeztermBackgrounds = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      DOTFILES_BACKGROUNDS="${dotfilesDir}/.config/wezterm/backgrounds"
-      TARGET_BACKGROUNDS="$HOME/.config/wezterm/backgrounds"
-      if [ -d "$DOTFILES_BACKGROUNDS" ]; then
-        $DRY_RUN_CMD mkdir -p "$TARGET_BACKGROUNDS"
-        $DRY_RUN_CMD cp -r "$DOTFILES_BACKGROUNDS/"* "$TARGET_BACKGROUNDS/" 2>/dev/null || true
-      fi
-    '';
-
-    # Ghostty backgrounds をコピー (git管理外の画像ファイル)
-    setupGhosttyBackgrounds = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      DOTFILES_BACKGROUNDS="${dotfilesDir}/.config/ghostty/backgrounds"
-      TARGET_BACKGROUNDS="$HOME/.config/ghostty/backgrounds"
-      if [ -d "$DOTFILES_BACKGROUNDS" ]; then
-        $DRY_RUN_CMD mkdir -p "$TARGET_BACKGROUNDS"
-        $DRY_RUN_CMD cp -r "$DOTFILES_BACKGROUNDS/"* "$TARGET_BACKGROUNDS/" 2>/dev/null || true
+    # メディアファイル (背景画像、ロゴ) をコピー (git管理外)
+    setupAssets = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      SOURCE="${dotfilesDir}/.config/assets"
+      TARGET="$HOME/.config/assets"
+      if [ -d "$SOURCE" ]; then
+        $DRY_RUN_CMD mkdir -p "$TARGET/backgrounds" "$TARGET/logos"
+        for subdir in backgrounds logos; do
+          if [ -d "$SOURCE/$subdir" ]; then
+            $DRY_RUN_CMD cp -r "$SOURCE/$subdir/"* "$TARGET/$subdir/" 2>/dev/null || true
+          fi
+        done
       fi
     '';
 

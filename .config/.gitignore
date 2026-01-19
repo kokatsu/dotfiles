@@ -1,6 +1,10 @@
 *
 !.gitignore
 
+# Assets (メディアファイル一元管理)
+!assets/
+!assets/**
+
 # bat (https://github.com/sharkdp/bat)
 !bat/
 !bat/**
@@ -36,7 +40,6 @@
 # Ghostty (https://github.com/ghostty-org/ghostty)
 !ghostty/
 !ghostty/**
-ghostty/backgrounds/
 
 # helix (https://github.com/helix-editor/helix)
 !helix/

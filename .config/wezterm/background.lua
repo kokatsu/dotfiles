@@ -21,7 +21,7 @@ local base_background = {
   height = '100%',
 }
 
-local backgrounds_dir = wezterm.config_dir .. '/backgrounds'
+local backgrounds_dir = wezterm.home_dir .. '/.config/assets/backgrounds'
 
 -- local background_gif = backgrounds_dir .. '/background.gif'
 -- local gif_background = nil
