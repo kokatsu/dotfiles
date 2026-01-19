@@ -57,7 +57,7 @@ return {
       end
     end, { desc = 'Restart LSP clients attached to current buffer' })
 
-    vim.lsp.enable({
+    local servers = {
       'biome',
       'copilot',
       'cssmodules_ls',
@@ -70,7 +70,6 @@ return {
       'lua_ls',
       'nixd',
       'postgres_lsp',
-      'ruby_lsp',
       'svelte',
       'tailwindcss',
       'taplo',
@@ -79,6 +78,13 @@ return {
       'vue_ls',
       'yamlls',
       'zls',
-    })
+    }
+
+    -- Conditionally enable ruby_lsp if executable
+    if vim.fn.executable('ruby-lsp') == 1 then
+      table.insert(servers, 'ruby_lsp')
+    end
+
+    vim.lsp.enable(servers)
   end,
 }
