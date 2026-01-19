@@ -181,6 +181,10 @@ in {
       ]
       ++ lib.optionals (!isCI) [
         # CI ではスキップ (ビルド時間短縮)
+        # Tree-sitter Language Server (埋め込み言語対応)
+        # doCheck = false: Nixサンドボックス内でgitが利用できずテストが失敗するため
+        (inputs.kakehashi.packages.${system}.default.overrideAttrs (_: {doCheck = false;}))
+
         # Go 製パッケージ
         deck-slides # Markdown → Google Slides
 
