@@ -18,6 +18,20 @@ vim.api.nvim_create_autocmd({ 'WinEnter', 'FocusGained', 'BufEnter', 'CursorHold
   command = 'checktime',
 })
 
+-- 外部でファイルが変更された後、LSPに変更を通知して診断を更新
+-- Claude Code等の外部ツールによる変更後にrust-analyzer等の診断を反映させる
+vim.api.nvim_create_autocmd('FileChangedShellPost', {
+  pattern = '*',
+  callback = function()
+    -- LSPクライアントにバッファの変更を通知
+    local clients = vim.lsp.get_clients({ bufnr = 0 })
+    for _, client in ipairs(clients) do
+      local params = vim.lsp.util.make_text_document_params()
+      client:notify('textDocument/didSave', params)
+    end
+  end,
+})
+
 local os_utils = require('utils.os')
 
 -- WSLの場合はInsertモードから離れる時にzenhanを実行
