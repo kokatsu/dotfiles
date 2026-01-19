@@ -67,6 +67,7 @@ return {
       'gh_actions_ls',
       'html',
       'jsonls',
+      'kakehashi',
       'lua_ls',
       'nixd',
       'postgres_lsp',
