@@ -2,6 +2,9 @@
 
 ---@type vim.lsp.Config
 local yamlls_config = {
+  -- Override default filetypes to fix checkhealth warnings
+  -- (nvim-lspconfig defaults include invalid 'yaml.docker-compose', 'yaml.gitlab', 'yaml.helm-values')
+  filetypes = { 'yaml' },
   settings = {
     yaml = {
       schemas = {

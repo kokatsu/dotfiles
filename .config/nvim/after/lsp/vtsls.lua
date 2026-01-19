@@ -1,8 +1,7 @@
--- vue_ls は TypeScript サポートのために vtsls を必要とする
--- vue-language-server 3.0.8 は @vue/typescript-plugin との互換性がないため、
--- globalPlugins は設定せず、vue_ls の組み込み TypeScript サポートを使用
+-- vue_ls は hybridMode = false で独自に TypeScript を処理するため、
+-- vtsls は vue ファイルタイプを除外
+-- Svelte は svelte-language-server が TypeScript を処理
 local tsserver_filetypes = {
-  'vue',
   'svelte',
 }
 
