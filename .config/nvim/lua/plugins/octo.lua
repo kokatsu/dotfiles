@@ -8,12 +8,15 @@ return {
     'nvim-tree/nvim-web-devicons',
   },
   keys = {
+    { '<leader>on', '<cmd>Octo pr create<cr>', desc = 'PR Create' },
     { '<leader>op', '<cmd>Octo pr list<cr>', desc = 'PR List' },
     { '<leader>os', '<cmd>Octo pr search<cr>', desc = 'PR Search' },
     { '<leader>oc', '<cmd>Octo pr changes<cr>', desc = 'PR Changes' },
     { '<leader>od', '<cmd>Octo pr diff<cr>', desc = 'PR Diff' },
     { '<leader>or', '<cmd>Octo review start<cr>', desc = 'Start Review' },
     { '<leader>oR', '<cmd>Octo review submit<cr>', desc = 'Submit Review' },
+    { '<leader>oi', '<cmd>Octo issue create<cr>', desc = 'Issue Create' },
+    { '<leader>ol', '<cmd>Octo issue list<cr>', desc = 'Issue List' },
   },
   opts = {
     suppress_missing_scope = {

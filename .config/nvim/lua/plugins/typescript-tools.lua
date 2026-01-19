@@ -9,7 +9,24 @@ return {
     'typescript',
     'typescriptreact',
   },
+  keys = {
+    { '<leader>to', '<cmd>TSToolsOrganizeImports<cr>', desc = 'Organize imports' },
+    { '<leader>ta', '<cmd>TSToolsAddMissingImports<cr>', desc = 'Add missing imports' },
+    { '<leader>tr', '<cmd>TSToolsRemoveUnused<cr>', desc = 'Remove unused' },
+    { '<leader>tF', '<cmd>TSToolsFixAll<cr>', desc = 'Fix all' },
+    { '<leader>td', '<cmd>TSToolsGoToSourceDefinition<cr>', desc = 'Go to source definition' },
+    { '<leader>tR', '<cmd>TSToolsRenameFile<cr>', desc = 'Rename file' },
+    { '<leader>tf', '<cmd>TSToolsFileReferences<cr>', desc = 'File references' },
+  },
   opts = {
+    -- Override default filetypes to fix checkhealth warnings
+    -- (plugin defaults include invalid 'javascript.jsx' and 'typescript.tsx')
+    filetypes = {
+      'javascript',
+      'javascriptreact',
+      'typescript',
+      'typescriptreact',
+    },
     expose_as_code_action = 'all',
     complete_function_calls = true,
     include_completions_with_insert_text = true,

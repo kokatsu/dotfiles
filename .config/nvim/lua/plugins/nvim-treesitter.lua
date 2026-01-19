@@ -4,29 +4,26 @@ return {
   'nvim-treesitter/nvim-treesitter',
   build = ':TSUpdate',
   config = function()
-    require('nvim-treesitter').setup({
-      auto_install = true,
-      ensure_installed = {
-        'css',
-        'html',
-        'javascript',
-        'json',
-        'lua',
-        'markdown',
-        'markdown_inline',
-        'mermaid',
-        'rust',
-        'scss',
-        'sql',
-        'svelte',
-        'tsx',
-        'typescript',
-        'vim',
-        'vue',
-      },
-      highlight = {
-        enable = true,
-      },
+    require('nvim-treesitter').setup({})
+
+    -- パーサーのインストール
+    require('nvim-treesitter').install({
+      'css',
+      'html',
+      'javascript',
+      'json',
+      'lua',
+      'markdown',
+      'markdown_inline',
+      'mermaid',
+      'rust',
+      'scss',
+      'sql',
+      'svelte',
+      'tsx',
+      'typescript',
+      'vim',
+      'vue',
     })
 
     -- Treesitterハイライトを全ファイルタイプで有効化
