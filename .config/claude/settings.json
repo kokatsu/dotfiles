@@ -1,9 +1,19 @@
 {
+  "permissions": {
+    "deny": [
+      "Read(**/node_modules/**)",
+      "Read(**/dist/**)",
+      "Read(**/build/**)",
+      "Read(**/.next/**)",
+      "Read(**/coverage/**)"
+    ]
+  },
   "enabledPlugins": {
     "frontend-design@claude-code-plugins": true
   },
   "alwaysThinkingEnabled": true,
   "includeCoAuthoredBy": false,
+  "respectGitignore": false,
   "statusLine": {
     "type": "command",
     "command": "bun x ccusage statusline",
