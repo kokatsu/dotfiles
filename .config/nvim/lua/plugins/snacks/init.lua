@@ -68,7 +68,7 @@ return {
       desc = 'Lazygit',
     },
     {
-      '<leader>t',
+      '<leader>T',
       function()
         Snacks.terminal()
       end,
@@ -122,6 +122,21 @@ return {
         Snacks.profiler.scratch()
       end,
       desc = 'Profiler Scratch',
+    },
+    -- Call Hierarchy
+    {
+      '<leader>ci',
+      function()
+        Snacks.picker.lsp_incoming_calls()
+      end,
+      desc = 'Incoming Calls',
+    },
+    {
+      '<leader>co',
+      function()
+        Snacks.picker.lsp_outgoing_calls()
+      end,
+      desc = 'Outgoing Calls',
     },
   },
 }
