@@ -4,8 +4,8 @@ return {
   'folke/lazydev.nvim',
   ft = 'lua',
   dependencies = {
-    -- https://github.com/gonstoll/wezterm-types
-    { 'gonstoll/wezterm-types', lazy = true },
+    -- https://github.com/justinsgithub/wezterm-types
+    { 'justinsgithub/wezterm-types', lazy = true },
   },
   opts = {
     library = {
