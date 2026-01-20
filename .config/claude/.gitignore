@@ -1,5 +1,8 @@
 *
 
+!rules/
+!rules/**
+
 !skills/
 !skills/**
 
