@@ -8,6 +8,7 @@ return {
 
     -- パーサーのインストール
     require('nvim-treesitter').install({
+      'bash',
       'css',
       'html',
       'javascript',
@@ -16,6 +17,7 @@ return {
       'markdown',
       'markdown_inline',
       'mermaid',
+      'ruby',
       'rust',
       'scss',
       'sql',
@@ -24,6 +26,7 @@ return {
       'typescript',
       'vim',
       'vue',
+      'yaml',
     })
 
     -- Treesitterハイライトを全ファイルタイプで有効化
