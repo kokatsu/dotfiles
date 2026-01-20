@@ -1,4 +1,5 @@
-local wezterm = require('wezterm') --[[@as Wezterm]]
+---@diagnostic disable-next-line: assign-type-mismatch
+local wezterm = require('wezterm') ---@type Wezterm
 local act = wezterm.action
 
 wezterm.on('maximize-window', function(window, _)
@@ -234,6 +235,7 @@ local copy_mode = {
   { key = 'o', mods = 'NONE', action = act.CopyMode('MoveToSelectionOtherEnd') },
   { key = 'O', mods = 'NONE', action = act.CopyMode('MoveToSelectionOtherEndHoriz') },
   -- ジャンプを繰り返す
+  ---@diagnostic disable-next-line: param-type-mismatch
   { key = ';', mods = 'NONE', action = act.CopyMode('JumpAgain') },
   -- 単語ごと移動
   { key = 'w', mods = 'NONE', action = act.CopyMode('MoveForwardWord') },
@@ -271,6 +273,7 @@ local copy_mode = {
   {
     key = 'Enter',
     mods = 'NONE',
+    ---@diagnostic disable-next-line: missing-fields
     action = act.Multiple({ { CopyTo = 'ClipboardAndPrimarySelection' }, { CopyMode = 'Close' } }),
   },
   { key = 'Escape', mods = 'NONE', action = act.CopyMode('Close') },
