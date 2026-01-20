@@ -1,4 +1,5 @@
-local wezterm = require('wezterm') --[[@as Wezterm]]
+---@diagnostic disable-next-line: assign-type-mismatch
+local wezterm = require('wezterm') ---@type Wezterm
 
 local is_windows = wezterm.target_triple == 'x86_64-pc-windows-msvc'
 local is_mac = wezterm.target_triple == 'x86_64-apple-darwin' or wezterm.target_triple == 'aarch64-apple-darwin'
@@ -24,6 +25,7 @@ config.use_dead_keys = false
 config.use_fancy_tab_bar = false
 config.use_ime = true
 config.window_decorations = 'RESIZE'
+config.hide_tab_bar_if_only_one_tab = true
 
 -- https://stackoverflow.com/questions/78738575/how-to-maximize-wezterm-on-startup
 wezterm.on('gui-startup', function(cmd)

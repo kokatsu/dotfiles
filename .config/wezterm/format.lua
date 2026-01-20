@@ -1,4 +1,5 @@
-local wezterm = require('wezterm') --[[@as Wezterm]]
+---@diagnostic disable-next-line: assign-type-mismatch
+local wezterm = require('wezterm') ---@type Wezterm
 
 local colors = require('colors')
 
