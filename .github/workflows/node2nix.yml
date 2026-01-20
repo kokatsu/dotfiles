@@ -27,7 +27,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # DeterminateSystems/nix-installer-action@main
-      - uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
+      - uses: DeterminateSystems/nix-installer-action@58e64ed13a4f3f90ba0cba819752b6df4b548da8
 
       - name: Regenerate node2nix
         run: |
