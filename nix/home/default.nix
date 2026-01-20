@@ -258,6 +258,7 @@ in {
       };
       ".config/claude/settings.json".source = ../../.config/claude/settings.json;
       ".config/claude/skills".source = ../../.config/claude/skills;
+      ".config/claude/rules".source = ../../.config/claude/rules;
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/git-graph".source = ../../.config/git-graph;
@@ -301,6 +302,13 @@ in {
   };
 
   xdg.enable = true;
+
+  # 不要なNixストアを自動削除 (週1回、7日以上前のものを削除)
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
 
   programs.home-manager.enable = true;
 

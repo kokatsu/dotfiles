@@ -1,0 +1,40 @@
+gui:
+  scrollHeight: 2
+  language: "auto"
+  sidePanelWidth: 0.333
+  expandFocusedSidePanel: false
+  screenMode: "normal"
+  returnImmediately: false
+  wrapMainPanel: true
+
+logs:
+  timestamps: true
+  since: "60m"
+  tail: "300"
+
+commandTemplates:
+  dockerCompose: "docker compose"
+  restartPolicy: "unless-stopped"
+
+customCommands:
+  containers:
+    - name: "shell (bash)"
+      attach: true
+      command: "docker exec -it {{ .Container.ID }} bash"
+      serviceNames: []
+    - name: "shell (sh)"
+      attach: true
+      command: "docker exec -it {{ .Container.ID }} sh"
+      serviceNames: []
+    - name: "view logs (last 100)"
+      command: "docker logs --tail 100 {{ .Container.ID }}"
+      serviceNames: []
+
+stats:
+  graphs:
+    - caption: "CPU (%)"
+      statPath: "DerivedStats.CPUPercentage"
+      color: "cyan"
+    - caption: "Memory (%)"
+      statPath: "DerivedStats.MemoryPercentage"
+      color: "green"

@@ -1,0 +1,115 @@
+# Lazygit Configuration
+# https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md
+
+gui:
+  showRandomTip: false
+  showBottomLine: false
+  showCommandLog: false
+  scrollHeight: 10
+  scrollPastBottom: true
+  sidePanelWidth: 0.3333
+  expandFocusedSidePanel: true
+  mainPanelSplitMode: flexible
+  showIcons: true
+  nerdFontsVersion: "3"
+  theme:
+    activeBorderColor:
+      - "#fab387"
+      - bold
+    inactiveBorderColor:
+      - "#a6adc8"
+    optionsTextColor:
+      - "#89b4fa"
+    selectedLineBgColor:
+      - "#45475a"
+    cherryPickedCommitBgColor:
+      - "#f2cdcd"
+    cherryPickedCommitFgColor:
+      - "#89b4fa"
+    unstagedChangesColor:
+      - "#f38ba8"
+    defaultFgColor:
+      - "#cdd6f4"
+    searchingActiveBorderColor:
+      - "#fab387"
+      - bold
+
+git:
+  autoFetch: true
+  autoRefresh: true
+  branchLogCmd: "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --"
+
+os:
+  editPreset: nvim-remote
+
+notARepository: skip
+promptToReturnFromSubprocess: false
+
+customCommands:
+  # Interactive rebase from selected commit
+  - key: "R"
+    context: commits
+    command: "git rebase -i {{.SelectedLocalCommit.Hash}}~1"
+    description: "Interactive rebase from this commit"
+    output: terminal
+
+  # Create fixup commit for selected commit
+  - key: "F"
+    context: files
+    command: "git commit --fixup={{.SelectedLocalCommit.Hash}}"
+    description: "Create fixup commit for selected commit"
+    loadingText: "Creating fixup commit..."
+
+  # Autosquash fixup commits
+  - key: "S"
+    context: commits
+    command: "git rebase -i --autosquash {{.SelectedLocalCommit.Hash}}~1"
+    description: "Autosquash fixup commits"
+    output: terminal
+
+  # Checkout GitHub PR (requires gh CLI)
+  - key: "O"
+    context: localBranches
+    command: "gh pr checkout {{.SelectedLocalBranch.Name}}"
+    description: "Checkout GitHub PR"
+    loadingText: "Checking out PR..."
+
+  # View GitHub PR in browser
+  - key: "V"
+    context: localBranches
+    command: "gh pr view --web {{.SelectedLocalBranch.Name}}"
+    description: "View PR in browser"
+
+  # Copy branch name to clipboard (WSL)
+  - key: "Y"
+    context: localBranches
+    command: "echo -n {{.SelectedLocalBranch.Name}} | clip.exe"
+    description: "Copy branch name to clipboard"
+
+  # Copy commit hash to clipboard (WSL)
+  - key: "Y"
+    context: commits
+    command: "echo -n {{.SelectedLocalCommit.Hash}} | clip.exe"
+    description: "Copy commit hash to clipboard"
+
+  # Push with force-with-lease (safer force push)
+  - key: "P"
+    context: localBranches
+    command: "git push --force-with-lease origin {{.SelectedLocalBranch.Name}}"
+    description: "Force push with lease"
+    loadingText: "Force pushing..."
+
+  # Fetch and prune
+  - key: "f"
+    context: remotes
+    command: "git fetch --prune {{.SelectedRemote.Name}}"
+    description: "Fetch and prune remote"
+    loadingText: "Fetching..."
+
+keybinding:
+  universal:
+    scrollUpMain-alt1: K
+    scrollDownMain-alt1: J
+  commits:
+    moveDownCommit: <c-j>
+    moveUpCommit: <c-k>

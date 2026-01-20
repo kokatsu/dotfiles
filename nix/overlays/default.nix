@@ -62,14 +62,14 @@
     });
   };
 
-  # Use forked git-graph with --current option
+  # Use forked git-graph with --current option and ANSI color wrapping fix
   # Also fixes build on aarch64-darwin (libz-sys crate can't find zlib.h)
   git-graph-fork = _final: prev: let
     forkedSrc = prev.fetchFromGitHub {
       owner = "kokatsu";
       repo = "git-graph";
-      rev = "feat/current-option";
-      hash = "sha256-EllzlOST6rAA0NoYa5AAeI8YpgHPQ1r9M3Imwoceamw=";
+      rev = "fix/ansi-color-wrap";
+      hash = "sha256-n4mcZxy5MYfMQCYERH5zQBPkmW4l6RFahCBCwrnCYoU=";
     };
   in {
     git-graph = prev.git-graph.overrideAttrs (old: {
