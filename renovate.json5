@@ -16,7 +16,8 @@
     },
     {
       "matchManagers": ["github-actions"],
-      "minimumReleaseAge": "7 days"
+      "minimumReleaseAge": "7 days",
+      "internalChecksFilter": "strict"
     }
   ]
 }
