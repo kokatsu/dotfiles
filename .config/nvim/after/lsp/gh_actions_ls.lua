@@ -1,5 +1,5 @@
 ---@type vim.lsp.Config
 return {
-  filetypes = { 'yaml.github' },
+  filetypes = { 'gha' },
   root_markers = { '.github' },
 }
