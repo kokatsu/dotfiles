@@ -23,10 +23,10 @@ vim.api.nvim_create_autocmd({ 'WinEnter', 'FocusGained', 'BufEnter', 'CursorHold
 vim.api.nvim_create_autocmd('FileChangedShellPost', {
   pattern = '*',
   callback = function()
-    -- LSPクライアントにバッファの変更を通知
-    local clients = vim.lsp.get_clients({ bufnr = 0 })
+    local bufnr = vim.api.nvim_get_current_buf()
+    local clients = vim.lsp.get_clients({ bufnr = bufnr })
     for _, client in ipairs(clients) do
-      local params = vim.lsp.util.make_text_document_params()
+      local params = vim.lsp.util.make_text_document_params(bufnr)
       client:notify('textDocument/didSave', params)
     end
   end,
