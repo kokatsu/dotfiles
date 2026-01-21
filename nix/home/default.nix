@@ -340,6 +340,20 @@ in {
       fi
     '';
 
+    # zsh config.d / functions.d をコピー (git管理外ファイル用)
+    setupZshExtraFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      for subdir in config.d functions.d; do
+        SOURCE="${dotfilesDir}/.config/zsh/$subdir"
+        TARGET="$HOME/.config/zsh/$subdir"
+        if [ -d "$SOURCE" ]; then
+          $DRY_RUN_CMD mkdir -p "$TARGET"
+          for f in "$SOURCE"/*.zsh; do
+            [ -f "$f" ] && $DRY_RUN_CMD cp "$f" "$TARGET/" 2>/dev/null || true
+          done
+        fi
+      done
+    '';
+
     # gh ディレクトリを作成
     # config.yml は mkOutOfStoreSymlink で管理、hosts.yml は gh auth login で動的に作成される
     fixGhDirectory = lib.hm.dag.entryAfter ["linkGeneration"] ''

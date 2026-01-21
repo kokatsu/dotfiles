@@ -46,6 +46,12 @@ for conf in "$ZDOTDIR/config.d/"*.zsh(N); do
   source "${conf}"
 done
 
+# カスタム関数を読み込む
+[ -d "$ZDOTDIR/functions.d" ] || mkdir -p "$ZDOTDIR/functions.d"
+for func in "$ZDOTDIR/functions.d/"*.zsh(N); do
+  source "${func}"
+done
+
 # ------------------------------------------------------------------------------
 # mise (https://github.com/jdx/mise)
 # ------------------------------------------------------------------------------
