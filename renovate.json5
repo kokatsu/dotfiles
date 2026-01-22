@@ -6,7 +6,7 @@
   "customManagers": [
     {
       // Pattern: let version = "x.y.z" immediately after Renovate comment
-      // Matches: claude-code, secretlint, unocss-language-server, agent-browser
+      // Matches: claude-code, secretlint, unocss-language-server, agent-browser, termframe, deck
       "customType": "regex",
       "fileMatch": ["nix/overlays/default\\.nix$"],
       "matchStrings": [
@@ -16,7 +16,7 @@
     },
     {
       // Pattern: rec { pname = "..."; version = "x.y.z" after Renovate comment
-      // Matches: ccusage, cssmodules-language-server, termframe, deck
+      // Matches: ccusage, cssmodules-language-server
       "customType": "regex",
       "fileMatch": ["nix/overlays/default\\.nix$"],
       "matchStrings": [
