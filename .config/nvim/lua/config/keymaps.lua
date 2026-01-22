@@ -47,6 +47,8 @@ vim.keymap.set('n', '<leader>cf', function()
   vim.lsp.buf.format({ async = true })
 end, { desc = 'Format buffer' })
 vim.keymap.set('i', '<C-h>', vim.lsp.buf.signature_help, { desc = 'Signature help' })
+vim.keymap.set('n', '<leader>ds', vim.lsp.buf.document_symbol, { desc = 'Document symbols' })
+vim.keymap.set('n', '<leader>ws', vim.lsp.buf.workspace_symbol, { desc = 'Workspace symbols' })
 
 -- Treesitterベースの移動（関数/クラス間）
 local function goto_textobject(query, direction)

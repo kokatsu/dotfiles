@@ -49,9 +49,9 @@ M.matcher_opts = {
   sort_empty = false,
   filename_bonus = true,
   file_pos = true,
-  cwd_bonus = false,
-  frecency = false,
-  history_bonus = false,
+  cwd_bonus = true,
+  frecency = true,
+  history_bonus = true,
 }
 
 -- Smart find action

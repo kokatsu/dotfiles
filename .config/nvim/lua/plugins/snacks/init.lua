@@ -57,10 +57,16 @@ return {
     ---@class snacks.dashboard.Config
     dashboard = dashboard.opts,
     indent = indent.opts,
-    -- Snacks.toggle.profiler():map(',pp'),
-    -- Snacks.toggle.profiler_highlights():map(',ph'),
   },
   keys = {
+    -- Profiler
+    {
+      ',pp',
+      function()
+        Snacks.toggle.profiler():toggle()
+      end,
+      desc = 'Toggle Profiler',
+    },
     {
       '<leader>f',
       picker.smart_action,

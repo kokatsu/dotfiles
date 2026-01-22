@@ -16,7 +16,11 @@ M.opts = {
     },
   },
   animate = {
-    enabled = false,
+    enabled = true,
+    duration = {
+      step = 10,
+      total = 200,
+    },
   },
   --- @type snacks.indent.Scope.Config
   scope = {
