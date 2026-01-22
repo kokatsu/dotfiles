@@ -10,6 +10,7 @@ alias c="clear && fastfetch"
 
 if grep -q -e Microsoft -e microsoft /proc/version; then
   alias copy="iconv -f utf-8 -t utf-16le | clip.exe"
+  export BROWSER="wslview"
 fi
 
 # https://github.com/wezterm/wezterm/issues/5503
