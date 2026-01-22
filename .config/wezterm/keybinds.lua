@@ -145,6 +145,48 @@ local windows_specific_keys = {
   },
   -- QuickSelect モード（URLやパスを素早く選択）
   { key = 'q', mods = 'ALT', action = act.QuickSelect },
+  -- https://picton.uk/blog/claude-code-image-paste-wezterm/
+  -- `Alt + p` でクリップボードの画像を保存してWSLパスを出力（WSLドメインのみ）
+  {
+    key = 'p',
+    mods = 'ALT',
+    action = wezterm.action_callback(function(window, pane)
+      -- WSLドメインでない場合は何もしない
+      local domain = pane:get_domain_name()
+      if not domain:match('^WSL:') then
+        return
+      end
+
+      local timestamp = os.date('%Y%m%d_%H%M%S')
+      local filename = 'screenshot_' .. timestamp .. '.png'
+      local filepath = 'C:\\tmp\\' .. filename
+      local wsl_path = '/mnt/c/tmp/' .. filename
+
+      -- wezterm.run_child_process で PowerShell を実行（ウィンドウなし）
+      local success, stdout, stderr = wezterm.run_child_process({
+        'powershell.exe',
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        string.format(
+          [[Add-Type -AssemblyName System.Windows.Forms; if (-not (Test-Path 'C:\tmp')) { New-Item -ItemType Directory -Path 'C:\tmp' | Out-Null }; $img = [System.Windows.Forms.Clipboard]::GetImage(); if ($img) { $img.Save('%s'); Write-Output '%s' } else { Write-Output 'No image' }]],
+          filepath,
+          wsl_path
+        ),
+      })
+
+      if success then
+        local result = stdout:gsub('%s+$', '')
+        if result ~= 'No image' and result ~= '' then
+          pane:send_text(result)
+        else
+          window:toast_notification('WezTerm', 'クリップボードに画像がありません', nil, 3000)
+        end
+      else
+        window:toast_notification('WezTerm', 'エラー: ' .. stderr, nil, 3000)
+      end
+    end),
+  },
 }
 
 -- macOS 固有キーバインド
