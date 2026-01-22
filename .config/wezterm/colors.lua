@@ -43,6 +43,9 @@ M.apply_to_config = function(config)
     -- pane間の境界線の色（明るくして目立たせる）
     split = palette.blue,
   }
+  -- コマンドパレットの色
+  config.command_palette_bg_color = palette.surface0
+  config.command_palette_fg_color = palette.text
 end
 
 return M
