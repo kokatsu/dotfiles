@@ -1,7 +1,7 @@
 # Custom overlays for fixing build issues
 {
   # Claude Code - agentic coding tool
-  # Renovate: datasource=custom.claude-code depName=claude-code
+  # Managed by .github/workflows/update-claude-code.yml (not Renovate)
   claude-code = _final: prev: let
     version = "2.1.15";
     hashes = {
