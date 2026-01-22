@@ -6,8 +6,19 @@ return {
   cmd = 'Copilot',
   config = function()
     require('copilot').setup({
-      suggestion = { enabled = false },
-      panel = { enabled = false },
+      suggestion = {
+        enabled = true,
+        auto_trigger = true,
+        keymap = {
+          accept = '<M-l>',
+          accept_word = '<M-k>',
+          accept_line = '<M-j>',
+          next = '<M-]>',
+          prev = '<M-[>',
+          dismiss = '<C-]>',
+        },
+      },
+      panel = { enabled = true },
       copilot_node_command = 'node',
       -- https://zenn.dev/kawarimidoll/books/6064bf6f193b51/viewer/90a5be
       filetypes = {
