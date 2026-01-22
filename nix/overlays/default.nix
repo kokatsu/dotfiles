@@ -76,31 +76,51 @@
     });
   };
   # Add termframe package (not in nixpkgs)
+  # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=pamburus/termframe
-  termframe = _final: prev: {
-    termframe = prev.rustPlatform.buildRustPackage rec {
+  termframe = _final: prev: let
+    version = "0.7.6";
+    hashes = {
+      "aarch64-darwin" = "sha256-BDdd9bEsxuQzs/lNHDFJMXnkIEomOZPuQLp6tfDZhVk=";
+      "x86_64-darwin" = "sha256-USphR1LE7SZTndwTw2dEgQ+Xv3K1lm7aWCJ/9pa4Gj4=";
+      "aarch64-linux" = "sha256-LjGUJz/JtV6y9XulCjsaUk5vdqvJkErUpQytB2z09i0=";
+      "x86_64-linux" = "sha256-nfJxS3AnCNiYmwFXNMXBdrX4b6rXsgbJODQ7pILusVk=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "macos-arm64";
+      "x86_64-darwin" = "macos-x86_64";
+      "aarch64-linux" = "linux-arm64-gnu";
+      "x86_64-linux" = "linux-x86_64-gnu";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    termframe = prev.stdenvNoCC.mkDerivation {
       pname = "termframe";
-      version = "0.7.6";
+      inherit version;
 
-      src = prev.fetchFromGitHub {
-        owner = "pamburus";
-        repo = "termframe";
-        rev = "v${version}";
-        hash = "sha256-jAcutfzHYLPTF37dZo9gbGQ9WjIxqsYq2RONZP+xsUo=";
+      src = prev.fetchurl {
+        url = "https://github.com/pamburus/termframe/releases/download/v${version}/termframe-${platform}.tar.gz";
+        inherit hash;
       };
 
-      cargoHash = "sha256-7KUG9qsMtm9utF7w6PQkCfjw0HVCXnZ0tMHprp+cS3o=";
+      sourceRoot = ".";
 
-      nativeBuildInputs = [prev.pkg-config];
-      buildInputs = prev.lib.optionals prev.stdenv.hostPlatform.isDarwin [
-        prev.libiconv
-      ];
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp termframe $out/bin/
+        chmod +x $out/bin/termframe
+        runHook postInstall
+      '';
 
       meta = with prev.lib; {
         description = "Terminal output SVG screenshot tool";
         homepage = "https://github.com/pamburus/termframe";
         license = licenses.mit;
-        maintainers = [];
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "termframe";
       };
     };
   };
@@ -167,28 +187,78 @@
   };
 
   # k1LoW/deck - Markdown to Google Slides
+  # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=k1LoW/deck
-  deck = _final: prev: {
-    deck-slides = prev.buildGoModule rec {
+  deck = _final: prev: let
+    version = "1.22.1";
+    hashes = {
+      "aarch64-darwin" = "sha256-+J/yUip6L8L6LeQPBKT/r14rdkZL50HQPokryMx0sQY=";
+      "x86_64-darwin" = "sha256-YR8I4ioBqW8cU+H4yrROj/p1GgVBVcuTqpkrGlDHzlQ=";
+      "aarch64-linux" = "sha256-rt4AiXyrxGZa/tGPsYW6vSknvjaYpO183rqBsuTzUu8=";
+      "x86_64-linux" = "sha256-08MUun13t2umwzrIw0aCBMCiZc+HodeWK/RMHUiAN0w=";
+    };
+    platformMap = {
+      "aarch64-darwin" = {
+        platform = "darwin_arm64";
+        ext = "zip";
+      };
+      "x86_64-darwin" = {
+        platform = "darwin_amd64";
+        ext = "zip";
+      };
+      "aarch64-linux" = {
+        platform = "linux_arm64";
+        ext = "tar.gz";
+      };
+      "x86_64-linux" = {
+        platform = "linux_amd64";
+        ext = "tar.gz";
+      };
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platformInfo = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    deck-slides = prev.stdenvNoCC.mkDerivation {
       pname = "deck-slides";
-      version = "1.22.1";
+      inherit version;
 
-      src = prev.fetchFromGitHub {
-        owner = "k1LoW";
-        repo = "deck";
-        rev = "v${version}";
-        hash = "sha256-3p3/xPtpTtVtNbyJrHyOVbJS4qPea98gFV6u7WSYzWs=";
+      src = prev.fetchurl {
+        url = "https://github.com/k1LoW/deck/releases/download/v${version}/deck_v${version}_${platformInfo.platform}.${platformInfo.ext}";
+        inherit hash;
       };
 
-      vendorHash = "sha256-ae/WY+CnEMp0HJ5dlaloyEF2kSCRWUkBfIOv5baXxjg=";
+      nativeBuildInputs = prev.lib.optionals (platformInfo.ext == "zip") [prev.unzip];
 
-      # テストはvendorの不整合でfailするためスキップ
-      doCheck = false;
+      sourceRoot = ".";
+
+      unpackPhase =
+        if platformInfo.ext == "zip"
+        then ''
+          runHook preUnpack
+          unzip $src
+          runHook postUnpack
+        ''
+        else ''
+          runHook preUnpack
+          tar -xzf $src
+          runHook postUnpack
+        '';
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp deck $out/bin/deck-slides
+        chmod +x $out/bin/deck-slides
+        runHook postInstall
+      '';
 
       meta = with prev.lib; {
         description = "A tool for creating deck using Markdown and Google Slides";
         homepage = "https://github.com/k1LoW/deck";
         license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "deck-slides";
       };
     };
   };
