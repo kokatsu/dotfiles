@@ -77,14 +77,6 @@
       };
     stablePkgsFor = system: nixpkgs-stable.legacyPackages.${system};
 
-    # node2nixで管理されるnpmパッケージ
-    nodePackagesFor = system:
-      import ./nix/node2nix {
-        pkgs = pkgsFor system;
-        inherit system;
-        nodejs = (pkgsFor system).nodejs_22;
-      };
-
     # カスタムオーバーレイ
     customOverlays = import ./nix/overlays;
   in {
@@ -97,13 +89,18 @@
         {
           nixpkgs.overlays = [
             inputs.neovim-nightly-overlay.overlays.default
+            customOverlays.agent-browser
             customOverlays.cava-darwin-fix
+            customOverlays.ccusage
             customOverlays.claude-code
+            customOverlays.cssmodules-language-server
             customOverlays.deck
             customOverlays.git-graph-fork
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
+            customOverlays.secretlint
             customOverlays.termframe
+            customOverlays.unocss-language-server
           ];
           home-manager = {
             useGlobalPkgs = true;
@@ -114,7 +111,6 @@
               inherit inputs self dotfilesDir;
               username = finalUsername;
               isCI = false;
-              nodePackages = nodePackagesFor "aarch64-darwin";
               stablePkgs = stablePkgsFor "aarch64-darwin";
             };
           };
@@ -136,10 +132,15 @@
           overlays =
             [
               inputs.neovim-nightly-overlay.overlays.default
+              customOverlays.agent-browser
+              customOverlays.ccusage
               customOverlays.claude-code
+              customOverlays.cssmodules-language-server
               customOverlays.deck
               customOverlays.git-graph-fork
+              customOverlays.secretlint
               customOverlays.termframe
+              customOverlays.unocss-language-server
               customOverlays.vue-language-server-pin
             ]
             ++ (
@@ -157,7 +158,6 @@
           inherit inputs self dotfilesDir;
           username = finalUsername;
           isCI = false;
-          nodePackages = nodePackagesFor currentSystem;
           stablePkgs = stablePkgsFor currentSystem;
         };
       };
@@ -169,10 +169,15 @@
           config.allowUnfree = true;
           overlays = [
             inputs.neovim-nightly-overlay.overlays.default
+            customOverlays.agent-browser
+            customOverlays.ccusage
             customOverlays.claude-code
+            customOverlays.cssmodules-language-server
             customOverlays.deck
             customOverlays.git-graph-fork
+            customOverlays.secretlint
             customOverlays.termframe
+            customOverlays.unocss-language-server
             customOverlays.vue-language-server-pin
           ];
         };
@@ -182,7 +187,6 @@
           username = "ci";
           isCI = true;
           dotfilesDir = "/tmp/dotfiles";
-          nodePackages = nodePackagesFor "x86_64-linux";
           stablePkgs = stablePkgsFor "x86_64-linux";
         };
       };
@@ -193,13 +197,18 @@
           config.allowUnfree = true;
           overlays = [
             inputs.neovim-nightly-overlay.overlays.default
+            customOverlays.agent-browser
             customOverlays.cava-darwin-fix
+            customOverlays.ccusage
             customOverlays.claude-code
+            customOverlays.cssmodules-language-server
             customOverlays.deck
             customOverlays.git-graph-fork
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
+            customOverlays.secretlint
             customOverlays.termframe
+            customOverlays.unocss-language-server
             customOverlays.vue-language-server-pin
           ];
         };
@@ -209,7 +218,6 @@
           username = "ci";
           isCI = true;
           dotfilesDir = "/tmp/dotfiles";
-          nodePackages = nodePackagesFor "aarch64-darwin";
           stablePkgs = stablePkgsFor "aarch64-darwin";
         };
       };
@@ -228,16 +236,5 @@
 
     # フォーマッター
     formatter = forAllSystems (system: (pkgsFor system).alejandra);
-
-    # node2nix更新用アプリ
-    apps = forAllSystems (system: {
-      update-node2nix = {
-        type = "app";
-        program = toString ((pkgsFor system).writeShellScript "update-node2nix" ''
-          cd nix/node2nix
-          exec ${(pkgsFor system).node2nix}/bin/node2nix -l package-lock.json
-        '');
-      };
-    });
   };
 }
