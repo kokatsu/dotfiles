@@ -14,6 +14,11 @@
       "matchManagers": ["github-actions"],
       "minimumReleaseAge": "7 days",
       "internalChecksFilter": "strict"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["digest"],
+      "enabled": false
     }
   ]
 }
