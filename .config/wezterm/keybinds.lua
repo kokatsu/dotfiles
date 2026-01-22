@@ -145,6 +145,8 @@ local windows_specific_keys = {
   },
   -- QuickSelect モード（URLやパスを素早く選択）
   { key = 'q', mods = 'ALT', action = act.QuickSelect },
+  -- コマンドパレット
+  { key = 'p', mods = 'CTRL|SHIFT', action = act.ActivateCommandPalette },
   -- https://picton.uk/blog/claude-code-image-paste-wezterm/
   -- `Alt + p` でクリップボードの画像を保存してWSLパスを出力（WSLドメインのみ）
   {
@@ -260,6 +262,8 @@ local darwin_specific_keys = {
   { key = 'r', mods = 'CMD|OPT', action = act.RotatePanes('Clockwise') },
   -- QuickSelect モード（URLやパスを素早く選択）
   { key = 'q', mods = 'CTRL', action = act.QuickSelect },
+  -- コマンドパレット
+  { key = 'p', mods = 'CMD|SHIFT', action = act.ActivateCommandPalette },
 }
 
 -- コピーモードのキーテーブル（Vim風操作）
