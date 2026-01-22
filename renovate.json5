@@ -25,14 +25,6 @@
       "versioningTemplate": "semver"
     }
   ],
-  "customDatasources": {
-    "claude-code": {
-      "defaultRegistryUrlTemplate": "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/versions.json",
-      "transformTemplates": [
-        "{\"releases\": $map($, function($v) { {\"version\": $v} })}"
-      ]
-    }
-  },
   "packageRules": [
     {
       "matchFileNames": ["nix/overlays/default.nix"],
