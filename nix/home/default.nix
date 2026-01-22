@@ -138,7 +138,7 @@ in {
       ++ [
         # 開発ツール
         bun
-        # claude-code は nodePackages.package で管理
+        claude-code # overlay で管理
         gitleaks # シークレット検出
         deno
         docker-compose

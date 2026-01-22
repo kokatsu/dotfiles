@@ -1,5 +1,56 @@
 # Custom overlays for fixing build issues
 {
+  # Claude Code - agentic coding tool
+  # Renovate: datasource=custom.claude-code depName=claude-code
+  claude-code = _final: prev: let
+    version = "2.1.15";
+    hashes = {
+      "aarch64-darwin" = "sha256-zGJ8DvWuGSwF0ALyc+Y32GdpIJC9I+/9XvUgaQ25XnE=";
+      "x86_64-darwin" = "sha256-3fCDEsfIDRGr43mPjBtW+VRFpVDNZOEbsz7kV3uChkg=";
+      "aarch64-linux" = "sha256-IKUgJWt4r/VtQnPWGMl5ZZE+BBqFD+bOq5txT1fjlVQ=";
+      "x86_64-linux" = "sha256-N/jodLjQfztgo7ZsegEDSDfR4zPrQVUtCTLXhCVehi0=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "darwin-arm64";
+      "x86_64-darwin" = "darwin-x64";
+      "aarch64-linux" = "linux-arm64";
+      "x86_64-linux" = "linux-x64";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    claude-code = prev.stdenvNoCC.mkDerivation {
+      pname = "claude-code";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${version}/${platform}/claude";
+        inherit hash;
+      };
+
+      dontUnpack = true;
+
+      # バイナリはスタティックリンクされているため、autoPatchelfは不要
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp $src $out/bin/claude
+        chmod +x $out/bin/claude
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Claude Code - an agentic coding tool";
+        homepage = "https://github.com/anthropics/claude-code";
+        license = licenses.unfree;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "claude";
+      };
+    };
+  };
+
   # Pin vue-language-server to 3.0.8
   vue-language-server-pin = _final: prev: let
     # pnpmDeps hash differs between platforms due to native dependencies

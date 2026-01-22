@@ -98,6 +98,7 @@
           nixpkgs.overlays = [
             inputs.neovim-nightly-overlay.overlays.default
             customOverlays.cava-darwin-fix
+            customOverlays.claude-code
             customOverlays.deck
             customOverlays.git-graph-fork
             customOverlays.jp2a-darwin-fix
@@ -135,6 +136,7 @@
           overlays =
             [
               inputs.neovim-nightly-overlay.overlays.default
+              customOverlays.claude-code
               customOverlays.deck
               customOverlays.git-graph-fork
               customOverlays.termframe
@@ -167,6 +169,7 @@
           config.allowUnfree = true;
           overlays = [
             inputs.neovim-nightly-overlay.overlays.default
+            customOverlays.claude-code
             customOverlays.deck
             customOverlays.git-graph-fork
             customOverlays.termframe
@@ -191,6 +194,7 @@
           overlays = [
             inputs.neovim-nightly-overlay.overlays.default
             customOverlays.cava-darwin-fix
+            customOverlays.claude-code
             customOverlays.deck
             customOverlays.git-graph-fork
             customOverlays.jp2a-darwin-fix

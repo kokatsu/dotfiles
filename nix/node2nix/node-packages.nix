@@ -45,15 +45,6 @@
         sha512 = "qT2iHKbYwp9gN0LvS8Nc44yNg8MZFpXOc/c3nB8FsZDmqOr1LCUQaXXT65MBPIl3DY/Isuv8hhitBt7cP3LnxQ==";
       };
     };
-    "@anthropic-ai/claude-code-2.1.15" = {
-      name = "_at_anthropic-ai_slash_claude-code";
-      packageName = "@anthropic-ai/claude-code";
-      version = "2.1.15";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-2.1.15.tgz";
-        sha512 = "5bCGfN0w3dJrGqa08eRxxISK8SiL6O5DjSIeR2Aqkp88LXJFJnGIwoDJWk7I0IYyQE7J+rnjBGhL+TbMzv2MZA==";
-      };
-    };
     "@azu/format-text-1.0.2" = {
       name = "_at_azu_slash_format-text";
       packageName = "@azu/format-text";
@@ -241,141 +232,6 @@
       src = fetchurl {
         url = "https://registry.npmjs.org/@commitlint/types/-/types-20.3.1.tgz";
         sha512 = "VmIFV/JkBRhDRRv7N5B7zEUkNZIx9Mp+8Pe65erz0rKycXLsi8Epcw0XJ+btSeRXgTzE7DyOyA9bkJ9mn/yqVQ==";
-      };
-    };
-    "@img/sharp-darwin-arm64-0.33.5" = {
-      name = "_at_img_slash_sharp-darwin-arm64";
-      packageName = "@img/sharp-darwin-arm64";
-      version = "0.33.5";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-darwin-arm64/-/sharp-darwin-arm64-0.33.5.tgz";
-        sha512 = "UT4p+iz/2H4twwAoLCqfA9UH5pI6DggwKEGuaPy7nCVQ8ZsiY5PIcrRvD1DzuY3qYL07NtIQcWnBSY/heikIFQ==";
-      };
-    };
-    "@img/sharp-darwin-x64-0.33.5" = {
-      name = "_at_img_slash_sharp-darwin-x64";
-      packageName = "@img/sharp-darwin-x64";
-      version = "0.33.5";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-darwin-x64/-/sharp-darwin-x64-0.33.5.tgz";
-        sha512 = "fyHac4jIc1ANYGRDxtiqelIbdWkIuQaI84Mv45KvGRRxSAa7o7d1ZKAOBaYbnepLC1WqxfpimdeWfvqqSGwR2Q==";
-      };
-    };
-    "@img/sharp-libvips-darwin-arm64-1.0.4" = {
-      name = "_at_img_slash_sharp-libvips-darwin-arm64";
-      packageName = "@img/sharp-libvips-darwin-arm64";
-      version = "1.0.4";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-libvips-darwin-arm64/-/sharp-libvips-darwin-arm64-1.0.4.tgz";
-        sha512 = "XblONe153h0O2zuFfTAbQYAX2JhYmDHeWikp1LM9Hul9gVPjFY427k6dFEcOL72O01QxQsWi761svJ/ev9xEDg==";
-      };
-    };
-    "@img/sharp-libvips-darwin-x64-1.0.4" = {
-      name = "_at_img_slash_sharp-libvips-darwin-x64";
-      packageName = "@img/sharp-libvips-darwin-x64";
-      version = "1.0.4";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-libvips-darwin-x64/-/sharp-libvips-darwin-x64-1.0.4.tgz";
-        sha512 = "xnGR8YuZYfJGmWPvmlunFaWJsb9T/AO2ykoP3Fz/0X5XV2aoYBPkX6xqCQvUTKKiLddarLaxpzNe+b1hjeWHAQ==";
-      };
-    };
-    "@img/sharp-libvips-linux-arm-1.0.5" = {
-      name = "_at_img_slash_sharp-libvips-linux-arm";
-      packageName = "@img/sharp-libvips-linux-arm";
-      version = "1.0.5";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-libvips-linux-arm/-/sharp-libvips-linux-arm-1.0.5.tgz";
-        sha512 = "gvcC4ACAOPRNATg/ov8/MnbxFDJqf/pDePbBnuBDcjsI8PssmjoKMAz4LtLaVi+OnSb5FK/yIOamqDwGmXW32g==";
-      };
-    };
-    "@img/sharp-libvips-linux-arm64-1.0.4" = {
-      name = "_at_img_slash_sharp-libvips-linux-arm64";
-      packageName = "@img/sharp-libvips-linux-arm64";
-      version = "1.0.4";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-libvips-linux-arm64/-/sharp-libvips-linux-arm64-1.0.4.tgz";
-        sha512 = "9B+taZ8DlyyqzZQnoeIvDVR/2F4EbMepXMc/NdVbkzsJbzkUjhXv/70GQJ7tdLA4YJgNP25zukcxpX2/SueNrA==";
-      };
-    };
-    "@img/sharp-libvips-linux-x64-1.0.4" = {
-      name = "_at_img_slash_sharp-libvips-linux-x64";
-      packageName = "@img/sharp-libvips-linux-x64";
-      version = "1.0.4";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-libvips-linux-x64/-/sharp-libvips-linux-x64-1.0.4.tgz";
-        sha512 = "MmWmQ3iPFZr0Iev+BAgVMb3ZyC4KeFc3jFxnNbEPas60e1cIfevbtuyf9nDGIzOaW9PdnDciJm+wFFaTlj5xYw==";
-      };
-    };
-    "@img/sharp-libvips-linuxmusl-arm64-1.0.4" = {
-      name = "_at_img_slash_sharp-libvips-linuxmusl-arm64";
-      packageName = "@img/sharp-libvips-linuxmusl-arm64";
-      version = "1.0.4";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-arm64/-/sharp-libvips-linuxmusl-arm64-1.0.4.tgz";
-        sha512 = "9Ti+BbTYDcsbp4wfYib8Ctm1ilkugkA/uscUn6UXK1ldpC1JjiXbLfFZtRlBhjPZ5o1NCLiDbg8fhUPKStHoTA==";
-      };
-    };
-    "@img/sharp-libvips-linuxmusl-x64-1.0.4" = {
-      name = "_at_img_slash_sharp-libvips-linuxmusl-x64";
-      packageName = "@img/sharp-libvips-linuxmusl-x64";
-      version = "1.0.4";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-libvips-linuxmusl-x64/-/sharp-libvips-linuxmusl-x64-1.0.4.tgz";
-        sha512 = "viYN1KX9m+/hGkJtvYYp+CCLgnJXwiQB39damAO7WMdKWlIhmYTfHjwSbQeUK/20vY154mwezd9HflVFM1wVSw==";
-      };
-    };
-    "@img/sharp-linux-arm-0.33.5" = {
-      name = "_at_img_slash_sharp-linux-arm";
-      packageName = "@img/sharp-linux-arm";
-      version = "0.33.5";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-linux-arm/-/sharp-linux-arm-0.33.5.tgz";
-        sha512 = "JTS1eldqZbJxjvKaAkxhZmBqPRGmxgu+qFKSInv8moZ2AmT5Yib3EQ1c6gp493HvrvV8QgdOXdyaIBrhvFhBMQ==";
-      };
-    };
-    "@img/sharp-linux-arm64-0.33.5" = {
-      name = "_at_img_slash_sharp-linux-arm64";
-      packageName = "@img/sharp-linux-arm64";
-      version = "0.33.5";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-linux-arm64/-/sharp-linux-arm64-0.33.5.tgz";
-        sha512 = "JMVv+AMRyGOHtO1RFBiJy/MBsgz0x4AWrT6QoEVVTyh1E39TrCUpTRI7mx9VksGX4awWASxqCYLCV4wBZHAYxA==";
-      };
-    };
-    "@img/sharp-linux-x64-0.33.5" = {
-      name = "_at_img_slash_sharp-linux-x64";
-      packageName = "@img/sharp-linux-x64";
-      version = "0.33.5";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-linux-x64/-/sharp-linux-x64-0.33.5.tgz";
-        sha512 = "opC+Ok5pRNAzuvq1AG0ar+1owsu842/Ab+4qvU879ippJBHvyY5n2mxF1izXqkPYlGuP/M556uh53jRLJmzTWA==";
-      };
-    };
-    "@img/sharp-linuxmusl-arm64-0.33.5" = {
-      name = "_at_img_slash_sharp-linuxmusl-arm64";
-      packageName = "@img/sharp-linuxmusl-arm64";
-      version = "0.33.5";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-linuxmusl-arm64/-/sharp-linuxmusl-arm64-0.33.5.tgz";
-        sha512 = "XrHMZwGQGvJg2V/oRSUfSAfjfPxO+4DkiRh6p2AFjLQztWUuY/o8Mq0eMQVIY7HJ1CDQUJlxGGZRw1a5bqmd1g==";
-      };
-    };
-    "@img/sharp-linuxmusl-x64-0.33.5" = {
-      name = "_at_img_slash_sharp-linuxmusl-x64";
-      packageName = "@img/sharp-linuxmusl-x64";
-      version = "0.33.5";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-linuxmusl-x64/-/sharp-linuxmusl-x64-0.33.5.tgz";
-        sha512 = "WT+d/cgqKkkKySYmqoZ8y3pxx7lx9vVejxW/W4DOFMYVSkErR+w7mf2u8m/y4+xHe7yY9DAXQMWQhpnMuFfScw==";
-      };
-    };
-    "@img/sharp-win32-x64-0.33.5" = {
-      name = "_at_img_slash_sharp-win32-x64";
-      packageName = "@img/sharp-win32-x64";
-      version = "0.33.5";
-      src = fetchurl {
-        url = "https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.33.5.tgz";
-        sha512 = "MpY/o8/8kj+EcnxwvrP4aTJSWw/aZ7JIGR4aBeZkZw5B7/Jn+tY9/VNwtcoGmdT7GfggGIU4kygOMSbYnOrAbg==";
       };
     };
     "@jridgewell/sourcemap-codec-1.5.5" = {
@@ -2723,7 +2579,6 @@
         })
       sources."@actions/languageservice-0.3.27"
       sources."@actions/workflow-parser-0.3.27"
-      sources."@anthropic-ai/claude-code-2.1.15"
       sources."@azu/format-text-1.0.2"
       sources."@azu/style-format-1.0.1"
       sources."@babel/code-frame-7.27.1"
@@ -2745,21 +2600,6 @@
       sources."@commitlint/to-lines-20.0.0"
       sources."@commitlint/top-level-20.0.0"
       sources."@commitlint/types-20.3.1"
-      sources."@img/sharp-darwin-arm64-0.33.5"
-      sources."@img/sharp-darwin-x64-0.33.5"
-      sources."@img/sharp-libvips-darwin-arm64-1.0.4"
-      sources."@img/sharp-libvips-darwin-x64-1.0.4"
-      sources."@img/sharp-libvips-linux-arm-1.0.5"
-      sources."@img/sharp-libvips-linux-arm64-1.0.4"
-      sources."@img/sharp-libvips-linux-x64-1.0.4"
-      sources."@img/sharp-libvips-linuxmusl-arm64-1.0.4"
-      sources."@img/sharp-libvips-linuxmusl-x64-1.0.4"
-      sources."@img/sharp-linux-arm-0.33.5"
-      sources."@img/sharp-linux-arm64-0.33.5"
-      sources."@img/sharp-linux-x64-0.33.5"
-      sources."@img/sharp-linuxmusl-arm64-0.33.5"
-      sources."@img/sharp-linuxmusl-x64-0.33.5"
-      sources."@img/sharp-win32-x64-0.33.5"
       sources."@jridgewell/sourcemap-codec-1.5.5"
       sources."@nodelib/fs.scandir-2.1.5"
       sources."@nodelib/fs.stat-2.0.5"
