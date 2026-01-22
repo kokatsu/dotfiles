@@ -5,6 +5,7 @@ return {
   'folke/sidekick.nvim',
   opts = {
     cli = {
+      watch = false, -- Disable file watching to reduce inotify usage
       mux = {
         backend = 'zellij',
         enabled = true,

@@ -26,7 +26,21 @@ return {
   settings = {
     tailwindCSS = {
       files = {
-        exclude = { '**/result/**' },
+        exclude = {
+          '**/.git/**',
+          '**/node_modules/**',
+          '**/.venv/**',
+          '**/venv/**',
+          '**/__pycache__/**',
+          '**/dist/**',
+          '**/build/**',
+          '**/target/**',
+          '**/result/**',
+          '**/.next/**',
+          '**/.nuxt/**',
+          '**/coverage/**',
+          '**/.cache/**',
+        },
       },
     },
   },
