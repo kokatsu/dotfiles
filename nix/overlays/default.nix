@@ -80,7 +80,7 @@
   termframe = _final: prev: {
     termframe = prev.rustPlatform.buildRustPackage rec {
       pname = "termframe";
-      version = "0.7.4";
+      version = "0.7.6";
 
       src = prev.fetchFromGitHub {
         owner = "pamburus";
