@@ -76,6 +76,7 @@
     });
   };
   # Add termframe package (not in nixpkgs)
+  # Renovate: datasource=github-releases depName=pamburus/termframe
   termframe = _final: prev: {
     termframe = prev.rustPlatform.buildRustPackage rec {
       pname = "termframe";
@@ -166,6 +167,7 @@
   };
 
   # k1LoW/deck - Markdown to Google Slides
+  # Renovate: datasource=github-releases depName=k1LoW/deck
   deck = _final: prev: {
     deck-slides = prev.buildGoModule rec {
       pname = "deck-slides";
@@ -187,6 +189,192 @@
         description = "A tool for creating deck using Markdown and Google Slides";
         homepage = "https://github.com/k1LoW/deck";
         license = licenses.mit;
+      };
+    };
+  };
+
+  # ccusage - Claude API usage viewer
+  # Uses pre-built package from npm (bundled, no runtime dependencies)
+  # Renovate: datasource=npm depName=ccusage
+  ccusage = _final: prev: {
+    ccusage = prev.stdenvNoCC.mkDerivation rec {
+      pname = "ccusage";
+      version = "18.0.5";
+
+      src = prev.fetchurl {
+        url = "https://registry.npmjs.org/${pname}/-/${pname}-${version}.tgz";
+        hash = "sha256-Co9+jFDk4WmefrDnJvladjjYk+XHhYYEKNKb9MbrkU8=";
+      };
+
+      nativeBuildInputs = [prev.makeWrapper];
+
+      unpackPhase = ''
+        runHook preUnpack
+        mkdir -p source
+        tar -xzf $src -C source --strip-components=1
+        runHook postUnpack
+      '';
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/{bin,lib/ccusage}
+        cp -r source/{dist,package.json,config-schema.json} $out/lib/ccusage/
+        makeWrapper ${prev.nodejs}/bin/node $out/bin/ccusage \
+          --add-flags "$out/lib/ccusage/dist/index.js"
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Claude API usage viewer";
+        homepage = "https://github.com/ryoppippi/ccusage";
+        license = licenses.mit;
+        mainProgram = "ccusage";
+      };
+    };
+  };
+
+  # secretlint - Secret linting tool
+  # Uses pre-built package from npm with vendored package-lock.json
+  # Renovate: datasource=npm depName=secretlint
+  secretlint = _final: prev: let
+    version = "11.3.0";
+    tarball = prev.fetchurl {
+      url = "https://registry.npmjs.org/secretlint/-/secretlint-${version}.tgz";
+      hash = "sha256-nQBZbPD+k8Tk5BqcdYH+SkSv+YiNthG999KSJBrP38E=";
+    };
+    # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
+    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/secretlint/package-lock.json);
+  in {
+    secretlint = prev.buildNpmPackage {
+      pname = "secretlint";
+      inherit version;
+
+      src = prev.runCommand "secretlint-src" {} ''
+        mkdir -p $out
+        tar -xzf ${tarball} -C $out --strip-components=1
+        cp ${packageLock} $out/package-lock.json
+      '';
+
+      npmDepsHash = "sha256-z6SwhFmSRDCUbaWKFWC9ex93uIfgJLeNxJ56RaEm63k=";
+
+      # Already pre-built
+      dontNpmBuild = true;
+
+      meta = with prev.lib; {
+        description = "Pluggable linting tool to prevent commit secret/credential file";
+        homepage = "https://github.com/secretlint/secretlint";
+        license = licenses.mit;
+        mainProgram = "secretlint";
+      };
+    };
+  };
+
+  # cssmodules-language-server - CSS Modules LSP
+  # Uses buildNpmPackage from GitHub source
+  # Renovate: datasource=npm depName=cssmodules-language-server
+  cssmodules-language-server = _final: prev: {
+    cssmodules-language-server = prev.buildNpmPackage rec {
+      pname = "cssmodules-language-server";
+      version = "1.5.2";
+
+      src = prev.fetchFromGitHub {
+        owner = "antonk52";
+        repo = "cssmodules-language-server";
+        rev = "v${version}";
+        hash = "sha256-9RZNXdmBP4OK7k/0LuuvqxYGG2fESYTCFNCkAWZQapk=";
+      };
+
+      npmDepsHash = "sha256-1CnCgut0Knf97+YHVJGUZqnRId/BwHw+jH1YPIrDPCA=";
+
+      meta = with prev.lib; {
+        description = "Language server for CSS Modules";
+        homepage = "https://github.com/antonk52/cssmodules-language-server";
+        license = licenses.mit;
+        mainProgram = "cssmodules-language-server";
+      };
+    };
+  };
+
+  # unocss-language-server - UnoCSS LSP
+  # Uses pre-built package from npm with vendored package-lock.json
+  # Renovate: datasource=npm depName=unocss-language-server
+  unocss-language-server = _final: prev: let
+    version = "0.1.8";
+    tarball = prev.fetchurl {
+      url = "https://registry.npmjs.org/unocss-language-server/-/unocss-language-server-${version}.tgz";
+      hash = "sha256-16xM1/6Um2FMj4i8Ua3uP7to2PiRX4Z8oDnUwnn232s=";
+    };
+    # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
+    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/unocss-language-server/package-lock.json);
+  in {
+    unocss-language-server = prev.buildNpmPackage {
+      pname = "unocss-language-server";
+      inherit version;
+
+      src = prev.runCommand "unocss-language-server-src" {} ''
+        mkdir -p $out
+        tar -xzf ${tarball} -C $out --strip-components=1
+        cp ${packageLock} $out/package-lock.json
+      '';
+
+      npmDepsHash = "sha256-yP2foN8e4l6dtE/uDFyKuSws44SCEvqe6jPLeaJr4Mk=";
+
+      # Already pre-built
+      dontNpmBuild = true;
+
+      meta = with prev.lib; {
+        description = "Language server for UnoCSS";
+        homepage = "https://github.com/xna00/unocss-language-server";
+        license = licenses.mit;
+        mainProgram = "unocss-language-server";
+      };
+    };
+  };
+
+  # agent-browser - Browser automation agent
+  # Uses pre-built native binaries from npm package
+  # Renovate: datasource=npm depName=agent-browser
+  agent-browser = _final: prev: let
+    version = "0.6.0";
+    platformMap = {
+      "aarch64-darwin" = "darwin-arm64";
+      "x86_64-darwin" = "darwin-x64";
+      "aarch64-linux" = "linux-arm64";
+      "x86_64-linux" = "linux-x64";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+  in {
+    agent-browser = prev.stdenvNoCC.mkDerivation {
+      pname = "agent-browser";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
+        hash = "sha256-sf+IP0rQqZiboL7E9j2YVQBGtPPtMvcE/R9fplWyknk=";
+      };
+
+      unpackPhase = ''
+        runHook preUnpack
+        mkdir -p source
+        tar -xzf $src -C source --strip-components=1
+        runHook postUnpack
+      '';
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp source/bin/agent-browser-${platform} $out/bin/agent-browser
+        chmod +x $out/bin/agent-browser
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Browser automation agent";
+        homepage = "https://github.com/anthropics/agent-browser";
+        license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "agent-browser";
       };
     };
   };

@@ -64,7 +64,6 @@ return {
       'denols',
       'dockerls',
       'eslint',
-      'gh_actions_ls',
       'html',
       'jsonls',
       'kakehashi',

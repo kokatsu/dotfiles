@@ -1,7 +1,0 @@
-# statix configuration
-# https://github.com/nerdypepper/statix
-disabled = []
-ignore = [
-  "nix/node2nix/node-env.nix",
-  "nix/node2nix/node-packages.nix"
-]

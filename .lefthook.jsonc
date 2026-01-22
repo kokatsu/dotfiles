@@ -8,12 +8,12 @@
       },
       "nix-lint": {
         "glob": ["*.nix"],
-        "exclude": ["nix/node2nix/*", "node_modules/**/*"],
+        "exclude": ["node_modules/**/*"],
         "run": "echo {staged_files} | xargs -n1 statix check && deadnix {staged_files}"
       },
       "nix-format": {
         "glob": ["*.nix"],
-        "exclude": ["nix/node2nix/*", "node_modules/**/*"],
+        "exclude": ["node_modules/**/*"],
         "run": "alejandra {staged_files} && git update-index --again"
       },
       "lua-lint-nvim": {
@@ -33,15 +33,7 @@
         "run": "secretlint {staged_files}"
       },
       "typos": {
-        "exclude": [
-          "*.png",
-          "*.jpg",
-          "*.jpeg",
-          "*.gif",
-          "*.webp",
-          "*.ico",
-          "nix/node2nix/*"
-        ],
+        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "typos {staged_files}"
       }
     }
@@ -54,7 +46,7 @@
       },
       "nix-lint": {
         "glob": ["*.nix"],
-        "exclude": ["nix/node2nix/*", "node_modules/**/*"],
+        "exclude": ["node_modules/**/*"],
         "run": "echo {push_files} | xargs -n1 statix check && deadnix {push_files}"
       },
       "lua-lint-nvim": {
@@ -69,15 +61,7 @@
         "run": "secretlint {push_files}"
       },
       "typos": {
-        "exclude": [
-          "*.png",
-          "*.jpg",
-          "*.jpeg",
-          "*.gif",
-          "*.webp",
-          "*.ico",
-          "nix/node2nix/*"
-        ],
+        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "typos {push_files}"
       }
     }
@@ -86,7 +70,7 @@
     "skip": ["merge"],
     "commands": {
       "commitlint": {
-        "run": "NODE_PATH=$(nix eval --raw '.#darwinConfigurations.nixos.config.home-manager.users.'$USER'.home.sessionVariables.NODE_PATH' --impure 2>/dev/null) commitlint --edit {1}"
+        "run": "commitlint --edit {1}"
       }
     }
   }

@@ -3,7 +3,6 @@
   lib,
   config,
   inputs,
-  nodePackages,
   stablePkgs,
   dotfilesDir ? "",
   username ? "user",
@@ -43,18 +42,8 @@ in {
 
     packages = with pkgs;
       [
-        # agent-browser: node2nixのバイナリパスを修正するラッパー (hiPrioで競合解決)
-        (lib.hiPrio (writeShellScriptBin "agent-browser" ''
-          exec ${nodePackages.nodeDependencies}/lib/node_modules/agent-browser/bin/agent-browser-${
-            if stdenv.isDarwin
-            then "darwin"
-            else "linux"
-          }-${
-            if stdenv.hostPlatform.isAarch64
-            then "arm64"
-            else "x64"
-          } "$@"
-        ''))
+        # agent-browser: overlay で管理 (プラットフォーム別プリビルドバイナリ)
+        agent-browser
         # ランタイム (グローバルデフォルト)
         go
         nodejs_24
@@ -171,13 +160,18 @@ in {
         vue-language-server # 3.0.8 - overlay でピン留め
         yaml-language-server
 
-        # Git hooks/lint ツール (Nixpkgs)
+        # Git hooks/lint ツール (Nixpkgs + overlay)
         biome
+        commitlint
         lefthook
+        secretlint # overlay で管理
 
-        # Git hooks/lint ツール (node2nix)
-        nodePackages.nodeDependencies
-        nodePackages.package # CLIバイナリ (claude-code等)
+        # CLI ツール (overlay)
+        ccusage # Claude API使用量表示
+
+        # Language Servers (overlay)
+        cssmodules-language-server
+        unocss-language-server
       ]
       ++ lib.optionals (!isCI) [
         # CI ではスキップ (ビルド時間短縮)
@@ -231,8 +225,6 @@ in {
         RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
         INPUTRC = "${config.xdg.configHome}/readline/inputrc";
         TERMFRAME_CONFIG = "${config.xdg.configHome}/termframe/config.toml";
-        # node2nix でインストールした npm パッケージを解決するため
-        NODE_PATH = "${nodePackages.nodeDependencies}/lib/node_modules";
         # Playwright ブラウザパス (Nix管理)
         PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";

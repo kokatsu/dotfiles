@@ -3,12 +3,47 @@
   "extends": ["config:recommended"],
   "labels": ["dependencies"],
   "minimumReleaseAge": "1 day",
+  "customManagers": [
+    {
+      // Pattern: let version = "x.y.z" after Renovate comment
+      // Matches: claude-code, secretlint, unocss-language-server, agent-browser
+      "customType": "regex",
+      "fileMatch": ["nix/overlays/default\\.nix$"],
+      "matchStrings": [
+        "#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)[\\s\\S]*?=\\s*_final:\\s*prev:\\s*let\\n\\s+version\\s*=\\s*\"(?<currentValue>[^\"]+)\""
+      ],
+      "versioningTemplate": "semver"
+    },
+    {
+      // Pattern: rec { pname = "..."; version = "x.y.z" after Renovate comment
+      // Matches: ccusage, cssmodules-language-server, termframe, deck
+      "customType": "regex",
+      "fileMatch": ["nix/overlays/default\\.nix$"],
+      "matchStrings": [
+        "#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)[\\s\\S]*?rec\\s*\\{\\n\\s+pname\\s*=\\s*\"[^\"]+\";\\n\\s+version\\s*=\\s*\"(?<currentValue>[^\"]+)\""
+      ],
+      "versioningTemplate": "semver"
+    }
+  ],
+  "customDatasources": {
+    "claude-code": {
+      "defaultRegistryUrlTemplate": "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/versions.json",
+      "transformTemplates": [
+        "{\"releases\": $map($, function($v) { {\"version\": $v} })}"
+      ]
+    }
+  },
   "packageRules": [
     {
-      "matchFileNames": ["nix/node2nix/package.json"],
-      "groupName": "node2nix packages",
+      "matchFileNames": ["nix/overlays/default.nix"],
+      "groupName": "nix overlay packages",
       "semanticCommitType": "build",
       "semanticCommitScope": "deps"
+    },
+    {
+      // GitHub releases often have "v" prefix, strip it for Nix
+      "matchDatasources": ["github-releases"],
+      "extractVersion": "^v?(?<version>.*)$"
     },
     {
       "matchManagers": ["github-actions"],
