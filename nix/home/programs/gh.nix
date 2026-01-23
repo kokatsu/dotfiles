@@ -1,17 +1,19 @@
 # GitHub CLI (gh) configuration
 {
   pkgs,
-  lib,
+  isCI ? false,
   ...
 }: let
-  inherit (pkgs.stdenv) isDarwin isLinux;
+  inherit (pkgs.stdenv) isLinux;
   # WSL detection: Linux and kernel contains "microsoft" or "WSL"
-  # Using builtins.tryEval to handle cases where /proc/version is not readable
-  procVersion = builtins.tryEval (builtins.readFile /proc/version);
+  # In pure evaluation mode (CI), /proc/version access is forbidden, so skip WSL detection
   isWSL =
-    isLinux
-    && procVersion.success
-    && builtins.match ".*[Mm]icrosoft.*" procVersion.value != null;
+    if isCI
+    then false
+    else
+      isLinux
+      && builtins.pathExists /proc/version
+      && builtins.match ".*[Mm]icrosoft.*" (builtins.readFile /proc/version) != null;
 in {
   programs.gh = {
     enable = true;
