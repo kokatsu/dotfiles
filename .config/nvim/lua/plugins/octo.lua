@@ -7,6 +7,10 @@ return {
     'nvim-lua/plenary.nvim',
     'nvim-tree/nvim-web-devicons',
   },
+  init = function()
+    -- Register markdown parser for octo filetype to enable snacks.nvim image support
+    vim.treesitter.language.register('markdown', 'octo')
+  end,
   keys = {
     { '<leader>on', '<cmd>Octo pr create<cr>', desc = 'PR Create' },
     { '<leader>op', '<cmd>Octo pr list<cr>', desc = 'PR List' },
