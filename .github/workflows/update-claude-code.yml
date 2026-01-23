@@ -65,20 +65,21 @@ jobs:
           HASH_LINUX_ARM64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["linux-arm64"].checksum')")
           HASH_LINUX_X64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["linux-x64"].checksum')")
 
-          # Update version
-          sed -i "s/version = \"[^\"]*\"/version = \"${VERSION}\"/" nix/overlays/default.nix
-
-          # Update hashes (SRI format: sha256-...)
-          sed -i "s|\"aarch64-darwin\" = \"sha256-[^\"]*\"|\"aarch64-darwin\" = \"${HASH_DARWIN_ARM64}\"|" nix/overlays/default.nix
-          sed -i "s|\"x86_64-darwin\" = \"sha256-[^\"]*\"|\"x86_64-darwin\" = \"${HASH_DARWIN_X64}\"|" nix/overlays/default.nix
-          sed -i "s|\"aarch64-linux\" = \"sha256-[^\"]*\"|\"aarch64-linux\" = \"${HASH_LINUX_ARM64}\"|" nix/overlays/default.nix
-          sed -i "s|\"x86_64-linux\" = \"sha256-[^\"]*\"|\"x86_64-linux\" = \"${HASH_LINUX_X64}\"|" nix/overlays/default.nix
+          # Update claude-code section only (lines 1-50 approximately)
+          # Use line-range addressing to avoid affecting other packages
+          sed -i '1,50{
+            s/version = "[^"]*"/version = "'"${VERSION}"'"/
+            s|"aarch64-darwin" = "sha256-[^"]*"|"aarch64-darwin" = "'"${HASH_DARWIN_ARM64}"'"|
+            s|"x86_64-darwin" = "sha256-[^"]*"|"x86_64-darwin" = "'"${HASH_DARWIN_X64}"'"|
+            s|"aarch64-linux" = "sha256-[^"]*"|"aarch64-linux" = "'"${HASH_LINUX_ARM64}"'"|
+            s|"x86_64-linux" = "sha256-[^"]*"|"x86_64-linux" = "'"${HASH_LINUX_X64}"'"|
+          }' nix/overlays/default.nix
 
       - name: Create Pull Request
         if: steps.check.outputs.needed == 'true'
         uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e91f
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           commit-message: "build(deps): update claude-code to ${{ steps.latest.outputs.version }}"
           title: "build(deps): update claude-code to ${{ steps.latest.outputs.version }}"
           body: |
