@@ -3,12 +3,12 @@
   # Claude Code - agentic coding tool
   # Managed by .github/workflows/update-claude-code.yml (not Renovate)
   claude-code = _final: prev: let
-    version = "2.1.15";
+    version = "2.1.17";
     hashes = {
-      "aarch64-darwin" = "sha256-zGJ8DvWuGSwF0ALyc+Y32GdpIJC9I+/9XvUgaQ25XnE=";
-      "x86_64-darwin" = "sha256-3fCDEsfIDRGr43mPjBtW+VRFpVDNZOEbsz7kV3uChkg=";
-      "aarch64-linux" = "sha256-IKUgJWt4r/VtQnPWGMl5ZZE+BBqFD+bOq5txT1fjlVQ=";
-      "x86_64-linux" = "sha256-N/jodLjQfztgo7ZsegEDSDfR4zPrQVUtCTLXhCVehi0=";
+      "aarch64-darwin" = "sha256-HYGafA7RrWJ19CzytnBBq4Ca+xzTU3xu1uYYuI5aBTE==";
+      "x86_64-darwin" = "sha256-ZZrYaFYDgT0QrffGjfw7BUaM0ceCRNM7wGV4P7Nsqmo==";
+      "aarch64-linux" = "sha256-whYlwPlie6Qxxb41c8T4oN7mS1fg0RIgkwwp3hAo+Ck==";
+      "x86_64-linux" = "sha256-Eai8LezhzXcXpMETiDpXMJVRFHVUVZXSsOlvGI1lHg8==";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -60,7 +60,7 @@
       else "sha256-0H7j/TlVTkQ5dGlm1AgvtXYa+pPnkvadlNGygEaB85k=";
   in {
     vue-language-server = prev.vue-language-server.overrideAttrs (old: rec {
-      version = "3.0.8";
+      version = "2.1.17";
       src = prev.fetchFromGitHub {
         owner = "vuejs";
         repo = "language-tools";
@@ -79,12 +79,12 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=pamburus/termframe
   termframe = _final: prev: let
-    version = "0.7.6";
+    version = "2.1.17";
     hashes = {
-      "aarch64-darwin" = "sha256-BDdd9bEsxuQzs/lNHDFJMXnkIEomOZPuQLp6tfDZhVk=";
-      "x86_64-darwin" = "sha256-USphR1LE7SZTndwTw2dEgQ+Xv3K1lm7aWCJ/9pa4Gj4=";
-      "aarch64-linux" = "sha256-LjGUJz/JtV6y9XulCjsaUk5vdqvJkErUpQytB2z09i0=";
-      "x86_64-linux" = "sha256-nfJxS3AnCNiYmwFXNMXBdrX4b6rXsgbJODQ7pILusVk=";
+      "aarch64-darwin" = "sha256-HYGafA7RrWJ19CzytnBBq4Ca+xzTU3xu1uYYuI5aBTE==";
+      "x86_64-darwin" = "sha256-ZZrYaFYDgT0QrffGjfw7BUaM0ceCRNM7wGV4P7Nsqmo==";
+      "aarch64-linux" = "sha256-whYlwPlie6Qxxb41c8T4oN7mS1fg0RIgkwwp3hAo+Ck==";
+      "x86_64-linux" = "sha256-Eai8LezhzXcXpMETiDpXMJVRFHVUVZXSsOlvGI1lHg8==";
     };
     platformMap = {
       "aarch64-darwin" = "macos-arm64";
@@ -148,7 +148,7 @@
       src = forkedSrc;
       cargoDeps = prev.rustPlatform.fetchCargoVendor {
         inherit (old) pname;
-        version = "fork";
+        version = "2.1.17";
         src = forkedSrc;
         hash = "sha256-a7Jo/kHuQH7OQrzAMY63jFEOPfnYKAb4AW65V5BEfWM=";
       };
@@ -190,12 +190,12 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=k1LoW/deck
   deck = _final: prev: let
-    version = "1.22.1";
+    version = "2.1.17";
     hashes = {
-      "aarch64-darwin" = "sha256-+J/yUip6L8L6LeQPBKT/r14rdkZL50HQPokryMx0sQY=";
-      "x86_64-darwin" = "sha256-YR8I4ioBqW8cU+H4yrROj/p1GgVBVcuTqpkrGlDHzlQ=";
-      "aarch64-linux" = "sha256-rt4AiXyrxGZa/tGPsYW6vSknvjaYpO183rqBsuTzUu8=";
-      "x86_64-linux" = "sha256-08MUun13t2umwzrIw0aCBMCiZc+HodeWK/RMHUiAN0w=";
+      "aarch64-darwin" = "sha256-HYGafA7RrWJ19CzytnBBq4Ca+xzTU3xu1uYYuI5aBTE==";
+      "x86_64-darwin" = "sha256-ZZrYaFYDgT0QrffGjfw7BUaM0ceCRNM7wGV4P7Nsqmo==";
+      "aarch64-linux" = "sha256-whYlwPlie6Qxxb41c8T4oN7mS1fg0RIgkwwp3hAo+Ck==";
+      "x86_64-linux" = "sha256-Eai8LezhzXcXpMETiDpXMJVRFHVUVZXSsOlvGI1lHg8==";
     };
     platformMap = {
       "aarch64-darwin" = {
@@ -269,7 +269,7 @@
   ccusage = _final: prev: {
     ccusage = prev.stdenvNoCC.mkDerivation rec {
       pname = "ccusage";
-      version = "18.0.5";
+      version = "2.1.17";
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/${pname}/-/${pname}-${version}.tgz";
@@ -307,7 +307,7 @@
   # Uses custom package.json to bundle secretlint with rule preset
   # Renovate: datasource=npm depName=secretlint
   secretlint = _final: prev: let
-    version = "11.3.0";
+    version = "2.1.17";
     # Use vendored package.json and package-lock.json that include rule preset
     packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/secretlint/package.json);
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/secretlint/package-lock.json);
@@ -341,7 +341,7 @@
   cssmodules-language-server = _final: prev: {
     cssmodules-language-server = prev.buildNpmPackage rec {
       pname = "cssmodules-language-server";
-      version = "1.5.2";
+      version = "2.1.17";
 
       src = prev.fetchFromGitHub {
         owner = "antonk52";
@@ -365,7 +365,7 @@
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=unocss-language-server
   unocss-language-server = _final: prev: let
-    version = "0.1.8";
+    version = "2.1.17";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/unocss-language-server/-/unocss-language-server-${version}.tgz";
       hash = "sha256-16xM1/6Um2FMj4i8Ua3uP7to2PiRX4Z8oDnUwnn232s=";
@@ -401,7 +401,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = _final: prev: let
-    version = "0.6.0";
+    version = "2.1.17";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
