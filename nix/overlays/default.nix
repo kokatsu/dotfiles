@@ -410,8 +410,10 @@
     };
     inherit (prev.stdenv.hostPlatform) system;
     platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
+    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/agent-browser/package-lock.json);
   in {
-    agent-browser = prev.stdenvNoCC.mkDerivation {
+    agent-browser = prev.buildNpmPackage {
       pname = "agent-browser";
       inherit version;
 
@@ -420,19 +422,27 @@
         hash = "sha256-sf+IP0rQqZiboL7E9j2YVQBGtPPtMvcE/R9fplWyknk=";
       };
 
-      unpackPhase = ''
-        runHook preUnpack
-        mkdir -p source
-        tar -xzf $src -C source --strip-components=1
-        runHook postUnpack
+      npmDepsHash = "sha256-6KFrSSiws8ALuo3dg2FpNp2FXrRIB43SunpcwjrqbUI=";
+      dontNpmBuild = true;
+      npmPackFlags = ["--ignore-scripts"];
+      npmFlags = ["--ignore-scripts"];
+
+      nativeBuildInputs = [prev.makeWrapper];
+
+      postPatch = ''
+        cp ${packageLock} package-lock.json
       '';
 
-      installPhase = ''
-        runHook preInstall
-        mkdir -p $out/bin
-        cp source/bin/agent-browser-${platform} $out/bin/agent-browser
-        chmod +x $out/bin/agent-browser
-        runHook postInstall
+      postInstall = ''
+        # Replace node wrapper with native binary
+        rm -f $out/bin/agent-browser
+        mkdir -p $out/lib/agent-browser
+        cp $out/lib/node_modules/agent-browser/bin/agent-browser-${platform} $out/lib/agent-browser/agent-browser
+        chmod +x $out/lib/agent-browser/agent-browser
+
+        makeWrapper $out/lib/agent-browser/agent-browser $out/bin/agent-browser \
+          --set AGENT_BROWSER_HOME $out/lib/node_modules/agent-browser \
+          --prefix PATH : ${prev.lib.makeBinPath [prev.nodejs]}
       '';
 
       meta = with prev.lib; {
