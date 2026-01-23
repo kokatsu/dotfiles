@@ -29,6 +29,7 @@ in {
     ./programs/bat.nix
     ./programs/eza.nix
     ./programs/fzf.nix
+    ./programs/gh.nix
     ./programs/git.nix
     ./programs/starship.nix
     ./programs/zoxide.nix
@@ -69,7 +70,7 @@ in {
         fd
         figlet # ASCIIアート
         fzf
-        gh
+        # gh is managed by programs.gh (nix/home/programs/gh.nix)
         git
         graphviz # グラフ可視化
         helix
@@ -249,6 +250,7 @@ in {
         force = true;
       };
       ".config/claude/settings.json".source = ../../.config/claude/settings.json;
+      ".config/claude/CLAUDE.md".source = ../../.config/claude/CLAUDE.md;
       ".config/claude/skills".source = ../../.config/claude/skills;
       ".config/claude/rules".source = ../../.config/claude/rules;
       ".config/delta".source = ../../.config/delta;
@@ -276,12 +278,6 @@ in {
       # これにより ya pkg コマンドで package.toml への書き込みが可能
       ".config/yazi" = {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
-        force = true;
-      };
-      # gh: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
-      # hosts.yml は gh auth login で動的に作成されるため、ディレクトリではなくファイル単位でリンク
-      ".config/gh/config.yml" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/gh/config.yml";
         force = true;
       };
       ".config/helix".source = ../../.config/helix;
@@ -344,12 +340,6 @@ in {
           done
         fi
       done
-    '';
-
-    # gh ディレクトリを作成
-    # config.yml は mkOutOfStoreSymlink で管理、hosts.yml は gh auth login で動的に作成される
-    fixGhDirectory = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      $DRY_RUN_CMD mkdir -p "$HOME/.config/gh"
     '';
 
     # Playwright ブラウザを Nix store からシンボリックリンク (agent-browser 用)
