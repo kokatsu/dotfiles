@@ -1,4 +1,5 @@
 {
+  "language": "japanese",
   "permissions": {
     "deny": [
       "Read(**/node_modules/**)",
