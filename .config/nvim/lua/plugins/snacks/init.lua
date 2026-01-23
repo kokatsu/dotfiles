@@ -5,6 +5,7 @@ local bufdelete = require('plugins.snacks.bufdelete')
 local dashboard = require('plugins.snacks.dashboard')
 local explorer = require('plugins.snacks.explorer')
 local gitbrowse = require('plugins.snacks.gitbrowse')
+local image = require('plugins.snacks.image')
 local indent = require('plugins.snacks.indent')
 local lazygit = require('plugins.snacks.lazygit')
 local notifier = require('plugins.snacks.notifier')
@@ -26,6 +27,8 @@ return {
     bufdelete = bufdelete.opts,
     ---@class snacks.gitbrowse.Config
     gitbrowse = gitbrowse.opts,
+    ---@class snacks.image.Config
+    image = image.opts,
     ---@class snacks.notifier.Config
     notifier = notifier.opts,
     ---@class snacks.quickfile.Config
