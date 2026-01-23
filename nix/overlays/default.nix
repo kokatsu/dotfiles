@@ -304,15 +304,12 @@
   };
 
   # secretlint - Secret linting tool
-  # Uses pre-built package from npm with vendored package-lock.json
+  # Uses custom package.json to bundle secretlint with rule preset
   # Renovate: datasource=npm depName=secretlint
   secretlint = _final: prev: let
     version = "11.3.0";
-    tarball = prev.fetchurl {
-      url = "https://registry.npmjs.org/secretlint/-/secretlint-${version}.tgz";
-      hash = "sha256-nQBZbPD+k8Tk5BqcdYH+SkSv+YiNthG999KSJBrP38E=";
-    };
-    # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
+    # Use vendored package.json and package-lock.json that include rule preset
+    packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/secretlint/package.json);
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/secretlint/package-lock.json);
   in {
     secretlint = prev.buildNpmPackage {
@@ -321,13 +318,12 @@
 
       src = prev.runCommand "secretlint-src" {} ''
         mkdir -p $out
-        tar -xzf ${tarball} -C $out --strip-components=1
+        cp ${packageJson} $out/package.json
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-z6SwhFmSRDCUbaWKFWC9ex93uIfgJLeNxJ56RaEm63k=";
+      npmDepsHash = "sha256-WGYktC3FAMLzXsflnhuFM6PPjuDK7y/uw0vQ8fswT6s=";
 
-      # Already pre-built
       dontNpmBuild = true;
 
       meta = with prev.lib; {
