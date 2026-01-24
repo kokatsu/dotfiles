@@ -32,10 +32,11 @@
     brews = [];
     casks = [
       "clipy"
-      "docker"
+      "docker-desktop"
       "ghostty"
       "google-chrome"
       "google-japanese-ime"
+      "karabiner-elements"
       "raycast"
     ];
   };
@@ -66,6 +67,19 @@
       trackpad = {
         Clicking = true;
         TrackpadRightClick = true;
+      };
+
+      # App Switcher (Command+Tab) を無効化
+      # Raycast Switch Windows を代わりに使用
+      CustomUserPreferences = {
+        "com.apple.symbolichotkeys" = {
+          AppleSymbolicHotKeys = {
+            # 71 = Command+Tab (Move focus to active or next window)
+            "71" = {
+              enabled = false;
+            };
+          };
+        };
       };
     };
 
