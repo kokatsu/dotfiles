@@ -40,7 +40,11 @@ nix run home-manager -- switch --flake . --impure
 ### Apply Configuration Changes
 
 ```bash
+# Home Manager only
 home-manager switch --flake ~/dotfiles --impure
+
+# macOS (nix-darwin)
+sudo HOSTNAME=$(hostname -s) darwin-rebuild switch --flake ~/dotfiles --impure
 ```
 
 ### Update Packages
