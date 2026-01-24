@@ -1,0 +1,6 @@
+{
+  "tasks": {
+    "build": "deno run --allow-env --allow-read --allow-write karabiner.ts",
+    "dry-run": "deno run --allow-env --allow-read --allow-write karabiner.ts --dry-run"
+  }
+}
