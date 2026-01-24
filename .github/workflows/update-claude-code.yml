@@ -2,8 +2,9 @@ name: Update Claude Code
 
 on:
   schedule:
-    # 毎日 23:00 UTC (8:00 JST) にチェック
-    - cron: '0 23 * * *'
+    # 毎日 22:37 UTC (7:37 JST) にチェック
+    # 注: 毎時0分は GitHub Actions の高負荷時間帯のため避ける
+    - cron: '37 22 * * *'
   workflow_dispatch:
 
 concurrency:
