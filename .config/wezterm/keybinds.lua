@@ -6,6 +6,38 @@ wezterm.on('maximize-window', function(window, _)
   window:maximize()
 end)
 
+--- 修飾子を変換する
+---@param mods string 修飾子文字列
+---@param mods_map table 修飾子マッピング { PRIMARY = 'CMD', SECONDARY = 'CTRL' }
+---@return string 変換後の修飾子
+local function convert_mods(mods, mods_map)
+  local result = mods
+  for placeholder, actual in pairs(mods_map) do
+    result = result:gsub(placeholder, actual)
+  end
+  return result
+end
+
+--- キーバインドの修飾子を変換する
+---@param keys table[] キーバインドテーブル
+---@param mods_map table 修飾子マッピング
+---@return table[] 変換後のキーバインドテーブル
+local function convert_keys(keys, mods_map)
+  local result = {}
+  for _, key in ipairs(keys) do
+    local converted = {}
+    for k, v in pairs(key) do
+      if k == 'mods' then
+        converted[k] = convert_mods(v, mods_map)
+      else
+        converted[k] = v
+      end
+    end
+    table.insert(result, converted)
+  end
+  return result
+end
+
 --- キーテーブルをマージする
 ---@param ... table[] マージするキーテーブル
 ---@return table マージされたキーテーブル
@@ -33,104 +65,97 @@ local common_keys = {
       end
     end),
   },
-  -- `Control + s` で水平分割
-  { key = 's', mods = 'CTRL', action = act.SplitHorizontal({}) },
-  -- `Control + t` で新しいタブを作成
-  { key = 't', mods = 'CTRL', action = act.SpawnCommandInNewTab({ cwd = wezterm.home_dir }) },
-  -- `Control + n` で新しいウィンドウを作成
-  { key = 'n', mods = 'CTRL', action = act.SpawnCommandInNewWindow({ cwd = wezterm.home_dir }) },
-  -- `Control + Tab` で右のタブに移動
-  { key = 'Tab', mods = 'CTRL', action = act.ActivateTabRelative(1) },
-  -- `Control + Shift + Tab` で左のタブに移動
-  { key = 'Tab', mods = 'CTRL|SHIFT', action = act.ActivateTabRelative(-1) },
   -- `Shift + Enter` で 改行を送信
   -- https://zenn.dev/glaucus03/articles/070589323cb450
   { key = 'Enter', mods = 'SHIFT', action = act.SendString('\n') },
-  -- `Control + z` でペインをズーム（トグル）
-  { key = 'z', mods = 'CTRL', action = act.TogglePaneZoomState },
+}
+
+-- 統一キーバインド (PRIMARY/SECONDARY をプラットフォームごとに変換)
+-- Windows: PRIMARY=CTRL, SECONDARY=ALT
+-- macOS (Karabiner Control↔Command入れ替え): PRIMARY=CMD(物理Ctrl), SECONDARY=CTRL(物理Cmd)
+local unified_keys = {
+  -- `PRIMARY + c` でクリップボードにコピー
+  { key = 'c', mods = 'PRIMARY', action = act.CopyTo('Clipboard') },
+  -- `PRIMARY + Shift + c` でキャンセル (SIGINT)
+  { key = 'C', mods = 'PRIMARY', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
+  -- `PRIMARY + v` でクリップボードからペースト
+  { key = 'v', mods = 'PRIMARY', action = act.PasteFrom('Clipboard') },
+  -- `PRIMARY + s` で水平分割
+  { key = 's', mods = 'PRIMARY', action = act.SplitHorizontal({}) },
+  -- `PRIMARY + Shift + s` で垂直分割
+  { key = 'S', mods = 'PRIMARY', action = act.SplitVertical({}) },
+  -- `PRIMARY + t` で新しいタブを作成
+  { key = 't', mods = 'PRIMARY', action = act.SpawnCommandInNewTab({ cwd = wezterm.home_dir }) },
+  -- `PRIMARY + Shift + t` で現在のタブを新しいタブにコピー
+  { key = 'T', mods = 'PRIMARY', action = act.SpawnTab('CurrentPaneDomain') },
+  -- `PRIMARY + n` で新しいウィンドウを作成
+  { key = 'n', mods = 'PRIMARY', action = act.SpawnCommandInNewWindow({ cwd = wezterm.home_dir }) },
+  -- `PRIMARY + Shift + n` で現在のウィンドウを新しいウィンドウにコピー
+  { key = 'N', mods = 'PRIMARY', action = act.SpawnWindow },
+  -- `PRIMARY + Tab` で右のタブに移動
+  { key = 'Tab', mods = 'PRIMARY', action = act.ActivateTabRelative(1) },
+  -- `PRIMARY + Shift + Tab` で左のタブに移動
+  { key = 'Tab', mods = 'PRIMARY|SHIFT', action = act.ActivateTabRelative(-1) },
+  -- `PRIMARY + z` でペインをズーム（トグル）
+  { key = 'z', mods = 'PRIMARY', action = act.TogglePaneZoomState },
+  -- `SECONDARY + w` で現在のペインを閉じる
+  { key = 'w', mods = 'SECONDARY', action = act.CloseCurrentPane({ confirm = false }) },
+  -- `SECONDARY + 矢印` でペイン移動
+  { key = 'LeftArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Left') },
+  { key = 'RightArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Right') },
+  { key = 'UpArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Up') },
+  { key = 'DownArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Down') },
+  -- `PRIMARY + 左矢印` で前の単語に移動 (Esc+b)
+  -- selene: allow(bad_string_escape)
+  { key = 'LeftArrow', mods = 'PRIMARY', action = act.SendString('\x1bb') },
+  -- `PRIMARY + 右矢印` で次の単語に移動 (Esc+f)
+  -- selene: allow(bad_string_escape)
+  { key = 'RightArrow', mods = 'PRIMARY', action = act.SendString('\x1bf') },
+  -- `PRIMARY + Shift + L` でデバッグオーバーレイを表示
+  { key = 'L', mods = 'PRIMARY', action = act.ShowDebugOverlay },
+  -- `PRIMARY + ;` でフォントを大きくする
+  { key = ';', mods = 'PRIMARY', action = act.IncreaseFontSize },
+  -- `PRIMARY + -` でフォントを小さくする
+  { key = '-', mods = 'PRIMARY', action = act.DecreaseFontSize },
+  -- `PRIMARY + :` でフォントをリセット
+  { key = ':', mods = 'PRIMARY', action = act.ResetFontSize },
+  -- `PRIMARY + [` でタブを左に移動
+  { key = '[', mods = 'PRIMARY', action = act.MoveTabRelative(-1) },
+  -- `PRIMARY + ]` でタブを右に移動
+  { key = ']', mods = 'PRIMARY', action = act.MoveTabRelative(1) },
+  -- `PRIMARY + Backspace` で単語を削除
+  { key = 'Backspace', mods = 'PRIMARY', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
+  -- `PRIMARY + 1-9` でタブ切替
+  { key = '1', mods = 'PRIMARY', action = act.ActivateTab(0) },
+  { key = '2', mods = 'PRIMARY', action = act.ActivateTab(1) },
+  { key = '3', mods = 'PRIMARY', action = act.ActivateTab(2) },
+  { key = '4', mods = 'PRIMARY', action = act.ActivateTab(3) },
+  { key = '5', mods = 'PRIMARY', action = act.ActivateTab(4) },
+  { key = '6', mods = 'PRIMARY', action = act.ActivateTab(5) },
+  { key = '7', mods = 'PRIMARY', action = act.ActivateTab(6) },
+  { key = '8', mods = 'PRIMARY', action = act.ActivateTab(7) },
+  { key = '9', mods = 'PRIMARY', action = act.ActivateLastTab },
+  -- `PRIMARY + Shift + 矢印` でペインリサイズ
+  { key = 'LeftArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Left', 1 }) },
+  { key = 'RightArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Right', 1 }) },
+  { key = 'UpArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Up', 1 }) },
+  { key = 'DownArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Down', 1 }) },
+  -- `SECONDARY + l` でペインを左に回転
+  { key = 'l', mods = 'SECONDARY', action = act.RotatePanes('CounterClockwise') },
+  -- `SECONDARY + r` でペインを右に回転
+  { key = 'r', mods = 'SECONDARY', action = act.RotatePanes('Clockwise') },
+  -- `PRIMARY + Shift + X` でコピーモードをアクティブにする
+  { key = 'X', mods = 'PRIMARY', action = act.ActivateCopyMode },
+  -- `SECONDARY + f` で画面を最大化
+  { key = 'f', mods = 'SECONDARY', action = act.EmitEvent('maximize-window') },
+  -- QuickSelect モード
+  { key = 'q', mods = 'SECONDARY', action = act.QuickSelect },
+  -- コマンドパレット
+  { key = 'p', mods = 'PRIMARY|SHIFT', action = act.ActivateCommandPalette },
 }
 
 -- Windows 固有キーバインド
 local windows_specific_keys = {
-  -- `Control + C` でクリップボードにコピー
-  { key = 'c', mods = 'CTRL', action = act.CopyTo('Clipboard') },
-  -- `Control + C` でキャンセル
-  { key = 'C', mods = 'CTRL', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
-  -- `Control + V` でクリップボードからペースト
-  { key = 'v', mods = 'CTRL', action = act.PasteFrom('Clipboard') },
-  -- `Control + S` で垂直分割
-  { key = 'S', mods = 'CTRL', action = act.SplitVertical({}) },
-  -- `Control + T` で現在のタブを新しいタブにコピー
-  { key = 'T', mods = 'CTRL', action = act.SpawnTab('CurrentPaneDomain') },
-  -- `Control + N` で現在のウィンドウを新しいウィンドウにコピー
-  { key = 'N', mods = 'CTRL', action = act.SpawnWindow },
-  -- `Alt + w` で現在のペインを閉じる(確認ダイアログを表示しない)
-  { key = 'w', mods = 'ALT', action = act.CloseCurrentPane({ confirm = false }) },
-  -- `Alt + 左矢印` で左のペインに移動
-  { key = 'LeftArrow', mods = 'ALT', action = act.ActivatePaneDirection('Left') },
-  -- `Alt + 右矢印` で右のペインに移動
-  { key = 'RightArrow', mods = 'ALT', action = act.ActivatePaneDirection('Right') },
-  -- `Alt + 上矢印` で上のペインに移動
-  { key = 'UpArrow', mods = 'ALT', action = act.ActivatePaneDirection('Up') },
-  -- `Alt + 下矢印` で下のペインに移動
-  { key = 'DownArrow', mods = 'ALT', action = act.ActivatePaneDirection('Down') },
-  -- `Control + 左矢印` で前の単語に移動 (Esc+b)
-  -- selene: allow(bad_string_escape)
-  { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1bb') },
-  -- `Control + 右矢印` で次の単語に移動 (Esc+f)
-  -- selene: allow(bad_string_escape)
-  { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1bf') },
-  -- `Control + L` でデバッグオーバーレイを表示
-  { key = 'L', mods = 'CTRL', action = act.ShowDebugOverlay },
-  -- `Control + ;` でフォントを大きくする
-  { key = ';', mods = 'CTRL', action = act.IncreaseFontSize },
-  -- `Control + -` でフォントを小さくする
-  { key = '-', mods = 'CTRL', action = act.DecreaseFontSize },
-  -- `Control + :` でフォントをリセット
-  { key = ':', mods = 'CTRL', action = act.ResetFontSize },
-  -- `Control + [` でタブを左に移動
-  { key = '[', mods = 'CTRL', action = act.MoveTabRelative(-1) },
-  -- `Control + ]` でタブを右に移動
-  { key = ']', mods = 'CTRL', action = act.MoveTabRelative(1) },
-  -- `Control + Backspace` で単語を削除
-  -- https://github.com/wezterm/wezterm/discussions/3983
-  -- https://github.com/wezterm/wezterm/discussions/3983#discussioncomment-6981806
-  { key = 'Backspace', mods = 'CTRL', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
-  -- `Control + 1` で左から1番目のタブに移動
-  { key = '1', mods = 'CTRL', action = act.ActivateTab(0) },
-  -- `Control + 2` で左から2番目のタブに移動
-  { key = '2', mods = 'CTRL', action = act.ActivateTab(1) },
-  -- `Control + 3` で左から3番目のタブに移動
-  { key = '3', mods = 'CTRL', action = act.ActivateTab(2) },
-  -- `Control + 4` で左から4番目のタブに移動
-  { key = '4', mods = 'CTRL', action = act.ActivateTab(3) },
-  -- `Control + 5` で左から5番目のタブに移動
-  { key = '5', mods = 'CTRL', action = act.ActivateTab(4) },
-  -- `Control + 6` で左から6番目のタブに移動
-  { key = '6', mods = 'CTRL', action = act.ActivateTab(5) },
-  -- `Control + 7` で左から7番目のタブに移動
-  { key = '7', mods = 'CTRL', action = act.ActivateTab(6) },
-  -- `Control + 8` で左から8番目のタブに移動
-  { key = '8', mods = 'CTRL', action = act.ActivateTab(7) },
-  -- `Control + 9` で最後のタブに移動
-  { key = '9', mods = 'CTRL', action = act.ActivateLastTab },
-  -- `Control + Shift + 左矢印` でペインを左に拡大
-  { key = 'LeftArrow', mods = 'CTRL|SHIFT', action = act.AdjustPaneSize({ 'Left', 1 }) },
-  -- `Control + Shift + 右矢印` でペインを右に拡大
-  { key = 'RightArrow', mods = 'CTRL|SHIFT', action = act.AdjustPaneSize({ 'Right', 1 }) },
-  -- `Control + Shift + 上矢印` でペインを上に拡大
-  { key = 'UpArrow', mods = 'CTRL|SHIFT', action = act.AdjustPaneSize({ 'Up', 1 }) },
-  -- `Control + Shift + 下矢印` でペインを下に拡大
-  { key = 'DownArrow', mods = 'CTRL|SHIFT', action = act.AdjustPaneSize({ 'Down', 1 }) },
-  -- https://wezterm.org/config/lua/keyassignment/RotatePanes.html
-  -- `Alt + l` でペインを左に回転
-  { key = 'l', mods = 'ALT', action = act.RotatePanes('CounterClockwise') },
-  -- `Alt + r` でペインを右に回転
-  { key = 'r', mods = 'ALT', action = act.RotatePanes('Clockwise') },
-  -- `Control + X` でコピーモードをアクティブにする
-  { key = 'X', mods = 'CTRL', action = act.ActivateCopyMode },
-  -- `Alt + f` で画面を最大化
-  { key = 'f', mods = 'ALT', action = act.EmitEvent('maximize-window') },
   -- `Alt + y` で新しいタブで PowerShell を起動
   {
     key = 'y',
@@ -143,10 +168,6 @@ local windows_specific_keys = {
     mods = 'ALT',
     action = act.SpawnCommandInNewTab({ args = { 'ssh', '127.0.0.1' }, domain = { DomainName = 'local' } }),
   },
-  -- QuickSelect モード（URLやパスを素早く選択）
-  { key = 'q', mods = 'ALT', action = act.QuickSelect },
-  -- コマンドパレット
-  { key = 'p', mods = 'CTRL|SHIFT', action = act.ActivateCommandPalette },
   -- https://picton.uk/blog/claude-code-image-paste-wezterm/
   -- `Alt + p` でクリップボードの画像を保存してWSLパスを出力（WSLドメインのみ）
   {
@@ -193,77 +214,14 @@ local windows_specific_keys = {
 
 -- macOS 固有キーバインド
 local darwin_specific_keys = {
-  -- `Control + x` でコピーモードをアクティブにする
-  { key = 'x', mods = 'CTRL', action = act.ActivateCopyMode },
-  -- `Command + c` でシェルに Ctrl+C (SIGINT) を送信
-  { key = 'c', mods = 'CMD', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
-  -- `Command + Shift + c` でクリップボードにコピー
-  { key = 'c', mods = 'CMD|SHIFT', action = act.CopyTo('Clipboard') },
-  -- `Command + v` でクリップボードからペースト
-  { key = 'v', mods = 'CMD', action = act.PasteFrom('Clipboard') },
-  -- `Control + Shift + s` で垂直分割
-  { key = 's', mods = 'CTRL|SHIFT', action = act.SplitVertical({}) },
-  -- `Control + Shift + t` で現在のタブを新しいタブにコピー
-  { key = 't', mods = 'CTRL|SHIFT', action = act.SpawnTab('CurrentPaneDomain') },
-  -- `Control + Shift + n` で現在のウィンドウを新しいウィンドウにコピー
-  { key = 'n', mods = 'CTRL|SHIFT', action = act.SpawnWindow },
-  -- `Control + w` で現在のペインを閉じる(確認ダイアログを表示しない)
-  { key = 'w', mods = 'CTRL', action = act.CloseCurrentPane({ confirm = false }) },
-  -- `Command + Option + 左矢印` で左のペインに移動
-  { key = 'LeftArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Left') },
-  -- `Command + Option + 右矢印` で右のペインに移動
-  { key = 'RightArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Right') },
-  -- `Command + Option + 上矢印` で上のペインに移動
-  { key = 'UpArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Up') },
-  -- `Command + Option + 下矢印` で下のペインに移動
-  { key = 'DownArrow', mods = 'CMD|OPT', action = act.ActivatePaneDirection('Down') },
-  -- `Option + 左矢印` で前の単語に移動 (Esc+b)
+  -- Option + 矢印で単語移動（macOS標準の動作）
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'OPT', action = act.SendString('\x1bb') },
-  -- `Option + 右矢印` で次の単語に移動 (Esc+f)
   -- selene: allow(bad_string_escape)
   { key = 'RightArrow', mods = 'OPT', action = act.SendString('\x1bf') },
-  -- `Control + 左矢印` で前の単語に移動
-  -- selene: allow(bad_string_escape)
-  { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5D') },
-  -- `Control + 右矢印` で次の単語に移動
-  -- selene: allow(bad_string_escape)
-  { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1b[1;5C') },
-  -- `Option + Backspace` で前の単語を削除
-  { key = 'Backspace', mods = 'OPT', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
-  -- `Control + Shift + l` でデバッグオーバーレイを表示
-  { key = 'l', mods = 'CTRL|SHIFT', action = act.ShowDebugOverlay },
-  -- `Control + f` で画面を最大化
-  { key = 'f', mods = 'CTRL', action = act.EmitEvent('maximize-window') },
-  -- タブ切替 Cmd + 数字
-  { key = '1', mods = 'CMD', action = act.ActivateTab(0) },
-  { key = '2', mods = 'CMD', action = act.ActivateTab(1) },
-  { key = '3', mods = 'CMD', action = act.ActivateTab(2) },
-  { key = '4', mods = 'CMD', action = act.ActivateTab(3) },
-  { key = '5', mods = 'CMD', action = act.ActivateTab(4) },
-  { key = '6', mods = 'CMD', action = act.ActivateTab(5) },
-  { key = '7', mods = 'CMD', action = act.ActivateTab(6) },
-  { key = '8', mods = 'CMD', action = act.ActivateTab(7) },
-  { key = '9', mods = 'CMD', action = act.ActivateTab(-1) },
-  -- フォントサイズ調整
-  { key = '+', mods = 'CMD', action = act.IncreaseFontSize },
-  { key = '-', mods = 'CMD', action = act.DecreaseFontSize },
-  { key = '0', mods = 'CMD', action = act.ResetFontSize },
-  -- タブ順序変更
-  { key = '[', mods = 'CMD|SHIFT', action = act.MoveTabRelative(-1) },
-  { key = ']', mods = 'CMD|SHIFT', action = act.MoveTabRelative(1) },
-  -- ペインリサイズ
-  { key = 'LeftArrow', mods = 'CMD|SHIFT', action = act.AdjustPaneSize({ 'Left', 1 }) },
-  { key = 'RightArrow', mods = 'CMD|SHIFT', action = act.AdjustPaneSize({ 'Right', 1 }) },
-  { key = 'UpArrow', mods = 'CMD|SHIFT', action = act.AdjustPaneSize({ 'Up', 1 }) },
-  { key = 'DownArrow', mods = 'CMD|SHIFT', action = act.AdjustPaneSize({ 'Down', 1 }) },
-  -- ペイン回転
-  { key = 'l', mods = 'CMD|OPT', action = act.RotatePanes('CounterClockwise') },
-  { key = 'r', mods = 'CMD|OPT', action = act.RotatePanes('Clockwise') },
-  -- QuickSelect モード（URLやパスを素早く選択）
-  { key = 'q', mods = 'CTRL', action = act.QuickSelect },
-  -- コマンドパレット
-  { key = 'p', mods = 'CMD|SHIFT', action = act.ActivateCommandPalette },
+  -- タブ切替 (Karabiner で Command+Tab → Control+Tab に変換されるため CTRL で受ける)
+  { key = 'Tab', mods = 'CTRL', action = act.ActivateTabRelative(1) },
+  { key = 'Tab', mods = 'CTRL|SHIFT', action = act.ActivateTabRelative(-1) },
 }
 
 -- コピーモードのキーテーブル（Vim風操作）
@@ -337,9 +295,31 @@ local search_mode = {
   { key = 'u', mods = 'CTRL', action = act.CopyMode('ClearPattern') },
 }
 
+--- 統一キーバインドを取得する
+---@param mods_map table 修飾子マッピング { PRIMARY = 'CTRL', SECONDARY = 'ALT' }
+---@return table[] 変換後のキーバインドテーブル
+local function get_unified_keys(mods_map)
+  return convert_keys(unified_keys, mods_map)
+end
+
 return {
-  windows_keys = merge_keys(common_keys, windows_specific_keys),
-  darwin_keys = merge_keys(common_keys, darwin_specific_keys),
+  -- 新しいAPI: 修飾子マッピングを渡して統一キーを取得
+  get_unified_keys = get_unified_keys,
+  common_keys = common_keys,
+  windows_specific_keys = windows_specific_keys,
+  darwin_specific_keys = darwin_specific_keys,
+  merge_keys = merge_keys,
+  -- 後方互換性のため残す
+  windows_keys = merge_keys(
+    common_keys,
+    convert_keys(unified_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),
+    windows_specific_keys
+  ),
+  darwin_keys = merge_keys(
+    common_keys,
+    convert_keys(unified_keys, { PRIMARY = 'CMD', SECONDARY = 'CTRL' }),
+    darwin_specific_keys
+  ),
   key_tables = {
     copy_mode = copy_mode,
     search_mode = search_mode,
