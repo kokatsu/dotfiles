@@ -281,6 +281,124 @@ in {
         force = true;
       };
       ".config/helix".source = ../../.config/helix;
+
+      # Karabiner-Elements (macOS only)
+      ".config/karabiner/karabiner.json" = lib.mkIf isDarwin {
+        text = builtins.toJSON {
+          global = {
+            ask_for_confirmation_before_quitting = true;
+            check_for_updates_on_startup = true;
+            show_in_menu_bar = true;
+            show_profile_name_in_menu_bar = false;
+            unsafe_ui = false;
+          };
+          profiles = [
+            {
+              name = "Default";
+              selected = true;
+              simple_modifications = [
+                {
+                  from = {key_code = "left_control";};
+                  to = [{key_code = "left_command";}];
+                }
+                {
+                  from = {key_code = "left_command";};
+                  to = [{key_code = "left_control";}];
+                }
+              ];
+              complex_modifications = {
+                parameters = {
+                  "basic.simultaneous_threshold_milliseconds" = 50;
+                  "basic.to_delayed_action_delay_milliseconds" = 500;
+                  "basic.to_if_alone_timeout_milliseconds" = 1000;
+                  "basic.to_if_held_down_threshold_milliseconds" = 500;
+                };
+                rules = [
+                  {
+                    description = "Terminal apps: Command+Tab to Control+Tab";
+                    manipulators = [
+                      {
+                        type = "basic";
+                        from = {
+                          key_code = "tab";
+                          modifiers = {
+                            mandatory = ["command"];
+                            optional = ["shift"];
+                          };
+                        };
+                        to = [
+                          {
+                            key_code = "tab";
+                            modifiers = ["control"];
+                          }
+                        ];
+                        conditions = [
+                          {
+                            type = "frontmost_application_if";
+                            bundle_identifiers = [
+                              "^com\\.github\\.wez\\.wezterm$"
+                              "^com\\.mitchellh\\.ghostty$"
+                            ];
+                          }
+                        ];
+                      }
+                      {
+                        type = "basic";
+                        from = {
+                          key_code = "tab";
+                          modifiers = {
+                            mandatory = ["command" "shift"];
+                          };
+                        };
+                        to = [
+                          {
+                            key_code = "tab";
+                            modifiers = ["control" "shift"];
+                          }
+                        ];
+                        conditions = [
+                          {
+                            type = "frontmost_application_if";
+                            bundle_identifiers = [
+                              "^com\\.github\\.wez\\.wezterm$"
+                              "^com\\.mitchellh\\.ghostty$"
+                            ];
+                          }
+                        ];
+                      }
+                    ];
+                  }
+                  {
+                    description = "Option+Tab to Raycast Switch Windows";
+                    manipulators = [
+                      {
+                        type = "basic";
+                        from = {
+                          key_code = "tab";
+                          modifiers = {
+                            mandatory = ["option"];
+                          };
+                        };
+                        to = [
+                          {
+                            shell_command = "open raycast://extensions/raycast/navigation/switch-windows";
+                          }
+                        ];
+                      }
+                    ];
+                  }
+                ];
+              };
+              fn_function_keys = [];
+              devices = [];
+              virtual_hid_keyboard = {
+                country_code = 0;
+                keyboard_type_v2 = "jis";
+              };
+            }
+          ];
+        };
+      };
       ".config/lazydocker".source = ../../.config/lazydocker;
       ".config/lazygit".source = ../../.config/lazygit;
       ".config/readline".source = ../../.config/readline;
