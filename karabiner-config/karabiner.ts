@@ -4,12 +4,7 @@
  *
  * Build: deno run --allow-env --allow-read --allow-write karabiner.ts
  */
-import {
-  ifApp,
-  map,
-  rule,
-  writeToProfile,
-} from "https://deno.land/x/karabinerts@1.36.0/deno.ts";
+import { ifApp, map, rule, writeToProfile } from "karabiner.ts";
 
 // Terminal applications bundle identifiers
 const terminalApps = ifApp([
