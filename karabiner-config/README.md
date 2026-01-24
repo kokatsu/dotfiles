@@ -1,6 +1,7 @@
 # Karabiner-Elements Configuration
 
-[karabiner.ts](https://github.com/evan-liu/karabiner.ts) を使用した Karabiner-Elements の設定管理。
+[karabiner.ts](https://github.com/evan-liu/karabiner.ts) を使用した
+Karabiner-Elements の設定管理。
 
 ## 使い方
 
@@ -29,8 +30,8 @@ deno task build
 
 ## 設定内容
 
-| ルール | 説明 |
-|--------|------|
-| Swap Control and Command | 左Control ↔ 左Command を入れ替え |
+| ルール                               | 説明                                         |
+| ------------------------------------ | -------------------------------------------- |
+| Swap Control and Command             | 左Control ↔ 左Command を入れ替え             |
 | Terminal: Command+Tab to Control+Tab | WezTerm/Ghostty で Command+Tab → Control+Tab |
-| Option+Tab to Raycast Switch Windows | Option+Tab で Raycast のウィンドウ切り替え |
+| Option+Tab to Raycast Switch Windows | Option+Tab で Raycast のウィンドウ切り替え   |
