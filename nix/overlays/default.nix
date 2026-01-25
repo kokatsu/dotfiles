@@ -422,7 +422,7 @@
         hash = "sha256-J1BOgtXYP6h7wXwEnliHy9kmYSNzt2LJw8sKoart6C0=";
       };
 
-      npmDepsHash = "sha256-6KFrSSiws8ALuo3dg2FpNp2FXrRIB43SunpcwjrqbUI=";
+      npmDepsHash = "sha256-hj3s5tbAS+dj0WDvRUHkr3llOZcyvoXelZmkcQlizYw=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts"];
