@@ -419,7 +419,7 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-sf+IP0rQqZiboL7E9j2YVQBGtPPtMvcE/R9fplWyknk=";
+        hash = "sha256-J1BOgtXYP6h7wXwEnliHy9kmYSNzt2LJw8sKoart6C0=";
       };
 
       npmDepsHash = "sha256-6KFrSSiws8ALuo3dg2FpNp2FXrRIB43SunpcwjrqbUI=";
