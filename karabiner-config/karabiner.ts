@@ -12,23 +12,29 @@ const terminalApps = ifApp([
   "^com\\.mitchellh\\.ghostty$",
 ]);
 
-writeToProfile("Default", [
-  // Swap left_control and left_command
-  rule("Swap Control and Command").manipulators([
-    map("left_control").to("left_command"),
-    map("left_command").to("left_control"),
-  ]),
+writeToProfile(
+  "Default",
+  [
+    // Terminal apps: Command+Tab to Control+Tab (for tab switching in terminal multiplexers)
+    rule("Terminal: Command+Tab to Control+Tab", terminalApps).manipulators([
+      map("tab", "command").to("tab", "control"),
+      map("tab", ["command", "shift"]).to("tab", ["control", "shift"]),
+    ]),
 
-  // Terminal apps: Command+Tab to Control+Tab (for tab switching in terminal multiplexers)
-  rule("Terminal: Command+Tab to Control+Tab", terminalApps).manipulators([
-    map("tab", "command").to("tab", "control"),
-    map("tab", ["command", "shift"]).to("tab", ["control", "shift"]),
-  ]),
-
-  // Option+Tab to Raycast Switch Windows
-  rule("Option+Tab to Raycast Switch Windows").manipulators([
-    map("tab", "option").to$(
-      "open raycast://extensions/raycast/navigation/switch-windows",
-    ),
-  ]),
-]);
+    // Option+Tab to Raycast Switch Windows
+    rule("Option+Tab to Raycast Switch Windows").manipulators([
+      map("tab", "option").to$(
+        "open raycast://extensions/raycast/navigation/switch-windows",
+      ),
+    ]),
+  ],
+  {},
+  {
+    // Swap left_control and left_command using simple_modifications
+    // This works correctly with any modifier combinations (Shift, etc.)
+    simple_modifications: [
+      map("left_control").to("left_command"),
+      map("left_command").to("left_control"),
+    ],
+  },
+);
