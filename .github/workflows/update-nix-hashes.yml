@@ -130,16 +130,29 @@ jobs:
           # Update the hash in ccusage section
           sed -i "/ccusage = _final: prev: {/,/^  };/{s|hash = \"sha256-[^\"]*\"|hash = \"${HASH}\"|}" "$OVERLAY"
 
-      - name: Update agent-browser hash
+      - name: Update agent-browser hashes
         if: steps.detect.outputs.package == 'agent-browser'
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           OVERLAY="nix/overlays/default.nix"
+          LOCK_DIR="nix/npm-locks/agent-browser"
 
+          # Update tarball hash
           URL="https://registry.npmjs.org/agent-browser/-/agent-browser-${VERSION}.tgz"
-          HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-          # Update the hash in agent-browser section
-          sed -i "/agent-browser = _final: prev: let/,/^  };/{s|hash = \"sha256-[^\"]*\"|hash = \"${HASH}\"|}" "$OVERLAY"
+          TARBALL_HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+          sed -i "/agent-browser = _final: prev: let/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${TARBALL_HASH}\";|}" "$OVERLAY"
+
+          # Regenerate package-lock.json
+          mkdir -p /tmp/agent-browser-pkg
+          curl -fsSL "$URL" | tar -xzf - -C /tmp/agent-browser-pkg --strip-components=1
+          cd /tmp/agent-browser-pkg
+          npm install --package-lock-only --ignore-scripts
+          cp package-lock.json "$GITHUB_WORKSPACE/$LOCK_DIR/"
+          cd "$GITHUB_WORKSPACE"
+
+          # Compute npmDepsHash using prefetch-npm-deps
+          NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
+          sed -i "/agent-browser = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       # === NPM packages with buildNpmPackage ===
 
@@ -227,3 +240,11 @@ jobs:
             git commit -m "fix: update nix hashes for ${{ steps.detect.outputs.package }} ${{ steps.version.outputs.version }}"
             git push
           fi
+
+  run-check:
+    name: Run Check workflow
+    needs: update-hashes
+    if: github.actor == 'renovate[bot]'
+    uses: ./.github/workflows/check.yml
+    secrets:
+      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}

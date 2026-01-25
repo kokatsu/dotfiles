@@ -20,6 +20,8 @@ permissions:
 jobs:
   format:
     name: Format check
+    # Renovate PRの場合はUpdate Nix Hashesからのworkflow_callを待つ
+    if: github.actor != 'renovate[bot]' || github.event_name == 'workflow_call'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -36,6 +38,7 @@ jobs:
 
   build-linux:
     name: Build (Linux)
+    if: github.actor != 'renovate[bot]' || github.event_name == 'workflow_call'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -55,6 +58,7 @@ jobs:
 
   build-darwin:
     name: Build (macOS)
+    if: github.actor != 'renovate[bot]' || github.event_name == 'workflow_call'
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
