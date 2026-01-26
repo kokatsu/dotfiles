@@ -144,21 +144,31 @@ wezterm.on('toggle-opacity-minus', function(window, _)
   })
 end)
 
+-- InputSelector 方式
 M.apply_to_keys = function(keys, background_modifier, opacity_modifier)
   table.insert(keys, {
-    key = '0',
+    key = 'b',
     mods = background_modifier,
-    action = wezterm.action.EmitEvent('toggle-default-background'),
+    action = wezterm.action.InputSelector({
+      title = '背景画像を選択',
+      choices = (function()
+        local choices = { { label = 'デフォルト（なし）', id = '0' } }
+        for i = 1, 9 do
+          if background_images[i] then
+            table.insert(choices, { label = '背景 ' .. i, id = tostring(i) })
+          end
+        end
+        return choices
+      end)(),
+      action = wezterm.action_callback(function(window, pane, id, _)
+        if id == '0' then
+          window:perform_action(wezterm.action.EmitEvent('toggle-default-background'), pane)
+        elseif id then
+          window:perform_action(wezterm.action.EmitEvent('toggle-background' .. id), pane)
+        end
+      end),
+    }),
   })
-
-  -- 1~9の背景画像切り替えキーバインドを登録（Windows）
-  for i = 1, 9 do
-    table.insert(keys, {
-      key = tostring(i),
-      mods = background_modifier,
-      action = wezterm.action.EmitEvent('toggle-background' .. i),
-    })
-  end
 
   table.insert(keys, {
     key = 'UpArrow',
