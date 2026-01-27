@@ -152,6 +152,7 @@ in {
         copilot-language-server
         dockerfile-language-server
         lua-language-server
+        marksman # Markdown LSP
         nil # Nix LSP
         nixd
         svelte-language-server
