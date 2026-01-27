@@ -27,7 +27,7 @@ alias lzd="lazydocker"
 # Requires: https://github.com/kokatsu/git-graph/tree/feat/current-option
 # ------------------------------------------------------------------------------
 
-alias gg="git-graph --model catppuccin-mocha --style bold --color always --current --max-count 50 --format '%H%d %s'"
+alias gg="git-graph --model catppuccin-mocha --style bold --color always --current --max-count 50 --format '%H%d %s' --highlight-head 'bold,black,bg:bright_yellow'"
 
 # ------------------------------------------------------------------------------
 # Lazygit (https://github.com/jesseduffield/lazygit)
