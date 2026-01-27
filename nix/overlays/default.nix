@@ -1,5 +1,55 @@
 # Custom overlays for fixing build issues
 {
+  # marksman - Markdown LSP (binary release)
+  # nixpkgs の marksman は .NET 依存で Swift ビルド失敗するため GitHub バイナリを使用
+  # Renovate: datasource=github-releases depName=artempyanykh/marksman
+  marksman-binary = _final: prev: let
+    version = "2025-12-13";
+    hashes = {
+      "aarch64-darwin" = "sha256-7JSfQwwYZ5BXmDvNiiT5VVDt6iqFX8BAswfaZ8ePCYk=";
+      "x86_64-darwin" = "sha256-7JSfQwwYZ5BXmDvNiiT5VVDt6iqFX8BAswfaZ8ePCYk=";
+      "aarch64-linux" = "sha256-X8vETHw2brLD8LcnDX2RKrofnCaod1sz7X0ydMUrOqA=";
+      "x86_64-linux" = "sha256-1K9buN6h620jWhK3UTZW21FotG1AfSbnDl9o6RQ84G0=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "macos";
+      "x86_64-darwin" = "macos";
+      "aarch64-linux" = "linux-arm64";
+      "x86_64-linux" = "linux-x64";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    marksman = prev.stdenvNoCC.mkDerivation {
+      pname = "marksman";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://github.com/artempyanykh/marksman/releases/download/${version}/marksman-${platform}";
+        inherit hash;
+      };
+
+      dontUnpack = true;
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp $src $out/bin/marksman
+        chmod +x $out/bin/marksman
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Markdown LSP server";
+        homepage = "https://github.com/artempyanykh/marksman";
+        license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "marksman";
+      };
+    };
+  };
+
   # Claude Code - agentic coding tool
   # Managed by .github/workflows/update-claude-code.yml (not Renovate)
   claude-code = _final: prev: let
