@@ -99,6 +99,7 @@
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
             customOverlays.marksman-binary
+            customOverlays.playwright-cli
             customOverlays.secretlint
             customOverlays.termframe
             customOverlays.unocss-language-server
@@ -140,6 +141,7 @@
               customOverlays.deck
               customOverlays.git-graph-fork
               customOverlays.marksman-binary
+              customOverlays.playwright-cli
               customOverlays.secretlint
               customOverlays.termframe
               customOverlays.unocss-language-server
@@ -178,6 +180,7 @@
             customOverlays.deck
             customOverlays.git-graph-fork
             customOverlays.marksman-binary
+            customOverlays.playwright-cli
             customOverlays.secretlint
             customOverlays.termframe
             customOverlays.unocss-language-server
@@ -210,6 +213,7 @@
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
             customOverlays.marksman-binary
+            customOverlays.playwright-cli
             customOverlays.secretlint
             customOverlays.termframe
             customOverlays.unocss-language-server

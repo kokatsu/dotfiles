@@ -54,6 +54,7 @@ in {
         rustup
 
         # Playwright (ブラウザ自動化)
+        playwright-cli # overlay で管理 (coding agents 用 CLI)
         playwright-driver
 
         # CLIツール

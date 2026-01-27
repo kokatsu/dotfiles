@@ -507,4 +507,43 @@
       };
     };
   };
+
+  # playwright-cli - Playwright CLI for coding agents
+  # Uses custom package.json to bundle @playwright/cli
+  # Renovate: datasource=npm depName=@playwright/cli
+  playwright-cli = _final: prev: let
+    version = "0.0.61";
+    packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/playwright-cli/package.json);
+    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/playwright-cli/package-lock.json);
+  in {
+    playwright-cli = prev.buildNpmPackage {
+      pname = "playwright-cli";
+      inherit version;
+
+      src = prev.runCommand "playwright-cli-src" {} ''
+        mkdir -p $out
+        cp ${packageJson} $out/package.json
+        cp ${packageLock} $out/package-lock.json
+      '';
+
+      npmDepsHash = "sha256-oLU4b5g8yEgI04tDerNkTtDvEZ0n1PMdNx9G0wyzKF8=";
+
+      dontNpmBuild = true;
+
+      nativeBuildInputs = [prev.makeWrapper];
+
+      postInstall = ''
+        mkdir -p $out/bin
+        makeWrapper ${prev.nodejs}/bin/node $out/bin/playwright-cli \
+          --add-flags "$out/lib/node_modules/playwright-cli-wrapper/node_modules/@playwright/cli/playwright-cli.js"
+      '';
+
+      meta = with prev.lib; {
+        description = "Playwright CLI for coding agents";
+        homepage = "https://github.com/microsoft/playwright-cli";
+        license = licenses.asl20;
+        mainProgram = "playwright-cli";
+      };
+    };
+  };
 }
