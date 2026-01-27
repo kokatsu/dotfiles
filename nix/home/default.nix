@@ -152,7 +152,6 @@ in {
         copilot-language-server
         dockerfile-language-server
         lua-language-server
-        marksman # Markdown LSP
         nil # Nix LSP
         nixd
         svelte-language-server
@@ -178,6 +177,8 @@ in {
       ]
       ++ lib.optionals (!isCI) [
         # CI ではスキップ (ビルド時間短縮)
+        marksman # Markdown LSP (.NET製、ビルドに時間がかかる)
+
         # Tree-sitter Language Server (埋め込み言語対応)
         # doCheck = false: Nixサンドボックス内でgitが利用できずテストが失敗するため
         (inputs.kakehashi.packages.${system}.default.overrideAttrs (_: {doCheck = false;}))
