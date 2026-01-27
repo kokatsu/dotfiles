@@ -177,7 +177,7 @@ in {
       ]
       ++ lib.optionals (!isCI) [
         # CI ではスキップ (ビルド時間短縮)
-        marksman # Markdown LSP (.NET製、ビルドに時間がかかる)
+        marksman # Markdown LSP (overlay: GitHub バイナリ、.NET ビルド問題回避)
 
         # Tree-sitter Language Server (埋め込み言語対応)
         # doCheck = false: Nixサンドボックス内でgitが利用できずテストが失敗するため
