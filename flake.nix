@@ -27,7 +27,7 @@
 
     kakehashi = {
       url = "github:atusy/kakehashi";
-      inputs.nixpkgs.follows = "nixpkgs";
+      # nixpkgs.followsを外してkakehashi側のnixpkgsを使用（ビルドキャッシュ効率化）
     };
   };
 
