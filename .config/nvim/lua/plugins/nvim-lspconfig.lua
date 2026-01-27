@@ -68,6 +68,7 @@ return {
       'jsonls',
       'kakehashi',
       'lua_ls',
+      'marksman',
       'nixd',
       'postgres_lsp',
       'svelte',
