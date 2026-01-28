@@ -30,6 +30,15 @@ if os_utils.detect_os() == 'wsl' and vim.fn.executable('win32yank.exe') == 1 the
   }
 end
 
+-- WSL環境でgxコマンドでWindowsブラウザを開く
+if os_utils.detect_os() == 'wsl' then
+  vim.g.netrw_nogx = 1
+  vim.keymap.set('n', 'gx', function()
+    local url = vim.fn.expand('<cfile>')
+    vim.fn.jobstart({ 'cmd.exe', '/c', 'start', url:gsub('&', '^&') }, { detach = true })
+  end, { desc = 'Open URL in Windows browser' })
+end
+
 -- 行頭行末の左右移動で行をまたぐ
 vim.opt.whichwrap = 'b,s,h,l,<,>,[,],~'
 
