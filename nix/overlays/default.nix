@@ -361,7 +361,7 @@
   # Uses custom package.json to bundle secretlint with rule preset
   # Renovate: datasource=npm depName=secretlint
   secretlint = _final: prev: let
-    version = "11.3.0";
+    version = "11.3.1";
     # Use vendored package.json and package-lock.json that include rule preset
     packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/secretlint/package.json);
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/secretlint/package-lock.json);
