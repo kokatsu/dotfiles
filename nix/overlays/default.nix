@@ -454,7 +454,7 @@
   # agent-browser - Browser automation agent
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
-  agent-browser = _final: prev: let
+  agent-browser = final: prev: let
     version = "0.8.2";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -481,6 +481,9 @@
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts"];
 
+      # Set correct PLAYWRIGHT_BROWSERS_PATH during build
+      PLAYWRIGHT_BROWSERS_PATH = final.playwright-driver.browsers;
+
       nativeBuildInputs = [prev.makeWrapper];
 
       postPatch = ''
@@ -496,6 +499,8 @@
 
         makeWrapper $out/lib/agent-browser/agent-browser $out/bin/agent-browser \
           --set AGENT_BROWSER_HOME $out/lib/node_modules/agent-browser \
+          --unset PLAYWRIGHT_BROWSERS_PATH \
+          --set-default PLAYWRIGHT_BROWSERS_PATH ${final.playwright-driver.browsers} \
           --prefix PATH : ${prev.lib.makeBinPath [prev.nodejs]}
       '';
 
@@ -507,6 +512,82 @@
         mainProgram = "agent-browser";
       };
     };
+  };
+
+  # Fix playwright-driver.browsers to include chromium revision 1208
+  # Required for agent-browser 0.8.x which uses Playwright 1.58+
+  # nixpkgs has playwright-driver 1.57+ but browsers.json still uses revision 1200
+  playwright-browsers-fix = _final: prev: let
+    inherit (prev.stdenv.hostPlatform) system;
+
+    # Chrome for Testing revision 1208 (Playwright 1.58)
+    chromiumVersion = "145.0.7632.6";
+    revision = "1208";
+
+    # Platform-specific configurations
+    platformConfig = {
+      "x86_64-linux" = {
+        suffix = "linux64";
+        chromiumHash = "sha256-akvAXdfBKdjDQBnWTDX0WbmP+niXthXlyB9feeq8kyw=";
+        headlessShellHash = "sha256-/xskLzTc9tTZmu1lwkMpjV3QV7XjP92D/7zRcFuVWT8=";
+      };
+      "aarch64-linux" = {
+        suffix = "linux-arm64";
+        # TODO: Add hashes for aarch64-linux when needed
+        chromiumHash = "";
+        headlessShellHash = "";
+      };
+      "x86_64-darwin" = {
+        suffix = "mac-x64";
+        # TODO: Add hashes for x86_64-darwin when needed
+        chromiumHash = "";
+        headlessShellHash = "";
+      };
+      "aarch64-darwin" = {
+        suffix = "mac-arm64";
+        # TODO: Add hashes for aarch64-darwin when needed
+        chromiumHash = "";
+        headlessShellHash = "";
+      };
+    };
+
+    config = platformConfig.${system} or (throw "Unsupported system: ${system}");
+
+    # Chromium browser (revision 1208)
+    chromium-1208 = prev.fetchzip {
+      url = "https://storage.googleapis.com/chrome-for-testing-public/${chromiumVersion}/${config.suffix}/chrome-${config.suffix}.zip";
+      hash = config.chromiumHash;
+      stripRoot = false;
+    };
+
+    # Chromium headless shell (revision 1208)
+    chromium-headless-shell-1208 = prev.fetchzip {
+      url = "https://storage.googleapis.com/chrome-for-testing-public/${chromiumVersion}/${config.suffix}/chrome-headless-shell-${config.suffix}.zip";
+      hash = config.headlessShellHash;
+      stripRoot = false;
+    };
+
+    # Original browsers from nixpkgs
+    originalBrowsers = prev.playwright-driver.browsers;
+  in {
+    playwright-driver =
+      prev.playwright-driver
+      // {
+        browsers = prev.linkFarm "playwright-browsers" (
+          # Keep all original browsers
+          (builtins.listToAttrs (
+            map (name: {
+              inherit name;
+              value = "${originalBrowsers}/${name}";
+            }) (builtins.attrNames (builtins.readDir originalBrowsers))
+          ))
+          // (prev.lib.optionalAttrs (config.chromiumHash != "") {
+            # Add chromium revision 1208
+            "chromium-${revision}" = chromium-1208;
+            "chromium_headless_shell-${revision}" = chromium-headless-shell-1208;
+          })
+        );
+      };
   };
 
   # playwright-cli - Playwright CLI for coding agents
