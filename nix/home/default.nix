@@ -203,6 +203,7 @@ in {
         nerd-fonts.fira-code
         nerd-fonts.hack
         nerd-fonts.symbols-only
+        hackgen-nf-font # HackGen + Nerd Fonts (日本語対応)
       ]
       ++ lib.optionals isDarwin [
         # macOS専用
