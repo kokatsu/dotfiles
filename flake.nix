@@ -134,6 +134,7 @@
           overlays =
             [
               inputs.neovim-nightly-overlay.overlays.default
+              customOverlays.playwright-browsers-fix
               customOverlays.agent-browser
               customOverlays.ccusage
               customOverlays.claude-code
