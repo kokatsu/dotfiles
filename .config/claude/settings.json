@@ -17,7 +17,7 @@
   "respectGitignore": false,
   "statusLine": {
     "type": "command",
-    "command": "bun x ccusage statusline",
+    "command": "ccusage statusline",
     "padding": 0
   },
   "hooks": {

@@ -343,7 +343,7 @@
         runHook preInstall
         mkdir -p $out/{bin,lib/ccusage}
         cp -r source/{dist,package.json,config-schema.json} $out/lib/ccusage/
-        makeWrapper ${prev.nodejs}/bin/node $out/bin/ccusage \
+        makeWrapper ${prev.bun}/bin/bun $out/bin/ccusage \
           --add-flags "$out/lib/ccusage/dist/index.js"
         runHook postInstall
       '';
