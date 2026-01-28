@@ -39,6 +39,65 @@ format.apply()
 local colors = require('colors')
 colors.apply_to_config(config)
 
+-- ファイルパスをクリックしてnvimで開く
+-- https://zenn.dev/yashikota/articles/5e1f240d10d852
+config.hyperlink_rules = wezterm.default_hyperlink_rules()
+table.insert(config.hyperlink_rules, 1, {
+  regex = [[(\.?[\w/][\w/\.-]*\.\w+)(:\d+)?(:\d+)?]],
+  format = 'editor://$PWD/$1$2$3',
+})
+
+wezterm.on('open-uri', function(window, pane, uri)
+  local path = nil
+
+  if uri:find('^editor://') then
+    path = uri:gsub('^editor://', '')
+  elseif uri:find('^file://') then
+    path = uri:gsub('^file://', '')
+  end
+
+  if path then
+    local start = path:find('$PWD', 1, true)
+    if start then
+      local cwd_uri = pane:get_current_working_dir()
+      if cwd_uri and cwd_uri.file_path then
+        path = path:gsub('$PWD/', cwd_uri.file_path)
+      end
+    end
+
+    -- ファイルパスと行番号を分離
+    local file, line = path:match('^(.+):(%d+):?%d*$')
+    if not file then
+      file = path
+      line = nil
+    end
+
+    local nvim_args = line and ('+' .. line .. ' "' .. file .. '"') or ('"' .. file .. '"')
+
+    window:perform_action(
+      wezterm.action.InputSelector({
+        title = 'Open in nvim?',
+        choices = {
+          { label = 'Open: ' .. path, id = 'open' },
+          { label = 'Cancel', id = 'cancel' },
+        },
+        action = wezterm.action_callback(function(win, p, id, _)
+          if id == 'open' then
+            win:perform_action(
+              wezterm.action.SpawnCommandInNewTab({
+                args = { '/bin/zsh', '-l', '-c', 'nvim ' .. nvim_args },
+              }),
+              p
+            )
+          end
+        end),
+      }),
+      pane
+    )
+    return false
+  end
+end)
+
 if is_windows then
   require('windows').apply_to_config(config)
 elseif is_mac then
