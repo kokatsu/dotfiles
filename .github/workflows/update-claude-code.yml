@@ -66,9 +66,9 @@ jobs:
           HASH_LINUX_ARM64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["linux-arm64"].checksum')")
           HASH_LINUX_X64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["linux-x64"].checksum')")
 
-          # Update claude-code section only (lines 1-50 approximately)
-          # Use line-range addressing to avoid affecting other packages
-          sed -i '1,50{
+          # Update claude-code section only
+          # Use pattern-based addressing to target only the claude-code overlay
+          sed -i '/# Claude Code - agentic coding tool/,/^  };$/{
             s/version = "[^"]*"/version = "'"${VERSION}"'"/
             s|"aarch64-darwin" = "sha256-[^"]*"|"aarch64-darwin" = "'"${HASH_DARWIN_ARM64}"'"|
             s|"x86_64-darwin" = "sha256-[^"]*"|"x86_64-darwin" = "'"${HASH_DARWIN_X64}"'"|
