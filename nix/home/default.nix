@@ -60,13 +60,17 @@ in {
         # CLIツール
         fontconfig # フォント管理 (fc-list等)
         _7zz # 7-Zip アーカイバ
-        mise # ランタイム管理
+        glow # Markdownプレビュー
+        mise # タスクランナー + プロジェクトごとのツールバージョン管理
+        rclone # クラウドストレージ同期
+        github-copilot-cli # GitHub Copilot CLI
         bat
         btop
         chafa # 画像→テキスト
         curl
         delta
         duckdb # OLAP DB
+        dust # ディスク使用量可視化 (du alternative)
         eza
         fastfetch
         fd
@@ -131,6 +135,7 @@ in {
         # 開発ツール
         bun
         claude-code # overlay で管理
+        codex # OpenAI Codex CLI
         gitleaks # シークレット検出
         deno
         docker-compose
