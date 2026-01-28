@@ -57,6 +57,8 @@ jobs:
             echo "package=cssmodules-language-server" >> $GITHUB_OUTPUT
           elif echo "$DIFF" | grep -q 'unocss-language-server'; then
             echo "package=unocss-language-server" >> $GITHUB_OUTPUT
+          elif echo "$DIFF" | grep -q 'playwright-cli'; then
+            echo "package=playwright-cli" >> $GITHUB_OUTPUT
           else
             echo "package=unknown" >> $GITHUB_OUTPUT
           fi
@@ -76,6 +78,11 @@ jobs:
             ccusage|cssmodules-language-server)
               # Pattern: rec { pname = "..."; version = "x.y.z"
               VERSION=$(grep -A 20 "# Renovate:.*depName=.*${PACKAGE}" "$OVERLAY" | \
+                        grep -oP 'version = "\K[^"]+' | head -1)
+              ;;
+            playwright-cli)
+              # Pattern: let version = "x.y.z" (depName is @playwright/cli)
+              VERSION=$(grep -A 20 "# Renovate:.*depName=@playwright/cli" "$OVERLAY" | \
                         grep -oP 'version = "\K[^"]+' | head -1)
               ;;
             *)
@@ -163,22 +170,43 @@ jobs:
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/secretlint"
 
-          # Update tarball hash
-          URL="https://registry.npmjs.org/secretlint/-/secretlint-${VERSION}.tgz"
-          TARBALL_HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-          sed -i "/secretlint = _final: prev: let/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${TARBALL_HASH}\";|}" "$OVERLAY"
+          # Update version in custom package.json (secretlint-with-preset)
+          # This package.json bundles secretlint with rule preset
+          cd "$LOCK_DIR"
+          sed -i "s|\"version\": \"[^\"]*\"|\"version\": \"${VERSION}\"|" package.json
+          sed -i "s|\"secretlint\": \"[^\"]*\"|\"secretlint\": \"${VERSION}\"|" package.json
+          sed -i "s|\"@secretlint/secretlint-rule-preset-recommend\": \"[^\"]*\"|\"@secretlint/secretlint-rule-preset-recommend\": \"${VERSION}\"|" package.json
 
-          # Regenerate package-lock.json
-          mkdir -p /tmp/secretlint-pkg
-          curl -fsSL "$URL" | tar -xzf - -C /tmp/secretlint-pkg --strip-components=1
-          cd /tmp/secretlint-pkg
+          # Regenerate package-lock.json from custom package.json
+          rm -f package-lock.json
           npm install --package-lock-only --ignore-scripts
-          cp package-lock.json "$GITHUB_WORKSPACE/$LOCK_DIR/"
           cd "$GITHUB_WORKSPACE"
 
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
           sed -i "/secretlint = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+
+      - name: Update playwright-cli hashes
+        if: steps.detect.outputs.package == 'playwright-cli'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          OVERLAY="nix/overlays/default.nix"
+          LOCK_DIR="nix/npm-locks/playwright-cli"
+
+          # Update version in custom package.json (playwright-cli-wrapper)
+          # This package.json bundles @playwright/cli
+          cd "$LOCK_DIR"
+          sed -i "s|\"version\": \"[^\"]*\"|\"version\": \"${VERSION}\"|" package.json
+          sed -i "s|\"@playwright/cli\": \"[^\"]*\"|\"@playwright/cli\": \"${VERSION}\"|" package.json
+
+          # Regenerate package-lock.json from custom package.json
+          rm -f package-lock.json
+          npm install --package-lock-only --ignore-scripts
+          cd "$GITHUB_WORKSPACE"
+
+          # Compute npmDepsHash using prefetch-npm-deps
+          NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
+          sed -i "/playwright-cli = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update unocss-language-server hashes
         if: steps.detect.outputs.package == 'unocss-language-server'
