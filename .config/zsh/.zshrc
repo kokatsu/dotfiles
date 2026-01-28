@@ -92,17 +92,6 @@ export EDITOR="nvim"
 export BAT_CONFIG_DIR="${XDG_CONFIG_HOME}/bat"
 
 # ------------------------------------------------------------------------------
-# Bun (https://github.com/oven-sh/bun)
-# ------------------------------------------------------------------------------
-
-export BUN_INSTALL="$HOME/.bun"
-export PATH=$BUN_INSTALL/bin:$PATH
-
-# bun completions (zsh-deferで遅延読み込み)
-# https://github.com/oven-sh/bun/issues/7641
-zsh-defer -c '[ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"'
-
-# ------------------------------------------------------------------------------
 # Cargo (https://github.com/rust-lang/cargo)
 # ------------------------------------------------------------------------------
 
@@ -134,13 +123,6 @@ fi
 # ------------------------------------------------------------------------------
 
 zsh-defer -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || delta --generate-completion zsh >$ZIM_HOME/modules/zsh-completions/src/_delta'
-
-# ------------------------------------------------------------------------------
-# Deno (https://github.com/denoland/deno)
-# ------------------------------------------------------------------------------
-
-export DENO_INSTALL="$HOME/.deno"
-export PATH="$DENO_INSTALL/bin:$PATH"
 
 # ------------------------------------------------------------------------------
 # DuckDB (https://github.com/duckdb/duckdb)
