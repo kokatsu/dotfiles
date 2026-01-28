@@ -73,8 +73,9 @@ M.opts = {
         {
           title = 'Git Graph',
           icon = ' ',
-          -- https://github.com/mlange-42/git-graph
-          cmd = [[echo -e "$(git-graph --model catppuccin-mocha --style bold --color always --wrap 50 0 8 -f 'oneline' -n 30 --local)"]],
+          -- https://github.com/mlange-42/git-graph (original)
+          -- https://github.com/kokatsu/git-graph (fork, using this)
+          cmd = [[echo -e "$(git-graph --model catppuccin-mocha --style bold --color always --wrap 50 0 8 --format 'oneline' --max-count 30 --local --highlight-head 'bold,black,bg:bright_yellow')"]],
           indent = 1,
           height = 35,
         },

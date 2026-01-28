@@ -188,13 +188,14 @@
   # - --current option
   # - ANSI color wrapping fix
   # - HEAD highlight feature
+  # - Performance optimizations for graph construction
   # Also fixes build on aarch64-darwin (libz-sys crate can't find zlib.h)
   git-graph-fork = _final: prev: let
     forkedSrc = prev.fetchFromGitHub {
       owner = "kokatsu";
       repo = "git-graph";
-      rev = "feat/highlight-head";
-      hash = "sha256-Ei20OGA/E5t/D6Q5aZ0QTNXZ3tRAVN1sjjYiF3R7GOk=";
+      rev = "perf/optimize-graph-construction";
+      hash = "sha256-i1E6Rxc+LqEetSqlhrHciybm+DQIAYeJfzWGO87G5+I=";
     };
   in {
     git-graph = prev.git-graph.overrideAttrs (old: {
