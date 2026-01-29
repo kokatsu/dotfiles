@@ -29,7 +29,8 @@ jobs:
       - name: Get current version
         id: current
         run: |
-          version=$(grep -oP 'version = "\K[^"]+' nix/overlays/default.nix | head -1)
+          # Extract version from claude-code section only (not marksman-binary or others)
+          version=$(sed -n '/# Claude Code - agentic coding tool/,/^  };$/{ s/.*version = "\([^"]*\)".*/\1/p }' nix/overlays/default.nix | head -1)
           echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Get latest version
