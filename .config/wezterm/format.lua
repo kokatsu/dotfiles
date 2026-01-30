@@ -13,10 +13,17 @@ local zoomed_color = colors.palette.peach
 local nf = wezterm.nerdfonts --[[@as table]]
 
 local process_icons = {
+  -- Editors
   ['nvim'] = { icon = nf.linux_neovim, color = colors.palette.green },
   ['vim'] = { icon = nf.dev_vim, color = colors.palette.green },
+  ['vi'] = { icon = nf.linux_neovim, color = colors.palette.green },
+  -- Containers
   ['docker'] = { icon = nf.md_docker, color = colors.palette.blue },
   ['docker-compose'] = { icon = nf.md_docker, color = colors.palette.blue },
+  ['lazydocker'] = { icon = nf.md_docker, color = colors.palette.blue },
+  ['lzd'] = { icon = nf.md_docker, color = colors.palette.blue },
+  ['kubectl'] = { icon = nf.md_kubernetes, color = colors.palette.blue },
+  -- Languages & Runtimes
   ['python'] = { icon = nf.dev_python, color = colors.palette.yellow },
   ['python3'] = { icon = nf.dev_python, color = colors.palette.yellow },
   ['node'] = { icon = nf.md_nodejs, color = colors.palette.green },
@@ -24,17 +31,30 @@ local process_icons = {
   ['pnpm'] = { icon = nf.md_npm, color = colors.palette.peach },
   ['deno'] = { icon = nf.seti_typescript, color = colors.palette.yellow },
   ['bun'] = { icon = nf.md_food_croissant, color = colors.palette.peach },
-  ['git'] = { icon = nf.dev_git, color = colors.palette.peach },
-  ['lazygit'] = { icon = nf.dev_git, color = colors.palette.peach },
-  ['gh'] = { icon = nf.dev_github_badge, color = colors.palette.lavender },
   ['cargo'] = { icon = nf.dev_rust, color = colors.palette.peach },
   ['rustc'] = { icon = nf.dev_rust, color = colors.palette.peach },
   ['go'] = { icon = nf.md_language_go, color = colors.palette.sky },
-  ['kubectl'] = { icon = nf.md_kubernetes, color = colors.palette.blue },
+  -- Git
+  ['git'] = { icon = nf.dev_git, color = colors.palette.peach },
+  ['lazygit'] = { icon = nf.dev_git, color = colors.palette.peach },
+  ['lg'] = { icon = nf.dev_git, color = colors.palette.peach },
+  ['git-graph'] = { icon = nf.dev_git, color = colors.palette.peach },
+  ['gg'] = { icon = nf.dev_git, color = colors.palette.peach },
+  ['gh'] = { icon = nf.dev_github_badge, color = colors.palette.lavender },
+  -- CLI Tools
+  ['bat'] = { icon = nf.md_file_document, color = colors.palette.yellow },
+  ['bag'] = { icon = nf.md_file_document, color = colors.palette.yellow },
+  ['eza'] = { icon = nf.md_folder, color = colors.palette.blue },
+  ['fd'] = { icon = nf.md_file_search, color = colors.palette.mauve },
+  ['spotify_player'] = { icon = nf.md_spotify, color = colors.palette.green },
+  ['sp'] = { icon = nf.md_spotify, color = colors.palette.green },
+  -- Build & System
   ['make'] = { icon = nf.seti_makefile, color = colors.palette.peach },
   ['nix'] = { icon = nf.linux_nixos, color = colors.palette.sky },
   ['ssh'] = { icon = nf.md_ssh, color = colors.palette.mauve },
+  -- AI
   ['claude'] = { icon = nf.md_robot_happy, color = colors.palette.peach },
+  -- Shells
   ['zsh'] = { icon = nf.dev_terminal, color = colors.palette.text },
   ['bash'] = { icon = nf.dev_terminal, color = colors.palette.text },
   ['fish'] = { icon = nf.dev_terminal, color = colors.palette.text },
@@ -42,19 +62,51 @@ local process_icons = {
 
 local default_icon = { icon = nf.md_folder_marker, color = colors.palette.text }
 
+--- WSLを考慮して実際のプロセス名を取得する
+--- WSL上のプロセスはwslhost.exeとして見えるため、WEZTERM_PROGユーザー変数を使用
+---@param pane any
+---@param use_method boolean? メソッド呼び出し（pane:get_*）を使うか、プロパティアクセス（pane.*）を使うか
+---@return string
+local function get_process_name(pane, use_method)
+  local process_name
+  local wezterm_prog
+
+  if use_method then
+    process_name = pane:get_foreground_process_name() or ''
+    local user_vars = pane:get_user_vars()
+    wezterm_prog = user_vars and user_vars.WEZTERM_PROG or ''
+  else
+    process_name = pane.foreground_process_name or ''
+    wezterm_prog = pane.user_vars and pane.user_vars.WEZTERM_PROG or ''
+  end
+
+  -- WSL上のプロセスはwslhost.exeとして見える
+  -- WEZTERM_PROGが設定されていればそれを使用
+  if process_name:find('wslhost.exe') and wezterm_prog ~= '' then
+    -- WEZTERM_PROGからコマンド名のみを取得（引数を除去）
+    return wezterm_prog:match('^(%S+)') or wezterm_prog
+  end
+
+  -- パスからプロセス名のみを取得（.exeも除去）
+  local name = process_name:match('([^/\\]+)$') or ''
+  return name:gsub('%.exe$', '')
+end
+
+--- 指定したパターンにマッチするプロセスかどうかを判定する
+---@param pane any
+---@param pattern string
+---@param use_method boolean? メソッド呼び出しを使うか
+---@return boolean
+local function is_process(pane, pattern, use_method)
+  local name = get_process_name(pane, use_method)
+  return name:find(pattern) ~= nil
+end
+
 --- プロセス名からアイコンと色を取得する
 ---@param pane any
 ---@return { icon: string, color: string }
 local function get_process_icon(pane)
-  -- Claude CLIはNode.jsで動作するため、WEZTERM_PROGで判定
-  local wezterm_prog = pane.user_vars and pane.user_vars.WEZTERM_PROG or ''
-  if wezterm_prog:find('claude') then
-    return process_icons['claude']
-  end
-
-  local process_name = pane.foreground_process_name or ''
-  -- パスからプロセス名のみを取得
-  local name = process_name:match('([^/\\]+)$') or ''
+  local name = get_process_name(pane, false)
 
   for pattern, icon_info in pairs(process_icons) do
     if name:find(pattern) then
@@ -113,21 +165,7 @@ local function get_tab_id(window, pane)
 end
 
 local function is_claude(pane)
-  local process_name = pane:get_foreground_process_name()
-  if not process_name then
-    return false
-  end
-
-  if process_name:find('claude') then
-    return true
-  elseif process_name:find('wslhost.exe') then
-    local wezterm_prog = pane:get_user_vars().WEZTERM_PROG
-    if wezterm_prog and wezterm_prog:find('claude') then
-      return true
-    end
-  end
-
-  return false
+  return is_process(pane, 'claude', true)
 end
 
 -- 各タブのディレクトリ名を記憶しておくテーブル
