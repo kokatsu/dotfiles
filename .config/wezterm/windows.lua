@@ -4,6 +4,7 @@ local wezterm = require('wezterm') ---@type Wezterm
 local M = {}
 
 M.apply_to_config = function(config)
+  config.front_end = 'WebGpu' -- GPU アクセラレーションで描画高速化
   config.window_background_opacity = 1.0
   config.font_size = 10.5
 
