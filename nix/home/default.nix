@@ -138,7 +138,6 @@ in {
         codex # OpenAI Codex CLI
         gitleaks # シークレット検出
         deno
-        docker-compose
         pipx # Python CLI管理
         alejandra # Nix formatter
         statix # Nix linter
@@ -180,6 +179,9 @@ in {
         # Language Servers (overlay)
         cssmodules-language-server
         unocss-language-server
+
+        # X API v2 シミュレーター (overlay)
+        x-api-playground
       ]
       ++ lib.optionals (!isCI) [
         # CI ではスキップ (ビルド時間短縮)
@@ -211,12 +213,12 @@ in {
       ]
       ++ lib.optionals (!isDarwin) [
         # Linux/WSL専用
+        docker-compose # macOSではOrbStackを使用
         google-chrome
         noto-fonts-cjk-sans # 日本語フォント
       ]
       ++ lib.optionals (isDarwin && !isCI) [
         # macOS専用 (CI ではスキップ)
-        vscode
 
         # ターミナル (WezTerm nightly)
         # Ghostty は Homebrew cask で管理 (nix/darwin/default.nix)
@@ -263,6 +265,10 @@ in {
       ".config/claude/CLAUDE.md".source = ../../.config/claude/CLAUDE.md;
       ".config/claude/skills".source = ../../.config/claude/skills;
       ".config/claude/rules".source = ../../.config/claude/rules;
+      ".config/claude/file-suggestion.sh" = {
+        source = ../../.config/claude/file-suggestion.sh;
+        executable = true;
+      };
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/git-graph".source = ../../.config/git-graph;

@@ -103,6 +103,7 @@
             customOverlays.secretlint
             customOverlays.termframe
             customOverlays.unocss-language-server
+            customOverlays.x-api-playground
           ];
           home-manager = {
             useGlobalPkgs = true;
@@ -147,6 +148,7 @@
               customOverlays.termframe
               customOverlays.unocss-language-server
               customOverlays.vue-language-server-pin
+              customOverlays.x-api-playground
             ]
             ++ (
               if isCurrentDarwin
@@ -186,6 +188,7 @@
             customOverlays.termframe
             customOverlays.unocss-language-server
             customOverlays.vue-language-server-pin
+            customOverlays.x-api-playground
           ];
         };
         modules = [./nix/home];
@@ -219,6 +222,7 @@
             customOverlays.termframe
             customOverlays.unocss-language-server
             customOverlays.vue-language-server-pin
+            customOverlays.x-api-playground
           ];
         };
         modules = [./nix/home];
