@@ -1,7 +1,7 @@
 ---
 name: ux-psychology
 description: Apply UX psychology principles when building UI components, forms, pricing pages, onboarding flows, checkout experiences, modals, or any user-facing interface. Use when designing CTAs, implementing progress indicators, creating loading states, improving user engagement, or reviewing UI for psychological effectiveness.
-user-invocable: false
+user-invocable: true
 ---
 
 # UX Psychology Frontend Development Guide
@@ -12,16 +12,16 @@ Apply these 46 UX psychology principles to predict user behavior and design more
 
 | Category | Key Concepts | When to Use |
 |----------|--------------|-------------|
-| [Cognition](concepts/cognition.md) | Cognitive Load, Selective Attention, Banner Blindness | Forms, information-dense pages |
-| [Biases](concepts/biases.md) | Anchor, Confirmation, Expectation, Familiarity | Pricing, comparisons, navigation |
-| [Behavioral](concepts/behavioral.md) | Nudge, Default, Decoy, Framing, Priming | Conversions, sign-ups, purchases |
-| [Value](concepts/value.md) | Loss Aversion, Scarcity, Endowment, Sunk Cost | Retention, urgency, personalization |
-| [Engagement](concepts/engagement.md) | Gamification, Variable Reward, Goal Gradient, Zeigarnik | Progress tracking, habit formation |
-| [Experience](concepts/experience.md) | Peak-End Rule, User Delight, Labor Illusion | Loading states, completion flows |
-| [UI Design](concepts/ui-design.md) | Doherty Threshold, Progressive Disclosure, Visual Hierarchy | Performance, layout, navigation |
-| [Social](concepts/social.md) | Social Proof, Halo Effect | Trust building, credibility |
-| [Caution](concepts/caution.md) | Reactance, Decision Fatigue, Intentional Friction | Avoiding dark patterns |
-| [Research](concepts/research.md) | Hawthorne Effect, Survey Bias, Empathy Gap | User testing, research design |
+| [Cognition](./concepts/cognition.md) | Cognitive Load, Selective Attention, Banner Blindness | Forms, information-dense pages |
+| [Biases](./concepts/biases.md) | Anchor, Confirmation, Expectation, Familiarity | Pricing, comparisons, navigation |
+| [Behavioral](./concepts/behavioral.md) | Nudge, Default, Decoy, Framing, Priming | Conversions, sign-ups, purchases |
+| [Value](./concepts/value.md) | Loss Aversion, Scarcity, Endowment, Sunk Cost | Retention, urgency, personalization |
+| [Engagement](./concepts/engagement.md) | Gamification, Variable Reward, Goal Gradient, Zeigarnik | Progress tracking, habit formation |
+| [Experience](./concepts/experience.md) | Peak-End Rule, User Delight, Labor Illusion | Loading states, completion flows |
+| [UI Design](./concepts/ui-design.md) | Doherty Threshold, Progressive Disclosure, Visual Hierarchy | Performance, layout, navigation |
+| [Social](./concepts/social.md) | Social Proof, Halo Effect | Trust building, credibility |
+| [Caution](./concepts/caution.md) | Reactance, Decision Fatigue, Intentional Friction | Avoiding dark patterns |
+| [Research](./concepts/research.md) | Hawthorne Effect, Survey Bias, Empathy Gap | User testing, research design |
 
 ## Core Principles Summary
 
@@ -50,7 +50,7 @@ Apply these 46 UX psychology principles to predict user behavior and design more
 
 ## Implementation Checklist
 
-See [checklist.md](checklist.md) for a complete checklist to review your UI against these principles.
+See [checklist.md](./checklist.md) for a complete checklist to review your UI against these principles.
 
 ## Detailed References
 
@@ -61,16 +61,16 @@ Each concept file contains:
 - Common patterns
 
 Browse by category:
-- [Cognition & Perception](concepts/cognition.md) - Managing mental effort
-- [Biases](concepts/biases.md) - Leveraging cognitive shortcuts
-- [Behavioral Guidance](concepts/behavioral.md) - Influencing decisions
-- [Value Perception](concepts/value.md) - Creating perceived value
-- [Engagement](concepts/engagement.md) - Driving continued use
-- [Experience Design](concepts/experience.md) - Memorable moments
-- [UI Design Principles](concepts/ui-design.md) - Visual and interaction patterns
-- [Social Influence](concepts/social.md) - Trust and credibility
-- [Effects to Watch](concepts/caution.md) - Avoiding pitfalls
-- [Research Considerations](concepts/research.md) - Testing awareness
+- [Cognition & Perception](./concepts/cognition.md) - Managing mental effort
+- [Biases](./concepts/biases.md) - Leveraging cognitive shortcuts
+- [Behavioral Guidance](./concepts/behavioral.md) - Influencing decisions
+- [Value Perception](./concepts/value.md) - Creating perceived value
+- [Engagement](./concepts/engagement.md) - Driving continued use
+- [Experience Design](./concepts/experience.md) - Memorable moments
+- [UI Design Principles](./concepts/ui-design.md) - Visual and interaction patterns
+- [Social Influence](./concepts/social.md) - Trust and credibility
+- [Effects to Watch](./concepts/caution.md) - Avoiding pitfalls
+- [Research Considerations](./concepts/research.md) - Testing awareness
 
 ## Source
 

@@ -8,4 +8,5 @@
 
 !.gitignore
 !CLAUDE.md
+!file-suggestion.sh
 !settings.json
