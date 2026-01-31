@@ -1,20 +1,15 @@
 {
   "language": "japanese",
-  "permissions": {
-    "deny": [
-      "Read(**/node_modules/**)",
-      "Read(**/dist/**)",
-      "Read(**/build/**)",
-      "Read(**/.next/**)",
-      "Read(**/coverage/**)"
-    ]
-  },
   "enabledPlugins": {
     "frontend-design@claude-code-plugins": true
   },
   "alwaysThinkingEnabled": true,
   "includeCoAuthoredBy": false,
   "respectGitignore": false,
+  "fileSuggestion": {
+    "type": "command",
+    "command": "~/.config/claude/file-suggestion.sh"
+  },
   "statusLine": {
     "type": "command",
     "command": "ccusage statusline",
