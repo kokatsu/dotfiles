@@ -4,10 +4,25 @@ return {
   'neovim/nvim-lspconfig',
   init = function()
     vim.diagnostic.config({
-      virtual_text = true,
+      virtual_text = {
+        format = function(diagnostic)
+          if diagnostic.source then
+            return string.format('[%s] %s', diagnostic.source, diagnostic.message)
+          end
+          return diagnostic.message
+        end,
+      },
       virtual_lines = false,
       severity_sort = true,
       update_in_insert = false,
+      float = {
+        format = function(diagnostic)
+          if diagnostic.source then
+            return string.format('[%s] %s', diagnostic.source, diagnostic.message)
+          end
+          return diagnostic.message
+        end,
+      },
       signs = {
         text = {
           [vim.diagnostic.severity.ERROR] = '󰅚 ',
