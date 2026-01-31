@@ -628,4 +628,32 @@
       };
     };
   };
+
+  # xdevplatform/playground - X API v2 simulator for testing
+  # Renovate: datasource=github-releases depName=xdevplatform/playground
+  x-api-playground = _final: prev: {
+    x-api-playground = prev.buildGoModule rec {
+      pname = "x-api-playground";
+      version = "1.2.1";
+
+      src = prev.fetchFromGitHub {
+        owner = "xdevplatform";
+        repo = "playground";
+        rev = "v${version}";
+        hash = "sha256-x80q79BytD1iN3P1X8NW+2OUXBRsBsjNDZvSABSHkV8=";
+      };
+
+      vendorHash = "sha256-sjhUfE6bysaSDQb8EkqL5wptdxgtcxt9+K+7Dic3le0=";
+
+      # Skip tests as they may require network access
+      doCheck = false;
+
+      meta = with prev.lib; {
+        description = "Local HTTP server that simulates X API v2 for testing";
+        homepage = "https://github.com/xdevplatform/playground";
+        license = licenses.mit;
+        mainProgram = "playground";
+      };
+    };
+  };
 }

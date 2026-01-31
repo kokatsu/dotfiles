@@ -32,7 +32,7 @@
     brews = [];
     casks = [
       "clipy"
-      "docker-desktop"
+      "orbstack"
       "ghostty"
       "google-chrome"
       "google-japanese-ime"
