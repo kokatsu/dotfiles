@@ -35,69 +35,80 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Detect changed package
+      - name: Detect changed packages
         id: detect
         run: |
-          # Get the diff to detect which package was changed
+          # Get the diff to detect which packages were changed
           git fetch origin main
           DIFF=$(git diff origin/main -- nix/overlays/default.nix)
+          OVERLAY="nix/overlays/default.nix"
+          PACKAGES=""
 
-          # Detect package by looking for version changes
+          # Check each package independently
           if echo "$DIFF" | grep -q 'termframe'; then
-            echo "package=termframe" >> $GITHUB_OUTPUT
-          elif echo "$DIFF" | grep -q 'deck'; then
-            echo "package=deck" >> $GITHUB_OUTPUT
-          elif echo "$DIFF" | grep -q 'ccusage'; then
-            echo "package=ccusage" >> $GITHUB_OUTPUT
-          elif echo "$DIFF" | grep -q 'agent-browser'; then
-            echo "package=agent-browser" >> $GITHUB_OUTPUT
-          elif echo "$DIFF" | grep -q 'secretlint'; then
-            echo "package=secretlint" >> $GITHUB_OUTPUT
-          elif echo "$DIFF" | grep -q 'cssmodules-language-server'; then
-            echo "package=cssmodules-language-server" >> $GITHUB_OUTPUT
-          elif echo "$DIFF" | grep -q 'unocss-language-server'; then
-            echo "package=unocss-language-server" >> $GITHUB_OUTPUT
-          elif echo "$DIFF" | grep -q 'playwright-cli'; then
-            echo "package=playwright-cli" >> $GITHUB_OUTPUT
-          else
-            echo "package=unknown" >> $GITHUB_OUTPUT
+            echo "has_termframe=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*termframe" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_termframe=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }termframe $VERSION"
           fi
 
-      - name: Get new version
-        id: version
-        run: |
-          PACKAGE="${{ steps.detect.outputs.package }}"
-          OVERLAY="nix/overlays/default.nix"
+          if echo "$DIFF" | grep -q 'deck'; then
+            echo "has_deck=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*deck" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_deck=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }deck $VERSION"
+          fi
 
-          case "$PACKAGE" in
-            termframe|deck|secretlint|unocss-language-server|agent-browser)
-              # Pattern: let version = "x.y.z"
-              VERSION=$(grep -A 20 "# Renovate:.*depName=.*${PACKAGE}" "$OVERLAY" | \
-                        grep -oP 'version = "\K[^"]+' | head -1)
-              ;;
-            ccusage|cssmodules-language-server)
-              # Pattern: rec { pname = "..."; version = "x.y.z"
-              VERSION=$(grep -A 20 "# Renovate:.*depName=.*${PACKAGE}" "$OVERLAY" | \
-                        grep -oP 'version = "\K[^"]+' | head -1)
-              ;;
-            playwright-cli)
-              # Pattern: let version = "x.y.z" (depName is @playwright/cli)
-              VERSION=$(grep -A 20 "# Renovate:.*depName=@playwright/cli" "$OVERLAY" | \
-                        grep -oP 'version = "\K[^"]+' | head -1)
-              ;;
-            *)
-              VERSION=""
-              ;;
-          esac
+          if echo "$DIFF" | grep -q 'ccusage'; then
+            echo "has_ccusage=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*ccusage" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_ccusage=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }ccusage $VERSION"
+          fi
 
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if echo "$DIFF" | grep -q 'agent-browser'; then
+            echo "has_agent_browser=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*agent-browser" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_agent_browser=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }agent-browser $VERSION"
+          fi
+
+          if echo "$DIFF" | grep -q 'secretlint'; then
+            echo "has_secretlint=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*secretlint" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_secretlint=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }secretlint $VERSION"
+          fi
+
+          if echo "$DIFF" | grep -q 'cssmodules-language-server'; then
+            echo "has_cssmodules_language_server=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*cssmodules-language-server" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_cssmodules_language_server=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }cssmodules-language-server $VERSION"
+          fi
+
+          if echo "$DIFF" | grep -q 'unocss-language-server'; then
+            echo "has_unocss_language_server=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*unocss-language-server" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_unocss_language_server=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }unocss-language-server $VERSION"
+          fi
+
+          if echo "$DIFF" | grep -q 'playwright-cli\|@playwright/cli'; then
+            echo "has_playwright_cli=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=@playwright/cli" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_playwright_cli=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }playwright-cli $VERSION"
+          fi
+
+          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
 
       # === Pre-built binary packages ===
 
       - name: Update termframe hashes
-        if: steps.detect.outputs.package == 'termframe'
+        if: steps.detect.outputs.has_termframe == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.detect.outputs.version_termframe }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute hashes for each platform
@@ -111,9 +122,9 @@ jobs:
           done
 
       - name: Update deck hashes
-        if: steps.detect.outputs.package == 'deck'
+        if: steps.detect.outputs.has_deck == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.detect.outputs.version_deck }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute hashes for each platform
@@ -127,9 +138,9 @@ jobs:
           done
 
       - name: Update ccusage hash
-        if: steps.detect.outputs.package == 'ccusage'
+        if: steps.detect.outputs.has_ccusage == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.detect.outputs.version_ccusage }}"
           OVERLAY="nix/overlays/default.nix"
 
           URL="https://registry.npmjs.org/ccusage/-/ccusage-${VERSION}.tgz"
@@ -138,9 +149,9 @@ jobs:
           sed -i "/ccusage = _final: prev: {/,/^  };/{s|hash = \"sha256-[^\"]*\"|hash = \"${HASH}\"|}" "$OVERLAY"
 
       - name: Update agent-browser hashes
-        if: steps.detect.outputs.package == 'agent-browser'
+        if: steps.detect.outputs.has_agent_browser == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.detect.outputs.version_agent_browser }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/agent-browser"
 
@@ -164,9 +175,9 @@ jobs:
       # === NPM packages with buildNpmPackage ===
 
       - name: Update secretlint hashes
-        if: steps.detect.outputs.package == 'secretlint'
+        if: steps.detect.outputs.has_secretlint == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.detect.outputs.version_secretlint }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/secretlint"
 
@@ -187,9 +198,9 @@ jobs:
           sed -i "/secretlint = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update playwright-cli hashes
-        if: steps.detect.outputs.package == 'playwright-cli'
+        if: steps.detect.outputs.has_playwright_cli == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.detect.outputs.version_playwright_cli }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/playwright-cli"
 
@@ -209,9 +220,9 @@ jobs:
           sed -i "/playwright-cli = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update unocss-language-server hashes
-        if: steps.detect.outputs.package == 'unocss-language-server'
+        if: steps.detect.outputs.has_unocss_language_server == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.detect.outputs.version_unocss_language_server }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/unocss-language-server"
 
@@ -233,9 +244,9 @@ jobs:
           sed -i "/unocss-language-server = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update cssmodules-language-server hashes
-        if: steps.detect.outputs.package == 'cssmodules-language-server'
+        if: steps.detect.outputs.has_cssmodules_language_server == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.detect.outputs.version_cssmodules_language_server }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute GitHub source hash
@@ -265,7 +276,7 @@ jobs:
             echo "No changes to commit"
           else
             git add -A
-            git commit -m "fix: update nix hashes for ${{ steps.detect.outputs.package }} ${{ steps.version.outputs.version }}"
+            git commit -m "fix: update nix hashes for ${{ steps.detect.outputs.packages }}"
             git push
           fi
 

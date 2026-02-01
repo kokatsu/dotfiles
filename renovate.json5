@@ -3,6 +3,8 @@
   "extends": ["config:recommended"],
   "labels": ["dependencies"],
   "minimumReleaseAge": "1 day",
+  // npm-locks are updated by update-nix-hashes.yml workflow, not Renovate
+  "ignorePaths": ["nix/npm-locks/**"],
   "customManagers": [
     {
       // Pattern: let version = "x.y.z" immediately after Renovate comment
