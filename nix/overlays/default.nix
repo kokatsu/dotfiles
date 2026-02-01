@@ -131,10 +131,10 @@
   termframe = _final: prev: let
     version = "0.7.7";
     hashes = {
-      "aarch64-darwin" = "sha256-BDdd9bEsxuQzs/lNHDFJMXnkIEomOZPuQLp6tfDZhVk=";
-      "x86_64-darwin" = "sha256-USphR1LE7SZTndwTw2dEgQ+Xv3K1lm7aWCJ/9pa4Gj4=";
-      "aarch64-linux" = "sha256-LjGUJz/JtV6y9XulCjsaUk5vdqvJkErUpQytB2z09i0=";
-      "x86_64-linux" = "sha256-nfJxS3AnCNiYmwFXNMXBdrX4b6rXsgbJODQ7pILusVk=";
+      "aarch64-darwin" = "sha256-xYfQlpqP2tp85kTvYjlVZWqMd7BZCJ6FYYIyJoMNRJU=";
+      "x86_64-darwin" = "sha256-nFXu1AMZx4usLroXkenwWrcAYy+k83lujyLKOkqwc5E=";
+      "aarch64-linux" = "sha256-KMgtFFbeoec43joIQRt0AGfzFthHhirH8c/DNpBZaw4=";
+      "x86_64-linux" = "sha256-qxcp79Y+l1Gay91OrwayleovM4m9DWzNSKgo0ujJr/w=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-arm64";
@@ -608,7 +608,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-oLU4b5g8yEgI04tDerNkTtDvEZ0n1PMdNx9G0wyzKF8=";
+      npmDepsHash = "sha256-abNnN8xIceA1ruNKznFVfotZet99cD9XRDu79J6cE0o=";
 
       dontNpmBuild = true;
 
