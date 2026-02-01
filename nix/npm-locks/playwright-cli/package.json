@@ -3,6 +3,6 @@
   "version": "0.0.61",
   "private": true,
   "dependencies": {
-    "@playwright/cli": "0.0.61"
+    "@playwright/cli": "0.0.62"
   }
 }
