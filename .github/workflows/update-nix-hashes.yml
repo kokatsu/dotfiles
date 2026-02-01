@@ -107,7 +107,7 @@ jobs:
             NIX_SYSTEM="${platform##*:}"
             URL="https://github.com/pamburus/termframe/releases/download/v${VERSION}/termframe-${PLAT_NAME}.tar.gz"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|" "$OVERLAY"
+            sed -i "/termframe = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update deck hashes
@@ -123,7 +123,7 @@ jobs:
             NIX_SYSTEM="${platform##*:}"
             URL="https://github.com/k1LoW/deck/releases/download/v${VERSION}/deck_v${VERSION}_${PLAT_NAME}"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|" "$OVERLAY"
+            sed -i "/deck = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update ccusage hash
