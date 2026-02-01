@@ -1,53 +1,67 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
-  "labels": ["dependencies"],
-  "minimumReleaseAge": "1 day",
-  // npm-locks are updated by update-nix-hashes.yml workflow, not Renovate
-  "ignorePaths": ["nix/npm-locks/**"],
-  "customManagers": [
-    {
-      // Pattern: let version = "x.y.z" immediately after Renovate comment
-      // Matches: claude-code, secretlint, unocss-language-server, agent-browser, termframe, deck
-      "customType": "regex",
-      "fileMatch": ["nix/overlays/default\\.nix$"],
-      "matchStrings": [
-        "#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*_final:\\s*prev:\\s*let\\n\\s+version\\s*=\\s*\"(?<currentValue>[^\"]+)\""
-      ],
-      "versioningTemplate": "semver"
-    },
-    {
-      // Pattern: rec { pname = "..."; version = "x.y.z" after Renovate comment
-      // Matches: ccusage, cssmodules-language-server
-      "customType": "regex",
-      "fileMatch": ["nix/overlays/default\\.nix$"],
-      "matchStrings": [
-        "#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*_final:\\s*prev:\\s*\\{\\n\\s+[\\w-]+\\s*=\\s*prev\\.[\\w.]+\\s+rec\\s*\\{\\n\\s+pname\\s*=\\s*\"[^\"]+\";\\n\\s+version\\s*=\\s*\"(?<currentValue>[^\"]+)\""
-      ],
-      "versioningTemplate": "semver"
-    }
+  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+  extends: [
+    'config:recommended',
   ],
-  "packageRules": [
+  labels: [
+    'dependencies',
+  ],
+  minimumReleaseAge: '1 day',
+  ignorePaths: [
+    'nix/npm-locks/**',
+  ],
+  customManagers: [
     {
-      "matchFileNames": ["nix/overlays/default.nix"],
-      "groupName": "nix overlay packages",
-      "semanticCommitType": "build",
-      "semanticCommitScope": "deps"
+      customType: 'regex',
+      managerFilePatterns: [
+        '/nix/overlays/default\\.nix$/',
+      ],
+      matchStrings: [
+        '#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*_final:\\s*prev:\\s*let\\n\\s+version\\s*=\\s*"(?<currentValue>[^"]+)"',
+      ],
+      versioningTemplate: 'semver',
     },
     {
-      // GitHub releases often have "v" prefix, strip it for Nix
-      "matchDatasources": ["github-releases"],
-      "extractVersion": "^v?(?<version>.*)$"
+      customType: 'regex',
+      managerFilePatterns: [
+        '/nix/overlays/default\\.nix$/',
+      ],
+      matchStrings: [
+        '#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*_final:\\s*prev:\\s*\\{\\n\\s+[\\w-]+\\s*=\\s*prev\\.[\\w.]+\\s+rec\\s*\\{\\n\\s+pname\\s*=\\s*"[^"]+";\\n\\s+version\\s*=\\s*"(?<currentValue>[^"]+)"',
+      ],
+      versioningTemplate: 'semver',
+    },
+  ],
+  packageRules: [
+    {
+      matchFileNames: [
+        'nix/overlays/default.nix',
+      ],
+      groupName: 'nix overlay packages',
+      semanticCommitType: 'build',
+      semanticCommitScope: 'deps',
     },
     {
-      "matchManagers": ["github-actions"],
-      "minimumReleaseAge": "7 days",
-      "internalChecksFilter": "strict"
+      matchDatasources: [
+        'github-releases',
+      ],
+      extractVersion: '^v?(?<version>.*)$',
     },
     {
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["digest"],
-      "enabled": false
-    }
-  ]
+      matchManagers: [
+        'github-actions',
+      ],
+      minimumReleaseAge: '7 days',
+      internalChecksFilter: 'strict',
+    },
+    {
+      matchManagers: [
+        'github-actions',
+      ],
+      matchUpdateTypes: [
+        'digest',
+      ],
+      enabled: false,
+    },
+  ],
 }
