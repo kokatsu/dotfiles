@@ -269,6 +269,8 @@ in {
         source = ../../.config/claude/file-suggestion.sh;
         executable = true;
       };
+      # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
+      ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/git-graph".source = ../../.config/git-graph;

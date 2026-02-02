@@ -9,4 +9,5 @@
 !.gitignore
 !CLAUDE.md
 !file-suggestion.sh
+!keybindings.json
 !settings.json
