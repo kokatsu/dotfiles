@@ -41,6 +41,15 @@ return {
   end,
 
   config = function()
+    -- Set default capabilities for all LSP clients to use the same position encoding
+    vim.lsp.config('*', {
+      capabilities = {
+        general = {
+          positionEncodings = { 'utf-16' },
+        },
+      },
+    })
+
     vim.lsp.inlay_hint.enable()
 
     -- :LspInfo command (removed in nvim-lspconfig 2024)
