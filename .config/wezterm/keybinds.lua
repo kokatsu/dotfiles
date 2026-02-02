@@ -68,6 +68,46 @@ local common_keys = {
   -- `Shift + Enter` で 改行を送信
   -- https://zenn.dev/glaucus03/articles/070589323cb450
   { key = 'Enter', mods = 'SHIFT', action = act.SendString('\n') },
+  -- `Alt + ;` で右分割レイアウト (左 | 右上/右下)
+  {
+    key = ';',
+    mods = 'ALT',
+    action = wezterm.action_callback(function(_, pane)
+      local cwd_uri = pane:get_current_working_dir()
+      local cwd = cwd_uri and cwd_uri.file_path or nil
+      local right = pane:split({ direction = 'Right', size = 0.5, cwd = cwd })
+      right:split({ direction = 'Bottom', size = 0.5, cwd = cwd })
+    end),
+  },
+  -- `Alt + \` でレイアウト選択
+  {
+    key = '\\',
+    mods = 'ALT',
+    action = act.InputSelector({
+      title = 'Select Layout',
+      choices = {
+        { label = '左 | 右上/右下', id = 'right-split' },
+        { label = '上 / 下左|下右', id = 'bottom-split' },
+        { label = '3列均等', id = 'three-cols' },
+      },
+      action = wezterm.action_callback(function(_, pane, id, _)
+        -- 元のペインからCWDを取得（新しいペインはまだCWDが確定していないため）
+        local cwd_uri = pane:get_current_working_dir()
+        local cwd = cwd_uri and cwd_uri.file_path or nil
+        if id == 'right-split' then
+          local right = pane:split({ direction = 'Right', size = 0.5, cwd = cwd })
+          right:split({ direction = 'Bottom', size = 0.5, cwd = cwd })
+        elseif id == 'bottom-split' then
+          local bottom = pane:split({ direction = 'Bottom', size = 0.5, cwd = cwd })
+          bottom:split({ direction = 'Right', size = 0.5, cwd = cwd })
+        elseif id == 'three-cols' then
+          -- 1回目: 左33% | 右66% → 2回目: 右を半分に → 33% | 33% | 33%
+          local right = pane:split({ direction = 'Right', size = 0.66, cwd = cwd })
+          right:split({ direction = 'Right', size = 0.5, cwd = cwd })
+        end
+      end),
+    }),
+  },
 }
 
 -- 統一キーバインド (PRIMARY/SECONDARY をプラットフォームごとに変換)

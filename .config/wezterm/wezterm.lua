@@ -103,6 +103,21 @@ wezterm.on('open-uri', function(window, pane, uri)
   end
 end)
 
+config.mouse_bindings = {
+  -- シングルクリックではリンクを開かない（デフォルト動作を上書き）
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = 'NONE',
+    action = wezterm.action.CompleteSelection('ClipboardAndPrimarySelection'),
+  },
+  -- ダブルクリックでリンクを開く
+  {
+    event = { Up = { streak = 2, button = 'Left' } },
+    mods = 'NONE',
+    action = wezterm.action.OpenLinkAtMouseCursor,
+  },
+}
+
 if is_windows then
   require('windows').apply_to_config(config)
 elseif is_mac then
