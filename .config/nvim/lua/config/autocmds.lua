@@ -1,5 +1,22 @@
 -- Autocmd設定
 
+-- ヤンク時にハイライト表示
+vim.api.nvim_create_autocmd('TextYankPost', {
+  callback = function()
+    vim.highlight.on_yank({ timeout = 200 })
+  end,
+})
+
+-- ファイル再オープン時に前回のカーソル位置へ移動
+vim.api.nvim_create_autocmd('BufReadPost', {
+  callback = function()
+    local mark = vim.api.nvim_buf_get_mark(0, '"')
+    if mark[1] > 0 and mark[1] <= vim.api.nvim_buf_line_count(0) then
+      vim.api.nvim_win_set_cursor(0, mark)
+    end
+  end,
+})
+
 -- snacks_dashboardでの:qをフリーズさせない
 -- GIFアニメーション(chafa)が実行中のため、:qaで強制終了する
 vim.api.nvim_create_autocmd('FileType', {

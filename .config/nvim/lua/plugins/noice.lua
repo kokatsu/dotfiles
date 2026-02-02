@@ -3,57 +3,74 @@
 return {
   'folke/noice.nvim',
   event = 'VeryLazy',
-  opts = {
-    -- add any options here
-  },
   dependencies = {
-    -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
     'MunifTanjim/nui.nvim',
-    -- OPTIONAL:
-    --   `nvim-notify` is only needed, if you want to use the notification view.
-    --   If not available, we use `mini` as the fallback
     {
       'rcarriga/nvim-notify',
       opts = {
-        -- Catppuccin Mocha base color (required for transparent background)
         background_colour = '#1e1e2e',
       },
     },
   },
-  config = function()
-    require('noice').setup({
-      lsp = {
-        -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
-        override = {
-          ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
-          ['vim.lsp.util.stylize_markdown'] = true,
+  opts = {
+    lsp = {
+      override = {
+        ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
+        ['vim.lsp.util.stylize_markdown'] = true,
+        ['cmp.entry.get_documentation'] = true,
+      },
+      hover = { enabled = true },
+      signature = { enabled = true },
+      progress = {
+        enabled = true,
+        format = 'lsp_progress',
+        format_done = 'lsp_progress_done',
+        throttle = 1000 / 30,
+      },
+    },
+    notify = { enabled = false },
+    presets = {
+      bottom_search = false,
+      command_palette = true,
+      long_message_to_split = true,
+      inc_rename = false,
+      lsp_doc_border = true,
+    },
+    views = {
+      cmdline_popup = {
+        position = { row = '50%', col = '50%' },
+        size = { width = 60, height = 'auto' },
+      },
+      mini = {
+        win_options = {
+          winblend = 0,
         },
       },
-      -- Use snacks.nvim notifier instead
-      notify = {
-        enabled = false,
-      },
-      -- you can enable a preset for easier configuration
-      presets = {
-        bottom_search = false, -- use a classic bottom cmdline for search
-        command_palette = true, -- position the cmdline and popupmenu together
-        long_message_to_split = true, -- long messages will be sent to a split
-        inc_rename = false, -- enables an input dialog for inc-rename.nvim
-        lsp_doc_border = true, -- add a border to hover docs and signature help
-      },
-      ---@type NoiceConfigViews
-      views = {
-        cmdline_popup = {
-          position = {
-            row = '50%',
-            col = '50%',
-          },
-          size = {
-            width = 60,
-            height = 'auto',
-          },
+    },
+    routes = {
+      {
+        filter = {
+          event = 'msg_show',
+          kind = '',
+          find = 'written',
         },
+        opts = { skip = true },
       },
-    })
-  end,
+      {
+        filter = { event = 'msg_show', kind = 'search_count' },
+        opts = { skip = true },
+      },
+      {
+        view = 'notify',
+        filter = { event = 'msg_showmode' },
+      },
+      {
+        filter = {
+          event = 'msg_show',
+          min_height = 10,
+        },
+        view = 'split',
+      },
+    },
+  },
 }
