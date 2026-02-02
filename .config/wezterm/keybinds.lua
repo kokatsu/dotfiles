@@ -112,7 +112,8 @@ local common_keys = {
 
 -- 統一キーバインド (PRIMARY/SECONDARY をプラットフォームごとに変換)
 -- Windows: PRIMARY=CTRL, SECONDARY=ALT
--- macOS (Karabiner Control↔Command入れ替え): PRIMARY=CMD(物理Ctrl), SECONDARY=CTRL(物理Cmd)
+-- macOS (Karabiner Control↔Command入れ替え): PRIMARY=CMD(物理Ctrl), SECONDARY=OPT
+-- ※macOSでSECONDARY=CTRLだとNeovimのCtrl+w等と競合するためOPTに変更
 local unified_keys = {
   -- `PRIMARY + c` でクリップボードにコピー
   { key = 'c', mods = 'PRIMARY', action = act.CopyTo('Clipboard') },
@@ -140,11 +141,11 @@ local unified_keys = {
   { key = 'z', mods = 'PRIMARY', action = act.TogglePaneZoomState },
   -- `SECONDARY + w` で現在のペインを閉じる
   { key = 'w', mods = 'SECONDARY', action = act.CloseCurrentPane({ confirm = false }) },
-  -- `SECONDARY + 矢印` でペイン移動
-  { key = 'LeftArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Left') },
-  { key = 'RightArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Right') },
-  { key = 'UpArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Up') },
-  { key = 'DownArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Down') },
+  -- `SECONDARY + Shift + 矢印` でペイン移動
+  { key = 'LeftArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Left') },
+  { key = 'RightArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Right') },
+  { key = 'UpArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Up') },
+  { key = 'DownArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Down') },
   -- `PRIMARY + 左矢印` で前の単語に移動 (Esc+b)
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'PRIMARY', action = act.SendString('\x1bb') },
@@ -180,10 +181,10 @@ local unified_keys = {
   { key = 'RightArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Right', 1 }) },
   { key = 'UpArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Up', 1 }) },
   { key = 'DownArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Down', 1 }) },
-  -- `SECONDARY + l` でペインを左に回転
-  { key = 'l', mods = 'SECONDARY', action = act.RotatePanes('CounterClockwise') },
-  -- `SECONDARY + r` でペインを右に回転
-  { key = 'r', mods = 'SECONDARY', action = act.RotatePanes('Clockwise') },
+  -- `SECONDARY + Shift + l` でペインを左に回転
+  { key = 'L', mods = 'SECONDARY|SHIFT', action = act.RotatePanes('CounterClockwise') },
+  -- `SECONDARY + Shift + r` でペインを右に回転
+  { key = 'R', mods = 'SECONDARY|SHIFT', action = act.RotatePanes('Clockwise') },
   -- `PRIMARY + Shift + X` でコピーモードをアクティブにする
   { key = 'X', mods = 'PRIMARY', action = act.ActivateCopyMode },
   -- `SECONDARY + f` で画面を最大化
@@ -356,9 +357,9 @@ return {
     windows_specific_keys
   ),
   darwin_keys = merge_keys(
+    darwin_specific_keys, -- 競合回避キーを優先
     common_keys,
-    convert_keys(unified_keys, { PRIMARY = 'CMD', SECONDARY = 'CTRL' }),
-    darwin_specific_keys
+    convert_keys(unified_keys, { PRIMARY = 'CMD', SECONDARY = 'OPT' })
   ),
   key_tables = {
     copy_mode = copy_mode,
