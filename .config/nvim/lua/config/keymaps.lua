@@ -50,6 +50,16 @@ vim.keymap.set('i', '<C-h>', vim.lsp.buf.signature_help, { desc = 'Signature hel
 vim.keymap.set('n', '<leader>ds', vim.lsp.buf.document_symbol, { desc = 'Document symbols' })
 vim.keymap.set('n', '<leader>ws', vim.lsp.buf.workspace_symbol, { desc = 'Workspace symbols' })
 
+-- LSP → Trouble連携
+vim.keymap.set('n', 'gR', '<cmd>Trouble lsp_references<cr>', { desc = 'References (Trouble)' })
+vim.keymap.set('n', 'gI', '<cmd>Trouble lsp_implementations<cr>', { desc = 'Implementations (Trouble)' })
+vim.keymap.set('n', 'gT', '<cmd>Trouble lsp_type_definitions<cr>', { desc = 'Type Definitions (Trouble)' })
+
+-- Inlay Hints トグル
+vim.keymap.set('n', '<leader>th', function()
+  vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+end, { desc = 'Toggle Inlay Hints' })
+
 -- Treesitterベースの移動（関数/クラス間）
 local function goto_textobject(query, direction)
   return function()

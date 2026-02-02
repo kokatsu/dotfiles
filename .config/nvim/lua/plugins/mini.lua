@@ -7,6 +7,28 @@ return {
     require('mini.move').setup()
     require('mini.surround').setup()
 
+    -- mini.align: テキスト揃え（ga でトリガー）
+    require('mini.align').setup()
+
+    -- mini.splitjoin: 1行 ↔ 複数行の切り替え（gS でトリガー）
+    require('mini.splitjoin').setup()
+
+    -- mini.trailspace: 末尾スペースの可視化・削除
+    local trailspace = require('mini.trailspace')
+    trailspace.setup({
+      only_in_normal_buffers = true,
+    })
+    -- 保存時に末尾スペースを自動削除
+    vim.api.nvim_create_autocmd('BufWritePre', {
+      callback = function()
+        -- 特定のファイルタイプは除外
+        local exclude_ft = { 'diff', 'gitcommit', 'markdown' }
+        if not vim.tbl_contains(exclude_ft, vim.bo.filetype) then
+          trailspace.trim()
+        end
+      end,
+    })
+
     -- mini.ai: テキストオブジェクト拡張
     local ai = require('mini.ai')
     local gen_spec = ai.gen_spec
