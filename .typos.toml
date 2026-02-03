@@ -1,5 +1,7 @@
 [files]
-extend-exclude = []
+extend-exclude = [
+  ".config/tmux/plugins/",  # External tmux plugins (submodules)
+]
 
 [default]
 extend-ignore-identifiers-re = [

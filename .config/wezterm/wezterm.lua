@@ -1,8 +1,9 @@
 ---@diagnostic disable-next-line: assign-type-mismatch
 local wezterm = require('wezterm') ---@type Wezterm
+local platform = require('platform')
 
-local is_windows = wezterm.target_triple == 'x86_64-pc-windows-msvc'
-local is_mac = wezterm.target_triple == 'x86_64-apple-darwin' or wezterm.target_triple == 'aarch64-apple-darwin'
+local is_windows = platform.is_windows
+local is_mac = platform.is_mac
 
 local config = wezterm.config_builder()
 

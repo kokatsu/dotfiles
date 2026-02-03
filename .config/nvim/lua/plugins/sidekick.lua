@@ -7,7 +7,7 @@ return {
     cli = {
       watch = false, -- Disable file watching to reduce inotify usage
       mux = {
-        backend = 'zellij',
+        backend = 'tmux',
         enabled = true,
       },
       win = {
