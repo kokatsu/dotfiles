@@ -7,6 +7,24 @@ return {
     require('mini.move').setup()
     require('mini.surround').setup()
 
+    -- mini.pick: ファジーファインダー
+    require('mini.pick').setup({
+      mappings = {
+        choose = '<CR>',
+        choose_in_split = '<C-s>',
+        choose_in_vsplit = '<C-v>',
+        choose_marked = '<C-q>',
+        delete_char = '<BS>',
+        delete_char_right = '<Del>',
+        delete_word = '<C-w>',
+        move_down = '<C-j>',
+        move_up = '<C-k>',
+        scroll_down = '<C-d>',
+        scroll_up = '<C-u>',
+        stop = '<Esc>',
+      },
+    })
+
     -- mini.align: テキスト揃え（ga でトリガー）
     require('mini.align').setup()
 
