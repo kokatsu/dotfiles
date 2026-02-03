@@ -244,7 +244,7 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=k1LoW/deck
   deck = _final: prev: let
-    version = "1.22.1";
+    version = "1.23.0";
     hashes = {
       "aarch64-darwin" = "sha256-+J/yUip6L8L6LeQPBKT/r14rdkZL50HQPokryMx0sQY=";
       "x86_64-darwin" = "sha256-YR8I4ioBqW8cU+H4yrROj/p1GgVBVcuTqpkrGlDHzlQ=";
