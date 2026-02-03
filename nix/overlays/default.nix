@@ -246,10 +246,10 @@
   deck = _final: prev: let
     version = "1.23.0";
     hashes = {
-      "aarch64-darwin" = "sha256-+J/yUip6L8L6LeQPBKT/r14rdkZL50HQPokryMx0sQY=";
-      "x86_64-darwin" = "sha256-YR8I4ioBqW8cU+H4yrROj/p1GgVBVcuTqpkrGlDHzlQ=";
-      "aarch64-linux" = "sha256-rt4AiXyrxGZa/tGPsYW6vSknvjaYpO183rqBsuTzUu8=";
-      "x86_64-linux" = "sha256-08MUun13t2umwzrIw0aCBMCiZc+HodeWK/RMHUiAN0w=";
+      "aarch64-darwin" = "sha256-UcKJ4lwdyNi+h6bMbyEJhsdizI/x1cQU6mE1bTreF6I=";
+      "x86_64-darwin" = "sha256-KccUz9rrM0X0yyCDHNNfP/7IbGRu+JR5nC7n1pNoJ5E=";
+      "aarch64-linux" = "sha256-dBRTGxGgkEStG9nypMm/XSZB+Qiuktz7v87kJZxvSHw=";
+      "x86_64-linux" = "sha256-NfYJn0lq7zBw2Kr6cmOUYdGGoJlwfCzgAXFBSrp/2x8=";
     };
     platformMap = {
       "aarch64-darwin" = {
