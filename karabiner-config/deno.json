@@ -3,7 +3,7 @@
     "karabiner.ts": "https://deno.land/x/karabinerts@1.36.0/deno.ts"
   },
   "tasks": {
-    "build": "deno run --allow-env --allow-read --allow-write karabiner.ts",
-    "dry-run": "deno run --allow-env --allow-read --allow-write karabiner.ts --dry-run"
+    "build": "deno run --allow-env --allow-read --allow-write ./karabiner.ts",
+    "dry-run": "deno run --allow-env --allow-read --allow-write ./karabiner.ts --dry-run"
   }
 }
