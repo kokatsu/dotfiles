@@ -32,6 +32,11 @@ source ${ZIM_HOME}/init.zsh
 # Emacs キーバインドを使用（vi モードを無効化）
 bindkey -e
 
+# Disable flow control (Ctrl+s/Ctrl+q) for tmux keybindings
+stty -ixon
+# Unbind Ctrl+S from zsh forward-search to allow tmux to receive it
+bindkey -r '^S'
+
 # ------------------------------------------------------------------------------
 # Zsh
 # ------------------------------------------------------------------------------

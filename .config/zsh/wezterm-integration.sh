@@ -454,7 +454,13 @@ __wezterm_osc7() {
     # If the command failed (perhaps the installed wezterm
     # is too old?) then fall back to the simple version below.
   fi
-  printf "\033]7;file://%s%s\033\\" "${HOSTNAME}" "${PWD}"
+  if [[ -z "${TMUX-}" ]] ; then
+    printf "\033]7;file://%s%s\033\\" "${HOSTNAME}" "${PWD}"
+  else
+    # tmux passthrough format
+    # https://github.com/tmux/tmux/wiki/FAQ#what-is-the-passthrough-escape-sequence-and-how-do-i-use-it
+    printf "\033Ptmux;\033\033]7;file://%s%s\033\\\033\\" "${HOSTNAME}" "${PWD}"
+  fi
 }
 
 # The semantic precmd and prexec functions generate semantic

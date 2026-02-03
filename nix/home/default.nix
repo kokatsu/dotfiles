@@ -98,7 +98,7 @@ in {
         wget
         xleak # Excel TUI viewer
         yazi
-        zellij # ターミナルマルチプレクサ
+        tmux # ターミナルマルチプレクサ
         zimfw # Zsh framework
 
         # メディア/画像処理
@@ -226,6 +226,11 @@ in {
         inputs.wezterm.packages.${system}.default
       ];
 
+    # PATH に追加 (ユーザースクリプト)
+    sessionPath = [
+      "${config.home.homeDirectory}/.local/bin/scripts"
+    ];
+
     sessionVariables =
       {
         EDITOR = "nvim";
@@ -303,7 +308,19 @@ in {
       ".config/lazygit".source = ../../.config/lazygit;
       ".config/readline".source = ../../.config/readline;
       ".config/termframe".source = ../../.config/termframe;
+      ".config/tmux/tmux.conf".source = ../../.config/tmux/tmux.conf;
+      ".config/tmux/scripts/claude-prompt-edit.sh" = {
+        source = ../../.config/tmux/scripts/claude-prompt-edit.sh;
+        executable = true;
+      };
       ".config/treemd".source = ../../.config/treemd; # XDG_CONFIG_HOME で解決
+
+      # bin: ユーザースクリプト (Deno/Bun/Shell)
+      # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
+      ".local/bin/scripts" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/bin";
+        force = true;
+      };
     };
   };
 

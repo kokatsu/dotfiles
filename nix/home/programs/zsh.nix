@@ -21,14 +21,9 @@
     "${config.xdg.configHome}/zsh/linux.zsh".source = ../../../.config/zsh/linux.zsh;
     "${config.xdg.configHome}/zsh/wezterm-integration.sh".source = ../../../.config/zsh/wezterm-integration.sh;
 
-    # $ZDOTDIR/.zshenv - ZDOTDIRが既に設定されている場合に読み込まれる
+    # $ZDOTDIR/.zshenv - Nix環境とZDOTDIR設定
+    # ~/.zshenv は使用せず、$ZDOTDIR/.zshenv に全ての設定を集約
     "${config.xdg.configHome}/zsh/.zshenv".text = ''
-      # /etc/zsh/zshrc の compinit をスキップ
-      skip_global_compinit=1
-    '';
-
-    # ~/.zshenv - Nix環境とZDOTDIR設定
-    ".zshenv".text = ''
       # /etc/zshrcをスキップ (nix-darwinが生成するcompinit呼び出しを回避)
       # Zimfwのcompletionモジュールが補完を管理する
       export NOSYSZSHRC=1
@@ -45,6 +40,8 @@
       fi
 
       # Home Manager session variables
+      # 親シェルから継承された場合にスキップされるのを防ぐため、ガード変数をリセット
+      unset __HM_SESS_VARS_SOURCED
       if [ -e "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
         . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
       fi
@@ -52,6 +49,14 @@
       # XDG
       export XDG_CONFIG_HOME="$HOME/.config"
       export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+    '';
+
+    # ~/.zshenv - ZDOTDIRの設定と $ZDOTDIR/.zshenv の読み込み
+    # 新しいターミナルでは ZDOTDIR が未設定のため ~/.zshenv が読み込まれる
+    # zsh は zshenv を一度しか読み込まないため、ここで $ZDOTDIR/.zshenv を source する
+    ".zshenv".text = ''
+      export ZDOTDIR="$HOME/.config/zsh"
+      [ -f "$ZDOTDIR/.zshenv" ] && . "$ZDOTDIR/.zshenv"
     '';
   };
 }

@@ -33,7 +33,15 @@
         "run": "secretlint {staged_files}"
       },
       "typos": {
-        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
+        "exclude": [
+          "*.png",
+          "*.jpg",
+          "*.jpeg",
+          "*.gif",
+          "*.webp",
+          "*.ico",
+          ".config/tmux/plugins/**/*"
+        ],
         "run": "typos {staged_files}"
       }
     }
@@ -61,7 +69,15 @@
         "run": "secretlint {push_files}"
       },
       "typos": {
-        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
+        "exclude": [
+          "*.png",
+          "*.jpg",
+          "*.jpeg",
+          "*.gif",
+          "*.webp",
+          "*.ico",
+          ".config/tmux/plugins/**/*"
+        ],
         "run": "typos {push_files}"
       }
     }
