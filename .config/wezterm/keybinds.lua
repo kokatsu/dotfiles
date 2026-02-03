@@ -116,8 +116,8 @@ local common_keys = {
 
 -- 統一キーバインド (PRIMARY/SECONDARY をプラットフォームごとに変換)
 -- Windows: PRIMARY=CTRL, SECONDARY=ALT
--- macOS (Karabiner Control↔Command入れ替え): PRIMARY=CMD(物理Ctrl), SECONDARY=OPT
--- ※macOSでSECONDARY=CTRLだとNeovimのCtrl+w等と競合するためOPTに変更
+-- macOS: PRIMARY=CTRL, SECONDARY=ALT (Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替)
+-- これにより、WSL と macOS で同じ操作感を実現
 local unified_keys = {
   -- `PRIMARY + c` でクリップボードにコピー
   { key = 'c', mods = 'PRIMARY', action = act.CopyTo('Clipboard') },
@@ -295,15 +295,26 @@ local windows_specific_keys = {
 }
 
 -- macOS 固有キーバインド
+-- Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替のため、物理 Ctrl = Ctrl として届く
+-- macOSではtmuxを使用するため、ペイン操作はtmuxに委譲
 local darwin_specific_keys = {
   -- Option + 矢印で単語移動（macOS標準の動作）
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'OPT', action = act.SendString('\x1bb') },
   -- selene: allow(bad_string_escape)
   { key = 'RightArrow', mods = 'OPT', action = act.SendString('\x1bf') },
-  -- タブ切替 (Karabiner で Command+Tab → Control+Tab に変換されるため CTRL で受ける)
-  { key = 'Tab', mods = 'CTRL', action = act.ActivateTabRelative(1) },
-  { key = 'Tab', mods = 'CTRL|SHIFT', action = act.ActivateTabRelative(-1) },
+  -- `Ctrl+Shift+s` で上下分割 (tmux prefix+d を送信)
+  {
+    key = 'S',
+    mods = 'CTRL',
+    action = act.Multiple({
+      act.SendKey({ key = 'b', mods = 'CTRL' }),
+      act.SendKey({ key = 'd' }),
+    }),
+  },
+  -- `Alt+w` でtmuxペインを閉じる (pane_keysを上書き、WezTermペインではなくtmuxペインを閉じる)
+  -- selene: allow(bad_string_escape)
+  { key = 'w', mods = 'ALT', action = act.SendString('\x1bw') },
 }
 
 -- コピーモードのキーテーブル（Vim風操作）
@@ -408,10 +419,10 @@ return {
     windows_specific_keys
   ),
   darwin_keys = merge_keys(
-    darwin_specific_keys, -- 競合回避キーを優先
     common_keys,
-    convert_keys(unified_keys, { PRIMARY = 'CMD', SECONDARY = 'OPT' }),
-    convert_keys(pane_keys, { PRIMARY = 'CMD', SECONDARY = 'OPT' })
+    convert_keys(unified_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),
+    convert_keys(pane_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),
+    darwin_specific_keys -- macOS固有キーを最後に配置して優先
   ),
   key_tables = {
     copy_mode = copy_mode,

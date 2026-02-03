@@ -18,7 +18,7 @@ M.apply_to_config = function(config)
   config.key_tables = keybinds.key_tables
 
   local background = require('background')
-  background.apply_to_keys(keys, 'CMD', 'OPT')
+  background.apply_to_keys(keys, 'CTRL', 'ALT')
   config.background = background.default_background
 end
 
