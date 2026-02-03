@@ -288,6 +288,7 @@ in {
       ".config/wezterm/format.lua".source = ../../.config/wezterm/format.lua;
       ".config/wezterm/keybinds.lua".source = ../../.config/wezterm/keybinds.lua;
       ".config/wezterm/mac.lua".source = ../../.config/wezterm/mac.lua;
+      ".config/wezterm/platform.lua".source = ../../.config/wezterm/platform.lua;
       ".config/wezterm/stylua.toml".source = ../../.config/wezterm/stylua.toml;
       ".config/wezterm/wezterm.lua".source = ../../.config/wezterm/wezterm.lua;
       ".config/wezterm/windows.lua".source = ../../.config/wezterm/windows.lua;
@@ -407,5 +408,14 @@ in {
         $DRY_RUN_CMD chmod -R u+w "$HOME/.config/btop"
       fi
     '';
+
+    # WezTerm.app を /Applications にリンク (Dock対応)
+    linkWezTermApp = lib.mkIf isDarwin (lib.hm.dag.entryAfter ["linkGeneration"] ''
+      WEZTERM_APP=$(find /nix/store -maxdepth 3 -name "WezTerm.app" -path "*wezterm*" 2>/dev/null | head -1)
+      if [ -n "$WEZTERM_APP" ] && [ -d "$WEZTERM_APP" ]; then
+        $DRY_RUN_CMD rm -f /Applications/WezTerm.app
+        $DRY_RUN_CMD ln -sf "$WEZTERM_APP" /Applications/WezTerm.app
+      fi
+    '');
   };
 }
