@@ -33,6 +33,7 @@ in {
     ./programs/git.nix
     ./programs/karabiner.nix
     ./programs/starship.nix
+    ./programs/tmux.nix
     ./programs/zoxide.nix
     ./programs/zsh.nix
   ];
@@ -98,7 +99,7 @@ in {
         wget
         xleak # Excel TUI viewer
         yazi
-        tmux # ターミナルマルチプレクサ
+        # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
         zimfw # Zsh framework
 
         # メディア/画像処理
@@ -309,11 +310,7 @@ in {
       ".config/lazygit".source = ../../.config/lazygit;
       ".config/readline".source = ../../.config/readline;
       ".config/termframe".source = ../../.config/termframe;
-      ".config/tmux/tmux.conf".source = ../../.config/tmux/tmux.conf;
-      ".config/tmux/scripts/claude-prompt-edit.sh" = {
-        source = ../../.config/tmux/scripts/claude-prompt-edit.sh;
-        executable = true;
-      };
+      # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
       ".config/treemd".source = ../../.config/treemd; # XDG_CONFIG_HOME で解決
 
       # bin: ユーザースクリプト (Deno/Bun/Shell)
