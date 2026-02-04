@@ -95,6 +95,14 @@ local common_keys = {
       end
     end),
   },
+  -- `Alt + e` でプロンプトエディタを開く（tmux display-popup使用）
+  -- tmux内: tmuxがAlt+eを捕捉してdisplay-popupを開く
+  -- tmux外: シェルにキーが送られるだけ（何も起きない）
+  {
+    key = 'e',
+    mods = 'ALT',
+    action = act.SendKey({ key = 'e', mods = 'ALT' }),
+  },
   -- `Shift + Enter` で 改行を送信
   -- https://zenn.dev/glaucus03/articles/070589323cb450
   { key = 'Enter', mods = 'SHIFT', action = act.SendString('\n') },
