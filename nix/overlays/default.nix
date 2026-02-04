@@ -53,12 +53,12 @@
   # Claude Code - agentic coding tool
   # Managed by .github/workflows/update-claude-code.yml (not Renovate)
   claude-code = _final: prev: let
-    version = "2.1.30";
+    version = "2.1.31";
     hashes = {
-      "aarch64-darwin" = "sha256-PMwU8yKx6NoM1Yr8JU/VEA7uBm+hRynzB0Xmej95efc==";
-      "x86_64-darwin" = "sha256-igg2lgBkg7g4LsDkfNjy4yI/PSyrGiHFJPoIwIK1YA4==";
-      "aarch64-linux" = "sha256-RfvzWhARsG+GFwsgvrZMWZ2wZYqscOLeJBDEXRV3VZY==";
-      "x86_64-linux" = "sha256-rajxz5Jyll04sQ8a22zqiF5iHIP357sjMAjHIfQ/rVQ==";
+      "aarch64-darwin" = "sha256-iuVyz1JbLuwtoXqRADVUE8TVmkPBJHM+XPE1bcUKV2o==";
+      "x86_64-darwin" = "sha256-CF5Wr9dchhs33FJpu0xyd7qoNs9sBhfI1AXNVw3Bidc==";
+      "aarch64-linux" = "sha256-CZmwSrVjNDxWrBuMM1knrqs+o0AtW9heBh5uDLMibCY==";
+      "x86_64-linux" = "sha256-6g2meshVShG98dqWWa4qKbSX8+Sja6PndsaLemX1L+o==";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
