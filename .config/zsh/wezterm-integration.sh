@@ -486,26 +486,19 @@ __wezterm_semantic_precmd() {
     __wezterm_save_ps2="$PS2"
     # Markup the left and right prompts so that the terminal
     # knows that they are semantically prompt output.
-    if [[ -n "$ZSH_NAME" ]] ; then
-      if [[ -z "${TMUX-}" ]] ; then
+    # Note: Skip PS1/PS2 modification in tmux as it conflicts with starship
+    # and other prompt managers. The OSC 133 A/D/C sequences via __wezterm_osc133
+    # provide the essential semantic zone functionality.
+    if [[ -z "${TMUX-}" ]] ; then
+      if [[ -n "$ZSH_NAME" ]] ; then
         PS1=$'%{\e]133;P;k=i\a%}'$PS1$'%{\e]133;B\a%}'
         PS2=$'%{\e]133;P;k=s\a%}'$PS2$'%{\e]133;B\a%}'
       else
-        # tmux passthrough format for PS1/PS2
-        PS1=$'%{\ePtmux;\e\e]133;P;k=i\a\e\\%}'$PS1$'%{\ePtmux;\e\e]133;B\a\e\\%}'
-        PS2=$'%{\ePtmux;\e\e]133;P;k=s\a\e\\%}'$PS2$'%{\ePtmux;\e\e]133;B\a\e\\%}'
-      fi
-    else
-      if [[ -z "${TMUX-}" ]] ; then
         PS1='\[\e]133;P;k=i\a\]'$PS1'\[\e]133;B\a\]'
         PS2='\[\e]133;P;k=s\a\]'$PS2'\[\e]133;B\a\]'
-      else
-        # tmux passthrough format for PS1/PS2 (bash)
-        PS1='\[\ePtmux;\e\e]133;P;k=i\a\e\\\]'$PS1'\[\ePtmux;\e\e]133;B\a\e\\\]'
-        PS2='\[\ePtmux;\e\e]133;P;k=s\a\e\\\]'$PS2'\[\ePtmux;\e\e]133;B\a\e\\\]'
       fi
+      __wezterm_check_ps1="$PS1"
     fi
-    __wezterm_check_ps1="$PS1"
   fi
   if [[ "$__wezterm_semantic_precmd_executing" != "" ]] ; then
     # Report last command status
@@ -524,8 +517,8 @@ __wezterm_semantic_precmd() {
 }
 
 function __wezterm_semantic_preexec() {
-  # Restore the original PS1/PS2 if set
-  if [[ -n "${__wezterm_save_ps1+1}" && "${__wezterm_check_ps1-}" == "${PS1}" ]]; then
+  # Restore the original PS1/PS2 if set (only when not in tmux)
+  if [[ -z "${TMUX-}" ]] && [[ -n "${__wezterm_save_ps1+1}" && "${__wezterm_check_ps1-}" == "${PS1}" ]]; then
 	  PS1="$__wezterm_save_ps1"
 	  PS2="$__wezterm_save_ps2"
 	  unset __wezterm_save_ps1
@@ -572,7 +565,8 @@ __wezterm_user_vars_preexec() {
 # Register the various functions; take care to perform osc7 after
 # the semantic zones as we don't want to perturb the last command
 # status before we've had a chance to report it to the terminal
-if [[ -z "${WEZTERM_SHELL_SKIP_SEMANTIC_ZONES-}" ]]; then
+# Note: Skip semantic zones in tmux as OSC 133 passthrough causes display issues
+if [[ -z "${WEZTERM_SHELL_SKIP_SEMANTIC_ZONES-}" ]] && [[ -z "${TMUX-}" ]]; then
   if [[ -n "${BLE_VERSION-}" ]]; then
     blehook PRECMD+=__wezterm_semantic_precmd
     blehook PREEXEC+=__wezterm_semantic_preexec
