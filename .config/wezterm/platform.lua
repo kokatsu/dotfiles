@@ -31,26 +31,21 @@ function M.is_wsl_domain(pane)
   return domain and domain:match('^WSL:') ~= nil
 end
 
---- WSL以外でのみ実行するアクションを作成
---- WSLの場合は指定されたキーまたはアクションを実行
+--- Windows（非WSL）でのみ実行するアクションを作成
+--- それ以外（macOS/Linux/WSL）の場合はfallbackを実行
 ---@param action table 実行するアクション
----@param fallback table|nil WSLの場合の動作: { key = 'x', mods = 'CTRL' } またはWezTermアクション
+---@param fallback table|nil Windows以外の場合の動作: { key = 'x', mods = 'CTRL' } またはWezTermアクション
 ---@return table action_callback
-function M.non_wsl_action(action, fallback)
+function M.windows_non_wsl_action(action, fallback)
   return wezterm.action_callback(function(window, pane)
-    if M.is_wsl_domain(pane) then
-      if fallback then
-        -- fallbackがキー定義({ key = ... })の場合はSendKeyを使用
-        -- それ以外（WezTermアクション）の場合はそのまま実行
-        if fallback.key then
-          window:perform_action(act.SendKey(fallback), pane)
-        else
-          window:perform_action(fallback, pane)
-        end
-      end
-      -- fallbackがnilの場合は何もしない
-    else
+    if M.is_windows and not M.is_wsl_domain(pane) then
       window:perform_action(action, pane)
+    elseif fallback then
+      if fallback.key then
+        window:perform_action(act.SendKey(fallback), pane)
+      else
+        window:perform_action(fallback, pane)
+      end
     end
   end)
 end

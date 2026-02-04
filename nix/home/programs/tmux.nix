@@ -40,6 +40,10 @@
       # True color support
       set -ga terminal-overrides ",xterm-256color:Tc"
 
+      # Extended keys support (for Ctrl+Shift, Alt+Shift combinations)
+      set -s extended-keys on
+      set -as terminal-features 'xterm*:extkeys'
+
       # Start panes at 1, not 0 (windows handled by baseIndex)
       setw -g pane-base-index 1
 
@@ -101,6 +105,16 @@
       bind -n M-= resize-pane -U 2
       bind -n M-- resize-pane -D 2
       bind -n M-+ resize-pane -U 2
+
+      # ------------------------------------------------------------------------------
+      # Pane Resize (Alt + Shift + Arrow without prefix)
+      # WezTerm Ctrl+Shift+Arrow -> tmux Alt+Shift+Arrow
+      # ------------------------------------------------------------------------------
+
+      bind -n M-S-Left resize-pane -L 2
+      bind -n M-S-Right resize-pane -R 2
+      bind -n M-S-Up resize-pane -U 2
+      bind -n M-S-Down resize-pane -D 2
 
       # ------------------------------------------------------------------------------
       # New Pane (Alt + n without prefix)
