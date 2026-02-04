@@ -467,6 +467,18 @@ __wezterm_osc7() {
 # zones, marking up the prompt, the user input and the command
 # output so that the terminal can better reason about the display.
 __wezterm_semantic_precmd_executing=""
+
+# Helper function to emit OSC 133 sequences with tmux passthrough support
+__wezterm_osc133() {
+  local seq="$1"
+  if [[ -z "${TMUX-}" ]] ; then
+    printf "\033]133;%s\007" "$seq"
+  else
+    # tmux passthrough format
+    printf "\033Ptmux;\033\033]133;%s\007\033\\" "$seq"
+  fi
+}
+
 __wezterm_semantic_precmd() {
   local ret="$?"
   if [[ "$__wezterm_semantic_precmd_executing" != "0" ]] ; then
@@ -475,26 +487,38 @@ __wezterm_semantic_precmd() {
     # Markup the left and right prompts so that the terminal
     # knows that they are semantically prompt output.
     if [[ -n "$ZSH_NAME" ]] ; then
-      PS1=$'%{\e]133;P;k=i\a%}'$PS1$'%{\e]133;B\a%}'
-      PS2=$'%{\e]133;P;k=s\a%}'$PS2$'%{\e]133;B\a%}'
+      if [[ -z "${TMUX-}" ]] ; then
+        PS1=$'%{\e]133;P;k=i\a%}'$PS1$'%{\e]133;B\a%}'
+        PS2=$'%{\e]133;P;k=s\a%}'$PS2$'%{\e]133;B\a%}'
+      else
+        # tmux passthrough format for PS1/PS2
+        PS1=$'%{\ePtmux;\e\e]133;P;k=i\a\e\\%}'$PS1$'%{\ePtmux;\e\e]133;B\a\e\\%}'
+        PS2=$'%{\ePtmux;\e\e]133;P;k=s\a\e\\%}'$PS2$'%{\ePtmux;\e\e]133;B\a\e\\%}'
+      fi
     else
-      PS1='\[\e]133;P;k=i\a\]'$PS1'\[\e]133;B\a\]'
-      PS2='\[\e]133;P;k=s\a\]'$PS2'\[\e]133;B\a\]'
+      if [[ -z "${TMUX-}" ]] ; then
+        PS1='\[\e]133;P;k=i\a\]'$PS1'\[\e]133;B\a\]'
+        PS2='\[\e]133;P;k=s\a\]'$PS2'\[\e]133;B\a\]'
+      else
+        # tmux passthrough format for PS1/PS2 (bash)
+        PS1='\[\ePtmux;\e\e]133;P;k=i\a\e\\\]'$PS1'\[\ePtmux;\e\e]133;B\a\e\\\]'
+        PS2='\[\ePtmux;\e\e]133;P;k=s\a\e\\\]'$PS2'\[\ePtmux;\e\e]133;B\a\e\\\]'
+      fi
     fi
     __wezterm_check_ps1="$PS1"
   fi
   if [[ "$__wezterm_semantic_precmd_executing" != "" ]] ; then
     # Report last command status
-    printf "\033]133;D;%s;aid=%s\007" "$ret" "$$"
+    __wezterm_osc133 "D;$ret;aid=$$"
   fi
   # Fresh line and start the prompt
   if [[ -n "${BLE_VERSION-}" ]]; then
     # FreshLine breaks ble.sh's cursor position tracking.  Also, the cursor
     # position adjustment is already performed ble.sh so unnecessary here.  We
     # here only perform StartPrompt.
-    printf "\033]133;P\007"
+    __wezterm_osc133 "P"
   else
-    printf "\033]133;A;cl=m;aid=%s\007" "$$"
+    __wezterm_osc133 "A;cl=m;aid=$$"
   fi
   __wezterm_semantic_precmd_executing=0
 }
@@ -507,7 +531,7 @@ function __wezterm_semantic_preexec() {
 	  unset __wezterm_save_ps1
   fi
   # Indicate that the command output begins here
-  printf "\033]133;C;\007"
+  __wezterm_osc133 "C;"
   __wezterm_semantic_precmd_executing=1
 }
 
