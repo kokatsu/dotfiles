@@ -52,3 +52,12 @@ alias vi="nvim"
 # ------------------------------------------------------------------------------
 
 alias sp="spotify_player"
+
+# ------------------------------------------------------------------------------
+# Claude Code (https://github.com/anthropics/claude-code)
+# ------------------------------------------------------------------------------
+
+# Claude Codeをtmux内で起動
+# tmux外の場合: tmuxセッション 'claude' を作成/アタッチしてclaude起動
+# tmux内の場合: 直接claude起動（command で元のバイナリを呼び出し）
+alias claude='if [ -n "$TMUX" ]; then command claude; else tmux new-session -A -s claude "command claude"; fi'
