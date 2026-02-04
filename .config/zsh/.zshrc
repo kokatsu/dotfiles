@@ -200,7 +200,8 @@ _evalcache starship init zsh
 # ------------------------------------------------------------------------------
 
 zsh-defer _evalcache wezterm shell-completion --shell zsh
-. $ZDOTDIR/wezterm-integration.sh
+# Skip wezterm shell integration in tmux (OSC sequences cause display issues)
+[[ -z "${TMUX-}" ]] && . $ZDOTDIR/wezterm-integration.sh
 
 # ------------------------------------------------------------------------------
 # Yazi (https://github.com/sxyazi/yazi)
