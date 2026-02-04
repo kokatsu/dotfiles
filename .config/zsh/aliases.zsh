@@ -58,6 +58,18 @@ alias sp="spotify_player"
 # ------------------------------------------------------------------------------
 
 # Claude Codeをtmux内で起動
-# tmux外の場合: tmuxセッション 'claude' を作成/アタッチしてclaude起動
-# tmux内の場合: 直接claude起動（command で元のバイナリを呼び出し）
-alias claude='if [ -n "$TMUX" ]; then command claude; else tmux new-session -A -s claude "command claude"; fi'
+# 引数がある場合: 直接実行（--version等のオプション用）
+# tmux内の場合: 直接実行
+# tmux外で引数なしの場合: tmuxセッションを作成してclaude起動
+#   - WEZTERM_PANE がある場合: ペインごとに独立したセッション
+#   - それ以外: 共有セッション 'claude'
+claude() {
+  if [[ $# -gt 0 ]]; then
+    command claude "$@"
+  elif [[ -n "$TMUX" ]]; then
+    command claude
+  else
+    local session_name="claude${WEZTERM_PANE:+-$WEZTERM_PANE}"
+    tmux new-session -A -s "$session_name" "command claude"
+  fi
+}
