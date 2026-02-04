@@ -12,7 +12,6 @@ wezterm.GLOBAL = wezterm.GLOBAL or {}
 
 -- プラットフォームユーティリティをローカル変数にバインド
 local is_wsl_domain = platform.is_wsl_domain
-local windows_non_wsl_action = platform.windows_non_wsl_action
 
 --- ダブルプレスで実行するアクションを作成
 ---@param key_name string キー名（状態管理用）
@@ -99,8 +98,44 @@ local common_keys = {
   -- `Shift + Enter` で 改行を送信
   -- https://zenn.dev/glaucus03/articles/070589323cb450
   { key = 'Enter', mods = 'SHIFT', action = act.SendString('\n') },
-  -- NOTE: `Alt + ;`, `Alt + \` のレイアウト機能は zellij に移行
-  -- zellij の config.kdl で設定: Alt+; (右分割), Alt+' (下分割), Alt+3 (3列), Alt+\ (選択)
+  -- `Alt + ;` で右分割レイアウト (左 | 右上/右下)
+  {
+    key = ';',
+    mods = 'ALT',
+    action = wezterm.action_callback(function(_, pane)
+      local cwd_uri = pane:get_current_working_dir()
+      local cwd = cwd_uri and cwd_uri.file_path or nil
+      local right = pane:split({ direction = 'Right', size = 0.5, cwd = cwd })
+      right:split({ direction = 'Bottom', size = 0.5, cwd = cwd })
+    end),
+  },
+  -- `Alt + \` でレイアウト選択
+  {
+    key = '\\',
+    mods = 'ALT',
+    action = act.InputSelector({
+      title = 'Select Layout',
+      choices = {
+        { label = '左 | 右上/右下', id = 'right-split' },
+        { label = '上 / 下左|下右', id = 'bottom-split' },
+        { label = '3列均等', id = 'three-cols' },
+      },
+      action = wezterm.action_callback(function(_, pane, id, _)
+        local cwd_uri = pane:get_current_working_dir()
+        local cwd = cwd_uri and cwd_uri.file_path or nil
+        if id == 'right-split' then
+          local right = pane:split({ direction = 'Right', size = 0.5, cwd = cwd })
+          right:split({ direction = 'Bottom', size = 0.5, cwd = cwd })
+        elseif id == 'bottom-split' then
+          local bottom = pane:split({ direction = 'Bottom', size = 0.5, cwd = cwd })
+          bottom:split({ direction = 'Right', size = 0.5, cwd = cwd })
+        elseif id == 'three-cols' then
+          local right = pane:split({ direction = 'Right', size = 0.66, cwd = cwd })
+          right:split({ direction = 'Right', size = 0.5, cwd = cwd })
+        end
+      end),
+    }),
+  },
   -- `Ctrl + q` で終了（2度押しで確認）
   {
     key = 'q',
@@ -125,6 +160,10 @@ local unified_keys = {
   { key = 'C', mods = 'PRIMARY', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
   -- `PRIMARY + v` でクリップボードからペースト
   { key = 'v', mods = 'PRIMARY', action = act.PasteFrom('Clipboard') },
+  -- `PRIMARY + s` で水平分割
+  { key = 's', mods = 'PRIMARY', action = act.SplitHorizontal({}) },
+  -- `PRIMARY + Shift + s` で垂直分割
+  { key = 'S', mods = 'PRIMARY', action = act.SplitVertical({}) },
   -- `PRIMARY + t` で新しいタブを作成
   { key = 't', mods = 'PRIMARY', action = act.SpawnCommandInNewTab({ cwd = wezterm.home_dir }) },
   -- `PRIMARY + Shift + t` で現在のタブを新しいタブにコピー
@@ -137,6 +176,15 @@ local unified_keys = {
   { key = 'Tab', mods = 'PRIMARY', action = act.ActivateTabRelative(1) },
   -- `PRIMARY + Shift + Tab` で左のタブに移動
   { key = 'Tab', mods = 'PRIMARY|SHIFT', action = act.ActivateTabRelative(-1) },
+  -- `PRIMARY + z` でペインをズーム（トグル）
+  { key = 'z', mods = 'PRIMARY', action = act.TogglePaneZoomState },
+  -- `SECONDARY + w` で現在のペインを閉じる
+  { key = 'w', mods = 'SECONDARY', action = act.CloseCurrentPane({ confirm = false }) },
+  -- `SECONDARY + Shift + 矢印` でペイン移動
+  { key = 'LeftArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Left') },
+  { key = 'RightArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Right') },
+  { key = 'UpArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Up') },
+  { key = 'DownArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Down') },
   -- `PRIMARY + 左矢印` で前の単語に移動 (Esc+b)
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'PRIMARY', action = act.SendString('\x1bb') },
@@ -167,6 +215,15 @@ local unified_keys = {
   { key = '7', mods = 'PRIMARY', action = act.ActivateTab(6) },
   { key = '8', mods = 'PRIMARY', action = act.ActivateTab(7) },
   { key = '9', mods = 'PRIMARY', action = act.ActivateLastTab },
+  -- `PRIMARY + Shift + 矢印` でペインリサイズ
+  { key = 'LeftArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Left', 1 }) },
+  { key = 'RightArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Right', 1 }) },
+  { key = 'UpArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Up', 1 }) },
+  { key = 'DownArrow', mods = 'PRIMARY|SHIFT', action = act.AdjustPaneSize({ 'Down', 1 }) },
+  -- `SECONDARY + Shift + l` でペインを左に回転
+  { key = 'L', mods = 'SECONDARY|SHIFT', action = act.RotatePanes('CounterClockwise') },
+  -- `SECONDARY + Shift + r` でペインを右に回転
+  { key = 'R', mods = 'SECONDARY|SHIFT', action = act.RotatePanes('Clockwise') },
   -- `PRIMARY + Shift + X` でコピーモードをアクティブにする
   { key = 'X', mods = 'PRIMARY', action = act.ActivateCopyMode },
   -- `SECONDARY + f` で画面を最大化
@@ -177,99 +234,6 @@ local unified_keys = {
   { key = 'p', mods = 'PRIMARY|SHIFT', action = act.ActivateCommandPalette },
 }
 
--- ペイン操作キーバインド
--- Windows（非WSL）: WezTermのペイン機能
--- それ以外（macOS/Linux/WSL）: tmuxにキーを転送
-local pane_keys = {
-  -- `PRIMARY + s` で水平分割
-  {
-    key = 's',
-    mods = 'PRIMARY',
-    action = windows_non_wsl_action(act.SplitHorizontal({}), { key = 's', mods = 'CTRL' }),
-  },
-  -- `PRIMARY + z` でペインをズーム（トグル）
-  {
-    key = 'z',
-    mods = 'PRIMARY',
-    action = windows_non_wsl_action(act.TogglePaneZoomState, { key = 'z', mods = 'CTRL' }),
-  },
-  -- `SECONDARY + w` でペインを閉じる
-  -- Note: SendKeyではAlt+wが正しく送信されないため、ESCシーケンスを直接送信
-  {
-    key = 'w',
-    mods = 'SECONDARY',
-    action = windows_non_wsl_action(act.CloseCurrentPane({ confirm = false }), act.SendString('\x1bw')),
-  },
-  -- `SECONDARY + Shift + 矢印` でペイン移動
-  {
-    key = 'LeftArrow',
-    mods = 'SECONDARY|SHIFT',
-    action = windows_non_wsl_action(act.ActivatePaneDirection('Left'), { key = 'LeftArrow', mods = 'ALT' }),
-  },
-  {
-    key = 'RightArrow',
-    mods = 'SECONDARY|SHIFT',
-    action = windows_non_wsl_action(act.ActivatePaneDirection('Right'), { key = 'RightArrow', mods = 'ALT' }),
-  },
-  {
-    key = 'UpArrow',
-    mods = 'SECONDARY|SHIFT',
-    action = windows_non_wsl_action(act.ActivatePaneDirection('Up'), { key = 'UpArrow', mods = 'ALT' }),
-  },
-  {
-    key = 'DownArrow',
-    mods = 'SECONDARY|SHIFT',
-    action = windows_non_wsl_action(act.ActivatePaneDirection('Down'), { key = 'DownArrow', mods = 'ALT' }),
-  },
-  -- `PRIMARY + Shift + 矢印` でペインリサイズ
-  -- Windows（非WSL）: WezTermのリサイズ
-  -- それ以外（macOS/Linux/WSL）: tmuxにAlt+Shift+矢印を転送
-  {
-    key = 'LeftArrow',
-    mods = 'PRIMARY|SHIFT',
-    action = windows_non_wsl_action(act.AdjustPaneSize({ 'Left', 1 }), { key = 'LeftArrow', mods = 'ALT|SHIFT' }),
-  },
-  {
-    key = 'RightArrow',
-    mods = 'PRIMARY|SHIFT',
-    action = windows_non_wsl_action(act.AdjustPaneSize({ 'Right', 1 }), { key = 'RightArrow', mods = 'ALT|SHIFT' }),
-  },
-  {
-    key = 'UpArrow',
-    mods = 'PRIMARY|SHIFT',
-    action = windows_non_wsl_action(act.AdjustPaneSize({ 'Up', 1 }), { key = 'UpArrow', mods = 'ALT|SHIFT' }),
-  },
-  {
-    key = 'DownArrow',
-    mods = 'PRIMARY|SHIFT',
-    action = windows_non_wsl_action(act.AdjustPaneSize({ 'Down', 1 }), { key = 'DownArrow', mods = 'ALT|SHIFT' }),
-  },
-  -- `SECONDARY + Shift + l` でペインを左に回転
-  {
-    key = 'L',
-    mods = 'SECONDARY|SHIFT',
-    action = windows_non_wsl_action(act.RotatePanes('CounterClockwise'), { key = 'L', mods = 'ALT|SHIFT' }),
-  },
-  -- `SECONDARY + Shift + r` でペインを右に回転
-  {
-    key = 'R',
-    mods = 'SECONDARY|SHIFT',
-    action = windows_non_wsl_action(act.RotatePanes('Clockwise'), { key = 'R', mods = 'ALT|SHIFT' }),
-  },
-  -- `PRIMARY + Shift + s` で垂直分割 (tmux prefix+d を送信)
-  {
-    key = 'S',
-    mods = 'PRIMARY',
-    action = windows_non_wsl_action(
-      act.SplitVertical({}),
-      act.Multiple({
-        act.SendKey({ key = 'b', mods = 'CTRL' }),
-        act.SendKey({ key = 'd' }),
-      })
-    ),
-  },
-}
-
 -- Windows 固有キーバインド
 local windows_specific_keys = {
   -- `Alt + y` で新しいタブで PowerShell を起動
@@ -277,6 +241,12 @@ local windows_specific_keys = {
     key = 'y',
     mods = 'ALT',
     action = act.SpawnCommandInNewTab({ args = { 'powershell.exe' }, domain = { DomainName = 'local' } }),
+  },
+  -- `Alt + s` で新しいタブで WSL に SSH 接続 (yazi 画像プレビュー用)
+  {
+    key = 's',
+    mods = 'ALT',
+    action = act.SpawnCommandInNewTab({ args = { 'ssh', '127.0.0.1' }, domain = { DomainName = 'local' } }),
   },
   -- https://picton.uk/blog/claude-code-image-paste-wezterm/
   -- `Alt + p` でクリップボードの画像を保存してWSLパスを出力（WSLドメインのみ）
@@ -409,18 +379,9 @@ local function get_unified_keys(mods_map)
   return convert_keys(unified_keys, mods_map)
 end
 
---- ペイン操作キーバインドを取得する（修飾子変換付き）
---- pane_keysはaction_callbackを使用しているため、modsのみ変換
----@param mods_map table 修飾子マッピング { PRIMARY = 'CTRL', SECONDARY = 'ALT' }
----@return table[] 変換後のキーバインドテーブル
-local function get_pane_keys(mods_map)
-  return convert_keys(pane_keys, mods_map)
-end
-
 return {
   -- 新しいAPI: 修飾子マッピングを渡して統一キーを取得
   get_unified_keys = get_unified_keys,
-  get_pane_keys = get_pane_keys,
   common_keys = common_keys,
   windows_specific_keys = windows_specific_keys,
   darwin_specific_keys = darwin_specific_keys,
@@ -429,13 +390,11 @@ return {
   windows_keys = merge_keys(
     common_keys,
     convert_keys(unified_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),
-    convert_keys(pane_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),
     windows_specific_keys
   ),
   darwin_keys = merge_keys(
     common_keys,
     convert_keys(unified_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),
-    convert_keys(pane_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),
     darwin_specific_keys -- macOS固有キーを最後に配置して優先
   ),
   key_tables = {

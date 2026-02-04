@@ -32,11 +32,6 @@ source ${ZIM_HOME}/init.zsh
 # Emacs キーバインドを使用（vi モードを無効化）
 bindkey -e
 
-# Disable flow control (Ctrl+s/Ctrl+q) for tmux keybindings
-stty -ixon
-# Unbind Ctrl+S from zsh forward-search to allow tmux to receive it
-bindkey -r '^S'
-
 # ------------------------------------------------------------------------------
 # Zsh
 # ------------------------------------------------------------------------------
@@ -200,8 +195,7 @@ _evalcache starship init zsh
 # ------------------------------------------------------------------------------
 
 zsh-defer _evalcache wezterm shell-completion --shell zsh
-# Skip wezterm shell integration in tmux (OSC sequences cause display issues)
-[[ -z "${TMUX-}" ]] && . $ZDOTDIR/wezterm-integration.sh
+. $ZDOTDIR/wezterm-integration.sh
 
 # ------------------------------------------------------------------------------
 # Yazi (https://github.com/sxyazi/yazi)

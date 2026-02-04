@@ -5,9 +5,6 @@ M.apply_to_config = function(config)
   config.window_background_opacity = 0.75
   -- config.macos_window_background_blur = 20
   config.font_size = 14
-  -- tmuxを自動起動（毎回新しいセッションを作成）
-  -- TMUX環境変数がある場合はスキップ（ネスト防止）
-  config.default_prog = { 'zsh', '-lc', '[[ -z "$TMUX" ]] && tmux new-session || exec zsh' }
   -- OptionキーをAlt/Metaとして扱う（IME入力時は除く）
   config.send_composed_key_when_left_alt_is_pressed = false
   config.send_composed_key_when_right_alt_is_pressed = false

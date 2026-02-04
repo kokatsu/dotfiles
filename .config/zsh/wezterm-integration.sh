@@ -454,31 +454,13 @@ __wezterm_osc7() {
     # If the command failed (perhaps the installed wezterm
     # is too old?) then fall back to the simple version below.
   fi
-  if [[ -z "${TMUX-}" ]] ; then
-    printf "\033]7;file://%s%s\033\\" "${HOSTNAME}" "${PWD}"
-  else
-    # tmux passthrough format
-    # https://github.com/tmux/tmux/wiki/FAQ#what-is-the-passthrough-escape-sequence-and-how-do-i-use-it
-    printf "\033Ptmux;\033\033]7;file://%s%s\033\\\033\\" "${HOSTNAME}" "${PWD}"
-  fi
+  printf "\033]7;file://%s%s\033\\" "${HOSTNAME}" "${PWD}"
 }
 
 # The semantic precmd and prexec functions generate semantic
 # zones, marking up the prompt, the user input and the command
 # output so that the terminal can better reason about the display.
 __wezterm_semantic_precmd_executing=""
-
-# Helper function to emit OSC 133 sequences with tmux passthrough support
-__wezterm_osc133() {
-  local seq="$1"
-  if [[ -z "${TMUX-}" ]] ; then
-    printf "\033]133;%s\007" "$seq"
-  else
-    # tmux passthrough format
-    printf "\033Ptmux;\033\033]133;%s\007\033\\" "$seq"
-  fi
-}
-
 __wezterm_semantic_precmd() {
   local ret="$?"
   if [[ "$__wezterm_semantic_precmd_executing" != "0" ]] ; then
@@ -486,45 +468,40 @@ __wezterm_semantic_precmd() {
     __wezterm_save_ps2="$PS2"
     # Markup the left and right prompts so that the terminal
     # knows that they are semantically prompt output.
-    # Note: Skip PS1/PS2 modification in tmux as it conflicts with starship
-    # and other prompt managers. The OSC 133 A/D/C sequences via __wezterm_osc133
-    # provide the essential semantic zone functionality.
-    if [[ -z "${TMUX-}" ]] ; then
-      if [[ -n "$ZSH_NAME" ]] ; then
-        PS1=$'%{\e]133;P;k=i\a%}'$PS1$'%{\e]133;B\a%}'
-        PS2=$'%{\e]133;P;k=s\a%}'$PS2$'%{\e]133;B\a%}'
-      else
-        PS1='\[\e]133;P;k=i\a\]'$PS1'\[\e]133;B\a\]'
-        PS2='\[\e]133;P;k=s\a\]'$PS2'\[\e]133;B\a\]'
-      fi
-      __wezterm_check_ps1="$PS1"
+    if [[ -n "$ZSH_NAME" ]] ; then
+      PS1=$'%{\e]133;P;k=i\a%}'$PS1$'%{\e]133;B\a%}'
+      PS2=$'%{\e]133;P;k=s\a%}'$PS2$'%{\e]133;B\a%}'
+    else
+      PS1='\[\e]133;P;k=i\a\]'$PS1'\[\e]133;B\a\]'
+      PS2='\[\e]133;P;k=s\a\]'$PS2'\[\e]133;B\a\]'
     fi
+    __wezterm_check_ps1="$PS1"
   fi
   if [[ "$__wezterm_semantic_precmd_executing" != "" ]] ; then
     # Report last command status
-    __wezterm_osc133 "D;$ret;aid=$$"
+    printf "\033]133;D;%s;aid=%s\007" "$ret" "$$"
   fi
   # Fresh line and start the prompt
   if [[ -n "${BLE_VERSION-}" ]]; then
     # FreshLine breaks ble.sh's cursor position tracking.  Also, the cursor
     # position adjustment is already performed ble.sh so unnecessary here.  We
     # here only perform StartPrompt.
-    __wezterm_osc133 "P"
+    printf "\033]133;P\007"
   else
-    __wezterm_osc133 "A;cl=m;aid=$$"
+    printf "\033]133;A;cl=m;aid=%s\007" "$$"
   fi
   __wezterm_semantic_precmd_executing=0
 }
 
 function __wezterm_semantic_preexec() {
-  # Restore the original PS1/PS2 if set (only when not in tmux)
-  if [[ -z "${TMUX-}" ]] && [[ -n "${__wezterm_save_ps1+1}" && "${__wezterm_check_ps1-}" == "${PS1}" ]]; then
+  # Restore the original PS1/PS2 if set
+  if [[ -n "${__wezterm_save_ps1+1}" && "${__wezterm_check_ps1-}" == "${PS1}" ]]; then
 	  PS1="$__wezterm_save_ps1"
 	  PS2="$__wezterm_save_ps2"
 	  unset __wezterm_save_ps1
   fi
   # Indicate that the command output begins here
-  __wezterm_osc133 "C;"
+  printf "\033]133;C;\007"
   __wezterm_semantic_precmd_executing=1
 }
 
@@ -565,8 +542,7 @@ __wezterm_user_vars_preexec() {
 # Register the various functions; take care to perform osc7 after
 # the semantic zones as we don't want to perturb the last command
 # status before we've had a chance to report it to the terminal
-# Note: Skip semantic zones in tmux as OSC 133 passthrough causes display issues
-if [[ -z "${WEZTERM_SHELL_SKIP_SEMANTIC_ZONES-}" ]] && [[ -z "${TMUX-}" ]]; then
+if [[ -z "${WEZTERM_SHELL_SKIP_SEMANTIC_ZONES-}" ]]; then
   if [[ -n "${BLE_VERSION-}" ]]; then
     blehook PRECMD+=__wezterm_semantic_precmd
     blehook PREEXEC+=__wezterm_semantic_preexec
