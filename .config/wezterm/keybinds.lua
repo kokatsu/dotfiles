@@ -12,7 +12,7 @@ wezterm.GLOBAL = wezterm.GLOBAL or {}
 
 -- プラットフォームユーティリティをローカル変数にバインド
 local is_wsl_domain = platform.is_wsl_domain
-local non_wsl_action = platform.non_wsl_action
+local windows_non_wsl_action = platform.windows_non_wsl_action
 
 --- ダブルプレスで実行するアクションを作成
 ---@param key_name string キー名（状態管理用）
@@ -177,57 +177,96 @@ local unified_keys = {
   { key = 'p', mods = 'PRIMARY|SHIFT', action = act.ActivateCommandPalette },
 }
 
--- ペイン操作キーバインド (WSL以外でのみ有効、WSLではtmuxを使用)
--- Windows: Ctrl+s/Ctrl+Shift+s/Ctrl+z/Alt+w 等をtmuxに転送
+-- ペイン操作キーバインド
+-- Windows（非WSL）: WezTermのペイン機能
+-- それ以外（macOS/Linux/WSL）: tmuxにキーを転送
 local pane_keys = {
-  -- `PRIMARY + s` で水平分割 (WSLではCtrl+sをtmuxに転送)
-  { key = 's', mods = 'PRIMARY', action = non_wsl_action(act.SplitHorizontal({}), { key = 's', mods = 'CTRL' }) },
-  -- `PRIMARY + z` でペインをズーム（トグル）(WSLではCtrl+zをtmuxに転送)
-  { key = 'z', mods = 'PRIMARY', action = non_wsl_action(act.TogglePaneZoomState, { key = 'z', mods = 'CTRL' }) },
-  -- `SECONDARY + w` でペインを閉じる (WSLではAlt+wをtmuxに転送)
+  -- `PRIMARY + s` で水平分割
+  {
+    key = 's',
+    mods = 'PRIMARY',
+    action = windows_non_wsl_action(act.SplitHorizontal({}), { key = 's', mods = 'CTRL' }),
+  },
+  -- `PRIMARY + z` でペインをズーム（トグル）
+  {
+    key = 'z',
+    mods = 'PRIMARY',
+    action = windows_non_wsl_action(act.TogglePaneZoomState, { key = 'z', mods = 'CTRL' }),
+  },
+  -- `SECONDARY + w` でペインを閉じる
   -- Note: SendKeyではAlt+wが正しく送信されないため、ESCシーケンスを直接送信
   {
     key = 'w',
     mods = 'SECONDARY',
-    action = non_wsl_action(act.CloseCurrentPane({ confirm = false }), act.SendString('\x1bw')),
+    action = windows_non_wsl_action(act.CloseCurrentPane({ confirm = false }), act.SendString('\x1bw')),
   },
-  -- `SECONDARY + Shift + 矢印` でペイン移動 (WSLではAlt+矢印をtmuxに転送)
+  -- `SECONDARY + Shift + 矢印` でペイン移動
   {
     key = 'LeftArrow',
     mods = 'SECONDARY|SHIFT',
-    action = non_wsl_action(act.ActivatePaneDirection('Left'), { key = 'LeftArrow', mods = 'ALT' }),
+    action = windows_non_wsl_action(act.ActivatePaneDirection('Left'), { key = 'LeftArrow', mods = 'ALT' }),
   },
   {
     key = 'RightArrow',
     mods = 'SECONDARY|SHIFT',
-    action = non_wsl_action(act.ActivatePaneDirection('Right'), { key = 'RightArrow', mods = 'ALT' }),
+    action = windows_non_wsl_action(act.ActivatePaneDirection('Right'), { key = 'RightArrow', mods = 'ALT' }),
   },
   {
     key = 'UpArrow',
     mods = 'SECONDARY|SHIFT',
-    action = non_wsl_action(act.ActivatePaneDirection('Up'), { key = 'UpArrow', mods = 'ALT' }),
+    action = windows_non_wsl_action(act.ActivatePaneDirection('Up'), { key = 'UpArrow', mods = 'ALT' }),
   },
   {
     key = 'DownArrow',
     mods = 'SECONDARY|SHIFT',
-    action = non_wsl_action(act.ActivatePaneDirection('Down'), { key = 'DownArrow', mods = 'ALT' }),
+    action = windows_non_wsl_action(act.ActivatePaneDirection('Down'), { key = 'DownArrow', mods = 'ALT' }),
   },
-  -- `PRIMARY + Shift + 矢印` でペインリサイズ (WSLではtmuxのAlt+=/- を使用、無効化)
-  { key = 'LeftArrow', mods = 'PRIMARY|SHIFT', action = non_wsl_action(act.AdjustPaneSize({ 'Left', 1 }), nil) },
-  { key = 'RightArrow', mods = 'PRIMARY|SHIFT', action = non_wsl_action(act.AdjustPaneSize({ 'Right', 1 }), nil) },
-  { key = 'UpArrow', mods = 'PRIMARY|SHIFT', action = non_wsl_action(act.AdjustPaneSize({ 'Up', 1 }), nil) },
-  { key = 'DownArrow', mods = 'PRIMARY|SHIFT', action = non_wsl_action(act.AdjustPaneSize({ 'Down', 1 }), nil) },
-  -- `SECONDARY + Shift + l` でペインを左に回転 (WSLではAlt+Shift+lをtmuxに転送)
+  -- `PRIMARY + Shift + 矢印` でペインリサイズ
+  -- Windows（非WSL）: WezTermのリサイズ
+  -- それ以外（macOS/Linux/WSL）: tmuxにAlt+Shift+矢印を転送
+  {
+    key = 'LeftArrow',
+    mods = 'PRIMARY|SHIFT',
+    action = windows_non_wsl_action(act.AdjustPaneSize({ 'Left', 1 }), { key = 'LeftArrow', mods = 'ALT|SHIFT' }),
+  },
+  {
+    key = 'RightArrow',
+    mods = 'PRIMARY|SHIFT',
+    action = windows_non_wsl_action(act.AdjustPaneSize({ 'Right', 1 }), { key = 'RightArrow', mods = 'ALT|SHIFT' }),
+  },
+  {
+    key = 'UpArrow',
+    mods = 'PRIMARY|SHIFT',
+    action = windows_non_wsl_action(act.AdjustPaneSize({ 'Up', 1 }), { key = 'UpArrow', mods = 'ALT|SHIFT' }),
+  },
+  {
+    key = 'DownArrow',
+    mods = 'PRIMARY|SHIFT',
+    action = windows_non_wsl_action(act.AdjustPaneSize({ 'Down', 1 }), { key = 'DownArrow', mods = 'ALT|SHIFT' }),
+  },
+  -- `SECONDARY + Shift + l` でペインを左に回転
   {
     key = 'L',
     mods = 'SECONDARY|SHIFT',
-    action = non_wsl_action(act.RotatePanes('CounterClockwise'), { key = 'L', mods = 'ALT|SHIFT' }),
+    action = windows_non_wsl_action(act.RotatePanes('CounterClockwise'), { key = 'L', mods = 'ALT|SHIFT' }),
   },
-  -- `SECONDARY + Shift + r` でペインを右に回転 (WSLではAlt+Shift+rをtmuxに転送)
+  -- `SECONDARY + Shift + r` でペインを右に回転
   {
     key = 'R',
     mods = 'SECONDARY|SHIFT',
-    action = non_wsl_action(act.RotatePanes('Clockwise'), { key = 'R', mods = 'ALT|SHIFT' }),
+    action = windows_non_wsl_action(act.RotatePanes('Clockwise'), { key = 'R', mods = 'ALT|SHIFT' }),
+  },
+  -- `PRIMARY + Shift + s` で垂直分割 (tmux prefix+d を送信)
+  {
+    key = 'S',
+    mods = 'PRIMARY',
+    action = windows_non_wsl_action(
+      act.SplitVertical({}),
+      act.Multiple({
+        act.SendKey({ key = 'b', mods = 'CTRL' }),
+        act.SendKey({ key = 'd' }),
+      })
+    ),
   },
 }
 
@@ -238,18 +277,6 @@ local windows_specific_keys = {
     key = 'y',
     mods = 'ALT',
     action = act.SpawnCommandInNewTab({ args = { 'powershell.exe' }, domain = { DomainName = 'local' } }),
-  },
-  -- `Ctrl+Shift+s` で上下分割 (WSLではtmux prefix+dを送信)
-  {
-    key = 'S',
-    mods = 'CTRL',
-    action = non_wsl_action(
-      act.SplitVertical({}),
-      act.Multiple({
-        act.SendKey({ key = 'b', mods = 'CTRL' }),
-        act.SendKey({ key = 'd' }),
-      })
-    ),
   },
   -- https://picton.uk/blog/claude-code-image-paste-wezterm/
   -- `Alt + p` でクリップボードの画像を保存してWSLパスを出力（WSLドメインのみ）
@@ -296,25 +323,12 @@ local windows_specific_keys = {
 
 -- macOS 固有キーバインド
 -- Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替のため、物理 Ctrl = Ctrl として届く
--- macOSではtmuxを使用するため、ペイン操作はtmuxに委譲
 local darwin_specific_keys = {
   -- Option + 矢印で単語移動（macOS標準の動作）
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'OPT', action = act.SendString('\x1bb') },
   -- selene: allow(bad_string_escape)
   { key = 'RightArrow', mods = 'OPT', action = act.SendString('\x1bf') },
-  -- `Ctrl+Shift+s` で上下分割 (tmux prefix+d を送信)
-  {
-    key = 'S',
-    mods = 'CTRL',
-    action = act.Multiple({
-      act.SendKey({ key = 'b', mods = 'CTRL' }),
-      act.SendKey({ key = 'd' }),
-    }),
-  },
-  -- `Alt+w` でtmuxペインを閉じる (pane_keysを上書き、WezTermペインではなくtmuxペインを閉じる)
-  -- selene: allow(bad_string_escape)
-  { key = 'w', mods = 'ALT', action = act.SendString('\x1bw') },
 }
 
 -- コピーモードのキーテーブル（Vim風操作）
