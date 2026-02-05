@@ -16,6 +16,11 @@
     then "/Users/${username}"
     else "/home/${username}";
 
+  # ユーザースクリプトのラッパー (bin/ 内の Deno/Bun スクリプトを短い名前で実行)
+  mmd = pkgs.writeShellScriptBin "mmd" ''
+    exec ${pkgs.deno}/bin/deno run --allow-read --allow-write "''${DOTFILES_DIR:-${dotfilesDir}}/bin/mermaid-render.ts" "$@"
+  '';
+
   # dotfilesDirが空の場合はエラーを出す（--impureフラグ忘れ防止）
   # CI環境ではスキップ
   validDotfilesDir =
@@ -176,6 +181,9 @@ in {
 
         # CLI ツール (overlay)
         ccusage # Claude API使用量表示
+
+        # ユーザースクリプト ラッパー
+        mmd # Mermaid図レンダラー (bin/mermaid-render.ts)
 
         # Language Servers (overlay)
         cssmodules-language-server
