@@ -37,6 +37,12 @@
       # WezTermのOSCシーケンスをパススルーする
       set -g allow-passthrough on
 
+      # クリップボード連携 (OSC 52)
+      # tmuxのコピー操作（マウス選択、copy-mode）でOSC 52を発行し、
+      # WezTermがシステムクリップボードを更新する
+      # Shift+クリックでtmuxのマウスモードをバイパスしてWezTermの直接選択も可能
+      set -s set-clipboard on
+
       # True color support
       set -ga terminal-overrides ",xterm-256color:Tc"
 
@@ -197,7 +203,7 @@
 
       # Vi-style copy mode (keyMode handles mode-keys vi)
       bind -T copy-mode-vi v send-keys -X begin-selection
-      bind -T copy-mode-vi y send-keys -X copy-selection-and-cancel
+      bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel ""
       bind -T copy-mode-vi Escape send-keys -X cancel
 
       # Scroll with j/k in copy mode
