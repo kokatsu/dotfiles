@@ -89,7 +89,14 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
       local initial_query = after_cursor:match('^(%S+)') or ''
 
       -- mini.pick でファイル選択
-      local selected_path = pick.builtin.files({ source = { name = 'Files (@reference)' } }, { query = initial_query })
+      local selected_path = pick.builtin.files({}, {
+        source = {
+          name = 'Files (@reference)',
+          choose = function() end, -- ファイルを開かず、パスの返却のみ行う
+        },
+        window = { prompt_prefix = '@' },
+        query = initial_query,
+      })
 
       -- 選択結果の処理
       if selected_path then
