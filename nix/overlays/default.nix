@@ -129,7 +129,7 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=pamburus/termframe
   termframe = _final: prev: let
-    version = "0.7.7";
+    version = "0.8.0";
     hashes = {
       "aarch64-darwin" = "sha256-xYfQlpqP2tp85kTvYjlVZWqMd7BZCJ6FYYIyJoMNRJU=";
       "x86_64-darwin" = "sha256-nFXu1AMZx4usLroXkenwWrcAYy+k83lujyLKOkqwc5E=";
@@ -594,7 +594,7 @@
   # Uses custom package.json to bundle @playwright/cli
   # Renovate: datasource=npm depName=@playwright/cli
   playwright-cli = _final: prev: let
-    version = "0.0.62";
+    version = "0.0.63";
     packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/playwright-cli/package.json);
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/playwright-cli/package-lock.json);
   in {
