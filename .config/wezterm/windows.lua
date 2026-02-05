@@ -15,6 +15,9 @@ M.apply_to_config = function(config)
   end
   config.wsl_domains = wsl_domains
   config.default_domain = wsl_domains[1].name
+  config.set_environment_variables = {
+    WSLENV = 'WEZTERM_PANE',
+  }
   wezterm.home_dir = '~'
 
   local keybinds = require('keybinds')
