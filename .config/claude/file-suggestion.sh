@@ -10,6 +10,7 @@ cd "${CLAUDE_PROJECT_DIR:-.}"
 # Common fd options
 fd_opts=(
   --full-path
+  --fixed-strings
   --hidden
   --exclude .git
   --exclude node_modules
@@ -22,12 +23,12 @@ fd_opts=(
   --exclude .cache
   --exclude target
   --color never
-  --max-results 15
 )
 
 # If query is an existing directory, list its contents
 if [[ -d "$query" ]]; then
-  fd --type f --type d --max-depth 1 "${fd_opts[@]}" . "$query" 2>/dev/null || true
+  fd --type f --type d --max-depth 1 --max-results 15 "${fd_opts[@]}" . "$query" 2>/dev/null || true
 else
-  fd --type f --type d "${fd_opts[@]}" "$query" 2>/dev/null || true
+  # Sort by path depth (shallow first) so partial folder names surface the folder itself
+  fd --type f --type d --max-results 200 "${fd_opts[@]}" "$query" 2>/dev/null | awk -F/ '{print NF, $0}' | sort -n | head -15 | cut -d' ' -f2- || true
 fi
