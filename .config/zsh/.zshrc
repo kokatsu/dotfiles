@@ -201,8 +201,9 @@ zsh-defer _evalcache wezterm shell-completion --shell zsh
 # Yazi (https://github.com/sxyazi/yazi)
 # ------------------------------------------------------------------------------
 
+alias y='yazi'
 # https://yazi-rs.github.io/docs/quick-start/#shell-wrapper
-function y() {
+function yi() {
   local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
   yazi "$@" --cwd-file="$tmp"
   if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
