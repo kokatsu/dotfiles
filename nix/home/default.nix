@@ -153,6 +153,7 @@ in {
         typos
 
         # プレゼン
+        marp-cli
         presenterm
 
         # Spotify
@@ -205,6 +206,7 @@ in {
 
         # Rust 製パッケージ
         git-graph
+        octorus # GitHub PR レビュー TUI (overlay)
         termframe # ターミナルスクリーンショット (SVG, Nerd Font対応)
 
         # Neovim nightly (overlay適用済み、ソースビルド)

@@ -99,6 +99,7 @@
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
             customOverlays.marksman-binary
+            customOverlays.octorus
             customOverlays.playwright-cli
             customOverlays.secretlint
             customOverlays.termframe
@@ -143,6 +144,7 @@
               customOverlays.deck
               customOverlays.git-graph-fork
               customOverlays.marksman-binary
+              customOverlays.octorus
               customOverlays.playwright-cli
               customOverlays.secretlint
               customOverlays.termframe
@@ -183,6 +185,7 @@
             customOverlays.deck
             customOverlays.git-graph-fork
             customOverlays.marksman-binary
+            customOverlays.octorus
             customOverlays.playwright-cli
             customOverlays.secretlint
             customOverlays.termframe
@@ -217,6 +220,7 @@
             customOverlays.jp2a-darwin-fix
             customOverlays.ldc-darwin-fix
             customOverlays.marksman-binary
+            customOverlays.octorus
             customOverlays.playwright-cli
             customOverlays.secretlint
             customOverlays.termframe
