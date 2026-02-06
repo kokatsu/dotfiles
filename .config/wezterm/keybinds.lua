@@ -188,11 +188,11 @@ local unified_keys = {
   { key = 'z', mods = 'PRIMARY', action = act.TogglePaneZoomState },
   -- `SECONDARY + w` で現在のペインを閉じる
   { key = 'w', mods = 'SECONDARY', action = act.CloseCurrentPane({ confirm = false }) },
-  -- `SECONDARY + Shift + 矢印` でペイン移動
-  { key = 'LeftArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Left') },
-  { key = 'RightArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Right') },
-  { key = 'UpArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Up') },
-  { key = 'DownArrow', mods = 'SECONDARY|SHIFT', action = act.ActivatePaneDirection('Down') },
+  -- `SECONDARY + 矢印` でペイン移動
+  { key = 'LeftArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Left') },
+  { key = 'RightArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Right') },
+  { key = 'UpArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Up') },
+  { key = 'DownArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Down') },
   -- `PRIMARY + 左矢印` で前の単語に移動 (Esc+b)
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'PRIMARY', action = act.SendString('\x1bb') },
@@ -256,45 +256,39 @@ local windows_specific_keys = {
     mods = 'ALT',
     action = act.SpawnCommandInNewTab({ args = { 'ssh', '127.0.0.1' }, domain = { DomainName = 'local' } }),
   },
-  -- https://picton.uk/blog/claude-code-image-paste-wezterm/
-  -- `Alt + p` でクリップボードの画像を保存してWSLパスを出力（WSLドメインのみ）
+  -- `Alt + p` で最新のスクリーンショットのWSLパスを入力（WSLドメインのみ）
+  -- 外部プロセス不要: wezterm.glob() でファイル一覧を取得
   {
     key = 'p',
     mods = 'ALT',
     action = wezterm.action_callback(function(window, pane)
-      -- WSLドメインでない場合は何もしない
       if not is_wsl_domain(pane) then
         return
       end
 
-      local timestamp = os.date('%Y%m%d_%H%M%S')
-      local filename = 'screenshot_' .. timestamp .. '.png'
-      local filepath = 'C:\\tmp\\' .. filename
-      local wsl_path = '/mnt/c/tmp/' .. filename
-
-      -- wezterm.run_child_process で PowerShell を実行（ウィンドウなし）
-      local success, stdout, stderr = wezterm.run_child_process({
-        'powershell.exe',
-        '-NoProfile',
-        '-NonInteractive',
-        '-Command',
-        string.format(
-          [[Add-Type -AssemblyName System.Windows.Forms; if (-not (Test-Path 'C:\tmp')) { New-Item -ItemType Directory -Path 'C:\tmp' | Out-Null }; $img = [System.Windows.Forms.Clipboard]::GetImage(); if ($img) { $img.Save('%s'); Write-Output '%s' } else { Write-Output 'No image' }]],
-          filepath,
-          wsl_path
-        ),
-      })
-
-      if success then
-        local result = stdout:gsub('%s+$', '')
-        if result ~= 'No image' and result ~= '' then
-          pane:send_text(result)
-        else
-          window:toast_notification('WezTerm', 'クリップボードに画像がありません', nil, 3000)
-        end
-      else
-        window:toast_notification('WezTerm', 'エラー: ' .. stderr, nil, 3000)
+      local screenshot_dir = os.getenv('SCREENSHOT_DIR')
+      if not screenshot_dir then
+        window:toast_notification('WezTerm', 'SCREENSHOT_DIR が設定されていません', nil, 3000)
+        return
       end
+      local files = wezterm.glob(screenshot_dir .. '\\*.png')
+
+      if #files == 0 then
+        window:toast_notification('WezTerm', 'スクリーンショットが見つかりません', nil, 3000)
+        return
+      end
+
+      -- ファイル名にタイムスタンプが含まれるのでソートして最新を取得
+      table.sort(files)
+      local latest = files[#files]
+
+      -- Windows パスを WSL パスに変換: C:\... -> /mnt/c/...
+      local wsl_path = latest:gsub('\\', '/')
+      wsl_path = wsl_path:gsub('^(%a):/', function(drive)
+        return '/mnt/' .. drive:lower() .. '/'
+      end)
+
+      pane:send_text('"' .. wsl_path .. '"')
     end),
   },
 }
