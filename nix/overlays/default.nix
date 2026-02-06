@@ -656,4 +656,32 @@
       };
     };
   };
+
+  # octorus - TUI tool for GitHub PR review
+  # Renovate: datasource=github-releases depName=ushironoko/octorus
+  octorus = _final: prev: {
+    octorus = prev.rustPlatform.buildRustPackage rec {
+      pname = "octorus";
+      version = "0.3.0";
+
+      src = prev.fetchFromGitHub {
+        owner = "ushironoko";
+        repo = "octorus";
+        rev = "v${version}";
+        hash = "sha256-O08I3egrh+4h+b9467ZSrZ6EHSacMKN3JfEvV1Zve/c=";
+      };
+
+      cargoHash = "sha256-h3FlS/4XYM4+A8f/p15N5/gwLBh2w8UA34LuttY5qsI=";
+
+      # Skip tests (require GitHub authentication)
+      doCheck = false;
+
+      meta = with prev.lib; {
+        description = "TUI tool for GitHub PR review with Vim-style keybindings";
+        homepage = "https://github.com/ushironoko/octorus";
+        license = licenses.mit;
+        mainProgram = "or";
+      };
+    };
+  };
 }
