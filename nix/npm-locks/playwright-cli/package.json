@@ -1,8 +1,8 @@
 {
   "name": "playwright-cli-wrapper",
-  "version": "0.0.65",
+  "version": "0.0.66",
   "private": true,
   "dependencies": {
-    "@playwright/cli": "0.0.65"
+    "@playwright/cli": "0.0.66"
   }
 }
