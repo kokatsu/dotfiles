@@ -38,7 +38,7 @@ return {
       desc = 'Treesitter Search',
     },
     {
-      '<c-s>',
+      '<c-g>',
       function()
         require('flash').toggle()
       end,

@@ -360,7 +360,7 @@ function extractLuaTables(source: string): WezTableInfo[] {
   return tables;
 }
 
-/** Parse individual key entries from a Lua table string. */
+/** Parse individual key entries from a Lua table string using brace-depth tracking. */
 function parseWezEntries(
   tableContent: string,
   tableName: string,
@@ -369,19 +369,59 @@ function parseWezEntries(
 ): Keybinding[] {
   const bindings: Keybinding[] = [];
 
-  // Match entries like: { key = 'x', mods = 'MOD', action = act.Something(...) }
-  // Also capture preceding comment lines for description.
-  const entryRe =
-    /\{\s*key\s*=\s*'([^']+)'\s*,\s*mods\s*=\s*'([^']*)'\s*,\s*action\s*=\s*([^}]+(?:\{[^}]*\}[^}]*)*)\}/g;
+  // Find entry start patterns: { key = '...', mods = '...',
+  const entryStartRe =
+    /\{\s*key\s*=\s*'([^']+)'\s*,\s*mods\s*=\s*'([^']*)'\s*,/g;
 
   for (
-    let entryMatch = entryRe.exec(tableContent);
-    entryMatch !== null;
-    entryMatch = entryRe.exec(tableContent)
+    let match = entryStartRe.exec(tableContent);
+    match !== null;
+    match = entryStartRe.exec(tableContent)
   ) {
-    const rawKey = entryMatch[1];
-    const rawMods = entryMatch[2];
-    const actionStr = entryMatch[3].trim();
+    const rawKey = match[1];
+    const rawMods = match[2];
+    const entryStart = match.index;
+
+    // Use brace-depth tracking to find the matching } of this entry
+    let depth = 1;
+    let i = entryStart + 1; // skip the opening {
+    while (i < tableContent.length && depth > 0) {
+      const ch = tableContent[i];
+      if (ch === "'" || ch === '"') {
+        const quote = ch;
+        i++;
+        while (i < tableContent.length && tableContent[i] !== quote) {
+          if (tableContent[i] === '\\') i++;
+          i++;
+        }
+      } else if (ch === '-' && tableContent[i + 1] === '-') {
+        while (i < tableContent.length && tableContent[i] !== '\n') i++;
+      } else if (ch === '{') {
+        depth++;
+      } else if (ch === '}') {
+        depth--;
+      }
+      i++;
+    }
+
+    const entryEnd = i;
+    // Skip past this entry to avoid matching inner { key = '...' } patterns (e.g. in act.SendKey)
+    entryStartRe.lastIndex = entryEnd;
+
+    const entryContent = tableContent.slice(entryStart, entryEnd);
+
+    // Extract action: everything between 'action = ' and the entry's closing brace
+    const entryBody = entryContent.slice(1, -1); // remove outer { }
+    const actionIdx = entryBody.search(/action\s*=\s*/);
+    let actionStr = '';
+    if (actionIdx !== -1) {
+      const eqIdx = entryBody.indexOf('=', actionIdx);
+      actionStr = entryBody
+        .slice(eqIdx + 1)
+        .trim()
+        .replace(/,\s*$/, '')
+        .trim();
+    }
 
     // Detect passthrough actions
     const isPassthrough =
@@ -391,7 +431,7 @@ function parseWezEntries(
     // Extract description from the nearest preceding comment.
     // Look for the main description comment (starting with -- `key combo`),
     // skipping annotation comments like "selene: allow(...)".
-    const beforeEntry = tableContent.slice(0, entryMatch.index);
+    const beforeEntry = tableContent.slice(0, entryStart);
     const commentLines = beforeEntry.split('\n').reverse();
     let description = '';
     for (const line of commentLines) {
@@ -442,7 +482,12 @@ function parseWezterm(
 
   for (const table of tables) {
     // Skip tables that don't apply to this platform
-    if (platform === 'linux' && table.name === 'darwin_specific_keys') continue;
+    if (
+      platform === 'linux' &&
+      (table.name === 'darwin_specific_keys' ||
+        table.name === 'windows_specific_keys')
+    )
+      continue;
     if (platform === 'darwin' && table.name === 'windows_specific_keys')
       continue;
 
@@ -465,13 +510,18 @@ interface NvimKeymapEntry {
 async function parseNeovim(): Promise<Keybinding[]> {
   const luaScript = `
 local maps = {}
+local seen = {}
 for _, mode in ipairs({"n","i","v","x","o","c","s"}) do
   for _, m in ipairs(vim.api.nvim_get_keymap(mode)) do
-    table.insert(maps, {
-      mode = m.mode,
-      lhs = m.lhs,
-      desc = m.desc or "",
-    })
+    local key = m.mode .. m.lhs
+    if not seen[key] then
+      seen[key] = true
+      table.insert(maps, {
+        mode = m.mode,
+        lhs = m.lhs,
+        desc = m.desc or "",
+      })
+    end
   end
 end
 print(vim.json.encode(maps))
@@ -485,20 +535,27 @@ print(vim.json.encode(maps))
     });
 
     const output = await cmd.output();
-    // nvim --headless sends print() output to stderr
-    const raw = new TextDecoder().decode(output.stderr).trim();
-    // Strip carriage returns from nvim output
-    const stdout = raw.replace(/\r/g, '');
+    // nvim --headless sends print() to stderr, but check stdout as fallback
+    const stderrStr = new TextDecoder()
+      .decode(output.stderr)
+      .trim()
+      .replace(/\r/g, '');
+    const stdoutStr = new TextDecoder()
+      .decode(output.stdout)
+      .trim()
+      .replace(/\r/g, '');
 
-    // nvim may print extra lines; find the JSON line
-    const lines = stdout.split('\n');
+    // nvim may print extra lines; find the JSON line in stderr or stdout
     let jsonLine = '';
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('[')) {
-        jsonLine = trimmed;
-        break;
+    for (const raw of [stderrStr, stdoutStr]) {
+      for (const line of raw.split('\n')) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('[')) {
+          jsonLine = trimmed;
+          break;
+        }
       }
+      if (jsonLine) break;
     }
 
     if (!jsonLine) {

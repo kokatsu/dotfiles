@@ -41,7 +41,7 @@ return {
       ['<cr>'] = 'jump',
       ['<tab>'] = 'jump',
       ['<2-leftmouse>'] = 'jump',
-      ['<c-s>'] = 'jump_split',
+      ['<c-x>'] = 'jump_split',
       ['<c-v>'] = 'jump_vsplit',
       p = 'preview',
       P = 'toggle_preview',
