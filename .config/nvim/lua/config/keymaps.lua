@@ -47,6 +47,14 @@ vim.keymap.set('n', '<leader>cf', function()
   vim.lsp.buf.format({ async = true })
 end, { desc = 'Format buffer' })
 vim.keymap.set('i', '<C-h>', vim.lsp.buf.signature_help, { desc = 'Signature help' })
+
+-- Neovim 0.11+ デフォルトの <C-s> → signature_help を無効化（WezTerm の Ctrl+S と競合）
+pcall(vim.keymap.del, { 'i', 's' }, '<C-s>')
+vim.api.nvim_create_autocmd('LspAttach', {
+  callback = function(args)
+    pcall(vim.keymap.del, { 'i', 's' }, '<C-s>', { buffer = args.buf })
+  end,
+})
 vim.keymap.set('n', '<leader>ds', vim.lsp.buf.document_symbol, { desc = 'Document symbols' })
 vim.keymap.set('n', '<leader>ws', vim.lsp.buf.workspace_symbol, { desc = 'Workspace symbols' })
 

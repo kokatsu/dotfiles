@@ -11,7 +11,7 @@ return {
     require('mini.pick').setup({
       mappings = {
         choose = '<CR>',
-        choose_in_split = '<C-s>',
+        choose_in_split = '<C-x>',
         choose_in_vsplit = '<C-v>',
         choose_marked = '<C-q>',
         delete_char = '<BS>',

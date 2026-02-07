@@ -29,7 +29,7 @@ run = '''shell 'for path in "$@"; do echo -n "$path"; done | pbcopy' --confirm''
 desc = "Yank full path"
 
 [[mgr.prepend_keymap]]
-on = "<C-s>"
+on = "S"
 run = "shell '$SHELL' --block --confirm"
 desc = "Open shell here"
 
