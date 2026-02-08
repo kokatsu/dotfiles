@@ -79,6 +79,33 @@
 
     # カスタムオーバーレイ
     customOverlays = import ./nix/overlays;
+
+    # 共通オーバーレイ (全プラットフォーム)
+    commonOverlays = [
+      inputs.neovim-nightly-overlay.overlays.default
+      customOverlays.agent-browser
+      customOverlays.ccusage
+      customOverlays.claude-code
+      customOverlays.cssmodules-language-server
+      customOverlays.deck
+      customOverlays.git-graph-fork
+      customOverlays.marksman-binary
+      customOverlays.octorus
+      customOverlays.playwright-browsers-fix
+      customOverlays.playwright-cli
+      customOverlays.secretlint
+      customOverlays.termframe
+      customOverlays.unocss-language-server
+      customOverlays.vue-language-server-pin
+      customOverlays.x-api-playground
+    ];
+
+    # Darwin専用オーバーレイ (ビルド修正)
+    darwinOnlyOverlays = [
+      customOverlays.cava-darwin-fix
+      customOverlays.jp2a-darwin-fix
+      customOverlays.ldc-darwin-fix
+    ];
   in {
     # macOS (nix-darwin + home-manager)
     darwinConfigurations.${finalHostname} = nix-darwin.lib.darwinSystem {
@@ -87,25 +114,7 @@
         ./nix/darwin
         home-manager.darwinModules.home-manager
         {
-          nixpkgs.overlays = [
-            inputs.neovim-nightly-overlay.overlays.default
-            customOverlays.agent-browser
-            customOverlays.cava-darwin-fix
-            customOverlays.ccusage
-            customOverlays.claude-code
-            customOverlays.cssmodules-language-server
-            customOverlays.deck
-            customOverlays.git-graph-fork
-            customOverlays.jp2a-darwin-fix
-            customOverlays.ldc-darwin-fix
-            customOverlays.marksman-binary
-            customOverlays.octorus
-            customOverlays.playwright-cli
-            customOverlays.secretlint
-            customOverlays.termframe
-            customOverlays.unocss-language-server
-            customOverlays.x-api-playground
-          ];
+          nixpkgs.overlays = commonOverlays ++ darwinOnlyOverlays;
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
@@ -134,31 +143,10 @@
           system = currentSystem;
           config.allowUnfree = true;
           overlays =
-            [
-              inputs.neovim-nightly-overlay.overlays.default
-              customOverlays.playwright-browsers-fix
-              customOverlays.agent-browser
-              customOverlays.ccusage
-              customOverlays.claude-code
-              customOverlays.cssmodules-language-server
-              customOverlays.deck
-              customOverlays.git-graph-fork
-              customOverlays.marksman-binary
-              customOverlays.octorus
-              customOverlays.playwright-cli
-              customOverlays.secretlint
-              customOverlays.termframe
-              customOverlays.unocss-language-server
-              customOverlays.vue-language-server-pin
-              customOverlays.x-api-playground
-            ]
+            commonOverlays
             ++ (
               if isCurrentDarwin
-              then [
-                customOverlays.cava-darwin-fix
-                customOverlays.jp2a-darwin-fix
-                customOverlays.ldc-darwin-fix
-              ]
+              then darwinOnlyOverlays
               else []
             );
         };
@@ -176,23 +164,7 @@
         pkgs = import nixpkgs {
           system = "x86_64-linux";
           config.allowUnfree = true;
-          overlays = [
-            inputs.neovim-nightly-overlay.overlays.default
-            customOverlays.agent-browser
-            customOverlays.ccusage
-            customOverlays.claude-code
-            customOverlays.cssmodules-language-server
-            customOverlays.deck
-            customOverlays.git-graph-fork
-            customOverlays.marksman-binary
-            customOverlays.octorus
-            customOverlays.playwright-cli
-            customOverlays.secretlint
-            customOverlays.termframe
-            customOverlays.unocss-language-server
-            customOverlays.vue-language-server-pin
-            customOverlays.x-api-playground
-          ];
+          overlays = commonOverlays;
         };
         modules = [./nix/home];
         extraSpecialArgs = {
@@ -208,26 +180,7 @@
         pkgs = import nixpkgs {
           system = "aarch64-darwin";
           config.allowUnfree = true;
-          overlays = [
-            inputs.neovim-nightly-overlay.overlays.default
-            customOverlays.agent-browser
-            customOverlays.cava-darwin-fix
-            customOverlays.ccusage
-            customOverlays.claude-code
-            customOverlays.cssmodules-language-server
-            customOverlays.deck
-            customOverlays.git-graph-fork
-            customOverlays.jp2a-darwin-fix
-            customOverlays.ldc-darwin-fix
-            customOverlays.marksman-binary
-            customOverlays.octorus
-            customOverlays.playwright-cli
-            customOverlays.secretlint
-            customOverlays.termframe
-            customOverlays.unocss-language-server
-            customOverlays.vue-language-server-pin
-            customOverlays.x-api-playground
-          ];
+          overlays = commonOverlays ++ darwinOnlyOverlays;
         };
         modules = [./nix/home];
         extraSpecialArgs = {

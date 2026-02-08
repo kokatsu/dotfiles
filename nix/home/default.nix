@@ -48,6 +48,8 @@ in {
     homeDirectory = homeDir;
     stateVersion = "24.11";
 
+    # 以下のパッケージは programs.* モジュールで管理:
+    # bat, delta, eza, fzf, gh, git, zoxide (nix/home/programs/)
     packages = with pkgs;
       [
         # agent-browser: overlay で管理 (プラットフォーム別プリビルドバイナリ)
@@ -70,20 +72,14 @@ in {
         mise # タスクランナー + プロジェクトごとのツールバージョン管理
         rclone # クラウドストレージ同期
         github-copilot-cli # GitHub Copilot CLI
-        bat
         btop
         chafa # 画像→テキスト
         curl
-        delta
         duckdb # OLAP DB
         dust # ディスク使用量可視化 (du alternative)
-        eza
         fastfetch
         fd
         figlet # ASCIIアート
-        fzf
-        # gh is managed by programs.gh (nix/home/programs/gh.nix)
-        git
         graphviz # グラフ可視化
         helix
         jq
@@ -100,11 +96,9 @@ in {
         treemd # Markdown navigator TUI
         tree-sitter # Treesitter CLI (nvim-treesitter パーサービルド用)
         vivid
-        w3m # テキストブラウザ
         wget
         xleak # Excel TUI viewer
         yazi
-        # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
         zimfw # Zsh framework
 
         # メディア/画像処理
@@ -126,18 +120,9 @@ in {
         poppler-utils # PDF操作ツール (pdftotext, pdfimages等)
 
         # その他言語/ツール
-        coursier # Scala依存関係管理
         luarocks # Luaパッケージマネージャ
         zig
-      ]
-      ++ lib.optionals (!isCI) [
-        # D言語ツール (CI ではビルドが失敗するためスキップ)
-        ldc
-        dub
-        dformat
-        dtools # rdmd, dustmite など
-      ]
-      ++ [
+
         # 開発ツール
         bun
         claude-code # overlay で管理
@@ -195,6 +180,13 @@ in {
       ]
       ++ lib.optionals (!isCI) [
         # CI ではスキップ (ビルド時間短縮)
+
+        # D言語ツール (CI ではビルドが失敗するためスキップ)
+        ldc
+        dub
+        dformat
+        dtools # rdmd, dustmite など
+
         marksman # Markdown LSP (overlay: GitHub バイナリ、.NET ビルド問題回避)
 
         # Tree-sitter Language Server (埋め込み言語対応)
