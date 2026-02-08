@@ -594,7 +594,7 @@
   # Uses custom package.json to bundle @playwright/cli
   # Renovate: datasource=npm depName=@playwright/cli
   playwright-cli = _final: prev: let
-    version = "0.0.66";
+    version = "0.1.0";
     packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/playwright-cli/package.json);
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/playwright-cli/package-lock.json);
   in {
