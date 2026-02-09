@@ -198,6 +198,7 @@ in {
 
         # Rust 製パッケージ
         git-graph
+        keifu # Git コミットグラフ TUI (overlay)
         octorus # GitHub PR レビュー TUI (overlay)
         termframe # ターミナルスクリーンショット (SVG, Nerd Font対応)
 
@@ -282,6 +283,7 @@ in {
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/git-graph".source = ../../.config/git-graph;
+      ".config/keifu".source = ../../.config/keifu;
       ".config/pg".source = ../../.config/pg;
       ".config/.ripgreprc".source = ../../.config/.ripgreprc;
 

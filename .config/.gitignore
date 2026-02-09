@@ -41,6 +41,10 @@
 !helix/
 !helix/**
 
+# keifu (https://github.com/trasta298/keifu)
+!keifu/
+!keifu/**
+
 # lazydocker (https://github.com/jesseduffield/lazydocker)
 !lazydocker/
 !lazydocker/**

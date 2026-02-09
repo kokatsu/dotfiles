@@ -89,6 +89,7 @@
       customOverlays.cssmodules-language-server
       customOverlays.deck
       customOverlays.git-graph-fork
+      customOverlays.keifu
       customOverlays.marksman-binary
       customOverlays.octorus
       customOverlays.playwright-browsers-fix
