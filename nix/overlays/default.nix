@@ -514,6 +514,56 @@
     };
   };
 
+  # keifu - Git commit graph TUI visualizer
+  # Uses pre-built binaries from GitHub releases
+  # Renovate: datasource=github-releases depName=trasta298/keifu
+  keifu = _final: prev: let
+    version = "0.2.3";
+    hashes = {
+      "aarch64-darwin" = "sha256-EhaebJ1yXnm1vBPKKIrFveIbH9aSSTpdoEBKQHHI6yo=";
+      "x86_64-darwin" = "sha256-bxXfILwGQgumxfFsCd6P9hFVFkjrSGA38Uq0bjnGOHM=";
+      "aarch64-linux" = "sha256-67lAAzIUHNI7LFNX2QQX2msWACJA65AjIk5M/gL5B44=";
+      "x86_64-linux" = "sha256-xt8COXNMFAu3kcd8dbqwNNN8DdFDjTx3IHP0CXNFpdk=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "aarch64-apple-darwin";
+      "x86_64-darwin" = "x86_64-apple-darwin";
+      "aarch64-linux" = "aarch64-unknown-linux-gnu";
+      "x86_64-linux" = "x86_64-unknown-linux-gnu";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    keifu = prev.stdenvNoCC.mkDerivation {
+      pname = "keifu";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://github.com/trasta298/keifu/releases/download/v${version}/keifu-v${version}-${platform}.tar.gz";
+        inherit hash;
+      };
+
+      sourceRoot = ".";
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp keifu $out/bin/
+        chmod +x $out/bin/keifu
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Git commit graph TUI visualizer";
+        homepage = "https://github.com/trasta298/keifu";
+        license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "keifu";
+      };
+    };
+  };
+
   # Fix playwright-driver.browsers to include chromium revision 1208
   # Required for agent-browser 0.8.x which uses Playwright 1.58+
   # nixpkgs has playwright-driver 1.57+ but browsers.json still uses revision 1200
