@@ -106,17 +106,28 @@ wezterm.on('open-uri', function(window, pane, uri)
 end)
 
 config.mouse_bindings = {
-  -- シングルクリックではリンクを開かない（デフォルト動作を上書き）
+  -- シングルクリック: Claude Code実行中はコピーしない（誤コピー防止）
   {
     event = { Up = { streak = 1, button = 'Left' } },
     mods = 'NONE',
-    action = wezterm.action.CompleteSelection('ClipboardAndPrimarySelection'),
+    action = wezterm.action_callback(function(window, pane)
+      if pane:get_user_vars().IS_CLAUDE == '1' then
+        return
+      end
+      window:perform_action(wezterm.action.CompleteSelection('ClipboardAndPrimarySelection'), pane)
+    end),
   },
-  -- ダブルクリックでリンクを開く
+  -- ダブルクリック: Claude Code実行中はコピー、通常時はリンクを開く
   {
     event = { Up = { streak = 2, button = 'Left' } },
     mods = 'NONE',
-    action = wezterm.action.OpenLinkAtMouseCursor,
+    action = wezterm.action_callback(function(window, pane)
+      if pane:get_user_vars().IS_CLAUDE == '1' then
+        window:perform_action(wezterm.action.CompleteSelection('ClipboardAndPrimarySelection'), pane)
+      else
+        window:perform_action(wezterm.action.OpenLinkAtMouseCursor, pane)
+      end
+    end),
   },
 }
 

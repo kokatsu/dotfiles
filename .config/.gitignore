@@ -97,6 +97,9 @@
 !zsh/
 !zsh/**
 
+# claude-chill (https://github.com/davidbeesley/claude-chill)
+!claude-chill.toml
+
 # ripgrep (https://github.com/BurntSushi/ripgrep)
 !.ripgreprc
 

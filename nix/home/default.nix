@@ -126,6 +126,7 @@ in {
         # 開発ツール
         bun
         claude-code # overlay で管理
+        inputs.claude-chill.packages.${system}.default # PTY proxy for Claude Code
         codex # OpenAI Codex CLI
         gemini-cli # Google Gemini CLI
         gitleaks # シークレット検出
@@ -281,6 +282,7 @@ in {
       };
       # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
       ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
+      ".config/claude-chill.toml".source = ../../.config/claude-chill.toml;
       # Gemini CLI (XDG未対応のため ~/.gemini/ にシンボリンク)
       ".gemini/settings.json".source = ../../.config/gemini/settings.json;
       ".config/delta".source = ../../.config/delta;
