@@ -17,7 +17,7 @@ local is_wsl_domain = platform.is_wsl_domain
 ---@param key_name string キー名（状態管理用）
 ---@param action table 実行するアクション
 ---@param timeout_sec number タイムアウト（秒）
----@param message string 1回目に表示するメッセージ
+---@param message string? 1回目に表示するメッセージ（省略時は通知なし）
 local function double_press_action(key_name, action, timeout_sec, message)
   return wezterm.action_callback(function(window, pane)
     local now = os.time()
@@ -29,9 +29,11 @@ local function double_press_action(key_name, action, timeout_sec, message)
       wezterm.GLOBAL[key_name] = 0
       window:perform_action(action, pane)
     else
-      -- 1回目: 通知を表示して待機
+      -- 1回目: 待機（メッセージがあれば通知を表示）
       wezterm.GLOBAL[key_name] = now
-      window:toast_notification('WezTerm', message, nil, timeout_sec * 1000)
+      if message then
+        window:toast_notification('WezTerm', message, nil, timeout_sec * 1000)
+      end
     end
   end)
 end
