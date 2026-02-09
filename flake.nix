@@ -25,6 +25,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    claude-chill = {
+      url = "github:davidbeesley/claude-chill";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     kakehashi = {
       url = "github:atusy/kakehashi";
       # nixpkgs.followsを外してkakehashi側のnixpkgsを使用（ビルドキャッシュ効率化）
