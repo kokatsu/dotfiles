@@ -127,6 +127,7 @@ in {
         bun
         claude-code # overlay で管理
         codex # OpenAI Codex CLI
+        gemini-cli # Google Gemini CLI
         gitleaks # シークレット検出
         deno
         pipx # Python CLI管理
@@ -280,6 +281,8 @@ in {
       };
       # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
       ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
+      # Gemini CLI (XDG未対応のため ~/.gemini/ にシンボリンク)
+      ".gemini/settings.json".source = ../../.config/gemini/settings.json;
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/git-graph".source = ../../.config/git-graph;

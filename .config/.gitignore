@@ -21,6 +21,10 @@
 !fastfetch/
 !fastfetch/**
 
+# Gemini CLI (https://geminicli.com)
+!gemini/
+!gemini/**
+
 # gh (https://cli.github.com/)
 !gh/
 !gh/**
