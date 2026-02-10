@@ -89,6 +89,7 @@
     commonOverlays = [
       inputs.neovim-nightly-overlay.overlays.default
       customOverlays.agent-browser
+      customOverlays.cc-statusline
       customOverlays.ccusage
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
