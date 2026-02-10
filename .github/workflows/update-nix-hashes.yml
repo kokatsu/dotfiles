@@ -101,6 +101,34 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }playwright-cli $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'marksman'; then
+            echo "has_marksman=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*marksman" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_marksman=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }marksman $VERSION"
+          fi
+
+          if echo "$DIFF" | grep -q 'keifu'; then
+            echo "has_keifu=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*keifu" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_keifu=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }keifu $VERSION"
+          fi
+
+          if echo "$DIFF" | grep -q 'octorus'; then
+            echo "has_octorus=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*octorus" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_octorus=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }octorus $VERSION"
+          fi
+
+          if echo "$DIFF" | grep -q 'x-api-playground'; then
+            echo "has_x_api_playground=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*playground" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_x_api_playground=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }x-api-playground $VERSION"
+          fi
+
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
 
       # === Pre-built binary packages ===
@@ -119,6 +147,38 @@ jobs:
             URL="https://github.com/pamburus/termframe/releases/download/v${VERSION}/termframe-${PLAT_NAME}.tar.gz"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
             sed -i "/termframe = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+          done
+
+      - name: Update marksman-binary hashes
+        if: steps.detect.outputs.has_marksman == 'true'
+        run: |
+          VERSION="${{ steps.detect.outputs.version_marksman }}"
+          OVERLAY="nix/overlays/default.nix"
+
+          # Compute hashes for each platform
+          for platform in "macos:aarch64-darwin" "macos:x86_64-darwin" \
+                          "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
+            PLAT_NAME="${platform%%:*}"
+            NIX_SYSTEM="${platform##*:}"
+            URL="https://github.com/artempyanykh/marksman/releases/download/${VERSION}/marksman-${PLAT_NAME}"
+            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            sed -i "/marksman-binary = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+          done
+
+      - name: Update keifu hashes
+        if: steps.detect.outputs.has_keifu == 'true'
+        run: |
+          VERSION="${{ steps.detect.outputs.version_keifu }}"
+          OVERLAY="nix/overlays/default.nix"
+
+          # Compute hashes for each platform
+          for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
+                          "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
+            PLAT_NAME="${platform%%:*}"
+            NIX_SYSTEM="${platform##*:}"
+            URL="https://github.com/trasta298/keifu/releases/download/v${VERSION}/keifu-v${VERSION}-${PLAT_NAME}.tar.gz"
+            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            sed -i "/keifu = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update deck hashes
@@ -263,6 +323,66 @@ jobs:
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- package-lock.json 2>/dev/null)
           cd "$GITHUB_WORKSPACE"
           sed -i "/cssmodules-language-server = _final: prev: {/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+
+      # === Source-built packages ===
+
+      - name: Update octorus hashes
+        if: steps.detect.outputs.has_octorus == 'true'
+        run: |
+          VERSION="${{ steps.detect.outputs.version_octorus }}"
+          OVERLAY="nix/overlays/default.nix"
+
+          # Compute GitHub source hash
+          SRC_HASH=$(nix-prefetch-url --unpack --type sha256 \
+            "https://github.com/ushironoko/octorus/archive/refs/tags/v${VERSION}.tar.gz" 2>/dev/null | \
+            xargs nix hash convert --hash-algo sha256 --to sri)
+          sed -i "/octorus = _final: prev: {/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${SRC_HASH}\";|}" "$OVERLAY"
+
+          # Compute cargoHash using FOD trick
+          FAKE_HASH="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+          sed -i "/octorus = _final: prev: {/,/^  };/{s|cargoHash = \"sha256-[^\"]*\";|cargoHash = \"${FAKE_HASH}\";|}" "$OVERLAY"
+          CARGO_HASH=$(nix build --no-link --impure --expr '
+            let pkgs = import (builtins.getFlake "nixpkgs") {
+              system = "x86_64-linux";
+              overlays = [ (import ./nix/overlays/default.nix).octorus ];
+            };
+            in pkgs.octorus
+          ' 2>&1 | grep -oP "got:\s+\Ksha256-\S+" | head -1)
+          if [ -n "$CARGO_HASH" ]; then
+            sed -i "/octorus = _final: prev: {/,/^  };/{s|cargoHash = \"sha256-[^\"]*\";|cargoHash = \"${CARGO_HASH}\";|}" "$OVERLAY"
+          else
+            echo "::error::Failed to compute cargoHash for octorus"
+            exit 1
+          fi
+
+      - name: Update x-api-playground hashes
+        if: steps.detect.outputs.has_x_api_playground == 'true'
+        run: |
+          VERSION="${{ steps.detect.outputs.version_x_api_playground }}"
+          OVERLAY="nix/overlays/default.nix"
+
+          # Compute GitHub source hash
+          SRC_HASH=$(nix-prefetch-url --unpack --type sha256 \
+            "https://github.com/xdevplatform/playground/archive/refs/tags/v${VERSION}.tar.gz" 2>/dev/null | \
+            xargs nix hash convert --hash-algo sha256 --to sri)
+          sed -i "/x-api-playground = _final: prev: {/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${SRC_HASH}\";|}" "$OVERLAY"
+
+          # Compute vendorHash using FOD trick
+          FAKE_HASH="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+          sed -i "/x-api-playground = _final: prev: {/,/^  };/{s|vendorHash = \"sha256-[^\"]*\";|vendorHash = \"${FAKE_HASH}\";|}" "$OVERLAY"
+          VENDOR_HASH=$(nix build --no-link --impure --expr '
+            let pkgs = import (builtins.getFlake "nixpkgs") {
+              system = "x86_64-linux";
+              overlays = [ (import ./nix/overlays/default.nix).x-api-playground ];
+            };
+            in pkgs.x-api-playground
+          ' 2>&1 | grep -oP "got:\s+\Ksha256-\S+" | head -1)
+          if [ -n "$VENDOR_HASH" ]; then
+            sed -i "/x-api-playground = _final: prev: {/,/^  };/{s|vendorHash = \"sha256-[^\"]*\";|vendorHash = \"${VENDOR_HASH}\";|}" "$OVERLAY"
+          else
+            echo "::error::Failed to compute vendorHash for x-api-playground"
+            exit 1
+          fi
 
       - name: Format code
         run: nix fmt -- .
