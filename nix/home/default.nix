@@ -168,6 +168,7 @@ in {
         secretlint # overlay で管理
 
         # CLI ツール (overlay)
+        cc-statusline # 高速 Claude Code statusline (Zig)
         ccusage # Claude API使用量表示
 
         # ユーザースクリプト ラッパー

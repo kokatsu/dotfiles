@@ -17,7 +17,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "ccusage statusline",
+    "command": "cc-statusline",
     "padding": 0
   },
   "hooks": {

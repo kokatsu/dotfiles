@@ -707,6 +707,24 @@
     };
   };
 
+  # cc-statusline - Fast Claude Code statusline tool (Zig)
+  cc-statusline = _final: prev: {
+    cc-statusline = prev.stdenvNoCC.mkDerivation {
+      pname = "cc-statusline";
+      version = "0.1.0";
+      src = ../../tools/cc-statusline;
+      nativeBuildInputs = [prev.zig];
+      dontConfigure = true;
+      dontFixup = true;
+      buildPhase = ''
+        export HOME=$TMPDIR
+        export XDG_CACHE_HOME=$TMPDIR/.cache
+        zig build -Doptimize=ReleaseFast --prefix $out
+      '';
+      dontInstall = true;
+    };
+  };
+
   # octorus - TUI tool for GitHub PR review
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = _final: prev: {
