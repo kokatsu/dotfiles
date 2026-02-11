@@ -6,6 +6,16 @@ gui:
   screenMode: "normal"
   returnImmediately: false
   wrapMainPanel: true
+  theme:
+    activeBorderColor:
+      - blue
+      - bold
+    inactiveBorderColor:
+      - white
+    selectedLineBgColor:
+      - blue
+    optionsTextColor:
+      - blue
 
 logs:
   timestamps: true
@@ -34,7 +44,13 @@ stats:
   graphs:
     - caption: "CPU (%)"
       statPath: "DerivedStats.CPUPercentage"
-      color: "cyan"
+      color: "blue"
     - caption: "Memory (%)"
       statPath: "DerivedStats.MemoryPercentage"
       color: "green"
+    - caption: "Net In (KB)"
+      statPath: "DerivedStats.NetInPerSecond"
+      color: "yellow"
+    - caption: "Net Out (KB)"
+      statPath: "DerivedStats.NetOutPerSecond"
+      color: "magenta"
