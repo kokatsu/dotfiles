@@ -162,7 +162,11 @@ export FZF_DEFAULT_OPTS=" \
 # Lazygit (https://github.com/jesseduffield/lazygit)
 # ------------------------------------------------------------------------------
 
-export LG_CONFIG_FILE=$XDG_CONFIG_HOME/lazygit/config.yml,$XDG_CONFIG_HOME/lazygit/catppuccin-mocha-blue.yml
+LG_CONFIG_FILE=$XDG_CONFIG_HOME/lazygit/config.yml,$XDG_CONFIG_HOME/lazygit/catppuccin-mocha-blue.yml
+if grep -q -e Microsoft -e microsoft /proc/version 2>/dev/null; then
+  LG_CONFIG_FILE="$LG_CONFIG_FILE,$XDG_CONFIG_HOME/lazygit/config.wsl.yml"
+fi
+export LG_CONFIG_FILE
 
 # ------------------------------------------------------------------------------
 # ls
