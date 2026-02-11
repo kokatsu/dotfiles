@@ -38,6 +38,8 @@ git:
   autoFetch: true
   autoRefresh: true
   branchLogCmd: "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --"
+  pagers:
+    - pager: delta --dark --paging=never
 
 os:
   editPreset: nvim-remote
