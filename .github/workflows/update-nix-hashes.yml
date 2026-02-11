@@ -129,6 +129,13 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }x-api-playground $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'claude-code'; then
+            echo "has_claude_code=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=claude-code" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_claude_code=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }claude-code $VERSION"
+          fi
+
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
 
       # === Pre-built binary packages ===
@@ -180,6 +187,34 @@ jobs:
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
             sed -i "/keifu = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
+
+      - name: Update claude-code hashes
+        if: steps.detect.outputs.has_claude_code == 'true'
+        run: |
+          VERSION="${{ steps.detect.outputs.version_claude_code }}"
+          OVERLAY="nix/overlays/default.nix"
+          MANIFEST_URL="https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${VERSION}/manifest.json"
+
+          # Get hashes from manifest and convert to SRI format (sha256-...)
+          MANIFEST=$(curl -fsSL "$MANIFEST_URL")
+
+          # Function to convert hex hash to SRI format
+          hex_to_sri() {
+            echo -n "sha256-$(echo "$1" | xxd -r -p | base64 | tr -d '\n')="
+          }
+
+          HASH_DARWIN_ARM64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["darwin-arm64"].checksum')")
+          HASH_DARWIN_X64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["darwin-x64"].checksum')")
+          HASH_LINUX_ARM64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["linux-arm64"].checksum')")
+          HASH_LINUX_X64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["linux-x64"].checksum')")
+
+          # Update claude-code section only
+          sed -i '/# Claude Code - agentic coding tool/,/^  };$/{
+            s|"aarch64-darwin" = "sha256-[^"]*"|"aarch64-darwin" = "'"${HASH_DARWIN_ARM64}"'"|
+            s|"x86_64-darwin" = "sha256-[^"]*"|"x86_64-darwin" = "'"${HASH_DARWIN_X64}"'"|
+            s|"aarch64-linux" = "sha256-[^"]*"|"aarch64-linux" = "'"${HASH_LINUX_ARM64}"'"|
+            s|"x86_64-linux" = "sha256-[^"]*"|"x86_64-linux" = "'"${HASH_LINUX_X64}"'"|
+          }' "$OVERLAY"
 
       - name: Update deck hashes
         if: steps.detect.outputs.has_deck == 'true'

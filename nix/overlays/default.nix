@@ -51,7 +51,7 @@
   };
 
   # Claude Code - agentic coding tool
-  # Managed by .github/workflows/update-claude-code.yml (not Renovate)
+  # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
     version = "2.1.39";
     hashes = {
