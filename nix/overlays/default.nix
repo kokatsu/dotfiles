@@ -736,10 +736,10 @@
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-20HVES8XgZEgKIijTzo9rV5IRfhyZlY1noX6yHSUf8g=";
+        hash = "sha256-sh5z3y+q2cAt8IXw5xHRHSuDMxPB+J6faRojSAhQJtk=";
       };
 
-      cargoHash = "sha256-4HHl3SIXqfWOeKFmGqXLTC9veglMAFo1MLJIR/BYr0M=";
+      cargoHash = "sha256-ql2e4uhST6sSgqm8YhcdF0GScj8hjwcioIQvcEff7Wg=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
