@@ -1,0 +1,2 @@
+os:
+  copyToClipboardCmd: "printf '%s' {{text}} | clip.exe"
