@@ -5,7 +5,6 @@ return {
   -- optional: provides snippets for the snippet source
   dependencies = {
     'rafamadriz/friendly-snippets',
-    'giuxtaposition/blink-cmp-copilot',
     'echasnovski/mini.snippets',
     'moyiz/blink-emoji.nvim',
   },
@@ -38,9 +37,7 @@ return {
       ['<Down>'] = { 'select_next', 'fallback' },
       ['<Tab>'] = {
         function()
-          local ok, suggestion = pcall(require, 'copilot.suggestion')
-          if ok and suggestion.is_visible() then
-            suggestion.accept()
+          if vim.lsp.inline_completion.get() then
             return true
           end
         end,
@@ -61,14 +58,8 @@ return {
     -- Default list of enabled providers defined so that you can extend it
     -- elsewhere in your config, without redefining it, due to `opts_extend`
     sources = {
-      default = { 'lsp', 'path', 'snippets', 'buffer', 'copilot', 'emoji' },
+      default = { 'lsp', 'path', 'snippets', 'buffer', 'emoji' },
       providers = {
-        copilot = {
-          name = 'copilot',
-          module = 'blink-cmp-copilot',
-          score_offset = 100,
-          async = true,
-        },
         emoji = {
           module = 'blink-emoji',
           name = 'Emoji',
