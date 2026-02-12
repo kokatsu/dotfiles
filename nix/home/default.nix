@@ -80,6 +80,7 @@ in {
         fastfetch
         fd
         figlet # ASCIIアート
+        terminaltexteffects # ターミナルテキストエフェクト (tte)
         graphviz # グラフ可視化
         helix
         jq
@@ -94,6 +95,7 @@ in {
         termshot # ターミナルスクリーンショット (PNG)
         tig # Git TUI
         treemd # Markdown navigator TUI
+        tuios # ターミナルベースウィンドウマネージャ
         tree-sitter # Treesitter CLI (nvim-treesitter パーサービルド用)
         vivid
         wget
