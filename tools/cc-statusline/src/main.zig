@@ -2,10 +2,6 @@ const std = @import("std");
 const json = std.json;
 const mem = std.mem;
 const fs = std.fs;
-const ctime = @cImport({
-    @cInclude("time.h");
-});
-
 // ============================================================
 // Constants
 // ============================================================
@@ -13,11 +9,11 @@ const ctime = @cImport({
 const cache_path = "/tmp/cc-statusline-cache.bin";
 const cache_ttl_s: i64 = 30;
 const block_duration_ms: i64 = 5 * 60 * 60 * 1000;
-const scan_window_ms: i64 = 10 * 60 * 60 * 1000;
+const scan_window_ms: i64 = 25 * 60 * 60 * 1000;
 const token_200k: i64 = 200_000;
 
 const cache_magic = [4]u8{ 'C', 'C', 'S', 'L' };
-const cache_ver: u32 = 1;
+const cache_ver: u32 = 2;
 
 // ANSI
 const ansi = struct {
@@ -101,9 +97,29 @@ const ModelPricing = struct {
 
 const pricing_table = [_]ModelPricing{
     // Opus 4.6
-    .{ .prefix = "claude-opus-4-6", .input = 5e-6, .output = 25e-6, .cache_creation = 6.25e-6, .cache_read = 5e-7 },
+    .{
+        .prefix = "claude-opus-4-6",
+        .input = 5e-6,
+        .output = 25e-6,
+        .cache_creation = 6.25e-6,
+        .cache_read = 5e-7,
+        .input_above_200k = 10e-6,
+        .output_above_200k = 37.5e-6,
+        .cache_creation_above_200k = 12.5e-6,
+        .cache_read_above_200k = 1e-6,
+    },
     // Opus 4.5
-    .{ .prefix = "claude-opus-4-5", .input = 5e-6, .output = 25e-6, .cache_creation = 6.25e-6, .cache_read = 5e-7 },
+    .{
+        .prefix = "claude-opus-4-5",
+        .input = 5e-6,
+        .output = 25e-6,
+        .cache_creation = 6.25e-6,
+        .cache_read = 5e-7,
+        .input_above_200k = 10e-6,
+        .output_above_200k = 37.5e-6,
+        .cache_creation_above_200k = 12.5e-6,
+        .cache_read_above_200k = 1e-6,
+    },
     // Opus 4.1
     .{ .prefix = "claude-opus-4-1", .input = 15e-6, .output = 75e-6, .cache_creation = 18.75e-6, .cache_read = 1.5e-6 },
     // Opus 4 (Claude 3 Opus)
@@ -161,23 +177,19 @@ fn findPricing(model: []const u8) ?ModelPricing {
     return null;
 }
 
-fn calcTokenCost(tokens: i64, base_rate: f64, above_rate: ?f64) f64 {
-    if (tokens <= 0) return 0;
-    const t: f64 = @floatFromInt(tokens);
-    if (above_rate) |ar| {
-        if (tokens > token_200k) {
-            const base_t: f64 = @floatFromInt(token_200k);
-            return base_t * base_rate + (t - base_t) * ar;
-        }
-    }
-    return t * base_rate;
-}
-
 fn calculateEntryCost(pricing: ModelPricing, usage: TokenUsage) f64 {
-    return calcTokenCost(usage.input_tokens, pricing.input, pricing.input_above_200k) +
-        calcTokenCost(usage.output_tokens, pricing.output, pricing.output_above_200k) +
-        calcTokenCost(usage.cache_creation_input_tokens, pricing.cache_creation, pricing.cache_creation_above_200k) +
-        calcTokenCost(usage.cache_read_input_tokens, pricing.cache_read, pricing.cache_read_above_200k);
+    const total_input = usage.input_tokens + usage.cache_creation_input_tokens + usage.cache_read_input_tokens;
+    const use_premium = total_input > token_200k and pricing.input_above_200k != null;
+
+    const input_rate = if (use_premium) pricing.input_above_200k.? else pricing.input;
+    const output_rate = if (use_premium) (pricing.output_above_200k orelse pricing.output) else pricing.output;
+    const cc_rate = if (use_premium) (pricing.cache_creation_above_200k orelse pricing.cache_creation) else pricing.cache_creation;
+    const cr_rate = if (use_premium) (pricing.cache_read_above_200k orelse pricing.cache_read) else pricing.cache_read;
+
+    return (if (usage.input_tokens > 0) @as(f64, @floatFromInt(usage.input_tokens)) * input_rate else 0) +
+        (if (usage.output_tokens > 0) @as(f64, @floatFromInt(usage.output_tokens)) * output_rate else 0) +
+        (if (usage.cache_creation_input_tokens > 0) @as(f64, @floatFromInt(usage.cache_creation_input_tokens)) * cc_rate else 0) +
+        (if (usage.cache_read_input_tokens > 0) @as(f64, @floatFromInt(usage.cache_read_input_tokens)) * cr_rate else 0);
 }
 
 // ============================================================
@@ -266,18 +278,142 @@ fn daysFromCivil(year_in: i32, month_in: u8, day_in: u8) i64 {
     return era * 146097 + doe - 719468;
 }
 
-/// Get the start of today in milliseconds (local timezone)
+/// Get the start of today in milliseconds (local timezone, pure Zig)
 fn getLocalDayStartMs(now_ms: i64) i64 {
     const now_s = @divFloor(now_ms, @as(i64, 1000));
-    const ct: ctime.time_t = @intCast(now_s);
-    var tm: ctime.struct_tm = undefined;
-    _ = ctime.localtime_r(&ct, &tm);
-    var midnight_tm = tm;
-    midnight_tm.tm_hour = 0;
-    midnight_tm.tm_min = 0;
-    midnight_tm.tm_sec = 0;
-    const midnight_s = ctime.mktime(&midnight_tm);
-    return @as(i64, midnight_s) * 1000;
+    const offset_s: i64 = @intCast(getUtcOffsetSeconds(now_s));
+    const local_s = now_s + offset_s;
+    const local_day_start_s = @divFloor(local_s, @as(i64, 86400)) * 86400;
+    return (local_day_start_s - offset_s) * 1000;
+}
+
+// ============================================================
+// Timezone (pure Zig TZIF parser)
+// ============================================================
+
+fn getUtcOffsetSeconds(now_s: i64) i32 {
+    if (std.posix.getenv("TZ")) |tz_raw| {
+        const tz = if (tz_raw.len > 0 and tz_raw[0] == ':') tz_raw[1..] else tz_raw;
+        if (tz.len == 0 or mem.eql(u8, tz, "UTC") or mem.eql(u8, tz, "UTC0")) return 0;
+
+        // Absolute path
+        if (tz.len > 0 and tz[0] == '/') {
+            if (readTzifOffset(tz, now_s)) |off| return off;
+        }
+
+        // Zone name under /usr/share/zoneinfo/
+        var buf: [256]u8 = undefined;
+        const path = std.fmt.bufPrint(&buf, "/usr/share/zoneinfo/{s}", .{tz}) catch null;
+        if (path) |p| {
+            if (readTzifOffset(p, now_s)) |off| return off;
+        }
+    }
+
+    if (readTzifOffset("/etc/localtime", now_s)) |off| return off;
+    return 0; // UTC fallback
+}
+
+fn readTzifOffset(path: []const u8, now_s: i64) ?i32 {
+    const f = fs.openFileAbsolute(path, .{}) catch return null;
+    defer f.close();
+    const data = f.readToEndAlloc(std.heap.page_allocator, 1024 * 1024) catch return null;
+    defer std.heap.page_allocator.free(data);
+    return parseTzif(data, now_s);
+}
+
+fn readBigI32(b: *const [4]u8) i32 {
+    return @bitCast(mem.readInt(u32, b, .big));
+}
+
+fn readBigU32(b: *const [4]u8) u32 {
+    return mem.readInt(u32, b, .big);
+}
+
+fn readBigI64(b: *const [8]u8) i64 {
+    return @bitCast(mem.readInt(u64, b, .big));
+}
+
+fn parseTzif(data: []const u8, now_s: i64) ?i32 {
+    if (data.len < 44) return null;
+    if (!mem.eql(u8, data[0..4], "TZif")) return null;
+
+    const version = data[4];
+
+    const v1_isutcnt = readBigU32(data[20..24]);
+    const v1_isstdcnt = readBigU32(data[24..28]);
+    const v1_leapcnt = readBigU32(data[28..32]);
+    const v1_timecnt = readBigU32(data[32..36]);
+    const v1_typecnt = readBigU32(data[36..40]);
+    const v1_charcnt = readBigU32(data[40..44]);
+
+    if (version == '2' or version == '3') {
+        const v1_data_size = v1_timecnt * 5 + v1_typecnt * 6 + v1_charcnt + v1_leapcnt * 8 + v1_isstdcnt + v1_isutcnt;
+        const v2_offset = 44 + v1_data_size;
+        if (v2_offset + 44 > data.len) return null;
+        if (!mem.eql(u8, data[v2_offset..][0..4], "TZif")) return null;
+
+        const v2_timecnt = readBigU32(data[v2_offset + 32 ..][0..4]);
+        const v2_typecnt = readBigU32(data[v2_offset + 36 ..][0..4]);
+        return parseTzifData(data[v2_offset + 44 ..], v2_timecnt, v2_typecnt, now_s, true);
+    }
+
+    return parseTzifData(data[44..], v1_timecnt, v1_typecnt, now_s, false);
+}
+
+fn parseTzifData(data: []const u8, timecnt: u32, typecnt: u32, now_s: i64, is_64bit: bool) ?i32 {
+    if (typecnt == 0) return null;
+    const time_size: u32 = if (is_64bit) 8 else 4;
+    const times_end = timecnt * time_size;
+    const indices_end = times_end + timecnt;
+    const types_offset = indices_end;
+
+    if (data.len < types_offset + typecnt * 6) return null;
+
+    var type_idx: u8 = 0;
+    if (timecnt > 0) {
+        // Binary search for the last transition <= now_s
+        var lo: u32 = 0;
+        var hi: u32 = timecnt;
+        while (lo < hi) {
+            const mid = lo + (hi - lo) / 2;
+            const t = readTransitionTime(data, mid, is_64bit);
+            if (t <= now_s) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        if (lo > 0) {
+            type_idx = data[times_end + lo - 1];
+        } else {
+            // Before all transitions: use first non-DST type
+            type_idx = findFirstNonDstType(data[types_offset..], typecnt);
+        }
+    }
+
+    if (type_idx >= typecnt) return null;
+    const type_off = types_offset + @as(u32, type_idx) * 6;
+    if (type_off + 4 > data.len) return null;
+    return readBigI32(data[type_off..][0..4]);
+}
+
+fn readTransitionTime(data: []const u8, idx: u32, is_64bit: bool) i64 {
+    if (is_64bit) {
+        const off = idx * 8;
+        return readBigI64(data[off..][0..8]);
+    } else {
+        const off = idx * 4;
+        return @as(i64, readBigI32(data[off..][0..4]));
+    }
+}
+
+fn findFirstNonDstType(types_data: []const u8, typecnt: u32) u8 {
+    var i: u8 = 0;
+    while (i < typecnt) : (i += 1) {
+        const off = @as(u32, i) * 6;
+        if (off + 5 <= types_data.len and types_data[off + 4] == 0) return i;
+    }
+    return 0;
 }
 
 fn floorToHourMs(ms: i64) i64 {
@@ -844,7 +980,116 @@ test "calculateEntryCost tiered" {
         .cache_read_input_tokens = 0,
     };
     const cost = calculateEntryCost(pricing, usage);
-    // input: 200000 * 3e-6 + 50000 * 6e-6 = 0.6 + 0.3 = 0.9
-    // output: 100 * 15e-6 = 0.0015
-    try std.testing.expectApproxEqAbs(@as(f64, 0.9015), cost, 1e-10);
+    // total_input = 250000 > 200K → all-or-nothing premium
+    // input: 250000 * 6e-6 = 1.5
+    // output: 100 * 22.5e-6 = 0.00225
+    try std.testing.expectApproxEqAbs(@as(f64, 1.50225), cost, 1e-10);
+}
+
+test "calculateEntryCost opus tiered with cache" {
+    const pricing = findPricing("claude-opus-4-6-20251212").?;
+    const usage = TokenUsage{
+        .input_tokens = 50_000,
+        .output_tokens = 10_000,
+        .cache_creation_input_tokens = 100_000,
+        .cache_read_input_tokens = 100_000,
+    };
+    const cost = calculateEntryCost(pricing, usage);
+    // total_input = 50000 + 100000 + 100000 = 250000 > 200K → premium
+    // input: 50000 * 10e-6 = 0.5
+    // output: 10000 * 37.5e-6 = 0.375
+    // cache_creation: 100000 * 12.5e-6 = 1.25
+    // cache_read: 100000 * 1e-6 = 0.1
+    try std.testing.expectApproxEqAbs(@as(f64, 2.225), cost, 1e-10);
+}
+
+test "calculateEntryCost under 200k with cache uses base rate" {
+    const pricing = findPricing("claude-opus-4-6-20251212").?;
+    const usage = TokenUsage{
+        .input_tokens = 50_000,
+        .output_tokens = 5_000,
+        .cache_creation_input_tokens = 80_000,
+        .cache_read_input_tokens = 60_000,
+    };
+    const cost = calculateEntryCost(pricing, usage);
+    // total_input = 50000 + 80000 + 60000 = 190000 <= 200K → base rate
+    // input: 50000 * 5e-6 = 0.25
+    // output: 5000 * 25e-6 = 0.125
+    // cache_creation: 80000 * 6.25e-6 = 0.5
+    // cache_read: 60000 * 5e-7 = 0.03
+    try std.testing.expectApproxEqAbs(@as(f64, 0.905), cost, 1e-10);
+}
+
+test "parseTzif v2 fixed offset" {
+    // Minimal TZIFv2 file: UTC+9 (JST), no transitions
+    const header_size = 44;
+
+    // V1 header: version '2', typecnt=1, charcnt=4, rest=0
+    var v1_header: [header_size]u8 = .{0} ** header_size;
+    @memcpy(v1_header[0..4], "TZif");
+    v1_header[4] = '2';
+    // v1 typecnt=1 at offset 36
+    v1_header[39] = 1;
+    // v1 charcnt=4 at offset 40
+    v1_header[43] = 4;
+
+    // V1 data: 1 type entry (6 bytes) + 4 bytes charcnt = 10 bytes
+    var v1_type: [6]u8 = .{0} ** 6;
+    std.mem.writeInt(u32, v1_type[0..4], @bitCast(@as(i32, 32400)), .big); // UTC+9
+    const v1_abbr = [4]u8{ 'J', 'S', 'T', 0 };
+
+    // V2 header: same structure
+    var v2_header: [header_size]u8 = .{0} ** header_size;
+    @memcpy(v2_header[0..4], "TZif");
+    v2_header[4] = '2';
+    v2_header[39] = 1; // typecnt=1
+    v2_header[43] = 4; // charcnt=4
+
+    // V2 data: same type entry + abbr
+    var buf: [header_size + 10 + header_size + 10]u8 = undefined;
+    var pos: usize = 0;
+    @memcpy(buf[pos..][0..header_size], &v1_header);
+    pos += header_size;
+    @memcpy(buf[pos..][0..6], &v1_type);
+    pos += 6;
+    @memcpy(buf[pos..][0..4], &v1_abbr);
+    pos += 4;
+    @memcpy(buf[pos..][0..header_size], &v2_header);
+    pos += header_size;
+    @memcpy(buf[pos..][0..6], &v1_type);
+    pos += 6;
+    @memcpy(buf[pos..][0..4], &v1_abbr);
+
+    const offset = parseTzif(&buf, 1700000000);
+    try std.testing.expect(offset != null);
+    try std.testing.expectEqual(@as(i32, 32400), offset.?);
+}
+
+test "parseTzif invalid data" {
+    try std.testing.expectEqual(@as(?i32, null), parseTzif("", 0));
+    try std.testing.expectEqual(@as(?i32, null), parseTzif("short", 0));
+    var bad: [44]u8 = .{0} ** 44;
+    @memcpy(bad[0..4], "NOPE");
+    try std.testing.expectEqual(@as(?i32, null), parseTzif(&bad, 0));
+}
+
+test "parseTzif reads /etc/localtime" {
+    // Verify we can read the system timezone file (if available)
+    const now_s: i64 = @divFloor(std.time.milliTimestamp(), @as(i64, 1000));
+    if (readTzifOffset("/etc/localtime", now_s)) |offset| {
+        // Offset should be within -14h to +14h
+        try std.testing.expect(offset >= -14 * 3600 and offset <= 14 * 3600);
+    }
+}
+
+test "getLocalDayStartMs returns valid day boundary" {
+    const now_ms = std.time.milliTimestamp();
+    const day_start = getLocalDayStartMs(now_ms);
+    // Day start should be before or equal to now
+    try std.testing.expect(day_start <= now_ms);
+    // Day start should be within the last 24 hours
+    try std.testing.expect(now_ms - day_start < 86400 * 1000);
+    // Day start should be aligned (offset from UTC midnight by timezone offset)
+    const diff_ms = day_start - @divFloor(day_start, @as(i64, 1000)) * 1000;
+    try std.testing.expectEqual(@as(i64, 0), diff_ms);
 }
