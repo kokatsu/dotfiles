@@ -8,6 +8,7 @@ local is_mac = platform.is_mac
 local config = wezterm.config_builder()
 
 config.check_for_updates = false
+config.warn_about_missing_glyphs = false
 config.audible_bell = 'Disabled'
 config.visual_bell = {
   fade_in_duration_ms = 0,
