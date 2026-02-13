@@ -140,6 +140,7 @@ in {
         stylua # Lua formatter
         selene # Lua linter
         typos
+        yamlfmt # YAML formatter
 
         # プレゼン
         marp-cli

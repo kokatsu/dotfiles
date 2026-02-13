@@ -29,6 +29,10 @@
         "exclude": [".config/yazi/plugins/**/*"],
         "run": "stylua {staged_files} && git update-index --again"
       },
+      "yaml-format": {
+        "glob": ["*.{yml,yaml}"],
+        "run": "yamlfmt {staged_files} && git update-index --again"
+      },
       "secretlint": {
         "run": "secretlint {staged_files}"
       },
@@ -64,6 +68,10 @@
       "lua-lint-wezterm": {
         "glob": [".config/wezterm/**/*.lua"],
         "run": "selene --config .config/wezterm/selene.toml {push_files}"
+      },
+      "yaml-lint": {
+        "glob": ["*.{yml,yaml}"],
+        "run": "yamlfmt -lint {push_files}"
       },
       "secretlint": {
         "run": "secretlint {push_files}"
