@@ -1,6 +1,7 @@
 -- https://github.com/folke/snacks.nvim
 
 local bigfile = require('plugins.snacks.bigfile')
+local bookmarks = require('plugins.snacks.bookmarks')
 local bufdelete = require('plugins.snacks.bufdelete')
 local dashboard = require('plugins.snacks.dashboard')
 local explorer = require('plugins.snacks.explorer')
@@ -117,6 +118,11 @@ return {
         Snacks.picker.buffers()
       end,
       desc = 'Buffers',
+    },
+    {
+      '<leader>m',
+      bookmarks.action,
+      desc = 'Bookmarks',
     },
     {
       '<leader>gf',
