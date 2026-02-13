@@ -1,6 +1,6 @@
 #!/bin/bash
 # Claude Code用プロンプト編集スクリプト (tmux版)
-# Alt-e でNeovimを起動し、編集後に内容をClaude Codeに送信する
+# Alt-v でNeovimを起動し、編集後に内容をClaude Codeに送信する
 # https://zenn.dev/shisashi/articles/0ba22e272d6f2f
 
 # 一時ファイルを作成（.claude拡張子で専用設定を適用）
