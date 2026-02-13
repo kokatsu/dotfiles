@@ -249,11 +249,11 @@
       bind Space next-layout  # Cycle through layouts
 
       # ------------------------------------------------------------------------------
-      # Claude Code: Prompt Edit (Alt+e)
+      # Claude Code: Prompt Edit (Alt+v)
       # Zellij: Alt e -> floating neovim for prompt editing
       # ------------------------------------------------------------------------------
 
-      bind -n M-e display-popup -E -w 80% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-prompt-edit.sh"
+      bind -n M-v display-popup -E -w 80% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-prompt-edit.sh"
 
       # ------------------------------------------------------------------------------
       # Appearance Overrides (after catppuccin loads)
