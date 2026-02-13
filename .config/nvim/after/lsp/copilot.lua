@@ -56,7 +56,6 @@ end
 ---@type vim.lsp.Config
 return {
   cmd = { 'copilot-language-server', '--stdio' },
-  root_markers = { '.git' },
   root_dir = function(bufnr, callback)
     -- Disable for sensitive files
     local fname = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
@@ -72,6 +71,12 @@ return {
     local root_dir = vim.fs.root(bufnr, { '.git' })
     if root_dir then
       return callback(root_dir)
+    end
+
+    -- Allow Claude Code prompt temp files (outside git repos)
+    local bufname = vim.api.nvim_buf_get_name(bufnr)
+    if bufname:match('/tmp/claude%-prompt%-.*%.claude$') then
+      return callback('/tmp')
     end
   end,
   init_options = {
