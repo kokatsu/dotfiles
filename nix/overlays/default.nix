@@ -730,16 +730,16 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.3.2";
+      version = "0.3.3";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-sh5z3y+q2cAt8IXw5xHRHSuDMxPB+J6faRojSAhQJtk=";
+        hash = "sha256-tJdzfAz6ZkUOljJ3RJRerlkeSJPBeMb/FOmjLHRYOoE=";
       };
 
-      cargoHash = "sha256-ql2e4uhST6sSgqm8YhcdF0GScj8hjwcioIQvcEff7Wg=";
+      cargoHash = "sha256-R62N1Nx8+cA9PYR/2rwvQI+i975VcEwwve9I7F4MDKo=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
