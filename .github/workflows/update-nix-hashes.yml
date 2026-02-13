@@ -200,7 +200,7 @@ jobs:
 
           # Function to convert hex hash to SRI format
           hex_to_sri() {
-            echo -n "sha256-$(echo "$1" | xxd -r -p | base64 | tr -d '\n')="
+            echo -n "sha256-$(echo "$1" | xxd -r -p | base64 | tr -d '\n')"
           }
 
           HASH_DARWIN_ARM64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["darwin-arm64"].checksum')")
