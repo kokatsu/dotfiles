@@ -72,5 +72,11 @@
       ],
       enabled: false,
     },
+    {
+      matchDatasources: [
+        'custom.claude-code',
+      ],
+      minimumReleaseAge: '0 days',
+    },
   ],
 }
