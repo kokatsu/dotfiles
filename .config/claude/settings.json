@@ -28,6 +28,21 @@
           {
             "type": "command",
             "command": "[ \"$(uname)\" = \"Darwin\" ] && terminal-notifier -title 'Claude Code' -message 'タスクが完了しました' -sound Glass -activate com.github.wez.wezterm || true"
+          },
+          {
+            "type": "command",
+            "command": "~/.config/claude/hooks/session-logger.ts"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/claude/hooks/pre-compact-handover.ts"
           }
         ]
       }
