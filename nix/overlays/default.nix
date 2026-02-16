@@ -707,6 +707,37 @@
     };
   };
 
+  # textlint - Pluggable linting tool for text and markdown
+  # Uses custom package.json to bundle textlint with Japanese writing preset
+  # Renovate: datasource=npm depName=textlint
+  textlint = _final: prev: let
+    version = "15.5.1";
+    packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/textlint/package.json);
+    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/textlint/package-lock.json);
+  in {
+    textlint = prev.buildNpmPackage {
+      pname = "textlint";
+      inherit version;
+
+      src = prev.runCommand "textlint-src" {} ''
+        mkdir -p $out
+        cp ${packageJson} $out/package.json
+        cp ${packageLock} $out/package-lock.json
+      '';
+
+      npmDepsHash = "sha256-NLT6nLei7b94Fma7FUI83CuZ4b4RseYo4O/LgyjSOKw=";
+
+      dontNpmBuild = true;
+
+      meta = with prev.lib; {
+        description = "Pluggable linting tool for text and markdown";
+        homepage = "https://github.com/textlint/textlint";
+        license = licenses.mit;
+        mainProgram = "textlint";
+      };
+    };
+  };
+
   # cc-statusline - Fast Claude Code statusline tool (Zig)
   cc-statusline = _final: prev: {
     cc-statusline = prev.stdenvNoCC.mkDerivation {

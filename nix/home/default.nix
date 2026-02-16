@@ -139,6 +139,7 @@ in {
         deadnix # Nix dead code finder
         stylua # Lua formatter
         selene # Lua linter
+        textlint # overlay で管理 (日本語校正)
         typos
         yamlfmt # YAML formatter
 
@@ -282,6 +283,14 @@ in {
       ".config/claude/rules".source = ../../.config/claude/rules;
       ".config/claude/file-suggestion.sh" = {
         source = ../../.config/claude/file-suggestion.sh;
+        executable = true;
+      };
+      ".config/claude/hooks/session-logger.ts" = {
+        source = ../../.config/claude/hooks/session-logger.ts;
+        executable = true;
+      };
+      ".config/claude/hooks/pre-compact-handover.ts" = {
+        source = ../../.config/claude/hooks/pre-compact-handover.ts;
         executable = true;
       };
       # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)

@@ -129,6 +129,13 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }x-api-playground $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'textlint'; then
+            echo "has_textlint=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=textlint" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_textlint=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }textlint $VERSION"
+          fi
+
           if echo "$DIFF" | grep -q 'claude-code'; then
             echo "has_claude_code=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=claude-code" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -291,6 +298,31 @@ jobs:
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
           sed -i "/secretlint = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+
+      - name: Update textlint hashes
+        if: steps.detect.outputs.has_textlint == 'true'
+        run: |
+          VERSION="${{ steps.detect.outputs.version_textlint }}"
+          OVERLAY="nix/overlays/default.nix"
+          LOCK_DIR="nix/npm-locks/textlint"
+
+          # Update version in custom package.json (textlint-with-preset)
+          cd "$LOCK_DIR"
+          sed -i "s|\"version\": \"[^\"]*\"|\"version\": \"${VERSION}\"|" package.json
+          sed -i "s|\"textlint\": \"[^\"]*\"|\"textlint\": \"${VERSION}\"|" package.json
+
+          # Update preset to latest compatible version
+          PRESET_VERSION=$(npm view textlint-rule-preset-ja-technical-writing version)
+          sed -i "s|\"textlint-rule-preset-ja-technical-writing\": \"[^\"]*\"|\"textlint-rule-preset-ja-technical-writing\": \"${PRESET_VERSION}\"|" package.json
+
+          # Regenerate package-lock.json from custom package.json
+          rm -f package-lock.json
+          npm install --package-lock-only --ignore-scripts
+          cd "$GITHUB_WORKSPACE"
+
+          # Compute npmDepsHash using prefetch-npm-deps
+          NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
+          sed -i "/textlint = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update playwright-cli hashes
         if: steps.detect.outputs.has_playwright_cli == 'true'
