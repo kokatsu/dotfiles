@@ -5,6 +5,25 @@ local yamlls_config = {
   -- Override default filetypes to fix checkhealth warnings
   -- (nvim-lspconfig defaults include invalid 'yaml.docker-compose', 'yaml.gitlab', 'yaml.helm-values')
   filetypes = { 'yaml' },
+  -- Workaround: Neovim's _register_dynamic crashes when yamlls dynamically registers
+  -- workspace/didChangeConfiguration (not in _request_name_to_server_capability table,
+  -- so _registration_provider returns nil → self.registrations[nil] errors)
+  handlers = {
+    ['client/registerCapability'] = function(_, params, ctx)
+      local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
+      local valid_regs = vim.tbl_filter(function(reg)
+        local cap = vim.lsp.protocol._request_name_to_server_capability[reg.method]
+        return cap ~= nil
+      end, params.registrations)
+      if #valid_regs > 0 then
+        client:_register(valid_regs)
+        for bufnr in pairs(client.attached_buffers) do
+          vim.lsp._set_defaults(client, bufnr)
+        end
+      end
+      return vim.NIL
+    end,
+  },
   settings = {
     yaml = {
       schemas = {

@@ -6,7 +6,7 @@ return {
   settings = {
     nixd = {
       nixpkgs = {
-        expr = 'import <nixpkgs> {}',
+        expr = 'import (builtins.getFlake ("git+file://" + toString ./.)).inputs.nixpkgs {}',
       },
       formatting = {
         command = { 'alejandra' },
