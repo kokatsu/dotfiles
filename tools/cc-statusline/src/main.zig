@@ -279,9 +279,9 @@ fn daysFromCivil(year_in: i32, month_in: u8, day_in: u8) i64 {
 }
 
 /// Get the start of today in milliseconds (local timezone, pure Zig)
-fn getLocalDayStartMs(now_ms: i64) i64 {
+fn getLocalDayStartMs(allocator: std.mem.Allocator, now_ms: i64) i64 {
     const now_s = @divFloor(now_ms, @as(i64, 1000));
-    const offset_s: i64 = @intCast(getUtcOffsetSeconds(now_s));
+    const offset_s: i64 = @intCast(getUtcOffsetSeconds(allocator, now_s));
     const local_s = now_s + offset_s;
     const local_day_start_s = @divFloor(local_s, @as(i64, 86400)) * 86400;
     return (local_day_start_s - offset_s) * 1000;
@@ -291,33 +291,33 @@ fn getLocalDayStartMs(now_ms: i64) i64 {
 // Timezone (pure Zig TZIF parser)
 // ============================================================
 
-fn getUtcOffsetSeconds(now_s: i64) i32 {
+fn getUtcOffsetSeconds(allocator: std.mem.Allocator, now_s: i64) i32 {
     if (std.posix.getenv("TZ")) |tz_raw| {
         const tz = if (tz_raw.len > 0 and tz_raw[0] == ':') tz_raw[1..] else tz_raw;
         if (tz.len == 0 or mem.eql(u8, tz, "UTC") or mem.eql(u8, tz, "UTC0")) return 0;
 
         // Absolute path
         if (tz.len > 0 and tz[0] == '/') {
-            if (readTzifOffset(tz, now_s)) |off| return off;
+            if (readTzifOffset(allocator, tz, now_s)) |off| return off;
         }
 
         // Zone name under /usr/share/zoneinfo/
         var buf: [256]u8 = undefined;
         const path = std.fmt.bufPrint(&buf, "/usr/share/zoneinfo/{s}", .{tz}) catch null;
         if (path) |p| {
-            if (readTzifOffset(p, now_s)) |off| return off;
+            if (readTzifOffset(allocator, p, now_s)) |off| return off;
         }
     }
 
-    if (readTzifOffset("/etc/localtime", now_s)) |off| return off;
+    if (readTzifOffset(allocator, "/etc/localtime", now_s)) |off| return off;
     return 0; // UTC fallback
 }
 
-fn readTzifOffset(path: []const u8, now_s: i64) ?i32 {
+fn readTzifOffset(allocator: std.mem.Allocator, path: []const u8, now_s: i64) ?i32 {
     const f = fs.openFileAbsolute(path, .{}) catch return null;
     defer f.close();
-    const data = f.readToEndAlloc(std.heap.page_allocator, 1024 * 1024) catch return null;
-    defer std.heap.page_allocator.free(data);
+    const data = f.readToEndAlloc(allocator, 1024 * 1024) catch return null;
+    defer allocator.free(data);
     return parseTzif(data, now_s);
 }
 
@@ -449,10 +449,15 @@ fn parseStdin(allocator: std.mem.Allocator, data: []const u8) StdinInfo {
     }
     if (root.get("context_window")) |v| {
         if (getObj(v)) |ctx| {
-            if (ctx.get("total_input_tokens")) |t| {
-                if (getF64(t)) |tv| info.context_tokens = @as(i64, @intFromFloat(tv));
-            }
             if (ctx.get("used_percentage")) |pct| info.context_pct = getF64(pct);
+            if (ctx.get("current_usage")) |cu| {
+                if (getObj(cu)) |usage| {
+                    const input = if (usage.get("input_tokens")) |t| getI64(t) orelse 0 else 0;
+                    const cache_create = if (usage.get("cache_creation_input_tokens")) |t| getI64(t) orelse 0 else 0;
+                    const cache_read = if (usage.get("cache_read_input_tokens")) |t| getI64(t) orelse 0 else 0;
+                    info.context_tokens = input + cache_create + cache_read;
+                }
+            }
         }
     }
     if (root.get("session_id")) |v| info.session_id = getStr(v);
@@ -631,8 +636,8 @@ fn identifyActiveBlock(entries: []TranscriptEntry, now_ms: i64) ?BlockInfo {
     };
 }
 
-fn computeCosts(entries: []TranscriptEntry, now_ms: i64) ScanResult {
-    const today_start_ms = getLocalDayStartMs(now_ms);
+fn computeCosts(allocator: std.mem.Allocator, entries: []TranscriptEntry, now_ms: i64) ScanResult {
+    const today_start_ms = getLocalDayStartMs(allocator, now_ms);
     var today_cost: f64 = 0;
     for (entries) |entry| {
         if (entry.timestamp_ms >= today_start_ms) {
@@ -653,10 +658,10 @@ fn computeCosts(entries: []TranscriptEntry, now_ms: i64) ScanResult {
 // Cache
 // ============================================================
 
-fn readCache(now_s: i64, max_mtime_s: i64) ?ScanResult {
+fn readCache(allocator: std.mem.Allocator, now_s: i64, max_mtime_s: i64) ?ScanResult {
     var f = fs.openFileAbsolute(cache_path, .{}) catch return null;
     defer f.close();
-    const content = f.readToEndAlloc(std.heap.page_allocator, 256) catch return null;
+    const content = f.readToEndAlloc(allocator, 256) catch return null;
 
     if (content.len < @sizeOf(CacheData)) return null;
 
@@ -713,6 +718,7 @@ fn writeCache(result: ScanResult, now_s: i64) void {
 // ============================================================
 
 fn formatCurrency(buf: []u8, value: f64) []const u8 {
+    if (value < 0) return "$0.00";
     if (value > 0 and value < 0.01) {
         return std.fmt.bufPrint(buf, "${d:.4}", .{value}) catch "$?.??";
     }
@@ -879,7 +885,7 @@ fn mainImpl() !void {
 
     // Read stdin
     const stdin = fs.File{ .handle = std.posix.STDIN_FILENO };
-    const stdin_data = stdin.readToEndAlloc(allocator, 1024 * 1024) catch "";
+    const stdin_data = stdin.readToEndAlloc(allocator, 1024 * 1024) catch &.{};
 
     // Parse stdin JSON
     const stdin_info = parseStdin(allocator, stdin_data);
@@ -895,13 +901,13 @@ fn mainImpl() !void {
         const file_info = collectTranscriptFiles(allocator, projects_path, now_ms);
 
         // Check cache
-        if (readCache(now_s, file_info.max_mtime_s)) |cached| {
+        if (readCache(allocator, now_s, file_info.max_mtime_s)) |cached| {
             break :blk cached;
         }
 
         // Phase 2: parse files (slow, only on cache miss)
         const entries = parseTranscriptFiles(allocator, file_info.files);
-        var result = computeCosts(entries, now_ms);
+        var result = computeCosts(allocator, entries, now_ms);
         result.max_mtime_s = file_info.max_mtime_s;
 
         // Write cache
@@ -1076,7 +1082,7 @@ test "parseTzif invalid data" {
 test "parseTzif reads /etc/localtime" {
     // Verify we can read the system timezone file (if available)
     const now_s: i64 = @divFloor(std.time.milliTimestamp(), @as(i64, 1000));
-    if (readTzifOffset("/etc/localtime", now_s)) |offset| {
+    if (readTzifOffset(std.testing.allocator, "/etc/localtime", now_s)) |offset| {
         // Offset should be within -14h to +14h
         try std.testing.expect(offset >= -14 * 3600 and offset <= 14 * 3600);
     }
@@ -1084,7 +1090,7 @@ test "parseTzif reads /etc/localtime" {
 
 test "getLocalDayStartMs returns valid day boundary" {
     const now_ms = std.time.milliTimestamp();
-    const day_start = getLocalDayStartMs(now_ms);
+    const day_start = getLocalDayStartMs(std.testing.allocator, now_ms);
     // Day start should be before or equal to now
     try std.testing.expect(day_start <= now_ms);
     // Day start should be within the last 24 hours
@@ -1092,4 +1098,126 @@ test "getLocalDayStartMs returns valid day boundary" {
     // Day start should be aligned (offset from UTC midnight by timezone offset)
     const diff_ms = day_start - @divFloor(day_start, @as(i64, 1000)) * 1000;
     try std.testing.expectEqual(@as(i64, 0), diff_ms);
+}
+
+test "identifyActiveBlock empty entries" {
+    var entries = [_]TranscriptEntry{};
+    try std.testing.expectEqual(@as(?BlockInfo, null), identifyActiveBlock(&entries, 1000));
+}
+
+test "identifyActiveBlock single entry" {
+    const now_ms: i64 = 1700000000 * 1000;
+    var entries = [_]TranscriptEntry{
+        .{ .timestamp_ms = now_ms - 60000, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 1000, .output_tokens = 500 } },
+    };
+    const block = identifyActiveBlock(&entries, now_ms);
+    try std.testing.expect(block != null);
+    try std.testing.expect(block.?.cost > 0);
+    try std.testing.expect(block.?.start_ms <= entries[0].timestamp_ms);
+}
+
+test "identifyActiveBlock gap detection" {
+    const base_ms: i64 = 1700000000 * 1000;
+    const gap = block_duration_ms + 1000; // exceeds block_duration
+    var entries = [_]TranscriptEntry{
+        .{ .timestamp_ms = base_ms, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 1000, .output_tokens = 500 } },
+        .{ .timestamp_ms = base_ms + gap, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 2000, .output_tokens = 1000 } },
+    };
+    const now_ms = base_ms + gap + 60000;
+    const block = identifyActiveBlock(&entries, now_ms);
+    try std.testing.expect(block != null);
+    // Block should start at the second entry (after the gap)
+    try std.testing.expect(block.?.start_ms >= base_ms + gap - 3600 * 1000);
+}
+
+test "computeCosts today entries only" {
+    // Use a fixed timestamp for "now" (2025-06-15 12:00:00 UTC)
+    const now_ms: i64 = (daysFromCivil(2025, 6, 15) * 86400 + 12 * 3600) * 1000;
+    // Entry from today (2 hours ago)
+    const today_entry = TranscriptEntry{
+        .timestamp_ms = now_ms - 2 * 3600 * 1000,
+        .model = "claude-sonnet-4-5-20250929",
+        .usage = .{ .input_tokens = 1000, .output_tokens = 500 },
+    };
+    // Entry from yesterday
+    const old_entry = TranscriptEntry{
+        .timestamp_ms = now_ms - 30 * 3600 * 1000,
+        .model = "claude-sonnet-4-5-20250929",
+        .usage = .{ .input_tokens = 5000, .output_tokens = 2000 },
+    };
+
+    var entries = [_]TranscriptEntry{ old_entry, today_entry };
+    const result = computeCosts(std.testing.allocator, &entries, now_ms);
+
+    // Today cost should only include the today entry
+    const pricing = findPricing("claude-sonnet-4-5-20250929").?;
+    const expected_today = calculateEntryCost(pricing, today_entry.usage);
+    try std.testing.expectApproxEqAbs(expected_today, result.today_cost, 1e-10);
+}
+
+test "computeCosts old entries excluded from today" {
+    // Use a fixed timestamp for "now" (2025-06-15 12:00:00 UTC)
+    const now_ms: i64 = (daysFromCivil(2025, 6, 15) * 86400 + 12 * 3600) * 1000;
+    // Only old entries (2 days ago)
+    var entries = [_]TranscriptEntry{
+        .{ .timestamp_ms = now_ms - 48 * 3600 * 1000, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 5000, .output_tokens = 2000 } },
+    };
+    const result = computeCosts(std.testing.allocator, &entries, now_ms);
+    try std.testing.expectApproxEqAbs(@as(f64, 0), result.today_cost, 1e-10);
+}
+
+test "parseStdin context_tokens from current_usage" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const input =
+        \\{"context_window":{"used_percentage":54.0,"current_usage":{"input_tokens":10000,"cache_creation_input_tokens":3000,"cache_read_input_tokens":7000}}}
+    ;
+    const info = parseStdin(arena.allocator(), input);
+    try std.testing.expectEqual(@as(?i64, 20000), info.context_tokens);
+    try std.testing.expectApproxEqAbs(@as(f64, 54.0), info.context_pct.?, 1e-10);
+}
+
+test "parseStdin null current_usage" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const input =
+        \\{"context_window":{"used_percentage":10.0,"current_usage":null}}
+    ;
+    const info = parseStdin(arena.allocator(), input);
+    try std.testing.expectEqual(@as(?i64, null), info.context_tokens);
+    try std.testing.expectApproxEqAbs(@as(f64, 10.0), info.context_pct.?, 1e-10);
+}
+
+test "parseStdin missing current_usage" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const input =
+        \\{"context_window":{"used_percentage":25.0}}
+    ;
+    const info = parseStdin(arena.allocator(), input);
+    try std.testing.expectEqual(@as(?i64, null), info.context_tokens);
+    try std.testing.expectApproxEqAbs(@as(f64, 25.0), info.context_pct.?, 1e-10);
+}
+
+test "parseStdin basic fields" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const input =
+        \\{"model":{"id":"claude-opus-4-6","display_name":"Opus"},"cost":{"total_cost_usd":1.5},"session_id":"abc-123"}
+    ;
+    const info = parseStdin(arena.allocator(), input);
+    try std.testing.expectEqualStrings("claude-opus-4-6", info.model_id.?);
+    try std.testing.expectEqualStrings("Opus", info.model_name.?);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.5), info.session_cost.?, 1e-10);
+    try std.testing.expectEqualStrings("abc-123", info.session_id.?);
+}
+
+test "parseStdin empty input" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const info = parseStdin(arena.allocator(), "");
+    try std.testing.expectEqual(@as(?[]const u8, null), info.model_id);
+    try std.testing.expectEqual(@as(?f64, null), info.session_cost);
+    try std.testing.expectEqual(@as(?f64, null), info.context_pct);
+    try std.testing.expectEqual(@as(?i64, null), info.context_tokens);
 }
