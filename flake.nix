@@ -102,6 +102,7 @@
       customOverlays.playwright-cli
       customOverlays.secretlint
       customOverlays.termframe
+      customOverlays.textlint
       customOverlays.unocss-language-server
       customOverlays.vue-language-server-pin
       customOverlays.x-api-playground
