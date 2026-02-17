@@ -1,0 +1,52 @@
+core:
+  trash:
+    strategy: auto
+    home_fallback: true
+    forbidden_paths:
+      - /
+      - /etc
+      - /usr
+      - /bin
+      - /sbin
+      - /var
+      - /boot
+      - /proc
+      - /sys
+  restore:
+    confirm: false
+    verbose: true
+  permanent_delete:
+    enable: true
+
+ui:
+  density: spacious
+  preview:
+    syntax_highlight: true
+    colorscheme: catppuccin-mocha
+    directory_command: ls -F -A --color=always
+  style:
+    list_view:
+      cursor: "#cba6f7" # Mauve
+      selected: "#a6e3a1" # Green
+      filter_match: "#fab387" # Peach
+      filter_prompt: "#89b4fa" # Blue
+      indent_on_select: false
+  exit_message: "bye!"
+  paginator_type: dots
+
+history:
+  include:
+    within_days: 100
+  exclude:
+    files:
+      - .DS_Store
+    patterns:
+      - ^go\..*
+    globs:
+      - "*.jpg"
+    size:
+      min: 0KB
+      max: 10GB
+
+logging:
+  enabled: false

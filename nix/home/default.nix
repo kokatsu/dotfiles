@@ -80,6 +80,7 @@ in {
         fastfetch
         fd
         figlet # ASCIIアート
+        gomi # ゴミ箱CLI (rm alternative)
         terminaltexteffects # ターミナルテキストエフェクト (tte)
         graphviz # グラフ可視化
         helix
@@ -301,6 +302,7 @@ in {
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/git-graph".source = ../../.config/git-graph;
+      ".config/gomi".source = ../../.config/gomi;
       ".config/keifu".source = ../../.config/keifu;
       ".config/pg".source = ../../.config/pg;
       ".config/.ripgreprc".source = ../../.config/.ripgreprc;

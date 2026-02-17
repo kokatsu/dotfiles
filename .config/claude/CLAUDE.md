@@ -12,6 +12,10 @@ When responding to queries, follow this priority:
 2. **Clarify ambiguous requests** before making changes
 3. **Implement changes only when explicitly requested** (using verbs: implement, create, fix, add, refactor)
 
+## File Deletion
+
+Use `gomi` instead of `rm` for all file deletion operations.
+
 ## Design Principles
 
 Always prefer simplicity over pathological correctness. YAGNI, KISS, DRY. No backward-compat shims or fallback paths unless they come free without adding cyclomatic complexity.
