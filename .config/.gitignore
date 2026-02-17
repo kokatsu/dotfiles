@@ -29,6 +29,10 @@
 !gh/
 !gh/**
 
+# Ghostty (https://github.com/ghostty-org/ghostty)
+!ghostty/
+!ghostty/**
+
 # git (https://git-scm.com/)
 !git/
 !git/**
@@ -37,9 +41,9 @@
 !git-graph/
 !git-graph/**
 
-# Ghostty (https://github.com/ghostty-org/ghostty)
-!ghostty/
-!ghostty/**
+#  gomi (https://github.com/babarot/gomi)
+!gomi/
+!gomi/**
 
 # helix (https://github.com/helix-editor/helix)
 !helix/
