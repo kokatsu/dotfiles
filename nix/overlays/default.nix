@@ -53,7 +53,7 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.44";
+    version = "2.1.45";
     hashes = {
       "aarch64-darwin" = "sha256-A8uA/onmRfRloRtRn8Mb1ClcMNM/R72EvloBj//XpMc=";
       "x86_64-darwin" = "sha256-/3UTC1CRuuuFwuThGD13izxEB582OPkPe80qJn0hgaU=";
