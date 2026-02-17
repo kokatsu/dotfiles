@@ -53,12 +53,12 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.42";
+    version = "2.1.44";
     hashes = {
-      "aarch64-darwin" = "sha256-aQgVK/GkursT3oZkDzeVNJAFBptUHUuKOZaAK4Y6Av0=";
-      "x86_64-darwin" = "sha256-Gk4dL5m22bKUYHveQCtnRhNP+pE7InZ+5F+/gg38wbQ=";
-      "aarch64-linux" = "sha256-WnXQcTKHtjZjagbOkQP/VPV4gXDy6TEvx1WRIfZJ028=";
-      "x86_64-linux" = "sha256-UXhb0m0oljloGYMrwjoYpsDKObe3YRk/p7bpkKF/J9g=";
+      "aarch64-darwin" = "sha256-A8uA/onmRfRloRtRn8Mb1ClcMNM/R72EvloBj//XpMc=";
+      "x86_64-darwin" = "sha256-/3UTC1CRuuuFwuThGD13izxEB582OPkPe80qJn0hgaU=";
+      "aarch64-linux" = "sha256-M19EDPpMOwIOeYlqAL+2g3bG77EQUcfmc2cyrNx01u4=";
+      "x86_64-linux" = "sha256-CQ7T8GvlE4i8UR+QIUSEiRQywWA0nJw/xqExABx2M4E=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -129,12 +129,12 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=pamburus/termframe
   termframe = _final: prev: let
-    version = "0.8.0";
+    version = "0.8.1";
     hashes = {
-      "aarch64-darwin" = "sha256-CeHKaeXIW5fALE8+H/wkFJ2EnappOFcH6q0e9mAXOH4=";
-      "x86_64-darwin" = "sha256-9F7JCL1Wbg9oaB7hqHcdpuw0Mufe6Vc/EQTp5p+ITRg=";
-      "aarch64-linux" = "sha256-e6xz0DktlDFHrgZ97vMOP/b5Xp9mACaJKOmrhlKUAeU=";
-      "x86_64-linux" = "sha256-aFBl84bkuRImer2aQq9NhxtgweiiwRuoAaPqAcna16M=";
+      "aarch64-darwin" = "sha256-NuoC0bkYQHRcvC1ha5q9Qhqs9yZ0bv5IVKDphZ4widg=";
+      "x86_64-darwin" = "sha256-VDyuSAvPzZc7XGzAhmIsDHTSUh0JbopG2zNhyxBxh1M=";
+      "aarch64-linux" = "sha256-bxTKW258ieuGitiPbESZoF/pecay9V7mU0NCUkMF4kM=";
+      "x86_64-linux" = "sha256-jttPwFHYl7s08vIFIHfLAygUaUqkWTeo39vCdzIGgg4=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-arm64";
@@ -761,16 +761,16 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.3.4";
+      version = "0.3.5";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-kpFN5llI7vCaX001ZoVLYsseRFa1d2UTlIF3vnh4GHg=";
+        hash = "sha256-xVbLh1fe+59KxcZOtCoSAh6O+VdhAyBSGCPP3UZLidA=";
       };
 
-      cargoHash = "sha256-1StfgjcQ5yG8tYZmDq/3kNWpvinapW95gtAhVCK/j+s=";
+      cargoHash = "sha256-mOHjNQWeEcoBS4OhPj5RRja+b1PCPAeOM49t7OUtx1s=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
