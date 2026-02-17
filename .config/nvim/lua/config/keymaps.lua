@@ -184,7 +184,8 @@ vim.keymap.set('n', '<leader>C', function()
   for _, diagnostic in ipairs(diagnostics) do
     local severity = vim.diagnostic.severity[diagnostic.severity]:lower()
     local line = diagnostic.lnum + 1
-    local message = string.format('[%s] Line %d: %s', severity, line, diagnostic.message)
+    local source = diagnostic.source or 'unknown'
+    local message = string.format('%s: [%s] Line %d: %s', source, severity, line, diagnostic.message)
     table.insert(messages, message)
   end
 
