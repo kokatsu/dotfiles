@@ -267,88 +267,90 @@ in {
       };
 
     # .config へのシンボリックリンク
-    file = {
-      # nvim: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
-      # これによりlazy-lock.jsonへの書き込みがリポジトリに反映される
-      ".config/nvim" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/nvim";
-        force = true;
-      };
-      ".config/bat".source = ../../.config/bat;
-      ".config/btop" = {
-        source = ../../.config/btop;
-        force = true;
-      };
-      ".config/claude/settings.json".source = ../../.config/claude/settings.json;
-      ".config/claude/CLAUDE.md".source = ../../.config/claude/CLAUDE.md;
-      ".config/claude/skills".source = ../../.config/claude/skills;
-      ".config/claude/rules".source = ../../.config/claude/rules;
-      ".config/claude/file-suggestion.sh" = {
-        source = ../../.config/claude/file-suggestion.sh;
-        executable = true;
-      };
-      ".config/claude/hooks/session-logger.ts" = {
-        source = ../../.config/claude/hooks/session-logger.ts;
-        executable = true;
-      };
-      ".config/claude/hooks/pre-compact-handover.ts" = {
-        source = ../../.config/claude/hooks/pre-compact-handover.ts;
-        executable = true;
-      };
-      # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
-      ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
-      ".config/claude-chill.toml".source = ../../.config/claude-chill.toml;
-      # Gemini CLI (XDG未対応のため ~/.gemini/ にシンボリンク)
-      ".gemini/settings.json".source = ../../.config/gemini/settings.json;
-      ".config/delta".source = ../../.config/delta;
-      ".config/fastfetch".source = ../../.config/fastfetch;
-      ".config/git-graph".source = ../../.config/git-graph;
-      ".config/gomi".source = ../../.config/gomi;
-      ".config/keifu".source = ../../.config/keifu;
-      ".config/pg".source = ../../.config/pg;
-      ".config/.ripgreprc".source = ../../.config/.ripgreprc;
+    file =
+      {
+        # nvim: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
+        # これによりlazy-lock.jsonへの書き込みがリポジトリに反映される
+        ".config/nvim" = {
+          source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/nvim";
+          force = true;
+        };
+        ".config/bat".source = ../../.config/bat;
+        ".config/btop" = {
+          source = ../../.config/btop;
+          force = true;
+        };
+        ".config/claude/settings.json".source = ../../.config/claude/settings.json;
+        ".config/claude/CLAUDE.md".source = ../../.config/claude/CLAUDE.md;
+        ".config/claude/skills".source = ../../.config/claude/skills;
+        ".config/claude/rules".source = ../../.config/claude/rules;
+        ".config/claude/file-suggestion.sh" = {
+          source = ../../.config/claude/file-suggestion.sh;
+          executable = true;
+        };
+        ".config/claude/hooks/session-logger.ts" = {
+          source = ../../.config/claude/hooks/session-logger.ts;
+          executable = true;
+        };
+        ".config/claude/hooks/pre-compact-handover.ts" = {
+          source = ../../.config/claude/hooks/pre-compact-handover.ts;
+          executable = true;
+        };
+        # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
+        ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
+        ".config/claude-chill.toml".source = ../../.config/claude-chill.toml;
+        # Gemini CLI (XDG未対応のため ~/.gemini/ にシンボリンク)
+        ".gemini/settings.json".source = ../../.config/gemini/settings.json;
+        ".config/delta".source = ../../.config/delta;
+        ".config/fastfetch".source = ../../.config/fastfetch;
+        ".config/git-graph".source = ../../.config/git-graph;
+        ".config/gomi".source = ../../.config/gomi;
+        ".config/keifu".source = ../../.config/keifu;
+        ".config/pg".source = ../../.config/pg;
+        ".config/.ripgreprc".source = ../../.config/.ripgreprc;
 
-      # WezTerm: 個別ファイルをリンク
-      ".config/wezterm/background.lua".source = ../../.config/wezterm/background.lua;
-      ".config/wezterm/colors.lua".source = ../../.config/wezterm/colors.lua;
-      ".config/wezterm/format.lua".source = ../../.config/wezterm/format.lua;
-      ".config/wezterm/keybinds.lua".source = ../../.config/wezterm/keybinds.lua;
-      ".config/wezterm/mac.lua".source = ../../.config/wezterm/mac.lua;
-      ".config/wezterm/platform.lua".source = ../../.config/wezterm/platform.lua;
-      ".config/wezterm/stylua.toml".source = ../../.config/wezterm/stylua.toml;
-      ".config/wezterm/wezterm.lua".source = ../../.config/wezterm/wezterm.lua;
-      ".config/wezterm/windows.lua".source = ../../.config/wezterm/windows.lua;
+        # WezTerm: 個別ファイルをリンク
+        ".config/wezterm/background.lua".source = ../../.config/wezterm/background.lua;
+        ".config/wezterm/colors.lua".source = ../../.config/wezterm/colors.lua;
+        ".config/wezterm/format.lua".source = ../../.config/wezterm/format.lua;
+        ".config/wezterm/keybinds.lua".source = ../../.config/wezterm/keybinds.lua;
+        ".config/wezterm/mac.lua".source = ../../.config/wezterm/mac.lua;
+        ".config/wezterm/platform.lua".source = ../../.config/wezterm/platform.lua;
+        ".config/wezterm/stylua.toml".source = ../../.config/wezterm/stylua.toml;
+        ".config/wezterm/wezterm.lua".source = ../../.config/wezterm/wezterm.lua;
+        ".config/wezterm/windows.lua".source = ../../.config/wezterm/windows.lua;
 
-      # 新規追加
-      # Ghostty: 個別ファイルをリンク
-      ".config/ghostty/config".source = ../../.config/ghostty/config;
-      ".config/ghostty/themes/catppuccin-mocha".source = ../../.config/ghostty/themes/catppuccin-mocha;
+        # 新規追加
+        # Ghostty: 個別ファイルをリンク
+        ".config/ghostty/config".source = ../../.config/ghostty/config;
+        ".config/ghostty/themes/catppuccin-mocha".source = ../../.config/ghostty/themes/catppuccin-mocha;
 
-      # yazi: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
-      # これにより ya pkg コマンドで package.toml への書き込みが可能
-      ".config/yazi" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
-        force = true;
+        # yazi: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
+        # これにより ya pkg コマンドで package.toml への書き込みが可能
+        ".config/yazi" = {
+          source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
+          force = true;
+        };
+        ".config/helix".source = ../../.config/helix;
+        ".config/lazydocker".source = ../../.config/lazydocker;
+        ".config/lazygit".source = ../../.config/lazygit;
+        ".config/readline".source = ../../.config/readline;
+        ".config/termframe".source = ../../.config/termframe;
+        # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
+        ".config/treemd".source = ../../.config/treemd; # XDG_CONFIG_HOME で解決
+
+        # bin: ユーザースクリプト (Deno/Bun/Shell)
+        # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
+        ".local/bin/scripts" = {
+          source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/bin";
+          force = true;
+        };
+      }
+      # Docker CLI plugins (macOSではOrbStackが管理)
+      // lib.optionalAttrs (!isDarwin) {
+        ".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
+        ".docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
       };
-      ".config/helix".source = ../../.config/helix;
-      ".config/lazydocker".source = ../../.config/lazydocker;
-      ".config/lazygit".source = ../../.config/lazygit;
-      ".config/readline".source = ../../.config/readline;
-      ".config/termframe".source = ../../.config/termframe;
-      # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
-      ".config/treemd".source = ../../.config/treemd; # XDG_CONFIG_HOME で解決
-
-      # Docker CLI plugins
-      ".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
-      ".docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
-
-      # bin: ユーザースクリプト (Deno/Bun/Shell)
-      # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
-      ".local/bin/scripts" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/bin";
-        force = true;
-      };
-    };
   };
 
   xdg.enable = true;
