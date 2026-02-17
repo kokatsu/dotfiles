@@ -225,6 +225,7 @@ in {
       ]
       ++ lib.optionals (!isDarwin) [
         # Linux/WSL専用
+        docker-buildx # Docker BuildKit
         docker-compose # macOSではOrbStackを使用
         google-chrome
         noto-fonts-cjk-sans # 日本語フォント
@@ -336,6 +337,10 @@ in {
       ".config/termframe".source = ../../.config/termframe;
       # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
       ".config/treemd".source = ../../.config/treemd; # XDG_CONFIG_HOME で解決
+
+      # Docker CLI plugins
+      ".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
+      ".docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
 
       # bin: ユーザースクリプト (Deno/Bun/Shell)
       # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
