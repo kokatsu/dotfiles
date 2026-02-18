@@ -30,6 +30,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    helix = {
+      url = "github:helix-editor/helix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     kakehashi = {
       url = "github:atusy/kakehashi";
       # nixpkgs.followsを外してkakehashi側のnixpkgsを使用（ビルドキャッシュ効率化）
@@ -87,6 +92,7 @@
 
     # 共通オーバーレイ (全プラットフォーム)
     commonOverlays = [
+      inputs.helix.overlays.default
       inputs.neovim-nightly-overlay.overlays.default
       customOverlays.agent-browser
       customOverlays.cc-statusline
