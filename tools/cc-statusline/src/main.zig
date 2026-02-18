@@ -122,8 +122,22 @@ const pricing_table = [_]ModelPricing{
     },
     // Opus 4.1
     .{ .prefix = "claude-opus-4-1", .input = 15e-6, .output = 75e-6, .cache_creation = 18.75e-6, .cache_read = 1.5e-6 },
-    // Opus 4 (Claude 3 Opus)
+    // Opus 4 (matches "claude-opus-4-" after more specific prefixes)
+    .{ .prefix = "claude-opus-4", .input = 15e-6, .output = 75e-6, .cache_creation = 18.75e-6, .cache_read = 1.5e-6 },
+    // Claude 3 Opus
     .{ .prefix = "claude-3-opus", .input = 15e-6, .output = 75e-6, .cache_creation = 18.75e-6, .cache_read = 1.5e-6 },
+    // Sonnet 4.6
+    .{
+        .prefix = "claude-sonnet-4-6",
+        .input = 3e-6,
+        .output = 15e-6,
+        .cache_creation = 3.75e-6,
+        .cache_read = 3e-7,
+        .input_above_200k = 6e-6,
+        .output_above_200k = 22.5e-6,
+        .cache_creation_above_200k = 7.5e-6,
+        .cache_read_above_200k = 6e-7,
+    },
     // Sonnet 4.5
     .{
         .prefix = "claude-sonnet-4-5",
@@ -167,7 +181,7 @@ const pricing_table = [_]ModelPricing{
     // Haiku 4.5
     .{ .prefix = "claude-haiku-4-5", .input = 1e-6, .output = 5e-6, .cache_creation = 1.25e-6, .cache_read = 1e-7 },
     // Haiku 3.5
-    .{ .prefix = "claude-3-5-haiku", .input = 1e-6, .output = 5e-6, .cache_creation = 1.25e-6, .cache_read = 1e-7 },
+    .{ .prefix = "claude-3-5-haiku", .input = 8e-7, .output = 4e-6, .cache_creation = 1e-6, .cache_read = 8e-8 },
 };
 
 fn findPricing(model: []const u8) ?ModelPricing {
