@@ -58,6 +58,10 @@ in {
         go
         nodejs_24
         pnpm
+        (python3.withPackages (ps:
+          with ps; [
+            optuna
+          ]))
         stablePkgs.ruby_3_1 # nixpkgs-stable (24.05) から取得
         rustup
 
@@ -264,6 +268,11 @@ in {
         # LDC (D言語コンパイラ) とNix clang-wrapperの互換性のため
         # arm64-apple-darwinトリプルを指定してcc-wrapperとの不一致警告を回避
         DFLAGS = "-mtriple=arm64-apple-darwin";
+      }
+      // lib.optionalAttrs (!isDarwin) {
+        # playwright-cli (MCP) がChromeを見つけるためのパス
+        # Nix管理のGoogle ChromeはLinuxの標準パス (/opt/google/chrome/chrome) にないため必要
+        PLAYWRIGHT_MCP_EXECUTABLE_PATH = "${pkgs.google-chrome}/bin/google-chrome-stable";
       };
 
     # .config へのシンボリックリンク
