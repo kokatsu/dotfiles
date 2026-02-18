@@ -4,6 +4,16 @@ return {
   'nvim-treesitter/nvim-treesitter',
   build = ':TSUpdate',
   config = function()
+    -- macOS: パーサー.soのコード署名を検証/修復 (SIGKILL防止)
+    -- Nixのtree-sitter CLIでコンパイルされたパーサーがmacOSのランタイム
+    -- コード署名検証に失敗することがあるため、ロード前に再署名する
+    if vim.fn.has('mac') == 1 then
+      local parser_dir = vim.fn.stdpath('data') .. '/site/parser'
+      vim.fn.system(
+        'for f in "' .. parser_dir .. '"/*.so; do codesign -v "$f" 2>/dev/null || codesign --force --sign - "$f"; done'
+      )
+    end
+
     require('nvim-treesitter').setup({})
 
     -- パーサーのインストール
