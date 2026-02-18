@@ -260,7 +260,7 @@ jobs:
           # Update tarball hash
           URL="https://registry.npmjs.org/agent-browser/-/agent-browser-${VERSION}.tgz"
           TARBALL_HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-          sed -i "/agent-browser = _final: prev: let/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${TARBALL_HASH}\";|}" "$OVERLAY"
+          sed -i "/agent-browser = _\\?final: prev: let/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${TARBALL_HASH}\";|}" "$OVERLAY"
 
           # Regenerate package-lock.json
           mkdir -p /tmp/agent-browser-pkg
@@ -272,7 +272,7 @@ jobs:
 
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
-          sed -i "/agent-browser = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+          sed -i "/agent-browser = _\\?final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       # === NPM packages with buildNpmPackage ===
 
