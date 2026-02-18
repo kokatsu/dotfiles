@@ -595,9 +595,8 @@
       };
       "aarch64-darwin" = {
         suffix = "mac-arm64";
-        # TODO: Add hashes for aarch64-darwin when needed
-        chromiumHash = "";
-        headlessShellHash = "";
+        chromiumHash = "sha256-qXdgHeBS5IFIa4hZVmjq0+31v/uDPXHyc4aH7Wn2E7E=";
+        headlessShellHash = "sha256-45DjMIu0t7IEYdXOmIqpV/1/MKdEfx/8T7DWagh6Zhc=";
       };
     };
 
