@@ -87,7 +87,6 @@ in {
         gomi # ゴミ箱CLI (rm alternative)
         terminaltexteffects # ターミナルテキストエフェクト (tte)
         graphviz # グラフ可視化
-        helix
         jq
         miller # CSV/JSON処理
         lazydocker
@@ -214,7 +213,8 @@ in {
         octorus # GitHub PR レビュー TUI (overlay)
         termframe # ターミナルスクリーンショット (SVG, Nerd Font対応)
 
-        # Neovim nightly (overlay適用済み、ソースビルド)
+        # エディタ nightly (overlay適用済み、ソースビルド)
+        helix
         neovim
 
         # フォント (Nerd Fonts、ダウンロードが大きい)
