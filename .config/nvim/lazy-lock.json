@@ -20,7 +20,7 @@
   "nvim-lint": { "branch": "master", "commit": "a3d17105a79fc12055c2a0d732665d9c2b1c2dc3" },
   "nvim-lspconfig": { "branch": "master", "commit": "44acfe887d4056f704ccc4f17513ed41c9e2b2e6" },
   "nvim-notify": { "branch": "master", "commit": "8701bece920b38ea289b457f902e2ad184131a5d" },
-  "nvim-treesitter": { "branch": "main", "commit": "4d9466677a5ceadef104eaa0fe08d60d91c4e9a7" },
+  "nvim-treesitter": { "branch": "main", "commit": "2bd9b9b4f12eed175fba35ca2db8e8584546a4ec" },
   "nvim-web-devicons": { "branch": "master", "commit": "746ffbb17975ebd6c40142362eee1b0249969c5c" },
   "octo.nvim": { "branch": "master", "commit": "5ae580df72589f25b775ff2bdacfd7f7be8d63bd" },
   "peek.nvim": { "branch": "master", "commit": "5820d937d5414baea5f586dc2a3d912a74636e5b" },
@@ -31,6 +31,6 @@
   "swagger-preview.nvim": { "branch": "master", "commit": "42999dd6ad0bbb3e6ca5e857f3fc3c12de014110" },
   "trouble.nvim": { "branch": "main", "commit": "bd67efe408d4816e25e8491cc5ad4088e708a69a" },
   "typescript-tools.nvim": { "branch": "master", "commit": "c2f5910074103705661e9651aa841e0d7eea9932" },
-  "wezterm-types": { "branch": "main", "commit": "9b141b9cdb51eb08d360691169b5a3cfbd139143" },
+  "wezterm-types": { "branch": "main", "commit": "183508778060e1d2c15ceab18cf7870d1d340dde" },
   "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" }
 }
