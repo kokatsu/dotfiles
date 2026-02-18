@@ -26,7 +26,7 @@
         '/nix/overlays/default\\.nix$/',
       ],
       matchStrings: [
-        '#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*_final:\\s*prev:\\s*let\\n\\s+version\\s*=\\s*"(?<currentValue>[^"]+)"',
+        '#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*_?final:\\s*prev:\\s*let\\n\\s+version\\s*=\\s*"(?<currentValue>[^"]+)"',
       ],
       versioningTemplate: 'semver',
     },
