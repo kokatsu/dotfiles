@@ -13,7 +13,8 @@ const scan_window_ms: i64 = 25 * 60 * 60 * 1000;
 const token_200k: i64 = 200_000;
 
 const cache_magic = [4]u8{ 'C', 'C', 'S', 'L' };
-const cache_ver: u32 = 2;
+const cache_ver: u32 = 3;
+const file_list_ttl_s: i64 = 300;
 
 // ANSI
 const ansi = struct {
@@ -63,20 +64,36 @@ const StdinInfo = struct {
 const ScanResult = struct {
     today_cost: f64 = 0,
     block: ?BlockInfo = null,
-    max_mtime_s: i64 = 0,
 };
 
-const CacheData = extern struct {
+const CacheHeader = extern struct {
     magic: [4]u8,
     version: u32,
     write_time_s: i64,
-    max_mtime_s: i64,
+    last_full_scan_s: i64,
     today_cost: f64,
     has_block: u8,
     block_start_ms: i64,
     block_end_ms: i64,
     block_cost: f64,
     block_burn_rate: f64,
+    day_start_ms: i64,
+    file_count: u32,
+};
+
+const CachedFileEntry = struct {
+    path: []const u8,
+    file_size: i64,
+    per_file_cost: f64,
+    parsed_size: i64,
+};
+
+const CacheResult = struct {
+    scan: ScanResult,
+    files: []CachedFileEntry,
+    write_time_s: i64,
+    last_full_scan_s: i64,
+    day_start_ms: i64,
 };
 
 // ============================================================
@@ -491,29 +508,30 @@ fn getConfigDir(allocator: std.mem.Allocator) ![]const u8 {
     return try std.fmt.allocPrint(allocator, "{s}/.config/claude", .{home});
 }
 
-fn collectTranscriptFiles(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64) struct { files: [][]const u8, max_mtime_s: i64 } {
-    var files: std.ArrayListUnmanaged([]const u8) = .{};
-    var max_mtime_s: i64 = 0;
+const FileInfo = struct {
+    path: []const u8,
+    size: i64,
+};
+
+fn collectTranscriptFiles(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64) []FileInfo {
+    var files: std.ArrayListUnmanaged(FileInfo) = .{};
     const cutoff_ms = now_ms - scan_window_ms;
 
     var projects_dir = fs.openDirAbsolute(projects_path, .{ .iterate = true }) catch
-        return .{ .files = files.toOwnedSlice(allocator) catch &.{}, .max_mtime_s = 0 };
+        return files.toOwnedSlice(allocator) catch &.{};
     defer projects_dir.close();
 
     var proj_it = projects_dir.iterate();
     while (proj_it.next() catch null) |proj_entry| {
         if (proj_entry.kind != .directory) continue;
         const proj_name = allocator.dupe(u8, proj_entry.name) catch continue;
-        scanDirRecursive(allocator, projects_path, proj_name, &files, &max_mtime_s, cutoff_ms);
+        scanDirRecursive(allocator, projects_path, proj_name, &files, cutoff_ms);
     }
 
-    return .{
-        .files = files.toOwnedSlice(allocator) catch &.{},
-        .max_mtime_s = max_mtime_s,
-    };
+    return files.toOwnedSlice(allocator) catch &.{};
 }
 
-fn scanDirRecursive(allocator: std.mem.Allocator, base_path: []const u8, rel_path: []const u8, files: *std.ArrayListUnmanaged([]const u8), max_mtime_s: *i64, cutoff_ms: i64) void {
+fn scanDirRecursive(allocator: std.mem.Allocator, base_path: []const u8, rel_path: []const u8, files: *std.ArrayListUnmanaged(FileInfo), cutoff_ms: i64) void {
     const full_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ base_path, rel_path }) catch return;
     var dir = fs.openDirAbsolute(full_path, .{ .iterate = true }) catch return;
     defer dir.close();
@@ -522,31 +540,48 @@ fn scanDirRecursive(allocator: std.mem.Allocator, base_path: []const u8, rel_pat
     while (it.next() catch null) |entry| {
         if (entry.kind == .directory) {
             const sub_rel = std.fmt.allocPrint(allocator, "{s}/{s}", .{ rel_path, entry.name }) catch continue;
-            scanDirRecursive(allocator, base_path, sub_rel, files, max_mtime_s, cutoff_ms);
+            scanDirRecursive(allocator, base_path, sub_rel, files, cutoff_ms);
         } else if (entry.kind == .file and mem.endsWith(u8, entry.name, ".jsonl")) {
             const stat = dir.statFile(entry.name) catch continue;
 
-            const mtime_s: i64 = @intCast(@divFloor(stat.mtime, std.time.ns_per_s));
             const mtime_ms: i64 = @intCast(@divFloor(stat.mtime, std.time.ns_per_ms));
-            if (mtime_s > max_mtime_s.*) max_mtime_s.* = mtime_s;
             if (mtime_ms < cutoff_ms) continue;
 
             const abs_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ full_path, entry.name }) catch continue;
-            files.append(allocator, abs_path) catch continue;
+            files.append(allocator, .{ .path = abs_path, .size = @intCast(stat.size) }) catch continue;
         }
     }
 }
 
-fn parseTranscriptFiles(allocator: std.mem.Allocator, files: []const []const u8) []TranscriptEntry {
+fn parseTranscriptFiles(allocator: std.mem.Allocator, files: []const FileInfo) []TranscriptEntry {
     var entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
     var seen = std.StringHashMapUnmanaged(void){};
 
-    for (files) |file_path| {
-        var f = fs.openFileAbsolute(file_path, .{}) catch continue;
+    for (files) |file| {
+        var f = fs.openFileAbsolute(file.path, .{}) catch continue;
         defer f.close();
         const content = f.readToEndAlloc(allocator, 100 * 1024 * 1024) catch continue;
 
         parseJsonlContent(allocator, content, &entries, &seen);
+    }
+
+    return entries.toOwnedSlice(allocator) catch &.{};
+}
+
+/// Parse only the tail of changed files (from start_offset onward)
+fn parseTranscriptFilesDiff(allocator: std.mem.Allocator, files: []const CachedFileEntry, seen: *std.StringHashMapUnmanaged(void)) []TranscriptEntry {
+    var entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
+
+    for (files) |file| {
+        var f = fs.openFileAbsolute(file.path, .{}) catch continue;
+        defer f.close();
+        if (file.parsed_size > 0) {
+            f.seekTo(@intCast(file.parsed_size)) catch continue;
+        }
+        const content = f.readToEndAlloc(allocator, 100 * 1024 * 1024) catch continue;
+        if (content.len == 0) continue;
+
+        parseJsonlContent(allocator, content, &entries, seen);
     }
 
     return entries.toOwnedSlice(allocator) catch &.{};
@@ -672,57 +707,109 @@ fn computeCosts(allocator: std.mem.Allocator, entries: []TranscriptEntry, now_ms
 // Cache
 // ============================================================
 
-fn readCache(allocator: std.mem.Allocator, now_s: i64, max_mtime_s: i64) ?ScanResult {
+fn readCache(allocator: std.mem.Allocator, day_start_ms: i64) ?CacheResult {
     var f = fs.openFileAbsolute(cache_path, .{}) catch return null;
     defer f.close();
-    const content = f.readToEndAlloc(allocator, 256) catch return null;
+    const content = f.readToEndAlloc(allocator, 64 * 1024 * 1024) catch return null;
 
-    if (content.len < @sizeOf(CacheData)) return null;
+    if (content.len < @sizeOf(CacheHeader)) return null;
 
-    var data: CacheData = undefined;
-    @memcpy(mem.asBytes(&data), content[0..@sizeOf(CacheData)]);
+    var header: CacheHeader = undefined;
+    @memcpy(mem.asBytes(&header), content[0..@sizeOf(CacheHeader)]);
 
-    if (!mem.eql(u8, &data.magic, &cache_magic)) return null;
-    if (data.version != cache_ver) return null;
-    if (now_s - data.write_time_s > cache_ttl_s) return null;
-    if (data.max_mtime_s != max_mtime_s) return null;
+    if (!mem.eql(u8, &header.magic, &cache_magic)) return null;
+    if (header.version != cache_ver) return null;
+    // Invalidate on day boundary change
+    if (header.day_start_ms != day_start_ms) return null;
 
-    var result = ScanResult{
-        .today_cost = data.today_cost,
+    var scan = ScanResult{
+        .today_cost = header.today_cost,
         .block = null,
-        .max_mtime_s = data.max_mtime_s,
     };
-    if (data.has_block != 0) {
-        result.block = .{
-            .start_ms = data.block_start_ms,
-            .end_ms = data.block_end_ms,
-            .cost = data.block_cost,
-            .burn_rate_per_hr = data.block_burn_rate,
+    if (header.has_block != 0) {
+        scan.block = .{
+            .start_ms = header.block_start_ms,
+            .end_ms = header.block_end_ms,
+            .cost = header.block_cost,
+            .burn_rate_per_hr = header.block_burn_rate,
         };
     }
-    return result;
+
+    // Read file entries
+    var files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
+    var pos: usize = @sizeOf(CacheHeader);
+    var i: u32 = 0;
+    while (i < header.file_count) : (i += 1) {
+        if (pos + 2 > content.len) break;
+        const path_len = mem.readInt(u16, content[pos..][0..2], .little);
+        pos += 2;
+        if (pos + path_len > content.len) break;
+        const path = allocator.dupe(u8, content[pos..][0..path_len]) catch break;
+        pos += path_len;
+        if (pos + 24 > content.len) break;
+        const file_size = @as(i64, @bitCast(mem.readInt(u64, content[pos..][0..8], .little)));
+        pos += 8;
+        const per_file_cost: f64 = @bitCast(mem.readInt(u64, content[pos..][0..8], .little));
+        pos += 8;
+        const parsed_size = @as(i64, @bitCast(mem.readInt(u64, content[pos..][0..8], .little)));
+        pos += 8;
+        files.append(allocator, .{
+            .path = path,
+            .file_size = file_size,
+            .per_file_cost = per_file_cost,
+            .parsed_size = parsed_size,
+        }) catch break;
+    }
+
+    return .{
+        .scan = scan,
+        .files = files.toOwnedSlice(allocator) catch &.{},
+        .write_time_s = header.write_time_s,
+        .last_full_scan_s = header.last_full_scan_s,
+        .day_start_ms = header.day_start_ms,
+    };
 }
 
-fn writeCache(result: ScanResult, now_s: i64) void {
-    const data = CacheData{
+fn writeCache(result: ScanResult, files: []const CachedFileEntry, now_s: i64, last_full_scan_s: i64, day_start_ms: i64) void {
+    const header = CacheHeader{
         .magic = cache_magic,
         .version = cache_ver,
         .write_time_s = now_s,
-        .max_mtime_s = result.max_mtime_s,
+        .last_full_scan_s = last_full_scan_s,
         .today_cost = result.today_cost,
         .has_block = if (result.block != null) 1 else 0,
         .block_start_ms = if (result.block) |b| b.start_ms else 0,
         .block_end_ms = if (result.block) |b| b.end_ms else 0,
         .block_cost = if (result.block) |b| b.cost else 0,
         .block_burn_rate = if (result.block) |b| b.burn_rate_per_hr else 0,
+        .day_start_ms = day_start_ms,
+        .file_count = @intCast(files.len),
     };
-    const bytes = mem.asBytes(&data);
+
     const tmp_path = cache_path ++ ".tmp";
     var f = fs.createFileAbsolute(tmp_path, .{}) catch return;
     defer f.close();
-    var wbuf: [128]u8 = undefined;
+    var wbuf: [8192]u8 = undefined;
     var w = f.writer(&wbuf);
-    w.interface.writeAll(bytes) catch return;
+
+    w.interface.writeAll(mem.asBytes(&header)) catch return;
+
+    for (files) |entry| {
+        var len_buf: [2]u8 = undefined;
+        mem.writeInt(u16, &len_buf, @intCast(entry.path.len), .little);
+        w.interface.writeAll(&len_buf) catch return;
+        w.interface.writeAll(entry.path) catch return;
+        var size_buf: [8]u8 = undefined;
+        mem.writeInt(u64, &size_buf, @bitCast(entry.file_size), .little);
+        w.interface.writeAll(&size_buf) catch return;
+        var cost_buf: [8]u8 = undefined;
+        mem.writeInt(u64, &cost_buf, @bitCast(entry.per_file_cost), .little);
+        w.interface.writeAll(&cost_buf) catch return;
+        var parsed_buf: [8]u8 = undefined;
+        mem.writeInt(u64, &parsed_buf, @bitCast(entry.parsed_size), .little);
+        w.interface.writeAll(&parsed_buf) catch return;
+    }
+
     w.interface.flush() catch return;
     fs.renameAbsolute(tmp_path, cache_path) catch {};
 }
@@ -910,22 +997,150 @@ fn mainImpl() !void {
         const projects_path = std.fmt.allocPrint(allocator, "{s}/projects", .{config_dir}) catch break :blk null;
         const now_ms = std.time.milliTimestamp();
         const now_s = @divFloor(now_ms, @as(i64, 1000));
+        const day_start_ms = getLocalDayStartMs(allocator, now_ms);
 
-        // Phase 1: collect file info + max mtime (fast)
-        const file_info = collectTranscriptFiles(allocator, projects_path, now_ms);
+        // Step 1: Try cache — TTL check before any I/O
+        if (readCache(allocator, day_start_ms)) |cached| {
+            if (now_s - cached.write_time_s <= cache_ttl_s) {
+                // TTL hit: return cached aggregate immediately
+                break :blk cached.scan;
+            }
 
-        // Check cache
-        if (readCache(allocator, now_s, file_info.max_mtime_s)) |cached| {
-            break :blk cached;
+            // Step 2: TTL expired, but file list is still fresh — stat-only check
+            if (now_s - cached.last_full_scan_s <= file_list_ttl_s and cached.files.len > 0) {
+                var changed: std.ArrayListUnmanaged(CachedFileEntry) = .{};
+                var unchanged_cost: f64 = 0;
+                var any_shrunk = false;
+
+                for (cached.files) |entry| {
+                    const stat = fs.cwd().statFile(entry.path) catch {
+                        // File gone — need full scan
+                        any_shrunk = true;
+                        break;
+                    };
+                    const current_size: i64 = @intCast(stat.size);
+                    if (current_size < entry.file_size) {
+                        // File shrunk (truncated/rotated) — need full scan
+                        any_shrunk = true;
+                        break;
+                    } else if (current_size > entry.file_size) {
+                        // File grew — diff parse needed
+                        changed.append(allocator, .{
+                            .path = entry.path,
+                            .file_size = current_size,
+                            .per_file_cost = entry.per_file_cost,
+                            .parsed_size = entry.parsed_size,
+                        }) catch break;
+                    } else {
+                        // Unchanged
+                        unchanged_cost += entry.per_file_cost;
+                    }
+                }
+
+                if (!any_shrunk) {
+                    if (changed.items.len == 0) {
+                        // No changes at all — refresh TTL and return
+                        writeCache(cached.scan, cached.files, now_s, cached.last_full_scan_s, day_start_ms);
+                        break :blk cached.scan;
+                    }
+
+                    // Step 3: Diff-parse only changed files
+                    var seen = std.StringHashMapUnmanaged(void){};
+                    const diff_entries = parseTranscriptFilesDiff(allocator, changed.items, &seen);
+                    var diff_cost: f64 = 0;
+                    for (diff_entries) |entry| {
+                        if (findPricing(entry.model)) |pricing| {
+                            diff_cost += calculateEntryCost(pricing, entry.usage);
+                        }
+                    }
+
+                    // Rebuild file entries with updated sizes/costs
+                    var new_files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
+                    for (cached.files) |entry| {
+                        var updated = entry;
+                        for (changed.items) |ch| {
+                            if (mem.eql(u8, ch.path, entry.path)) {
+                                updated.per_file_cost = entry.per_file_cost + diff_cost;
+                                updated.file_size = ch.file_size;
+                                updated.parsed_size = ch.file_size;
+                                break;
+                            }
+                        }
+                        new_files.append(allocator, updated) catch continue;
+                    }
+
+                    // Recalculate today_cost from per-file costs
+                    var new_today_cost: f64 = 0;
+                    for (new_files.items) |entry| {
+                        new_today_cost += entry.per_file_cost;
+                    }
+
+                    // Re-identify block from all entries (cached block + diff)
+                    const all_entries_for_block = blk2: {
+                        // For block detection, we reparse all files to get timestamps
+                        // But we use cached scan's block if no diff entries
+                        if (diff_entries.len == 0) break :blk2 cached.scan.block;
+                        // Merge: keep existing block and just add diff cost
+                        if (cached.scan.block) |existing_block| {
+                            break :blk2 BlockInfo{
+                                .start_ms = existing_block.start_ms,
+                                .end_ms = existing_block.end_ms,
+                                .cost = existing_block.cost + diff_cost,
+                                .burn_rate_per_hr = blk3: {
+                                    const elapsed_ms: i64 = @max(now_ms - existing_block.start_ms, 60000);
+                                    const duration_min: f64 = @as(f64, @floatFromInt(elapsed_ms)) / 60000.0;
+                                    break :blk3 (existing_block.cost + diff_cost) / duration_min * 60.0;
+                                },
+                            };
+                        }
+                        break :blk2 @as(?BlockInfo, null);
+                    };
+
+                    const result = ScanResult{
+                        .today_cost = new_today_cost,
+                        .block = all_entries_for_block,
+                    };
+                    const new_file_entries = new_files.toOwnedSlice(allocator) catch cached.files;
+                    writeCache(result, new_file_entries, now_s, cached.last_full_scan_s, day_start_ms);
+                    break :blk result;
+                }
+            }
         }
 
-        // Phase 2: parse files (slow, only on cache miss)
-        const entries = parseTranscriptFiles(allocator, file_info.files);
-        var result = computeCosts(allocator, entries, now_ms);
-        result.max_mtime_s = file_info.max_mtime_s;
+        // Full scan path: directory walk + parse per-file with cost tracking
+        const file_infos = collectTranscriptFiles(allocator, projects_path, now_ms);
+        var all_entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
+        var all_seen = std.StringHashMapUnmanaged(void){};
+        var cache_files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
 
-        // Write cache
-        writeCache(result, now_s);
+        for (file_infos) |fi| {
+            var f = fs.openFileAbsolute(fi.path, .{}) catch continue;
+            defer f.close();
+            const content = f.readToEndAlloc(allocator, 100 * 1024 * 1024) catch continue;
+
+            const before_len = all_entries.items.len;
+            parseJsonlContent(allocator, content, &all_entries, &all_seen);
+
+            // Calculate per-file today cost from newly added entries
+            var per_cost: f64 = 0;
+            for (all_entries.items[before_len..]) |entry| {
+                if (entry.timestamp_ms >= day_start_ms) {
+                    if (findPricing(entry.model)) |pricing| {
+                        per_cost += calculateEntryCost(pricing, entry.usage);
+                    }
+                }
+            }
+            cache_files.append(allocator, .{
+                .path = fi.path,
+                .file_size = fi.size,
+                .per_file_cost = per_cost,
+                .parsed_size = fi.size,
+            }) catch continue;
+        }
+
+        const result = computeCosts(allocator, all_entries.items, now_ms);
+        const cf = cache_files.toOwnedSlice(allocator) catch &.{};
+        writeCache(result, cf, now_s, now_s, day_start_ms);
 
         break :blk result;
     };
