@@ -5,6 +5,10 @@
 !bat/
 !bat/**
 
+# Biome (https://github.com/biomejs/biome)
+!biome/
+!biome/**
+
 # Btop++ (https://github.com/aristocratos/btop)
 !btop/
 !btop/**
