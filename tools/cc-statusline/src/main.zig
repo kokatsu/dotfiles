@@ -18,9 +18,11 @@ const file_list_ttl_s: i64 = 300;
 
 // ANSI
 const ansi = struct {
+    const cyan = "\x1b[36m";
     const green = "\x1b[32m";
     const yellow = "\x1b[33m";
     const red = "\x1b[31m";
+    const dim = "\x1b[2m";
     const reset = "\x1b[0m";
 };
 
@@ -832,6 +834,35 @@ fn contextColor(pct: f64) []const u8 {
     return ansi.red;
 }
 
+fn buildProgressBar(buf: []u8, pct: f64, width: u8) []const u8 {
+    const clamped = @max(@as(f64, 0), @min(@as(f64, 100), pct));
+    const filled: u8 = @intCast(@min(
+        @as(u64, @intFromFloat(clamped * @as(f64, @floatFromInt(width)) / 100.0)),
+        @as(u64, width),
+    ));
+    const empty = width - filled;
+    var pos: usize = 0;
+    var i: u8 = 0;
+    // U+2588 FULL BLOCK
+    while (i < filled) : (i += 1) {
+        if (pos + 3 > buf.len) break;
+        buf[pos] = 0xe2;
+        buf[pos + 1] = 0x96;
+        buf[pos + 2] = 0x88;
+        pos += 3;
+    }
+    i = 0;
+    // U+2591 LIGHT SHADE
+    while (i < empty) : (i += 1) {
+        if (pos + 3 > buf.len) break;
+        buf[pos] = 0xe2;
+        buf[pos + 1] = 0x96;
+        buf[pos + 2] = 0x91;
+        pos += 3;
+    }
+    return buf[0..pos];
+}
+
 fn formatIntComma(buf: []u8, value: i64) []const u8 {
     // Format integer with comma separators (e.g., 56000 -> "56,000")
     var tmp: [32]u8 = undefined;
@@ -882,77 +913,61 @@ fn printOutput(stdin_info: StdinInfo, scan: ?ScanResult) !void {
     var writer = stdout.writer(&buf);
     const w = &writer.interface;
 
-    // Model
+    // === Line 1: Model + Context + Lines ===
     const model_name = stdin_info.model_name orelse "Unknown";
-    try w.print("\xf0\x9f\xa4\x96 {s}", .{model_name});
-
-    // Session cost
-    var cost_buf: [32]u8 = undefined;
-    const session_str = if (stdin_info.session_cost) |c| formatCurrency(&cost_buf, c) else "N/A";
-    try w.print(" | \xf0\x9f\x92\xb0 {s} session", .{session_str});
-
-    // Today cost
-    var today_buf: [32]u8 = undefined;
-    if (scan) |s| {
-        try w.print(" / {s} today", .{formatCurrency(&today_buf, s.today_cost)});
-    } else {
-        try w.writeAll(" / N/A today");
-    }
-
-    // Block info
-    if (scan) |s| {
-        if (s.block) |block| {
-            var block_buf: [32]u8 = undefined;
-            var dur_buf: [64]u8 = undefined;
-            const now_ms = std.time.milliTimestamp();
-            const remaining = block.end_ms - now_ms;
-            try w.print(" / {s} block ({s})", .{
-                formatCurrency(&block_buf, block.cost),
-                formatDuration(&dur_buf, remaining),
-            });
-            var rate_buf: [32]u8 = undefined;
-            try w.print(" | \xf0\x9f\x94\xa5 {s}/hr", .{formatCurrency(&rate_buf, block.burn_rate_per_hr)});
-        } else {
-            try w.writeAll(" / N/A block");
-        }
-    } else {
-        try w.writeAll(" / N/A block");
-    }
+    try w.print("\xf0\x9f\xa4\x96 {s}{s}{s}", .{ ansi.cyan, model_name, ansi.reset });
 
     // Context
     if (stdin_info.context_pct) |pct| {
         const color = contextColor(pct);
-        if (stdin_info.context_tokens) |tokens| {
-            var tok_buf: [32]u8 = undefined;
-            try w.print(" | \xf0\x9f\xa7\xa0 {s} {s}({d:.0}%){s}", .{ formatIntComma(&tok_buf, tokens), color, pct, ansi.reset });
-        } else {
-            try w.print(" | \xf0\x9f\xa7\xa0 {s}{d:.0}%{s}", .{ color, pct, ansi.reset });
-        }
-    } else if (stdin_info.context_tokens) |tokens| {
-        var tok_buf: [32]u8 = undefined;
-        try w.print(" | \xf0\x9f\xa7\xa0 {s}", .{formatIntComma(&tok_buf, tokens)});
+        var bar_buf: [64]u8 = undefined;
+        const bar = buildProgressBar(&bar_buf, pct, 10);
+        try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 {s}{s}{s} {s}{d:.0}%{s}", .{ ansi.dim, ansi.reset, color, bar, ansi.reset, color, pct, ansi.reset });
     } else {
-        try w.writeAll(" | \xf0\x9f\xa7\xa0 N/A");
+        try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 N/A", .{ ansi.dim, ansi.reset });
     }
 
     // Lines changed
     if (stdin_info.lines_added != null or stdin_info.lines_removed != null) {
         const added = stdin_info.lines_added orelse 0;
         const removed = stdin_info.lines_removed orelse 0;
-        try w.print(" | \xf0\x9f\x93\x9d {s}+{d}{s} {s}-{d}{s}", .{ ansi.green, added, ansi.reset, ansi.red, removed, ansi.reset });
+        try w.print(" {s}|{s} \xf0\x9f\x93\x9d {s}+{d}{s} {s}-{d}{s}", .{ ansi.dim, ansi.reset, ansi.green, added, ansi.reset, ansi.red, removed, ansi.reset });
     }
 
-    // Session duration
-    if (stdin_info.session_duration_ms) |dur_ms| {
-        var dur_sec = @divFloor(dur_ms, @as(i64, 1000));
-        const hours = @divFloor(dur_sec, @as(i64, 3600));
-        dur_sec -= hours * 3600;
-        const mins = @divFloor(dur_sec, @as(i64, 60));
-        const secs = dur_sec - mins * 60;
-        if (hours > 0) {
-            try w.print(" | \xf0\x9f\x95\x90 {d}h {d}m {d}s", .{ hours, mins, secs });
-        } else {
-            try w.print(" | \xf0\x9f\x95\x90 {d}m {d}s", .{ mins, secs });
+    try w.writeAll("\n");
+
+    // === Line 2: Cost + Block ===
+    var today_buf: [32]u8 = undefined;
+    if (scan) |s| {
+        try w.print("\xf0\x9f\x92\xb0 {s}{s}{s} today", .{ ansi.yellow, formatCurrency(&today_buf, s.today_cost), ansi.reset });
+    } else {
+        try w.writeAll("\xf0\x9f\x92\xb0 N/A today");
+    }
+
+    if (scan) |s| {
+        if (s.block) |block| {
+            var block_buf: [32]u8 = undefined;
+            var dur_buf: [64]u8 = undefined;
+            const now_ms = std.time.milliTimestamp();
+            const remaining = block.end_ms - now_ms;
+            try w.print(" {s}|{s} {s}{s}{s} block", .{
+                ansi.dim,
+                ansi.reset,
+                ansi.yellow,
+                formatCurrency(&block_buf, block.cost),
+                ansi.reset,
+            });
+            const block_total_ms = block.end_ms - block.start_ms;
+            const remaining_pct: f64 = if (block_total_ms > 0)
+                @as(f64, @floatFromInt(@max(remaining, @as(i64, 0)))) / @as(f64, @floatFromInt(block_total_ms)) * 100.0
+            else
+                0;
+            const block_bar_color = if (remaining_pct >= 50.0) ansi.green else if (remaining_pct >= 25.0) ansi.yellow else ansi.red;
+            var block_bar_buf: [64]u8 = undefined;
+            const block_bar = buildProgressBar(&block_bar_buf, remaining_pct, 8);
+            try w.print(" {s}{s}{s} {s}", .{ block_bar_color, block_bar, ansi.reset, formatDuration(&dur_buf, remaining) });
+            var rate_buf: [32]u8 = undefined;
+            try w.print(" \xf0\x9f\x94\xa5 {s}{s}/h{s}", .{ ansi.yellow, formatCurrency(&rate_buf, block.burn_rate_per_hr), ansi.reset });
         }
     }
 
@@ -965,7 +980,7 @@ fn printFallback() void {
     var buf: [256]u8 = undefined;
     var writer = stdout.writer(&buf);
     const w = &writer.interface;
-    w.writeAll("\xf0\x9f\xa4\x96 Unknown | \xf0\x9f\x92\xb0 N/A session / N/A today / N/A block | \xf0\x9f\xa7\xa0 N/A\n") catch {};
+    w.writeAll("\xf0\x9f\xa4\x96 Unknown \xf0\x9f\x92\xb0 N/A\n\xf0\x9f\xa7\xa0 N/A\n") catch {};
     w.flush() catch {};
 }
 
