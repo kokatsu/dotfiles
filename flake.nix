@@ -95,6 +95,7 @@
       inputs.helix.overlays.default
       inputs.neovim-nightly-overlay.overlays.default
       customOverlays.agent-browser
+      customOverlays.biome
       customOverlays.cc-statusline
       customOverlays.ccusage
       customOverlays.claude-code
