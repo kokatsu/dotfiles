@@ -341,6 +341,7 @@ in {
           force = true;
         };
         ".config/helix".source = ../../.config/helix;
+        ".config/biome".source = ../../.config/biome;
         ".config/lazydocker".source = ../../.config/lazydocker;
         ".config/lazygit".source = ../../.config/lazygit;
         ".config/readline".source = ../../.config/readline;
@@ -359,6 +360,10 @@ in {
       // lib.optionalAttrs (!isDarwin) {
         ".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
         ".docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
+      }
+      # macOS: Biome グローバル設定 (~/Library/Application Support/biome/)
+      // lib.optionalAttrs isDarwin {
+        "Library/Application Support/biome/.biome.jsonc".source = ../../.config/biome/.biome.jsonc;
       };
   };
 
