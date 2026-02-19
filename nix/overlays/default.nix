@@ -755,6 +755,56 @@
     };
   };
 
+  # biome - A toolchain for web projects (formatter + linter)
+  # nixpkgs の更新が遅いため overlay でバージョン管理
+  # Renovate: datasource=github-releases depName=biomejs/biome
+  biome = _final: prev: let
+    version = "2.4.2";
+    hashes = {
+      "aarch64-darwin" = "sha256-HHtfDLkTXmIBFbqUws84WCeVWXwZKfewaQCADbhdVeI=";
+      "x86_64-darwin" = "sha256-NGuExDEgm+DFtrlQKS+jbdRpMk2CQ8WeivE7wK2QUhY=";
+      "aarch64-linux" = "sha256-Hqe0dByPY/sSCm+E9zl0jIInNg7lnQhYHaIi32Rr1YQ=";
+      "x86_64-linux" = "sha256-Alqoxf7sjhjrV6Iyucg1210imu3Jc02zmoagA6sX+YI=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "darwin-arm64";
+      "x86_64-darwin" = "darwin-x64";
+      "aarch64-linux" = "linux-arm64";
+      "x86_64-linux" = "linux-x64";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    biome = prev.stdenvNoCC.mkDerivation {
+      pname = "biome";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${version}/biome-${platform}";
+        inherit hash;
+      };
+
+      dontUnpack = true;
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp $src $out/bin/biome
+        chmod +x $out/bin/biome
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "A toolchain for web projects (formatter + linter)";
+        homepage = "https://github.com/biomejs/biome";
+        license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "biome";
+      };
+    };
+  };
+
   # octorus - TUI tool for GitHub PR review
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = _final: prev: {
