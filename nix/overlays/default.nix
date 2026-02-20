@@ -455,7 +455,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.11.1";
+    version = "0.12.0";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -473,10 +473,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-fuI16lnd7IDKTpiD9goR5jFcx4t4rXykAKuRmsMOzlE=";
+        hash = "sha256-ByAcpwZSfLN5weNsk2KsG/nlowFUkQF4r2+nNqjLesc=";
       };
 
-      npmDepsHash = "sha256-l5S3GLyOSxAa6HtrfN7ZFpjurbkeEgdbei9AFjagLVQ=";
+      npmDepsHash = "sha256-JlvddSwLcc/Tb1BRQutFMvUozSew4i0OZEy0oq/S/rw=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts"];
@@ -810,16 +810,16 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.3.5";
+      version = "0.4.1";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-xVbLh1fe+59KxcZOtCoSAh6O+VdhAyBSGCPP3UZLidA=";
+        hash = "sha256-yIwnD5ef9Tb94wmrwnnbzkwOYKrwiphilXsHr/8JgJs=";
       };
 
-      cargoHash = "sha256-mOHjNQWeEcoBS4OhPj5RRja+b1PCPAeOM49t7OUtx1s=";
+      cargoHash = "sha256-pIT8ZJmU+O0JJh5myVi8p6p0mX4fIz0NmXu2aDN1jyw=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
