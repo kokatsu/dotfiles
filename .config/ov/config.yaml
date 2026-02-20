@@ -1,0 +1,24 @@
+# ov pager configuration
+# https://noborus.github.io/ov/
+
+SmartCaseSensitive: true
+Incsearch: true
+WrapMode: true
+QuitSmall: true
+
+Mode:
+  markdown:
+    Header: 3
+    AlternateRows: true
+    ColumnMode: true
+    ColumnDelimiter: "|"
+  psql:
+    Header: 2
+    AlternateRows: true
+    ColumnMode: true
+    ColumnDelimiter: "|"
+  mysql:
+    Header: 3
+    AlternateRows: true
+    ColumnMode: true
+    ColumnDelimiter: "|"
