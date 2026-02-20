@@ -12,6 +12,7 @@ $git_branch\
 $git_metrics\
 $git_status\
 $fill\
+${custom.disk}\
 $cmd_duration\
 $time\
 $line_break\
@@ -130,6 +131,13 @@ style = "bold yellow"
 [[battery.display]]
 threshold = 20
 style = "bold red"
+
+[custom.disk]
+command = "df -h /mnt/c | awk 'NR==2 {print $5}'"
+when = "test -d /mnt/c && test $(df /mnt/c | awk 'NR==2 {print $5}' | tr -d '%') -gt 80"
+symbol = "󰋊 " # nf-md-harddisk
+style = "bold red"
+format = "[$symbol$output]($style) "
 
 [character]
 success_symbol = "[](bold green)" # nf-fa-check
