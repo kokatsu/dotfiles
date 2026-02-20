@@ -921,7 +921,7 @@ fn printOutput(stdin_info: StdinInfo, scan: ?ScanResult) !void {
     if (stdin_info.context_pct) |pct| {
         const color = contextColor(pct);
         var bar_buf: [64]u8 = undefined;
-        const bar = buildProgressBar(&bar_buf, pct, 10);
+        const bar = buildProgressBar(&bar_buf, pct, 20);
         try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 {s}{s}{s} {s}{d:.0}%{s}", .{ ansi.dim, ansi.reset, color, bar, ansi.reset, color, pct, ansi.reset });
     } else {
         try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 N/A", .{ ansi.dim, ansi.reset });
@@ -962,9 +962,9 @@ fn printOutput(stdin_info: StdinInfo, scan: ?ScanResult) !void {
                 @as(f64, @floatFromInt(@max(remaining, @as(i64, 0)))) / @as(f64, @floatFromInt(block_total_ms)) * 100.0
             else
                 0;
-            const block_bar_color = if (remaining_pct >= 50.0) ansi.green else if (remaining_pct >= 25.0) ansi.yellow else ansi.red;
+            const block_bar_color = if (remaining_pct >= 50.0) ansi.green else if (remaining_pct >= 20.0) ansi.yellow else ansi.red;
             var block_bar_buf: [64]u8 = undefined;
-            const block_bar = buildProgressBar(&block_bar_buf, remaining_pct, 8);
+            const block_bar = buildProgressBar(&block_bar_buf, remaining_pct, 20);
             try w.print(" {s}{s}{s} {s}", .{ block_bar_color, block_bar, ansi.reset, formatDuration(&dur_buf, remaining) });
             var rate_buf: [32]u8 = undefined;
             try w.print(" \xf0\x9f\x94\xa5 {s}{s}/h{s}", .{ ansi.yellow, formatCurrency(&rate_buf, block.burn_rate_per_hr), ansi.reset });
