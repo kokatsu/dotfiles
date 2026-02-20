@@ -159,13 +159,17 @@ const WEZTERM_KEY_MAP: Record<string, string> = {
 function normalizeWeztermKey(
   rawKey: string,
   rawMods: string,
-  platform: 'linux' | 'darwin',
+  // Keep for future platform-specific modifier mapping (e.g. CMD on darwin)
+  _platform: 'linux' | 'darwin',
 ): { canonical: string; mods: string[] } | null {
-  // Resolve PRIMARY / SECONDARY per platform
-  const modsMap: Record<string, string> =
-    platform === 'darwin'
-      ? { PRIMARY: 'CTRL', SECONDARY: 'ALT' }
-      : { PRIMARY: 'CTRL', SECONDARY: 'ALT' };
+  // Resolve modifier aliases
+  const modsMap: Record<string, string> = {
+    PRIMARY: 'CTRL',
+    SECONDARY: 'ALT',
+    OPT: 'ALT',
+    CMD: 'SUPER',
+    SUPER: 'SUPER',
+  };
 
   let modsStr = rawMods;
   for (const [placeholder, actual] of Object.entries(modsMap)) {
@@ -425,8 +429,7 @@ function parseWezEntries(
 
     // Detect passthrough actions
     const isPassthrough =
-      actionStr.startsWith('act.SendKey') ||
-      actionStr.startsWith('act.SendString');
+      actionStr.includes('act.SendKey') || actionStr.includes('act.SendString');
 
     // Extract description from the nearest preceding comment.
     // Look for the main description comment (starting with -- `key combo`),
@@ -591,7 +594,11 @@ print(vim.json.encode(maps))
 // -- Yazi parser -----------------------------------------------------------
 
 interface YaziKeymapSection {
-  prepend_keymap?: Array<{ on: string; run: string; desc?: string }>;
+  prepend_keymap?: Array<{
+    on: string | string[];
+    run: string;
+    desc?: string;
+  }>;
 }
 
 interface YaziKeymap {
@@ -619,7 +626,19 @@ function parseYazi(root: string): Keybinding[] {
     if (!Array.isArray(keymaps)) continue;
 
     for (const entry of keymaps) {
-      const on = entry.on;
+      // on が string または string[] の両方に対応
+      const onValue = entry.on;
+      const onList: string[] =
+        typeof onValue === 'string'
+          ? [onValue]
+          : Array.isArray(onValue)
+            ? onValue
+            : [];
+
+      // 複数キーのシーケンスはスキップ
+      if (onList.length !== 1) continue;
+
+      const on = onList[0];
       if (typeof on !== 'string') continue;
 
       const result = parseYaziKey(on);
