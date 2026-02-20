@@ -446,6 +446,7 @@ in {
         ".config/git-graph".source = ../../.config/git-graph;
         ".config/gomi".source = ../../.config/gomi;
         ".config/keifu".source = ../../.config/keifu;
+        ".config/ov".source = ../../.config/ov;
         ".config/pg".source = ../../.config/pg;
         ".config/.ripgreprc".source = ../../.config/.ripgreprc;
 

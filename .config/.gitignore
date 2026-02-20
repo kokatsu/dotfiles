@@ -69,6 +69,10 @@
 !nvim/
 !nvim/**
 
+# ov (https://github.com/noborus/ov)
+!ov/
+!ov/**
+
 # psql (https://www.postgresql.org/docs/current/app-psql.html)
 !pg/
 !pg/**
