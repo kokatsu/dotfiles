@@ -455,7 +455,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.11.1";
+    version = "0.12.0";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -810,7 +810,7 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.3.5";
+      version = "0.4.1";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
