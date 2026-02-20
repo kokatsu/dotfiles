@@ -159,6 +159,8 @@ in {
         #####################################
         # メディア/画像処理
         #####################################
+        # https://github.com/nicholasHuang/bento4
+        bento4 # MP4 解析/操作ツールキット (mp4dump, mp4info 等)
         # https://github.com/dirkvdb/ffmpegthumbnailer
         ffmpegthumbnailer # 動画サムネイル (yazi プレビュー用)
         # https://github.com/karlstav/cava
