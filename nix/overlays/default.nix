@@ -53,7 +53,7 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.49";
+    version = "2.1.50";
     hashes = {
       "aarch64-darwin" = "sha256-K5hIFDUO2am3BQa8vBC3faRvWz4GqcaTLwcx0EIEm5g=";
       "x86_64-darwin" = "sha256-MVXFoT6PqZdgOKS5VcPsAGqhfCwS2LuKLdMFZmHu7SU=";
@@ -759,7 +759,7 @@
   # nixpkgs の更新が遅いため overlay でバージョン管理
   # Renovate: datasource=github-releases depName=biomejs/biome
   biome = _final: prev: let
-    version = "2.4.2";
+    version = "2.4.3";
     hashes = {
       "aarch64-darwin" = "sha256-HHtfDLkTXmIBFbqUws84WCeVWXwZKfewaQCADbhdVeI=";
       "x86_64-darwin" = "sha256-NGuExDEgm+DFtrlQKS+jbdRpMk2CQ8WeivE7wK2QUhY=";
