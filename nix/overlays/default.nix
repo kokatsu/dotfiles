@@ -53,12 +53,12 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.49";
+    version = "2.1.50";
     hashes = {
-      "aarch64-darwin" = "sha256-K5hIFDUO2am3BQa8vBC3faRvWz4GqcaTLwcx0EIEm5g=";
-      "x86_64-darwin" = "sha256-MVXFoT6PqZdgOKS5VcPsAGqhfCwS2LuKLdMFZmHu7SU=";
-      "aarch64-linux" = "sha256-5OTqip+Lzl+Puq57rHx6GCbqe6aLOLnClR6EZrypEzE=";
-      "x86_64-linux" = "sha256-56dWVmXsvMyixpErLvKdorE30mAgG5Mcc3t904Icbi8=";
+      "aarch64-darwin" = "sha256-S2wcteAkKNv2ANCPiMKPnqBmGQAcPv6/iJA2Xlt50bc=";
+      "x86_64-darwin" = "sha256-IhWBjG4qT6BJfuiKGfjYS5HwuynMQVCjCqd191uiEzw=";
+      "aarch64-linux" = "sha256-Tisj2/L5eRjV7cla4d4D0jCma5TV+jGlfMZzdC7GriI=";
+      "x86_64-linux" = "sha256-dAQnORl8WKR5HB9nQUwNiVZjnsLy6TUoCHK4PUMXvng=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -759,7 +759,7 @@
   # nixpkgs の更新が遅いため overlay でバージョン管理
   # Renovate: datasource=github-releases depName=biomejs/biome
   biome = _final: prev: let
-    version = "2.4.2";
+    version = "2.4.3";
     hashes = {
       "aarch64-darwin" = "sha256-HHtfDLkTXmIBFbqUws84WCeVWXwZKfewaQCADbhdVeI=";
       "x86_64-darwin" = "sha256-NGuExDEgm+DFtrlQKS+jbdRpMk2CQ8WeivE7wK2QUhY=";
