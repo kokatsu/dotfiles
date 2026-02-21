@@ -473,10 +473,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-ByAcpwZSfLN5weNsk2KsG/nlowFUkQF4r2+nNqjLesc=";
+        hash = "sha256-xXo1rutaV5JID/v0DD+MuCTAVN5dFvo0vFccKkD3CDw=";
       };
 
-      npmDepsHash = "sha256-JlvddSwLcc/Tb1BRQutFMvUozSew4i0OZEy0oq/S/rw=";
+      npmDepsHash = "sha256-jXKKV4h/SPOVOHca6bsgZJIltzzq/w3zgc/r2wi4574=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts"];
