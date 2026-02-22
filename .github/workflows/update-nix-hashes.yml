@@ -143,6 +143,13 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }claude-code $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'biome'; then
+            echo "has_biome=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*biome" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_biome=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }biome $VERSION"
+          fi
+
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
 
       # === Pre-built binary packages ===
@@ -177,6 +184,22 @@ jobs:
             URL="https://github.com/artempyanykh/marksman/releases/download/${VERSION}/marksman-${PLAT_NAME}"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
             sed -i "/marksman-binary = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+          done
+
+      - name: Update biome hashes
+        if: steps.detect.outputs.has_biome == 'true'
+        run: |
+          VERSION="${{ steps.detect.outputs.version_biome }}"
+          OVERLAY="nix/overlays/default.nix"
+
+          # Compute hashes for each platform
+          for platform in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" \
+                          "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
+            PLAT_NAME="${platform%%:*}"
+            NIX_SYSTEM="${platform##*:}"
+            URL="https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${VERSION}/biome-${PLAT_NAME}"
+            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            sed -i "/biome = _final: prev: let/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update keifu hashes
