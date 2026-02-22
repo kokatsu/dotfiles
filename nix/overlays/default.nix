@@ -761,10 +761,10 @@
   biome = _final: prev: let
     version = "2.4.4";
     hashes = {
-      "aarch64-darwin" = "sha256-HHtfDLkTXmIBFbqUws84WCeVWXwZKfewaQCADbhdVeI=";
-      "x86_64-darwin" = "sha256-NGuExDEgm+DFtrlQKS+jbdRpMk2CQ8WeivE7wK2QUhY=";
-      "aarch64-linux" = "sha256-Hqe0dByPY/sSCm+E9zl0jIInNg7lnQhYHaIi32Rr1YQ=";
-      "x86_64-linux" = "sha256-Alqoxf7sjhjrV6Iyucg1210imu3Jc02zmoagA6sX+YI=";
+      "aarch64-darwin" = "sha256-6JARsXFKIOvUtoMyG6cYTOKnmij07j0zvadKTqdJBio=";
+      "x86_64-darwin" = "sha256-T60NUBXrtr5SuJOY7Q6Qch7gI59M3qDDRyV6CihujYQ=";
+      "aarch64-linux" = "sha256-cIz6oB0SsrsWScW32X894koXQfvPzwpGHF+b5Idcdgs=";
+      "x86_64-linux" = "sha256-ulBzAX7AOnAOW5JwskVN99vsalEkYRu3hbaK5xdQbUU=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
