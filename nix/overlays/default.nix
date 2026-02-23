@@ -724,7 +724,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-NLT6nLei7b94Fma7FUI83CuZ4b4RseYo4O/LgyjSOKw=";
+      npmDepsHash = "sha256-8m2OBDk8111kWeCCrJOy9xya2cuS8oP6EuqhtZ71IOo=";
 
       dontNpmBuild = true;
 
@@ -816,10 +816,10 @@
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-fg5yy60A7YzR+yVOGJCJO4ghO6SIdwEYCB+j9y4m15M=";
+        hash = "sha256-S27j2D827ZZ3kzszd4a7DJhH3hIrYAEAYEQNxNo2a/g=";
       };
 
-      cargoHash = "sha256-3ZKi7BcXHO2kgYw6mFMtFBtCJRfXimWMYAN7yvV2ccs=";
+      cargoHash = "sha256-gAZDCJ9Xg2OirsGfJC53Q9wGTlVv4JICbpBJPwxPUko=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
