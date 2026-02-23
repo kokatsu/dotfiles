@@ -1,12 +1,12 @@
 {
   "name": "textlint-with-preset",
-  "version": "15.5.1",
+  "version": "15.5.2",
   "private": true,
   "bin": {
-    "textlint": "./node_modules/textlint/bin/textlint.js"
+    "textlint": "15.5.2"
   },
   "dependencies": {
-    "textlint": "15.5.1",
+    "textlint": "15.5.2",
     "textlint-rule-preset-ja-technical-writing": "12.0.2"
   }
 }
