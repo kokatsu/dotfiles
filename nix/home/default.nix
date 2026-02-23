@@ -586,7 +586,7 @@ in {
     '';
 
     # WezTerm.app を /Applications にリンク (Dock対応)
-    linkWezTermApp = lib.mkIf isDarwin (lib.hm.dag.entryAfter ["linkGeneration"] ''
+    linkWezTermApp = lib.mkIf (isDarwin && !isCI) (lib.hm.dag.entryAfter ["linkGeneration"] ''
       WEZTERM_APP="${inputs.wezterm.packages.${system}.default}/Applications/WezTerm.app"
       if [ -d "$WEZTERM_APP" ]; then
         $DRY_RUN_CMD rm -f /Applications/WezTerm.app
