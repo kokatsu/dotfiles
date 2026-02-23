@@ -710,7 +710,7 @@
   # Uses custom package.json to bundle textlint with Japanese writing preset
   # Renovate: datasource=npm depName=textlint
   textlint = _final: prev: let
-    version = "15.5.1";
+    version = "15.5.2";
     packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/textlint/package.json);
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/textlint/package-lock.json);
   in {
@@ -724,7 +724,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-NLT6nLei7b94Fma7FUI83CuZ4b4RseYo4O/LgyjSOKw=";
+      npmDepsHash = "sha256-8m2OBDk8111kWeCCrJOy9xya2cuS8oP6EuqhtZ71IOo=";
 
       dontNpmBuild = true;
 
@@ -810,16 +810,16 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.4.2";
+      version = "0.4.3";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-fg5yy60A7YzR+yVOGJCJO4ghO6SIdwEYCB+j9y4m15M=";
+        hash = "sha256-S27j2D827ZZ3kzszd4a7DJhH3hIrYAEAYEQNxNo2a/g=";
       };
 
-      cargoHash = "sha256-3ZKi7BcXHO2kgYw6mFMtFBtCJRfXimWMYAN7yvV2ccs=";
+      cargoHash = "sha256-gAZDCJ9Xg2OirsGfJC53Q9wGTlVv4JICbpBJPwxPUko=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
