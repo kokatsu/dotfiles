@@ -102,7 +102,6 @@
       customOverlays.ccusage
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
-      customOverlays.deno-check-fix
       customOverlays.deck
       customOverlays.git-graph-fork
       customOverlays.keifu
@@ -116,6 +115,11 @@
       customOverlays.unocss-language-server
       customOverlays.vue-language-server-pin
       customOverlays.x-api-playground
+    ];
+
+    # ローカル専用オーバーレイ (overrideAttrsでキャッシュ無効化されるため、CIでは使わない)
+    localOnlyOverlays = [
+      customOverlays.deno-check-fix
     ];
 
     # Darwin専用オーバーレイ (ビルド修正)
@@ -132,7 +136,7 @@
         ./nix/darwin
         home-manager.darwinModules.home-manager
         {
-          nixpkgs.overlays = commonOverlays ++ darwinOnlyOverlays;
+          nixpkgs.overlays = commonOverlays ++ localOnlyOverlays ++ darwinOnlyOverlays;
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
@@ -162,6 +166,7 @@
           config.allowUnfree = true;
           overlays =
             commonOverlays
+            ++ localOnlyOverlays
             ++ (
               if isCurrentDarwin
               then darwinOnlyOverlays
