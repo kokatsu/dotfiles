@@ -710,7 +710,7 @@
   # Uses custom package.json to bundle textlint with Japanese writing preset
   # Renovate: datasource=npm depName=textlint
   textlint = _final: prev: let
-    version = "15.5.1";
+    version = "15.5.2";
     packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/textlint/package.json);
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/textlint/package-lock.json);
   in {
@@ -810,7 +810,7 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.4.2";
+      version = "0.4.3";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
