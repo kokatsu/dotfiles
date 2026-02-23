@@ -449,16 +449,17 @@
       },
       "locked": {
         "dir": "nix",
-        "lastModified": 1768664668,
-        "narHash": "sha256-usmXju7tDaJZRicONAX0oduQPkOeahSJPCExuRt6dt4=",
-        "owner": "wez",
+        "lastModified": 1771775562,
+        "narHash": "sha256-bdh+N5hSeqUQQXrTNk7pHk6uNBLCU4PHIgiXo4/ckfE=",
+        "owner": "kokatsu",
         "repo": "wezterm",
-        "rev": "05343b387085842b434d267f91b6b0ec157e4331",
+        "rev": "45f5a3de78e1ea74fdce5af4c6ad0d10ef611170",
         "type": "github"
       },
       "original": {
         "dir": "nix",
-        "owner": "wez",
+        "owner": "kokatsu",
+        "ref": "feat/unfocused-split-opacity",
         "repo": "wezterm",
         "type": "github"
       }

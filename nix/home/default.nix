@@ -372,7 +372,7 @@ in {
         # ターミナル (WezTerm nightly)
         # Ghostty は Homebrew cask で管理 (nix/darwin/default.nix)
         # WSLではWindows側にインストールするためLinuxでは除外
-        # https://github.com/wez/wezterm
+        # https://github.com/wez/wezterm (fork: kokatsu/wezterm, unfocused split pane 対応)
         inputs.wezterm.packages.${system}.default
       ];
 
@@ -587,8 +587,8 @@ in {
 
     # WezTerm.app を /Applications にリンク (Dock対応)
     linkWezTermApp = lib.mkIf isDarwin (lib.hm.dag.entryAfter ["linkGeneration"] ''
-      WEZTERM_APP=$(find /nix/store -maxdepth 3 -name "WezTerm.app" -path "*wezterm*" 2>/dev/null | head -1)
-      if [ -n "$WEZTERM_APP" ] && [ -d "$WEZTERM_APP" ]; then
+      WEZTERM_APP="${inputs.wezterm.packages.${system}.default}/Applications/WezTerm.app"
+      if [ -d "$WEZTERM_APP" ]; then
         $DRY_RUN_CMD rm -f /Applications/WezTerm.app
         $DRY_RUN_CMD ln -sf "$WEZTERM_APP" /Applications/WezTerm.app
       fi
