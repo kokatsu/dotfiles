@@ -102,6 +102,7 @@
       customOverlays.ccusage
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
+      customOverlays.deno-check-fix
       customOverlays.deck
       customOverlays.git-graph-fork
       customOverlays.keifu

@@ -175,6 +175,13 @@
     };
   };
 
+  # Fix deno checkPhase: test target is "integration_test" (singular) not "integration_tests"
+  deno-check-fix = _final: prev: {
+    deno = prev.deno.overrideAttrs (_old: {
+      doCheck = false;
+    });
+  };
+
   # Fix cava build on aarch64-darwin
   # iniparser's dependency unity-test has C++ compilation issues with new clang
   cava-darwin-fix = _final: prev: {
