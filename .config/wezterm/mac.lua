@@ -17,6 +17,10 @@ M.apply_to_config = function(config)
   local background = require('background')
   background.apply_to_keys(keys, 'CTRL', 'ALT')
   config.background = background.default_background
+
+  -- Custom fork feature: unfocused split pane styling
+  config.unfocused_split_opacity = 0.5
+  config.unfocused_split_fill = '#181825'
 end
 
 return M
