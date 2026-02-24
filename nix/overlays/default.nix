@@ -795,7 +795,7 @@
       pname = "cc-statusline";
       version = "0.1.0";
       src = ../../tools/cc-statusline;
-      nativeBuildInputs = [prev.zig];
+      nativeBuildInputs = [prev.zig prev.makeWrapper];
       dontConfigure = true;
       dontFixup = true;
       buildPhase = ''
@@ -803,7 +803,10 @@
         export XDG_CACHE_HOME=$TMPDIR/.cache
         zig build -Doptimize=ReleaseFast --prefix $out
       '';
-      dontInstall = true;
+      installPhase = ''
+        wrapProgram $out/bin/cc-statusline \
+          --set-default CC_STATUSLINE_THEME catppuccin-mocha
+      '';
     };
   };
 
