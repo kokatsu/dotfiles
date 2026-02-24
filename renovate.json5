@@ -86,6 +86,7 @@
         'custom.claude-code',
       ],
       minimumReleaseAge: '0 days',
+      sourceUrl: 'https://github.com/anthropics/claude-code',
     },
   ],
 }
