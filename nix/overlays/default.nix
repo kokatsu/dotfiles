@@ -55,10 +55,10 @@
   claude-code = _final: prev: let
     version = "2.1.52";
     hashes = {
-      "aarch64-darwin" = "sha256-S2wcteAkKNv2ANCPiMKPnqBmGQAcPv6/iJA2Xlt50bc=";
-      "x86_64-darwin" = "sha256-IhWBjG4qT6BJfuiKGfjYS5HwuynMQVCjCqd191uiEzw=";
-      "aarch64-linux" = "sha256-Tisj2/L5eRjV7cla4d4D0jCma5TV+jGlfMZzdC7GriI=";
-      "x86_64-linux" = "sha256-dAQnORl8WKR5HB9nQUwNiVZjnsLy6TUoCHK4PUMXvng=";
+      "aarch64-darwin" = "sha256-IejEmzER+mnoj0UKlO5OiN9pMSgjAXu/Yf+GpGH8/CM=";
+      "x86_64-darwin" = "sha256-RHpvoyOKpwB7/8xZkQTcQ43mHQyA/6rELR1Ojrbrl8A=";
+      "aarch64-linux" = "sha256-r+CBmQk2VQqY7caAhg5vFs2frTAPtTtKsnxwcccJaPI=";
+      "x86_64-linux" = "sha256-cMH5iBt8CRxJ82lclMOB2cygrwlLy8mcufRj5E2Xzpw=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -871,10 +871,10 @@
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-S27j2D827ZZ3kzszd4a7DJhH3hIrYAEAYEQNxNo2a/g=";
+        hash = "sha256-ZMksoRJ1hVEPcm8R9BiDayWOpCvaWEvbEAFs6CCWtx4=";
       };
 
-      cargoHash = "sha256-gAZDCJ9Xg2OirsGfJC53Q9wGTlVv4JICbpBJPwxPUko=";
+      cargoHash = "sha256-ZUd08jj99d+2ZA/MVHemVH21DThyfHHV2QuiM2+Gahg=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
