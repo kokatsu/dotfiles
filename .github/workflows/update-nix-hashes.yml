@@ -338,6 +338,10 @@ jobs:
           PRESET_VERSION=$(npm view textlint-rule-preset-ja-technical-writing version)
           sed -i "s|\"textlint-rule-preset-ja-technical-writing\": \"[^\"]*\"|\"textlint-rule-preset-ja-technical-writing\": \"${PRESET_VERSION}\"|" package.json
 
+          # Update terminology rule to latest compatible version
+          TERMINOLOGY_VERSION=$(npm view textlint-rule-terminology version)
+          sed -i "s|\"textlint-rule-terminology\": \"[^\"]*\"|\"textlint-rule-terminology\": \"${TERMINOLOGY_VERSION}\"|" package.json
+
           # Regenerate package-lock.json from custom package.json
           rm -f package-lock.json
           npm install --package-lock-only --ignore-scripts

@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "terminology": {
+      "defaultTerms": true,
+      "terms": [
+        "Biome",
+        "DuckDB",
+        "Ghostty",
+        "ImageMagick",
+        "Karabiner",
+        "Lefthook",
+        ["[Nn](?:eo)?[Vv]im", "Neovim"],
+        "Playwright",
+        "Starship",
+        "StyLua",
+        "WezTerm",
+        "Yazi"
+      ]
+    }
+  }
+}
