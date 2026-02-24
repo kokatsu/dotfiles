@@ -379,7 +379,7 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/${pname}/-/${pname}-${version}.tgz";
-        hash = "sha256-Co9+jFDk4WmefrDnJvladjjYk+XHhYYEKNKb9MbrkU8=";
+        hash = "sha256-4iZz8wHYpc9qzdVkM+8Ps2bE27xf0HHXfpk6nYx2xmE=";
       };
 
       nativeBuildInputs = [prev.makeWrapper];
@@ -525,10 +525,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-xXo1rutaV5JID/v0DD+MuCTAVN5dFvo0vFccKkD3CDw=";
+        hash = "sha256-b7sPWYLDrAQaLXohgLrYnNfcHGa9iLwV4bfNwHrTnG0=";
       };
 
-      npmDepsHash = "sha256-jXKKV4h/SPOVOHca6bsgZJIltzzq/w3zgc/r2wi4574=";
+      npmDepsHash = "sha256-kuph1LT2IDpLQrD1K50Of7tcd7ufYGz2No3guhwULt4=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts"];
