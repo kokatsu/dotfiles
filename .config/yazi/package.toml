@@ -23,6 +23,11 @@ use = "kokatsu/ansi-preview"
 rev = "865f404"
 hash = "7e4e530590e332611504df0b8c5821cc"
 
+[[plugin.deps]]
+use = "yazi-rs/plugins:zoom"
+rev = "b224ddf"
+hash = "d38879886586f10c8763d0943c329fd2"
+
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
 rev = "9e053d0"
