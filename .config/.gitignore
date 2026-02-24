@@ -69,6 +69,10 @@
 !nvim/
 !nvim/**
 
+# octorus (https://github.com/ushironoko/octorus)
+!octorus/
+!octorus/**
+
 # ov (https://github.com/noborus/ov)
 !ov/
 !ov/**

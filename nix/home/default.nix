@@ -474,6 +474,7 @@ in {
           source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
           force = true;
         };
+        ".config/octorus".source = ../../.config/octorus;
         ".config/helix".source = ../../.config/helix;
         ".config/biome".source = ../../.config/biome;
         ".config/lazydocker".source = ../../.config/lazydocker;
