@@ -375,11 +375,11 @@
   ccusage = _final: prev: {
     ccusage = prev.stdenvNoCC.mkDerivation rec {
       pname = "ccusage";
-      version = "18.0.5";
+      version = "18.0.6";
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/${pname}/-/${pname}-${version}.tgz";
-        hash = "sha256-Co9+jFDk4WmefrDnJvladjjYk+XHhYYEKNKb9MbrkU8=";
+        hash = "sha256-4iZz8wHYpc9qzdVkM+8Ps2bE27xf0HHXfpk6nYx2xmE=";
       };
 
       nativeBuildInputs = [prev.makeWrapper];
@@ -507,7 +507,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.13.0";
+    version = "0.14.0";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -525,10 +525,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-xXo1rutaV5JID/v0DD+MuCTAVN5dFvo0vFccKkD3CDw=";
+        hash = "sha256-b7sPWYLDrAQaLXohgLrYnNfcHGa9iLwV4bfNwHrTnG0=";
       };
 
-      npmDepsHash = "sha256-jXKKV4h/SPOVOHca6bsgZJIltzzq/w3zgc/r2wi4574=";
+      npmDepsHash = "sha256-kuph1LT2IDpLQrD1K50Of7tcd7ufYGz2No3guhwULt4=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts"];
