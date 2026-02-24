@@ -776,7 +776,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-8m2OBDk8111kWeCCrJOy9xya2cuS8oP6EuqhtZ71IOo=";
+      npmDepsHash = "sha256-2yEMpMJbTe8tHm9bPFTyaWD4mIiJDRlBJBYAgslC6cg=";
 
       dontNpmBuild = true;
 
