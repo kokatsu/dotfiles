@@ -1,0 +1,17 @@
+editor = "nvim"
+
+[diff]
+theme = "Catppuccin Mocha"
+tab_width = 4
+
+[keybindings]
+approve = "a"
+request_changes = "r"
+comment = "c"
+suggestion = "s"
+
+[ai]
+reviewer = "claude"
+reviewee = "claude"
+max_iterations = 10
+timeout_secs = 600
