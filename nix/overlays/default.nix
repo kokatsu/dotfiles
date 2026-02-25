@@ -175,58 +175,6 @@
     };
   };
 
-  # deno - JavaScript/TypeScript runtime
-  # nixpkgs のソースビルドが CI でタイムアウトするため GitHub バイナリを使用
-  # Renovate: datasource=github-releases depName=denoland/deno
-  deno = _final: prev: let
-    version = "2.6.10";
-    hashes = {
-      "aarch64-darwin" = "sha256-zciA9DkT8QXeAqSEAF5aXtAwyQXlpn4oj57K3eaob2I=";
-      "x86_64-darwin" = "sha256-VJ1jHr4kIe5eFrehlHZLpknOLR9FJ0lsLmB+VRt5ebA=";
-      "aarch64-linux" = "sha256-rUAxsWsZOZfNQNK/aMmvi1FI4POcHpdc+7bWDs7BlJY=";
-      "x86_64-linux" = "sha256-p8nVwfk7+qvgPDwFg6jIjK9pXbPOxN6ik4RAA4YJ8iU=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
-      "aarch64-linux" = "aarch64-unknown-linux-gnu";
-      "x86_64-linux" = "x86_64-unknown-linux-gnu";
-    };
-    inherit (prev.stdenv.hostPlatform) system;
-    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
-    hash = hashes.${system} or (throw "No hash for system: ${system}");
-  in {
-    deno = prev.stdenvNoCC.mkDerivation {
-      pname = "deno";
-      inherit version;
-
-      src = prev.fetchurl {
-        url = "https://github.com/denoland/deno/releases/download/v${version}/deno-${platform}.zip";
-        inherit hash;
-      };
-
-      nativeBuildInputs = [prev.unzip];
-
-      sourceRoot = ".";
-
-      installPhase = ''
-        runHook preInstall
-        mkdir -p $out/bin
-        cp deno $out/bin/
-        chmod +x $out/bin/deno
-        runHook postInstall
-      '';
-
-      meta = with prev.lib; {
-        description = "A modern runtime for JavaScript and TypeScript";
-        homepage = "https://deno.land";
-        license = licenses.mit;
-        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
-        mainProgram = "deno";
-      };
-    };
-  };
-
   # Fix cava build on aarch64-darwin
   # iniparser's dependency unity-test has C++ compilation issues with new clang
   cava-darwin-fix = _final: prev: {
