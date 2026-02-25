@@ -89,6 +89,10 @@
 !spotify-player/
 !spotify-player/**
 
+# taplo (https://github.com/tamasfe/taplo)
+!taplo/
+!taplo/**
+
 # termframe (https://github.com/pamburus/termframe)
 !termframe/
 !termframe/**

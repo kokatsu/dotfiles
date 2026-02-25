@@ -189,6 +189,12 @@ export PSQLRC=${XDG_CONFIG_HOME}/pg/.psqlrc
 export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/.ripgreprc
 
 # ------------------------------------------------------------------------------
+# taplo (https://github.com/tamasfe/taplo)
+# ------------------------------------------------------------------------------
+
+export TAPLO_CONFIG=$XDG_CONFIG_HOME/taplo/taplo.toml
+
+# ------------------------------------------------------------------------------
 # Starship (https://github.com/starship/starship)
 # ------------------------------------------------------------------------------
 
