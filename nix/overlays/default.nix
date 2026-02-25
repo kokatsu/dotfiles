@@ -337,11 +337,11 @@
   ccusage = _final: prev: {
     ccusage = prev.stdenvNoCC.mkDerivation rec {
       pname = "ccusage";
-      version = "18.0.7";
+      version = "18.0.8";
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/${pname}/-/${pname}-${version}.tgz";
-        hash = "sha256-HqeV+XM8sB2hJdtMQvXzGCU/mkH1Bt1unEoW4VzhCkI=";
+        hash = "sha256-c2xz9hXNMyRkbYCHTuf07vHuUdKtYvPaujtcPIY9t7g=";
       };
 
       nativeBuildInputs = [prev.makeWrapper];
