@@ -175,6 +175,17 @@
     };
   };
 
+  # Fix plotly build failure (pytest 9 incompatibility in test suite)
+  plotly-test-fix = _final: prev: {
+    python3 = prev.python3.override {
+      packageOverrides = _pyfinal: pyprev: {
+        plotly = pyprev.plotly.overrideAttrs {
+          doInstallCheck = false;
+        };
+      };
+    };
+  };
+
   # Fix cava build on aarch64-darwin
   # iniparser's dependency unity-test has C++ compilation issues with new clang
   cava-darwin-fix = _final: prev: {
