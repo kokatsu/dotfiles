@@ -107,6 +107,7 @@
       customOverlays.keifu
       customOverlays.marksman-binary
       customOverlays.octorus
+      customOverlays.plotly-test-fix
       customOverlays.playwright-browsers-fix
       customOverlays.playwright-cli
       customOverlays.secretlint
