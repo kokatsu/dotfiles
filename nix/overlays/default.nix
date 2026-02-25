@@ -53,12 +53,12 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.53";
+    version = "2.1.56";
     hashes = {
-      "aarch64-darwin" = "sha256-G2cTuI2Lk/ydJo/+w7J9snDJb3Qt+CtFNuLk+U77H1I=";
-      "x86_64-darwin" = "sha256-JW+RViCUya8CcYJOxlhZcZ+3JjbouTuLWtN07ubRNas=";
-      "aarch64-linux" = "sha256-+6TXAoOupm331Q/WzzPOwPvLC/eVmr4oT4paVnLtXjM=";
-      "x86_64-linux" = "sha256-3r8obypel0pQ8QKgNKLftd+M9KxU9/QTYmC1+QA4V1c=";
+      "aarch64-darwin" = "sha256-x5U0IC/TPxHxER7goPoQFDGHo0Xglcst2LYYbY3Mb18=";
+      "x86_64-darwin" = "sha256-gLzN2WrxI90cx/ubbjKlbCll3DdKUIT7UoMpRgmxr/M=";
+      "aarch64-linux" = "sha256-VmzlxBrH7LslnUb+XVjUXAPnAyOg/z8FoN3DWNgfc6E=";
+      "x86_64-linux" = "sha256-4TnXH53sTYYwg0GxbQDCREHHidAVaFI2Skx9zz8umz4=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -827,16 +827,16 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.4.4";
+      version = "0.5.0";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-ZMksoRJ1hVEPcm8R9BiDayWOpCvaWEvbEAFs6CCWtx4=";
+        hash = "sha256-7Vgz5S6/4i8WYiZgCBRSPpt7damNZp6pLu6sA6zjR7U=";
       };
 
-      cargoHash = "sha256-ZUd08jj99d+2ZA/MVHemVH21DThyfHHV2QuiM2+Gahg=";
+      cargoHash = "sha256-4XuN7kVW7Itggz6WrRlRPu8jEkHBmTKmjKqF9fXPrN8=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
