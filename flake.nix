@@ -103,7 +103,6 @@
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
       customOverlays.deck
-      customOverlays.deno
       customOverlays.git-graph-fork
       customOverlays.keifu
       customOverlays.marksman-binary
