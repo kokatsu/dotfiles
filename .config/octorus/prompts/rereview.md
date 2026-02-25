@@ -33,3 +33,8 @@ PR #{{pr_number}}: {{pr_title}}
 ## Output Format
 
 You MUST respond with a JSON object matching the schema provided.
+
+### File Path Rule
+**CRITICAL**: The `path` field in each comment MUST be copied exactly from the diff headers
+(lines starting with `diff --git a/... b/...`). NEVER infer or guess file paths from class names,
+component names, or import statements.
