@@ -256,6 +256,12 @@
       bind -n M-v display-popup -E -w 80% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-prompt-edit.sh"
 
       # ------------------------------------------------------------------------------
+      # Octorus: Rally History Browser (Alt+h)
+      # ------------------------------------------------------------------------------
+
+      bind -n M-h display-popup -E -d "#{pane_current_path}" -w 90% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/octorus-history.sh"
+
+      # ------------------------------------------------------------------------------
       # Appearance Overrides (after catppuccin loads)
       # ------------------------------------------------------------------------------
 
@@ -278,6 +284,12 @@
   # Script for Claude Code prompt editing
   home.file.".config/tmux/scripts/claude-prompt-edit.sh" = {
     source = ../../../.config/tmux/scripts/claude-prompt-edit.sh;
+    executable = true;
+  };
+
+  # Script for octorus rally history browser
+  home.file.".config/tmux/scripts/octorus-history.sh" = {
+    source = ../../../.config/tmux/scripts/octorus-history.sh;
     executable = true;
   };
 }
