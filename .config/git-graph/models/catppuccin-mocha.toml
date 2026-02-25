@@ -3,91 +3,87 @@
 
 # Branch persistence ranking (most to least stable)
 persistence = [
-    "^(master|main|trunk)$",
-    "^(develop|dev)$",
-    "^release.*$",
-    "^hotfix.*$",
-    "^bugfix.*$",
-    "^feature.*$",
+  "^(master|main|trunk)$",
+  "^(develop|dev)$",
+  "^release.*$",
+  "^hotfix.*$",
+  "^bugfix.*$",
+  "^feature.*$",
 ]
 
 # Visual ordering (left to right positioning)
-order = [
-    "^(master|main|trunk)$",
-    "^(hotfix|release).*$",
-    "^(develop|dev)$",
-]
+order = ["^(master|main|trunk)$", "^(hotfix|release).*$", "^(develop|dev)$"]
 
 [terminal_colors]
 matches = [
+  [
+    "^(master|main|trunk)$",
+    ["bright_blue"],         # Blue (#89b4fa)
+  ],
+  [
+    "^(develop|dev)$",
+    ["bright_yellow"], # Yellow (#f9e2af)
+  ],
+  [
+    "^(feature|fork/).*$",
     [
-        "^(master|main|trunk)$",
-        ["bright_blue"],  # Blue (#89b4fa)
+      "bright_magenta", # Mauve (#cba6f7)
+      "bright_cyan",    # Lavender (#b4befe)
     ],
-    [
-        "^(develop|dev)$",
-        ["bright_yellow"],  # Yellow (#f9e2af)
-    ],
-    [
-        "^(feature|fork/).*$",
-        [
-            "bright_magenta",  # Mauve (#cba6f7)
-            "bright_cyan",     # Lavender (#b4befe)
-        ],
-    ],
-    [
-        "^release.*$",
-        ["bright_green"],  # Green (#a6e3a1)
-    ],
-    [
-        "^(bugfix|hotfix).*$",
-        ["bright_red"],  # Red (#f38ba8)
-    ],
-    [
-        "^tags/.*$",
-        ["cyan"],  # Teal (#94e2d5)
-    ],
+  ],
+  [
+    "^release.*$",
+    ["bright_green"], # Green (#a6e3a1)
+  ],
+  [
+    "^(bugfix|hotfix).*$",
+    ["bright_red"],        # Red (#f38ba8)
+  ],
+  [
+    "^tags/.*$",
+    ["cyan"],    # Teal (#94e2d5)
+  ],
 ]
 unknown = [
-    "yellow",           # Peach (#fab387)
-    "magenta",          # Pink (#f5c2e7)
-    "bright_cyan",      # Sapphire (#74c7ec)
-    "cyan",             # Sky (#89dceb)
+  "yellow",      # Peach (#fab387)
+  "magenta",     # Pink (#f5c2e7)
+  "bright_cyan", # Sapphire (#74c7ec)
+  "cyan",        # Sky (#89dceb)
 ]
 
 [svg_colors]
 matches = [
+  [
+    "^(master|main|trunk)$",
+    ["#89b4fa"],             # Blue
+  ],
+  [
+    "^(develop|dev)$",
+    ["#f9e2af"],       # Yellow
+  ],
+  [
+    "^(feature|fork/).*$",
     [
-        "^(master|main|trunk)$",
-        ["#89b4fa"],  # Blue
+      "#cba6f7", # Mauve
+      "#b4befe", # Lavender
     ],
-    [
-        "^(develop|dev)$",
-        ["#f9e2af"],  # Yellow
-    ],
-    [
-        "^(feature|fork/).*$",
-        [
-            "#cba6f7",  # Mauve
-            "#b4befe",  # Lavender
-        ],
-    ],
-    [
-        "^release.*$",
-        ["#a6e3a1"],  # Green
-    ],
-    [
-        "^(bugfix|hotfix).*$",
-        ["#f38ba8"],  # Red
-    ],
-    [
-        "^tags/.*$",
-        ["#94e2d5"],  # Teal
-    ],
+  ],
+  [
+    "^release.*$",
+    ["#a6e3a1"],   # Green
+  ],
+  [
+    "^(bugfix|hotfix).*$",
+    ["#f38ba8"],           # Red
+  ],
+  [
+    "^tags/.*$",
+    ["#94e2d5"], # Teal
+  ],
 ]
 unknown = [
-    "#fab387",  # Peach
-    "#f5c2e7",  # Pink
-    "#74c7ec",  # Sapphire
-    "#89dceb",  # Sky
+  "#fab387", # Peach
+  "#f5c2e7", # Pink
+  "#74c7ec", # Sapphire
+  "#89dceb", # Sky
 ]
