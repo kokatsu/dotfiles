@@ -1,0 +1,5 @@
+"$schema" = "https://www.schemastore.org/taplo.json"
+
+[formatting]
+column_width = 100
+trailing_newline = true
