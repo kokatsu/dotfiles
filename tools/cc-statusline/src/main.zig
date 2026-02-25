@@ -9,7 +9,7 @@ const fs = std.fs;
 const cache_path = "/tmp/cc-statusline-cache.bin";
 const cache_ttl_s: i64 = 30;
 const block_duration_ms: i64 = 5 * 60 * 60 * 1000;
-const scan_window_ms: i64 = 25 * 60 * 60 * 1000;
+const scan_window_ms: i64 = 25 * 60 * 60 * 1000; // 25h: 24h + 1h margin for timezone offsets
 const token_200k: i64 = 200_000;
 
 const cache_magic = [4]u8{ 'C', 'C', 'S', 'L' };
@@ -592,7 +592,7 @@ fn getConfigDir(allocator: std.mem.Allocator) ![]const u8 {
         return try allocator.dupe(u8, dir);
     }
     const home = std.posix.getenv("HOME") orelse return error.NoHome;
-    return try std.fmt.allocPrint(allocator, "{s}/.config/claude", .{home});
+    return try std.fmt.allocPrint(allocator, "{s}/.claude", .{home});
 }
 
 const FileInfo = struct {
@@ -699,6 +699,7 @@ fn parseJsonlContent(allocator: std.mem.Allocator, content: []const u8, entries:
 fn identifyActiveBlock(entries: []TranscriptEntry, now_ms: i64) ?BlockInfo {
     if (entries.len == 0) return null;
 
+    // Sort entries in-place by timestamp (mutates the input slice)
     mem.sort(TranscriptEntry, entries, {}, struct {
         fn f(_: void, a: TranscriptEntry, b: TranscriptEntry) bool {
             return a.timestamp_ms < b.timestamp_ms;
@@ -900,6 +901,7 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
     var any_shrunk = false;
 
     for (cached.files) |entry| {
+        // NOTE: No statFileAbsolute in std; cwd().statFile works with absolute paths on POSIX
         const stat = fs.cwd().statFile(entry.path) catch {
             any_shrunk = true;
             break;
@@ -1201,7 +1203,7 @@ fn printFallback() void {
     var buf: [256]u8 = undefined;
     var writer = stdout.writer(&buf);
     const w = &writer.interface;
-    w.writeAll("\xf0\x9f\xa4\x96 Unknown \xf0\x9f\x92\xb0 N/A\n\xf0\x9f\xa7\xa0 N/A\n") catch {};
+    w.writeAll("\xf0\x9f\xa4\x96 Unknown | \xf0\x9f\xa7\xa0 N/A\n\xf0\x9f\x92\xb0 N/A today\n") catch {};
     w.flush() catch {};
 }
 
