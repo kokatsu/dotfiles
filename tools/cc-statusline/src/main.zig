@@ -96,6 +96,7 @@ const StdinInfo = struct {
     lines_removed: ?i64 = null,
     session_id: ?[]const u8 = null,
     transcript_path: ?[]const u8 = null,
+    cwd: ?[]const u8 = null,
 };
 
 const ScanResult = struct {
@@ -508,11 +509,11 @@ fn parseStdin(allocator: std.mem.Allocator, data: []const u8) StdinInfo {
     if (root.get("cost")) |v| {
         if (getObj(v)) |cost| {
             if (cost.get("total_cost_usd")) |usd| info.session_cost = getF64(usd);
+            if (cost.get("total_lines_added")) |la| info.lines_added = getI64(la);
+            if (cost.get("total_lines_removed")) |lr| info.lines_removed = getI64(lr);
             if (cost.get("total_duration_ms")) |dur| {
                 if (getF64(dur)) |d| info.session_duration_ms = @as(i64, @intFromFloat(d));
             }
-            if (cost.get("total_lines_added")) |la| info.lines_added = getI64(la);
-            if (cost.get("total_lines_removed")) |lr| info.lines_removed = getI64(lr);
         }
     }
     if (root.get("context_window")) |v| {
@@ -530,7 +531,56 @@ fn parseStdin(allocator: std.mem.Allocator, data: []const u8) StdinInfo {
     }
     if (root.get("session_id")) |v| info.session_id = getStr(v);
     if (root.get("transcript_path")) |v| info.transcript_path = getStr(v);
+    if (root.get("cwd")) |v| info.cwd = getStr(v);
     return info;
+}
+
+// ============================================================
+// Git Branch Detection
+// ============================================================
+
+fn getGitBranch(buf: *[256]u8, cwd: []const u8) ?[]const u8 {
+    // Walk up from cwd looking for .git/HEAD
+    var path_buf: [4096]u8 = undefined;
+    var dir = cwd;
+
+    while (true) {
+        const head_path = std.fmt.bufPrint(&path_buf, "{s}/.git/HEAD", .{dir}) catch return null;
+        if (readGitHead(buf, head_path)) |branch| return branch;
+
+        // Move to parent directory
+        if (mem.lastIndexOfScalar(u8, dir, '/')) |sep| {
+            if (sep == 0) {
+                // Check root
+                const root_path = std.fmt.bufPrint(&path_buf, "/.git/HEAD", .{}) catch return null;
+                return readGitHead(buf, root_path);
+            }
+            dir = dir[0..sep];
+        } else {
+            return null;
+        }
+    }
+}
+
+fn readGitHead(buf: *[256]u8, path: []const u8) ?[]const u8 {
+    var f = fs.openFileAbsolute(path, .{}) catch return null;
+    defer f.close();
+    const len = f.readAll(buf) catch return null;
+    if (len == 0) return null;
+
+    // Trim trailing newline
+    var content = buf[0..len];
+    if (content[content.len - 1] == '\n') content = content[0 .. content.len - 1];
+
+    // "ref: refs/heads/<branch>"
+    const prefix = "ref: refs/heads/";
+    if (mem.startsWith(u8, content, prefix)) {
+        return content[prefix.len..];
+    }
+
+    // Detached HEAD: show short hash (first 7 chars)
+    if (content.len >= 7) return content[0..7];
+    return content;
 }
 
 // ============================================================
@@ -1083,9 +1133,17 @@ fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult) !void {
     var writer = stdout.writer(&buf);
     const w = &writer.interface;
 
-    // === Line 1: Model + Context + Lines ===
+    // === Line 1: Model + Branch + Context + Lines ===
     const model_name = stdin_info.model_name orelse "Unknown";
     try w.print("\xf0\x9f\xa4\x96 {s}{s}{s}", .{ theme.model, model_name, theme.reset });
+
+    // Git branch
+    if (stdin_info.cwd) |cwd| {
+        var branch_buf: [256]u8 = undefined;
+        if (getGitBranch(&branch_buf, cwd)) |branch| {
+            try w.print(" {s}|{s} \xf0\x9f\x8c\xbf {s}{s}{s}", .{ theme.dim, theme.reset, theme.green, branch, theme.reset });
+        }
+    }
 
     // Context
     if (stdin_info.context_pct) |pct| {
@@ -1095,13 +1153,6 @@ fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult) !void {
         try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 {s}{s}{s} {s}{d:.0}%{s}", .{ theme.dim, theme.reset, color, bar, theme.reset, color, pct, theme.reset });
     } else {
         try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 N/A", .{ theme.dim, theme.reset });
-    }
-
-    // Lines changed
-    if (stdin_info.lines_added != null or stdin_info.lines_removed != null) {
-        const added = stdin_info.lines_added orelse 0;
-        const removed = stdin_info.lines_removed orelse 0;
-        try w.print(" {s}|{s} \xf0\x9f\x93\x9d {s}+{d}{s} {s}-{d}{s}", .{ theme.dim, theme.reset, theme.green, added, theme.reset, theme.red, removed, theme.reset });
     }
 
     try w.writeAll("\n");
