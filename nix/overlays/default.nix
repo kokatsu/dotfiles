@@ -341,7 +341,7 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/${pname}/-/${pname}-${version}.tgz";
-        hash = "sha256-4iZz8wHYpc9qzdVkM+8Ps2bE27xf0HHXfpk6nYx2xmE=";
+        hash = "sha256-HqeV+XM8sB2hJdtMQvXzGCU/mkH1Bt1unEoW4VzhCkI=";
       };
 
       nativeBuildInputs = [prev.makeWrapper];
