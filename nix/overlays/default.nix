@@ -55,10 +55,10 @@
   claude-code = _final: prev: let
     version = "2.1.53";
     hashes = {
-      "aarch64-darwin" = "sha256-IejEmzER+mnoj0UKlO5OiN9pMSgjAXu/Yf+GpGH8/CM=";
-      "x86_64-darwin" = "sha256-RHpvoyOKpwB7/8xZkQTcQ43mHQyA/6rELR1Ojrbrl8A=";
-      "aarch64-linux" = "sha256-r+CBmQk2VQqY7caAhg5vFs2frTAPtTtKsnxwcccJaPI=";
-      "x86_64-linux" = "sha256-cMH5iBt8CRxJ82lclMOB2cygrwlLy8mcufRj5E2Xzpw=";
+      "aarch64-darwin" = "sha256-G2cTuI2Lk/ydJo/+w7J9snDJb3Qt+CtFNuLk+U77H1I=";
+      "x86_64-darwin" = "sha256-JW+RViCUya8CcYJOxlhZcZ+3JjbouTuLWtN07ubRNas=";
+      "aarch64-linux" = "sha256-+6TXAoOupm331Q/WzzPOwPvLC/eVmr4oT4paVnLtXjM=";
+      "x86_64-linux" = "sha256-3r8obypel0pQ8QKgNKLftd+M9KxU9/QTYmC1+QA4V1c=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
