@@ -31,7 +31,7 @@ suggest.imports.hosts = { "https://deno.land" = true }
 inlayHints.parameterNames.enabled = "all"
 inlayHints.parameterTypes.enabled = true
 inlayHints.variableTypes.enabled = true
-inlayHints.propertyDeclarationTypes.enabled  = true
+inlayHints.propertyDeclarationTypes.enabled = true
 inlayHints.functionLikeReturnTypes.enabled = true
 inlayHints.enumMemberValues.enabled = true
 
@@ -45,12 +45,7 @@ scope = "source.ts"
 file-types = ["ts"]
 shebangs = ["node", "deno", "bun"]
 roots = ["deno.json", "deno.jsonc", "package.json", "tsconfig.json"]
-language-servers = [
-  "deno-lsp",
-  "tsgo",
-  "biome",
-  "gpt",
-]
+language-servers = ["deno-lsp", "tsgo", "biome", "gpt"]
 
 [[language]]
 name = "rust"
@@ -58,10 +53,7 @@ language-id = "rust"
 scope = "source.rs"
 file-types = ["rs"]
 roots = ["Cargo.toml", "Cargo.lock"]
-language-servers = [
-  "rust-analyzer",
-  "gpt",
-]
+language-servers = ["rust-analyzer", "gpt"]
 
 [[language]]
 name = "d"

@@ -115,10 +115,10 @@ format = '[ $time](bold fg:overlay0)' # nf-oct-clock
 time_format = '%T'
 
 [battery]
-full_symbol = "  " # nf-fa-battery_full
-charging_symbol = "  " # nf-fa-plug
+full_symbol = "  "        # nf-fa-battery_full
+charging_symbol = "  "    # nf-fa-plug
 discharging_symbol = "  " # nf-fa-battery_half
-empty_symbol = "  " # nf-fa-battery_empty
+empty_symbol = "  "       # nf-fa-battery_empty
 
 [[battery.display]]
 threshold = 100
@@ -135,10 +135,10 @@ style = "bold red"
 [custom.disk]
 command = "df -h /mnt/c | awk 'NR==2 {print $5}'"
 when = "test -d /mnt/c && test $(df /mnt/c | awk 'NR==2 {print $5}' | tr -d '%') -gt 80"
-symbol = "󰋊 " # nf-md-harddisk
+symbol = "󰋊 "                                                                            # nf-md-harddisk
 style = "bold red"
 format = "[$symbol$output]($style) "
 
 [character]
 success_symbol = "[](bold green)" # nf-fa-check
-error_symbol = "[](bold red)" # nf-fa-times
+error_symbol = "[](bold red)"     # nf-fa-times

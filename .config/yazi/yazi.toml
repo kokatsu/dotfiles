@@ -10,9 +10,7 @@ max_width = 2400
 max_height = 3600
 
 [opener]
-edit = [
-  { run = 'nvim "$@"', block = true, for = "unix" },
-]
+edit = [{ run = 'nvim "$@"', block = true, for = "unix" }]
 
 [[plugin.prepend_previewers]]
 url = "*.ans"
@@ -23,11 +21,11 @@ url = "*.ansi"
 run = "ansi-preview"
 
 [[plugin.prepend_fetchers]]
-id  = "git"
+id = "git"
 url = "*"
 run = "git"
 
 [[plugin.prepend_fetchers]]
-id  = "git"
+id = "git"
 url = "*/"
 run = "git"

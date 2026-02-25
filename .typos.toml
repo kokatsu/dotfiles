@@ -1,9 +1,9 @@
 [files]
 extend-exclude = [
-  ".config/tmux/plugins/",  # External tmux plugins (submodules)
+  ".config/tmux/plugins/", # External tmux plugins (submodules)
 ]
 
 [default]
 extend-ignore-identifiers-re = [
-  "iterm"  # iTerm2 image protocol type in fastfetch config
+  "iterm", # iTerm2 image protocol type in fastfetch config
 ]

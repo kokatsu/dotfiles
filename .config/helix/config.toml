@@ -82,12 +82,7 @@ mode.select = "SELECT"
   "collapse_selection",
   "move_char_right",
 ]
-"C-g" = [
-  ":new",
-  ":insert-output lazygit",
-  ":buffer-close!",
-  ":redraw",
-]
+"C-g" = [":new", ":insert-output lazygit", ":buffer-close!", ":redraw"]
 "C-r" = [":reload-all"]
 
 [keys.normal."space"]

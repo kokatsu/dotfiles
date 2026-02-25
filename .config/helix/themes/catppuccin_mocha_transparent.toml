@@ -2,8 +2,8 @@ inherits = "catppuccin_mocha"
 "ui.background" = {}
 
 "ui.statusline.normal" = { fg = "base", bg = "blue", modifiers = ["bold"] }
-"ui.statusline.insert" = { fg = "base", bg = "green", modifiers = ["bold"]  }
-"ui.statusline.select" = { fg = "base", bg = "mauve", modifiers = ["bold"]  }
+"ui.statusline.insert" = { fg = "base", bg = "green", modifiers = ["bold"] }
+"ui.statusline.select" = { fg = "base", bg = "mauve", modifiers = ["bold"] }
 
 "ui.bufferline" = { fg = "subtext0", bg = "mantle" }
 "ui.bufferline.active" = { fg = "crust", bg = "mauve", modifiers = ["bold"] }
