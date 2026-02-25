@@ -53,12 +53,12 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.56";
+    version = "2.1.58";
     hashes = {
-      "aarch64-darwin" = "sha256-x5U0IC/TPxHxER7goPoQFDGHo0Xglcst2LYYbY3Mb18=";
-      "x86_64-darwin" = "sha256-gLzN2WrxI90cx/ubbjKlbCll3DdKUIT7UoMpRgmxr/M=";
-      "aarch64-linux" = "sha256-VmzlxBrH7LslnUb+XVjUXAPnAyOg/z8FoN3DWNgfc6E=";
-      "x86_64-linux" = "sha256-4TnXH53sTYYwg0GxbQDCREHHidAVaFI2Skx9zz8umz4=";
+      "aarch64-darwin" = "sha256-GCwgxggNBC5OCKayos6CWMGlDlPAHTbd8gqCtGkzleo=";
+      "x86_64-darwin" = "sha256-+yzMaHLUmPxXHzAgWdUa7HyJsN9NIdJHqaJJwaOoNdw=";
+      "aarch64-linux" = "sha256-Xt1La+a56cAOWAXwIu6SSpj9zxvwwEY1pCnSZm7MvD8=";
+      "x86_64-linux" = "sha256-EPaORbX/SoCuIebXqV3+ZzqzORMTNYzNlOgn83n2qqA=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
