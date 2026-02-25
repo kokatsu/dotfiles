@@ -175,11 +175,14 @@
     };
   };
 
-  # Fix plotly build failure (pytest 9 incompatibility in test suite)
+  # Fix plotly/optuna build failure (Kaleido subprocess crash on macOS CI)
   plotly-test-fix = _final: prev: {
     python3 = prev.python3.override {
       packageOverrides = _pyfinal: pyprev: {
         plotly = pyprev.plotly.overrideAttrs {
+          doInstallCheck = false;
+        };
+        optuna = pyprev.optuna.overrideAttrs {
           doInstallCheck = false;
         };
       };
