@@ -28,7 +28,7 @@ import {
 
 function usage(): never {
   console.log(`Usage: mermaid-render.ts <input.mmd|input.md> [options]
-       cat input.mmd | mermaid-render.ts - [options]
+      cat input.mmd | mermaid-render.ts - [options]
 
 Options:
   --ascii          ASCII/Unicode art to stdout (default)
