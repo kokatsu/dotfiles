@@ -22,6 +22,12 @@ if (( _IS_WSL )); then
   alias copy="iconv -f utf-8 -t utf-16le | clip.exe"
   export BROWSER="wslview"
 
+  # Prevent Claude Code from repeatedly spawning powershell.exe
+  # https://zenn.dev/momonga/articles/ee5b114e038938
+  # https://github.com/anthropics/claude-code/issues/14352
+  export CLAUDE_CODE_SKIP_WINDOWS_PROFILE=1
+  export USERPROFILE="/mnt/c/Users/$(whoami)"
+
   # https://blog.adglobe.co.jp/entry/2024/07/31/100000
   if [[ ! -f /tmp/.mtu_1400_set ]]; then
     if [[ $(ip link show eth0 2>/dev/null | grep -o 'mtu [0-9]*' | awk '{print $2}') != "1400" ]]; then
