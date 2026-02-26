@@ -28,7 +28,7 @@ The binary is output to `zig-out/bin/cc-statusline`.
 
 cc-statusline reads Claude Code's statusline JSON from stdin and outputs a 2-line ANSI-colored status:
 
-```
+```text
 🤖 Opus 4.6 | 🌿 main | 🧠 ████████████▓░░░░░░░ 63%
 💰 $0.20 today | $0.20 block ██████████████▓░░░░░ 4h 39m left 🔥 $0.60 /h
 ```

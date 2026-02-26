@@ -10,7 +10,7 @@ Research web pages using agent-browser CLI and summarize content.
 
 ## Usage
 
-```
+```text
 /browser-research <URL> [research topic or question]
 ```
 
@@ -33,11 +33,13 @@ Use `--compact` to remove empty structural elements for cleaner output.
 ### 3. Get detailed content if needed
 
 Get text from specific element:
+
 ```bash
 agent-browser get text "@ref"
 ```
 
 Get full page text:
+
 ```bash
 agent-browser eval "document.body.innerText"
 ```
@@ -45,6 +47,7 @@ agent-browser eval "document.body.innerText"
 ### 4. Handle long pages
 
 Scroll to load more content:
+
 ```bash
 agent-browser scroll down 500
 agent-browser snapshot --compact
@@ -53,12 +56,14 @@ agent-browser snapshot --compact
 ### 5. Navigate to linked pages
 
 Click a link:
+
 ```bash
 agent-browser click "@ref"
 agent-browser snapshot --compact
 ```
 
 Go back:
+
 ```bash
 agent-browser back
 ```

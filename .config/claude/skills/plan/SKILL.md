@@ -15,7 +15,7 @@ Create a detailed implementation plan based on the current codebase and any exis
 
 ## Usage
 
-```
+```text
 /plan <feature description or change request>
 ```
 
@@ -37,6 +37,7 @@ Write `plan.md` with the following sections:
    - Code snippets showing the actual changes
 4. **Considerations & Trade-offs** — Alternative approaches considered and why this one was chosen
 5. **Todo List** — Granular checklist of all tasks, grouped by phase:
+
    ```markdown
    ## Todo
 

@@ -8,21 +8,26 @@ PR #{{pr_number}}: {{pr_title}}
 ## Review Feedback (Iteration {{iteration}})
 
 ### Summary
+
 {{review_summary}}
 
 ### Review Action: {{review_action}}
 
 ### Comments
+
 {{review_comments}}
 
 ### Blocking Issues
+
 {{blocking_issues}}
 {{external_comments}}
+
 ## Git and GitHub CLI Operations
 
 All git and gh operations are **denied by default**. Only the following are permitted:
 
 ### Allowed `git` commands (read-only)
+
 - `git diff`
 - `git log`
 - `git status`
@@ -30,12 +35,14 @@ All git and gh operations are **denied by default**. Only the following are perm
 - `git blame`
 
 ### Allowed `gh` commands (read-only)
+
 - `gh pr view`
 - `gh pr diff`
 - `gh pr checks`
 - `gh api` (GET requests only)
 
 ### Everything else is FORBIDDEN
+
 Any command not listed above — including but not limited to `git add`, `git commit`, `git push`, `git reset`, `git clean`, `git checkout`, `git restore`, `git rebase`, `git merge`, `git stash`, `gh pr merge`, `gh pr close`, `gh pr comment` — is strictly prohibited.
 
 The user will review your changes and handle all git operations manually.

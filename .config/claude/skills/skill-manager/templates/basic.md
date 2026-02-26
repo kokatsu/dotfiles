@@ -18,7 +18,7 @@ allowed-tools:
 
 ## Usage
 
-```
+```text
 /{{SKILL_SLUG}} {{ARGUMENT_HINT}}
 ```
 

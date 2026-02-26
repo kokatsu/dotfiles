@@ -14,7 +14,7 @@ allowed-tools:
 
 ## Usage
 
-```
+```text
 /handover
 ```
 

@@ -9,6 +9,7 @@ Techniques to influence user decisions.
 **Definition**: Non-coercive techniques to guide user decisions toward desired outcomes.
 
 **Implementation Guidelines**:
+
 - Implement recommendation features
 - Set optimal default values
 - Use visual hints to encourage actions
@@ -28,6 +29,7 @@ Techniques to influence user decisions.
 **Definition**: The tendency to stick with default options.
 
 **Implementation Guidelines**:
+
 - Set the optimal choice as default
 - Design opt-in/opt-out appropriately
 - Use strategic preset values
@@ -47,6 +49,7 @@ Techniques to influence user decisions.
 **Definition**: Introducing a decoy option to make other options appear more attractive.
 
 **Implementation Guidelines**:
+
 - Present 3 pricing options
 - Design the middle option as a decoy
 - Highlight the plan you want to sell most
@@ -67,6 +70,7 @@ Techniques to influence user decisions.
 **Definition**: After accepting a small request, people are more likely to accept larger requests.
 
 **Implementation Guidelines**:
+
 - Start with simple actions
 - Gradually deepen commitment
 - Apply to cross-sell and upsell
@@ -89,6 +93,7 @@ Techniques to influence user decisions.
 **Definition**: How the presentation of information influences decisions.
 
 **Implementation Guidelines**:
+
 - Use positive expressions
 - Present numbers strategically
 - Organize information with categories
@@ -109,6 +114,7 @@ Techniques to influence user decisions.
 **Definition**: How prior stimuli unconsciously influence subsequent behavior.
 
 **Implementation Guidelines**:
+
 - Ask about satisfaction before review requests
 - Start with positive questions
 - Use visual suggestions

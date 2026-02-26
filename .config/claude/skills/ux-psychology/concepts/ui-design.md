@@ -9,6 +9,7 @@ Visual and interaction patterns based on psychology.
 **Definition**: Waiting over 0.4 seconds increases disengagement risk.
 
 **Implementation Guidelines**:
+
 - Keep response time under 400ms
 - Show skeleton UI for slow loads
 - Provide immediate feedback
@@ -34,6 +35,7 @@ Visual and interaction patterns based on psychology.
 **Definition**: Revealing information and features gradually.
 
 **Implementation Guidelines**:
+
 - Start simple
 - Show details on demand
 - Hide advanced features initially
@@ -61,6 +63,7 @@ Visual and interaction patterns based on psychology.
 **Definition**: Organizing information with visual priority.
 
 **Implementation Guidelines**:
+
 - Make important elements larger and more prominent
 - Consider F-pattern and Z-pattern eye movement
 - Use whitespace effectively
@@ -83,6 +86,7 @@ Visual and interaction patterns based on psychology.
 **Definition**: Using visual emphasis to draw attention to specific elements.
 
 **Implementation Guidelines**:
+
 - Make CTA buttons stand out
 - Use contrast effectively
 - Use motion to capture attention
@@ -94,6 +98,7 @@ Visual and interaction patterns based on psychology.
 **Definition**: First and last items in a list are remembered best.
 
 **Implementation Guidelines**:
+
 - Place important items first or last
 - Keep navigation to 5 items or fewer
 - Put primary functions at menu edges
@@ -115,6 +120,7 @@ Visual and interaction patterns based on psychology.
 **Definition**: Mimicking real-world objects in digital UI.
 
 **Implementation Guidelines**:
+
 - Useful when introducing new concepts
 - Promotes intuitive interaction
 - Avoid overuse
@@ -126,6 +132,7 @@ Visual and interaction patterns based on psychology.
 **Definition**: Beautiful designs are perceived as more usable.
 
 **Implementation Guidelines**:
+
 - Pursue visual beauty
 - Pay attention to details
 - Maintain consistent style

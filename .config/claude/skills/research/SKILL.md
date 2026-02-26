@@ -15,7 +15,7 @@ Deeply investigate a specified area of the codebase and produce a detailed resea
 
 ## Usage
 
-```
+```text
 /research <target folder, module, or system to investigate>
 ```
 

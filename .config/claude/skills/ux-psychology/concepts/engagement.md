@@ -9,6 +9,7 @@ Driving continued use and habit formation.
 **Definition**: Incorporating game elements to increase motivation.
 
 **Implementation Guidelines**:
+
 - Introduce points and badge systems
 - Implement leaderboards and rankings
 - Create sense of achievement
@@ -33,6 +34,7 @@ Driving continued use and habit formation.
 **Definition**: Unpredictable rewards that increase engagement.
 
 **Implementation Guidelines**:
+
 - Provide irregular bonuses
 - Add surprise elements
 - Create uncertainty about what comes next
@@ -44,6 +46,7 @@ Driving continued use and habit formation.
 **Definition**: Increased effort as goals approach.
 
 **Implementation Guidelines**:
+
 - Display progress bars
 - Show remaining steps clearly
 - Give initial progress boost
@@ -64,6 +67,7 @@ Driving continued use and habit formation.
 **Definition**: Incomplete tasks are remembered better than completed ones.
 
 **Implementation Guidelines**:
+
 - Use checklists
 - Highlight incomplete tasks
 - Display completion percentage
@@ -87,6 +91,7 @@ Driving continued use and habit formation.
 **Definition**: Creating information gaps that drive action to fill them.
 
 **Implementation Guidelines**:
+
 - Hide partial information to spark interest
 - Use teaser content
 - Implement "See more" patterns

@@ -16,7 +16,7 @@ Process user's inline annotations in plan.md and update the document accordingly
 
 ## Usage
 
-```
+```text
 /annotate
 ```
 
@@ -46,6 +46,7 @@ No arguments needed. Reads `plan.md` in the current working directory.
 ## Output
 
 After updating `plan.md`, provide a summary of changes:
+
 - List each annotation found and how it was addressed
 - Highlight any annotations that were ambiguous
 

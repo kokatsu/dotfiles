@@ -17,7 +17,7 @@ Execute the full implementation plan defined in plan.md.
 
 ## Usage
 
-```
+```text
 /implement
 ```
 

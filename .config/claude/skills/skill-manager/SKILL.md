@@ -19,7 +19,7 @@ Manage Claude Code skills: create, improve, list, and analyze.
 
 ## Usage
 
-```
+```text
 /skill-manager create [skill-name]   # Create a new skill
 /skill-manager improve [skill-name]  # Improve an existing skill
 /skill-manager list                  # List all skills
@@ -52,7 +52,8 @@ Create a new skill from scratch.
    - Location: `~/.claude/skills/` (global) or `.claude/skills/` (project)
 
 2. **Create Directory Structure**:
-   ```
+
+   ```text
    skill-name/
    ├── SKILL.md              # Required
    ├── references/           # Optional: Reference docs
@@ -119,7 +120,8 @@ List all available skills with their status.
    - Location (global/project)
 
 3. **Output Format**:
-   ```
+
+   ```text
    📁 Global Skills (~/.claude/skills/)
    ├── skill-name (v1.0.0) - Description
    │   └── Triggers: "phrase1", "phrase2"
@@ -148,11 +150,13 @@ disable-model-invocation: false     # Optional: true = manual only
 ### Writing Good Trigger Phrases
 
 **Good:**
+
 ```yaml
 description: This skill should be used when the user asks to "create a migration", "generate migration", "マイグレーション作成".
 ```
 
 **Bad:**
+
 ```yaml
 description: Helps with database tasks.  # Too vague, won't trigger
 ```
@@ -162,6 +166,7 @@ description: Helps with database tasks.  # Too vague, won't trigger
 ## Dynamic Content
 
 Embed shell output in SKILL.md:
+
 ```markdown
 !`git status --short`
 ```

@@ -6,9 +6,11 @@ Repository: {{repo}}
 PR #{{pr_number}}: {{pr_title}}
 
 ## Changes Made (Iteration {{iteration}})
+
 {{changes_summary}}
 
 ## Updated Diff (Current State)
+
 ```diff
 {{updated_diff}}
 ```
@@ -24,6 +26,7 @@ PR #{{pr_number}}: {{pr_title}}
 ## Review Checklist
 
 Beyond bugs and security, check for:
+
 - **Type assertion safety**: Casts or non-null assertions (e.g., `as`, `!`, `unwrap()`)
   that may silently swallow undefined/null
 - **Magic strings/numbers**: Unnamed literal values that should be constants
@@ -45,6 +48,7 @@ Beyond bugs and security, check for:
 ## Severity Assessment Rules
 
 When evaluating severity for null/undefined access or type errors:
+
 1. Identify the guard conditions protecting the code path (e.g., `if (x.isFoo)`)
 2. Assess whether the problematic value could realistically be null/undefined
    when the guard is satisfied
@@ -56,6 +60,7 @@ When evaluating severity for null/undefined access or type errors:
 ## Comment Accuracy Rules
 
 Before posting a comment that references language features, framework APIs, or tools:
+
 1. **Do not cite unreleased or future features as fact.** If you are unsure whether
    a feature exists in the version used by the project, qualify the statement
    (e.g., "if using X version Y or later" / "this may be available in…").
@@ -76,6 +81,7 @@ Before posting a comment that references language features, framework APIs, or t
 You MUST respond with a JSON object matching the schema provided.
 
 ### File Path Rule
+
 **CRITICAL**: The `path` field in each comment MUST be copied exactly from the diff headers
 (lines starting with `diff --git a/... b/...`). NEVER infer or guess file paths from class names,
 component names, or import statements.
