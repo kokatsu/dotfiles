@@ -25,6 +25,7 @@ const Theme = struct {
     dim: []const u8,
     reset: []const u8 = "\x1b[0m",
     bar_filled: []const u8 = "\xe2\x96\x88", // █ U+2588
+    bar_transition: []const u8 = "\xe2\x96\x93", // ▓ U+2593
     bar_empty: []const u8 = "\xe2\x96\x91", // ░ U+2591
 };
 
@@ -56,6 +57,7 @@ fn initTheme() Theme {
     if (std.posix.getenv("CC_STATUSLINE_COLOR_RED")) |v| theme.red = v;
     if (std.posix.getenv("CC_STATUSLINE_COLOR_DIM")) |v| theme.dim = v;
     if (std.posix.getenv("CC_STATUSLINE_BAR_FILLED")) |v| theme.bar_filled = v;
+    if (std.posix.getenv("CC_STATUSLINE_BAR_TRANSITION")) |v| theme.bar_transition = v;
     if (std.posix.getenv("CC_STATUSLINE_BAR_EMPTY")) |v| theme.bar_empty = v;
 
     return theme;
@@ -1062,19 +1064,26 @@ fn contextColor(theme: Theme, pct: f64) []const u8 {
     return theme.red;
 }
 
-fn buildProgressBar(buf: []u8, pct: f64, width: u8, bar_filled: []const u8, bar_empty: []const u8) []const u8 {
+fn buildProgressBar(buf: []u8, pct: f64, width: u8, bar_filled: []const u8, bar_transition: []const u8, bar_empty: []const u8) []const u8 {
     const clamped = @max(@as(f64, 0), @min(@as(f64, 100), pct));
-    const filled: u8 = @intCast(@min(
-        @as(u64, @intFromFloat(clamped * @as(f64, @floatFromInt(width)) / 100.0)),
-        @as(u64, width),
-    ));
-    const empty = width - filled;
+    const width_f: f64 = @floatFromInt(width);
+    const filled_f = clamped * width_f / 100.0;
+    const filled: u8 = @intCast(@min(@as(u64, @intFromFloat(filled_f)), @as(u64, width)));
+    const frac = filled_f - @as(f64, @floatFromInt(filled));
+    const has_transition = frac > 0 and filled < width;
+    const empty = width - filled - if (has_transition) @as(u8, 1) else @as(u8, 0);
     var pos: usize = 0;
     var i: u8 = 0;
     while (i < filled) : (i += 1) {
         if (pos + bar_filled.len > buf.len) break;
         @memcpy(buf[pos..][0..bar_filled.len], bar_filled);
         pos += bar_filled.len;
+    }
+    if (has_transition) {
+        if (pos + bar_transition.len <= buf.len) {
+            @memcpy(buf[pos..][0..bar_transition.len], bar_transition);
+            pos += bar_transition.len;
+        }
     }
     i = 0;
     while (i < empty) : (i += 1) {
@@ -1151,7 +1160,7 @@ fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult) !void {
     if (stdin_info.context_pct) |pct| {
         const color = contextColor(theme, pct);
         var bar_buf: [128]u8 = undefined;
-        const bar = buildProgressBar(&bar_buf, pct, 20, theme.bar_filled, theme.bar_empty);
+        const bar = buildProgressBar(&bar_buf, pct, 20, theme.bar_filled, theme.bar_transition, theme.bar_empty);
         try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 {s}{s}{s} {s}{d:.0}%{s}", .{ theme.dim, theme.reset, color, bar, theme.reset, color, pct, theme.reset });
     } else {
         try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 N/A", .{ theme.dim, theme.reset });
@@ -1185,12 +1194,13 @@ fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult) !void {
                 @as(f64, @floatFromInt(@max(remaining, @as(i64, 0)))) / @as(f64, @floatFromInt(block_total_ms)) * 100.0
             else
                 0;
+            const bar_pct = if (remaining_pct > 0) @max(remaining_pct, 100.0 / 20.0) else @as(f64, 0);
             const block_bar_color = if (remaining_pct >= 50.0) theme.green else if (remaining_pct >= 20.0) theme.yellow else theme.red;
             var block_bar_buf: [128]u8 = undefined;
-            const block_bar = buildProgressBar(&block_bar_buf, remaining_pct, 20, theme.bar_filled, theme.bar_empty);
+            const block_bar = buildProgressBar(&block_bar_buf, bar_pct, 20, theme.bar_filled, theme.bar_transition, theme.bar_empty);
             try w.print(" {s}{s}{s} {s}", .{ block_bar_color, block_bar, theme.reset, formatDuration(&dur_buf, remaining) });
             var rate_buf: [32]u8 = undefined;
-            try w.print(" \xf0\x9f\x94\xa5 {s}{s}/h{s}", .{ theme.yellow, formatCurrency(&rate_buf, block.burn_rate_per_hr), theme.reset });
+            try w.print(" \xf0\x9f\x94\xa5 {s}{s}{s} {s}/h{s}", .{ theme.yellow, formatCurrency(&rate_buf, block.burn_rate_per_hr), theme.reset, theme.dim, theme.reset });
         }
     }
 
@@ -1542,7 +1552,7 @@ test "parseStdin empty input" {
 
 test "buildProgressBar default UTF-8 chars" {
     var buf: [128]u8 = undefined;
-    const bar = buildProgressBar(&buf, 50.0, 10, "\xe2\x96\x88", "\xe2\x96\x91");
+    const bar = buildProgressBar(&buf, 50.0, 10, "\xe2\x96\x88", "\xe2\x96\x93", "\xe2\x96\x91");
     // 5 filled (3 bytes each) + 5 empty (3 bytes each) = 30 bytes
     try std.testing.expectEqual(@as(usize, 30), bar.len);
     // First char should be █ (0xe2 0x96 0x88)
@@ -1553,18 +1563,29 @@ test "buildProgressBar default UTF-8 chars" {
 
 test "buildProgressBar single-byte chars" {
     var buf: [128]u8 = undefined;
-    const bar = buildProgressBar(&buf, 75.0, 8, "#", "-");
+    const bar = buildProgressBar(&buf, 75.0, 8, "#", "=", "-");
     // 6 filled + 2 empty = 8 bytes
     try std.testing.expectEqual(@as(usize, 8), bar.len);
     try std.testing.expectEqualStrings("######--", bar);
 }
 
+test "buildProgressBar transition char" {
+    var buf: [128]u8 = undefined;
+    // 37.5% of 8 = 3.0 filled → no transition
+    const bar1 = buildProgressBar(&buf, 37.5, 8, "#", "=", "-");
+    try std.testing.expectEqualStrings("###-----", bar1);
+
+    // 40% of 8 = 3.2 filled → 3 filled + 1 transition + 4 empty
+    const bar2 = buildProgressBar(&buf, 40.0, 8, "#", "=", "-");
+    try std.testing.expectEqualStrings("###=----", bar2);
+}
+
 test "buildProgressBar 0% and 100%" {
     var buf: [128]u8 = undefined;
-    const empty = buildProgressBar(&buf, 0.0, 4, "#", "-");
+    const empty = buildProgressBar(&buf, 0.0, 4, "#", "=", "-");
     try std.testing.expectEqualStrings("----", empty);
 
-    const full = buildProgressBar(&buf, 100.0, 4, "#", "-");
+    const full = buildProgressBar(&buf, 100.0, 4, "#", "=", "-");
     try std.testing.expectEqualStrings("####", full);
 }
 

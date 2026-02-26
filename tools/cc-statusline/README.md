@@ -29,8 +29,8 @@ The binary is output to `zig-out/bin/cc-statusline`.
 cc-statusline reads Claude Code's statusline JSON from stdin and outputs a 2-line ANSI-colored status:
 
 ```
-🤖 Opus 4.6 | 🌿 main | 🧠 ████████████░░░░░░░░ 60%
-💰 $0.20 today | $0.20 block ██████████████░░░░░░ 4h 39m left 🔥 $0.60/h
+🤖 Opus 4.6 | 🌿 main | 🧠 ████████████▓░░░░░░░ 63%
+💰 $0.20 today | $0.20 block ██████████████▓░░░░░ 4h 39m left 🔥 $0.60 /h
 ```
 
 ### Claude Code Integration
@@ -67,6 +67,7 @@ Override individual colors with ANSI escape sequences:
 | `CC_STATUSLINE_COLOR_RED` | High context usage | Red |
 | `CC_STATUSLINE_COLOR_DIM` | Separators and labels | Dim |
 | `CC_STATUSLINE_BAR_FILLED` | Filled bar character | `█` |
+| `CC_STATUSLINE_BAR_TRANSITION` | Transition bar character | `▓` |
 | `CC_STATUSLINE_BAR_EMPTY` | Empty bar character | `░` |
 
 ### Config Directory
