@@ -21,13 +21,41 @@ if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
   fi
 fi
 
-# zimfwの初期化（init.zshが古い場合は再生成）
+# zimfw() 関数の定義（zimfw コマンド用）
+if [[ -e ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]] zimfw() { source ${ZIM_HOME}/zimfw.zsh "${@}" }
+
+# fpath 設定（autoload 用、コスト: ~0ms）
+fpath=(
+  ${ZIM_HOME}/modules/git/functions
+  ${ZIM_HOME}/modules/utility/functions
+  ${ZIM_HOME}/modules/zsh-completions/src
+  ${fpath}
+)
+autoload -Uz -- git-alias-lookup git-branch-current git-branch-delete-interactive \
+  git-branch-remote-tracking git-dir git-ignore-add git-root \
+  git-stash-clear-interactive git-stash-recover git-submodule-move \
+  git-submodule-remove mkcd mkpw
+
+# 即座に読み込み（プロンプト表示に必須）
+source ${ZIM_HOME}/modules/zsh-defer/zsh-defer.plugin.zsh
+source ${ZIM_HOME}/modules/evalcache/evalcache.plugin.zsh
+source ${ZIM_HOME}/modules/environment/init.zsh
+source ${ZIM_HOME}/modules/input/init.zsh
+
+# zimfwの初期化（init.zshが古い場合は遅延で再生成）
 if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
-  source ${ZIM_HOME}/zimfw.zsh init -q
+  zsh-defer source ${ZIM_HOME}/zimfw.zsh init -q
 fi
 
-# _evalcacheを利用可能にするため、最小限のモジュールを読み込み
-source ${ZIM_HOME}/init.zsh
+# 遅延読み込み（初回プロンプト後に読み込み）
+zsh-defer source ${ZIM_HOME}/modules/utility/init.zsh
+zsh-defer source ${ZIM_HOME}/modules/git/init.zsh
+zsh-defer source ${ZIM_HOME}/modules/termtitle/init.zsh
+zsh-defer source ${ZIM_HOME}/modules/git-open/git-open.plugin.zsh
+zsh-defer source ${ZIM_HOME}/modules/completion/init.zsh
+zsh-defer source ${ZIM_HOME}/modules/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+zsh-defer source ${ZIM_HOME}/modules/zsh-history-substring-search/zsh-history-substring-search.zsh
+zsh-defer source ${ZIM_HOME}/modules/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # Emacs キーバインドを使用（vi モードを無効化）
 bindkey -e
@@ -56,9 +84,7 @@ done
 # mise (https://github.com/jdx/mise)
 # ------------------------------------------------------------------------------
 
-if command -v mise &>/dev/null; then
-  _evalcache mise activate zsh
-fi
+zsh-defer -c 'command -v mise &>/dev/null && _evalcache mise activate zsh'
 
 # History
 # History file
@@ -163,7 +189,7 @@ export FZF_DEFAULT_OPTS=" \
 # ------------------------------------------------------------------------------
 
 LG_CONFIG_FILE=$XDG_CONFIG_HOME/lazygit/config.yml,$XDG_CONFIG_HOME/lazygit/catppuccin-mocha-blue.yml
-if grep -q -e Microsoft -e microsoft /proc/version 2>/dev/null; then
+if (( _IS_WSL )); then
   LG_CONFIG_FILE="$LG_CONFIG_FILE,$XDG_CONFIG_HOME/lazygit/config.wsl.yml"
 fi
 export LG_CONFIG_FILE
@@ -174,7 +200,10 @@ export LG_CONFIG_FILE
 
 # https://github.com/catppuccin/catppuccin/discussions/2220
 # https://github.com/catppuccin/catppuccin/discussions/2220#discussioncomment-9476399
-export LS_COLORS="$(vivid generate catppuccin-mocha)"
+if [[ ! -f "$ZSH_EVALCACHE_DIR/ls_colors_cache" ]]; then
+  vivid generate catppuccin-mocha > "$ZSH_EVALCACHE_DIR/ls_colors_cache"
+fi
+export LS_COLORS="$(< $ZSH_EVALCACHE_DIR/ls_colors_cache)"
 
 # ------------------------------------------------------------------------------
 # psql (https://www.postgresql.org/docs/current/app-psql.html)
@@ -198,7 +227,17 @@ export TAPLO_CONFIG=$XDG_CONFIG_HOME/taplo/taplo.toml
 # Starship (https://github.com/starship/starship)
 # ------------------------------------------------------------------------------
 
-_evalcache starship init zsh
+# _evalcache を経由すると command -v が $commands ハッシュテーブル構築をトリガーし
+# WSL の /mnt/c/ PATH スキャンで ~200ms かかるため、キャッシュファイルを直接 source する
+# キャッシュ再生成: rm "$ZSH_EVALCACHE_DIR/starship-init.zsh"
+() {
+  local cache="$ZSH_EVALCACHE_DIR/starship-init.zsh"
+  if [[ ! -f "$cache" ]]; then
+    starship init zsh --print-full-init > "$cache"
+    zcompile "$cache" 2>/dev/null
+  fi
+  source "$cache"
+}
 
 # ------------------------------------------------------------------------------
 # WezTerm (https://github.com/wezterm/wezterm)
