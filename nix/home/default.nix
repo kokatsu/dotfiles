@@ -242,6 +242,8 @@ in {
         shellcheck # シェルスクリプト linter
         # https://github.com/mvdan/sh
         shfmt # シェルスクリプト formatter
+        # https://github.com/editorconfig-checker/editorconfig-checker
+        editorconfig-checker # EditorConfig 準拠チェッカー
         # https://github.com/google/yamlfmt
         yamlfmt # YAML formatter
 
