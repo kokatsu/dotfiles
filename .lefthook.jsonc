@@ -37,6 +37,38 @@
         "glob": ["*.{yml,yaml}"],
         "run": "yamlfmt {staged_files} && git update-index --again"
       },
+      "shellcheck": {
+        "glob": ["*.sh"],
+        "exclude": [".config/zsh/wezterm-integration.sh"],
+        "run": "shellcheck {staged_files}"
+      },
+      "shfmt": {
+        "glob": ["*.sh"],
+        "exclude": [".config/zsh/wezterm-integration.sh"],
+        "run": "shfmt -w {staged_files} && git update-index --again"
+      },
+      "zsh-lint": {
+        "glob": ["*.zsh"],
+        "run": "echo {staged_files} | xargs -n1 zsh -n"
+      },
+      "markdownlint": {
+        "glob": ["*.md"],
+        "exclude": [".config/yazi/flavors/**/*", ".config/yazi/plugins/**/*"],
+        "run": "markdownlint {staged_files}"
+      },
+      "editorconfig": {
+        "exclude": [
+          "*.png",
+          "*.jpg",
+          "*.jpeg",
+          "*.gif",
+          "*.webp",
+          "*.ico",
+          ".config/tmux/plugins/**/*",
+          ".config/claude/plugins/**/*"
+        ],
+        "run": "editorconfig-checker {staged_files}"
+      },
       "secretlint": {
         "run": "secretlint {staged_files}"
       },
@@ -80,6 +112,38 @@
       "yaml-lint": {
         "glob": ["*.{yml,yaml}"],
         "run": "yamlfmt -lint {push_files}"
+      },
+      "shellcheck": {
+        "glob": ["*.sh"],
+        "exclude": [".config/zsh/wezterm-integration.sh"],
+        "run": "shellcheck {push_files}"
+      },
+      "shfmt": {
+        "glob": ["*.sh"],
+        "exclude": [".config/zsh/wezterm-integration.sh"],
+        "run": "shfmt -d {push_files}"
+      },
+      "zsh-lint": {
+        "glob": ["*.zsh"],
+        "run": "echo {push_files} | xargs -n1 zsh -n"
+      },
+      "markdownlint": {
+        "glob": ["*.md"],
+        "exclude": [".config/yazi/flavors/**/*", ".config/yazi/plugins/**/*"],
+        "run": "markdownlint {push_files}"
+      },
+      "editorconfig": {
+        "exclude": [
+          "*.png",
+          "*.jpg",
+          "*.jpeg",
+          "*.gif",
+          "*.webp",
+          "*.ico",
+          ".config/tmux/plugins/**/*",
+          ".config/claude/plugins/**/*"
+        ],
+        "run": "editorconfig-checker {push_files}"
       },
       "secretlint": {
         "run": "secretlint {push_files}"
