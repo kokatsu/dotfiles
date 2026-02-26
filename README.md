@@ -64,7 +64,7 @@ nix fmt            # Format Nix files
 
 ## Directory Structure
 
-```
+```text
 .
 ├── flake.nix          # Nix flake definition with Home Manager integration
 ├── flake.lock         # Locked dependencies for reproducibility

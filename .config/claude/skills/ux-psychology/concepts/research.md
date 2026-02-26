@@ -9,6 +9,7 @@ Awareness for user testing and research.
 **Definition**: Behavior changes when being observed.
 
 **Considerations**:
+
 - Understand usability testing limitations
 - Combine quantitative and qualitative data
 - Prioritize natural environment analysis
@@ -20,6 +21,7 @@ Awareness for user testing and research.
 **Definition**: Errors and distortions in research results.
 
 **Considerations**:
+
 - Watch for sampling bias
 - Keep question wording neutral
 - Collect data from diverse user groups
@@ -31,6 +33,7 @@ Awareness for user testing and research.
 **Definition**: Designers failing to empathize with user emotions and needs.
 
 **Considerations**:
+
 - Conduct user research
 - Create personas
 - Perform actual user testing

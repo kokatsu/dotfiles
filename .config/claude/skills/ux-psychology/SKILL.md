@@ -26,24 +26,28 @@ Apply these 46 UX psychology principles to predict user behavior and design more
 ## Core Principles Summary
 
 ### Reduce Friction
+
 - Split complex forms into steps (Cognitive Load)
 - Use skeleton UI for loads over 400ms (Doherty Threshold)
 - Set smart defaults (Default Bias)
 - Limit choices to reduce fatigue (Decision Fatigue)
 
 ### Guide Behavior
+
 - Show original price before discount (Anchor Effect)
 - Frame positively: "90% success" not "10% failure" (Framing)
 - Use progress bars near completion (Goal Gradient)
 - Ask satisfaction before reviews (Priming)
 
 ### Create Value
+
 - Show what users lose on cancel (Loss Aversion)
 - Display limited stock/time (Scarcity)
 - Personalize the experience (Endowment Effect)
 - Celebrate completions (Peak-End Rule)
 
 ### Build Trust
+
 - Show reviews, user counts, logos (Social Proof)
 - Provide value before asking for payment (Reactance)
 - Add confirmation for destructive actions (Intentional Friction)
@@ -55,12 +59,14 @@ See [checklist.md](./checklist.md) for a complete checklist to review your UI ag
 ## Detailed References
 
 Each concept file contains:
+
 - Definition and psychological basis
 - Implementation guidelines
 - Code examples (JSX/CSS)
 - Common patterns
 
 Browse by category:
+
 - [Cognition & Perception](./concepts/cognition.md) - Managing mental effort
 - [Biases](./concepts/biases.md) - Leveraging cognitive shortcuts
 - [Behavioral Guidance](./concepts/behavioral.md) - Influencing decisions

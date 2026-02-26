@@ -22,7 +22,7 @@ disable-model-invocation: false
 
 ## Usage
 
-```
+```text
 /{{SKILL_SLUG}} {{ARGUMENT_HINT}}
 ```
 
@@ -64,7 +64,7 @@ Git branch:
 
 ### Example 1: {{EXAMPLE_1_TITLE}}
 
-```
+```text
 /{{SKILL_SLUG}} {{EXAMPLE_1_ARGS}}
 ```
 
@@ -72,7 +72,7 @@ Git branch:
 
 ### Example 2: {{EXAMPLE_2_TITLE}}
 
-```
+```text
 /{{SKILL_SLUG}} {{EXAMPLE_2_ARGS}}
 ```
 

@@ -18,6 +18,7 @@ Follow Conventional Commits (`@commitlint/config-conventional`).
 | `test` | Adding or fixing tests |
 
 Key guidelines:
+
 - Config file tweaks (e.g. renovate.json5, flake.nix settings) → `chore`, not `feat`
 - Adding a new overlay or tool → `feat`
 - Dependency version bumps → `build(deps)`

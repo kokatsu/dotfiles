@@ -9,6 +9,7 @@ Leveraging trust and social credibility.
 **Definition**: Being influenced by others' opinions and actions.
 
 **Implementation Guidelines**:
+
 - Display reviews and ratings
 - Show user counts
 - Feature recognizable client logos
@@ -33,6 +34,7 @@ Leveraging trust and social credibility.
 **Definition**: One positive trait elevates overall perception.
 
 **Implementation Guidelines**:
+
 - Display CSR activities
 - Show awards and certifications
 - Enhance brand image

@@ -9,6 +9,7 @@ Creating memorable moments and interactions.
 **Definition**: Experiences are evaluated by their peak moments and endings.
 
 **Implementation Guidelines**:
+
 - Add special effects at key moments
 - Provide memorable completion experiences
 - Handle errors gracefully
@@ -30,6 +31,7 @@ Creating memorable moments and interactions.
 **Definition**: Joy and surprise from exceeding expectations.
 
 **Implementation Guidelines**:
+
 - Add micro-interactions
 - Include easter eggs
 - Provide unexpected pleasant features
@@ -54,6 +56,7 @@ Creating memorable moments and interactions.
 **Definition**: Showing effort increases perceived value.
 
 **Implementation Guidelines**:
+
 - Display processing steps during loading
 - Show search generation process
 - Intentionally add slight delays

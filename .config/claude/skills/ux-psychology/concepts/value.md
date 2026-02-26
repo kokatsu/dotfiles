@@ -9,6 +9,7 @@ Creating and communicating perceived value.
 **Definition**: The emotional preference to avoid losses over acquiring gains.
 
 **Implementation Guidelines**:
+
 - Show what users will lose on cancellation
 - Display limited-time offer deadlines
 - Use "Don't miss out" messaging
@@ -34,6 +35,7 @@ Creating and communicating perceived value.
 **Definition**: Perceiving limited availability items as more valuable.
 
 **Implementation Guidelines**:
+
 - Display stock quantities
 - Emphasize limited-time offers
 - Show popularity indicators
@@ -54,6 +56,7 @@ Creating and communicating perceived value.
 **Definition**: Overvaluing things we already possess.
 
 **Implementation Guidelines**:
+
 - Offer personalization
 - Implement customization features
 - Use "Your own" expressions
@@ -78,6 +81,7 @@ Creating and communicating perceived value.
 **Definition**: The tendency to continue investing to justify past investments.
 
 **Implementation Guidelines**:
+
 - Visualize progress
 - Show invested time and effort
 - Provide incentives for continuation

@@ -9,6 +9,7 @@ Avoiding pitfalls and dark patterns.
 **Definition**: Psychological resistance when feeling constrained.
 
 **Implementation Guidelines**:
+
 - Avoid premature monetization
 - Respect user choice
 - Don't be pushy
@@ -32,6 +33,7 @@ Avoiding pitfalls and dark patterns.
 **Definition**: Repeated decisions make rational choices difficult.
 
 **Implementation Guidelines**:
+
 - Minimize options
 - Provide default recommendations
 - Make choices incrementally
@@ -43,6 +45,7 @@ Avoiding pitfalls and dark patterns.
 **Definition**: Deliberately slowing user actions.
 
 **Implementation Guidelines**:
+
 - Add confirmation for important actions
 - Double-confirm deletions
 - Avoid malicious use
