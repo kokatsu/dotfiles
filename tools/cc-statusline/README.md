@@ -35,7 +35,7 @@ cc-statusline reads Claude Code's statusline JSON from stdin and outputs a 2-lin
 
 ### Claude Code Integration
 
-Add to `~/.config/claude/settings.json`:
+Add to `~/.claude/settings.json`:
 
 ```json
 {

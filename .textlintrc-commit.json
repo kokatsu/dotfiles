@@ -2,6 +2,7 @@
   "rules": {
     "terminology": {
       "defaultTerms": true,
+      "exclude": ["readme(s)?"],
       "terms": [
         "Biome",
         "DuckDB",
@@ -10,6 +11,7 @@
         "Karabiner",
         "Lefthook",
         ["[Nn](?:eo)?[Vv]im", "Neovim"],
+        ["readme(s)?", "README$1"],
         "Playwright",
         "Starship",
         "StyLua",
