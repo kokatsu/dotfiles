@@ -11,11 +11,11 @@ nvim -c "startinsert" "$TMPFILE"
 
 # 内容が存在する場合のみ送信
 if [ -s "$TMPFILE" ]; then
-    CONTENT=$(cat "$TMPFILE")
+  CONTENT=$(cat "$TMPFILE")
 
-    # tmuxのpopupが閉じた後、元のペインに内容を送信
-    # send-keysで文字を送信（-lでリテラル送信）
-    tmux send-keys -l "$CONTENT"
+  # tmuxのpopupが閉じた後、元のペインに内容を送信
+  # send-keysで文字を送信（-lでリテラル送信）
+  tmux send-keys -l "$CONTENT"
 fi
 
 # 一時ファイルを削除
