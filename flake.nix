@@ -115,6 +115,7 @@
       customOverlays.textlint
       customOverlays.unocss-language-server
       customOverlays.vue-language-server-pin
+      customOverlays.win32yank
       customOverlays.x-api-playground
     ];
 

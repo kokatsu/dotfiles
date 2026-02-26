@@ -175,6 +175,39 @@
     };
   };
 
+  # win32yank - Windows clipboard tool for WSL
+  # Renovate: datasource=github-releases depName=equalsraf/win32yank
+  win32yank = _final: prev: {
+    win32yank = prev.stdenvNoCC.mkDerivation {
+      pname = "win32yank";
+      version = "0.1.1";
+
+      src = prev.fetchzip {
+        url = "https://github.com/equalsraf/win32yank/releases/download/v0.1.1/win32yank-x64.zip";
+        hash = "sha256-4ivE1cYZhYs4ibx5oiYMOhbse9bdOomk7RjgdVl5lD0=";
+        stripRoot = false;
+      };
+
+      dontFixup = true;
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp $src/win32yank.exe $out/bin/
+        chmod +x $out/bin/win32yank.exe
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Windows clipboard tool for WSL";
+        homepage = "https://github.com/equalsraf/win32yank";
+        license = licenses.mit;
+        platforms = ["x86_64-linux"];
+        mainProgram = "win32yank.exe";
+      };
+    };
+  };
+
   # Fix plotly/optuna build failure (Kaleido subprocess crash on macOS CI)
   plotly-test-fix = _final: prev: {
     python3 = prev.python3.override {
