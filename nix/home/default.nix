@@ -238,6 +238,10 @@ in {
         textlint # 日本語校正 (overlay)
         # https://github.com/crate-ci/typos
         typos # タイポ検出
+        # https://github.com/koalaman/shellcheck
+        shellcheck # シェルスクリプト linter
+        # https://github.com/mvdan/sh
+        shfmt # シェルスクリプト formatter
         # https://github.com/google/yamlfmt
         yamlfmt # YAML formatter
 
@@ -254,6 +258,8 @@ in {
         #####################################
         # Language Servers
         #####################################
+        # https://github.com/bash-lsp/bash-language-server
+        bash-language-server # Bash/Sh LSP (ShellCheck + shfmt 統合)
         # https://github.com/withastro/language-tools
         astro-language-server # Astro LSP
         # https://github.com/github/copilot-language-server-release

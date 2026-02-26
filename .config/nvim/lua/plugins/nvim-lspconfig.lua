@@ -82,6 +82,7 @@ return {
     end, { desc = 'Restart LSP clients attached to current buffer' })
 
     local servers = {
+      'bashls',
       'biome',
       'copilot',
       'cssmodules_ls',
