@@ -21,6 +21,14 @@
     exec ${pkgs.deno}/bin/deno run --allow-read --allow-write "''${DOTFILES_DIR:-${dotfilesDir}}/bin/mermaid-render.ts" "$@"
   '';
 
+  # WSL: Claude Code は clip.exe をハードコードで使用するが UTF-8 を正しく扱えない
+  # xsel (X11) + win32yank (Windows/Win+V履歴) の両方に書き込む
+  clip-exe-wrapper = pkgs.writeShellScriptBin "clip.exe" ''
+    input=$(cat)
+    printf '%s' "$input" | ${pkgs.xsel}/bin/xsel --clipboard --input
+    printf '%s' "$input" | win32yank.exe -i
+  '';
+
   # dotfilesDirが空の場合はエラーを出す（--impureフラグ忘れ防止）
   # CI環境ではスキップ
   validDotfilesDir =
@@ -358,6 +366,7 @@ in {
       ]
       ++ lib.optionals (!isDarwin) [
         # Linux/WSL専用
+        clip-exe-wrapper # Claude Code WSL文字化け対策 (clip.exe → xsel)
         # https://github.com/docker/buildx
         docker-buildx # Docker BuildKit
         # https://github.com/docker/compose
