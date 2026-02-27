@@ -398,12 +398,14 @@ in {
     # PATH に追加 (ユーザースクリプト)
     sessionPath = [
       "${config.home.homeDirectory}/.local/bin/scripts"
+      "${config.home.homeDirectory}/.gem/bin" # ruby-lsp 等の gem 実行ファイル
     ];
 
     sessionVariables =
       {
         EDITOR = "nvim";
         VISUAL = "nvim";
+        GEM_HOME = "${config.home.homeDirectory}/.gem"; # gem インストール先 (バージョン非依存)
         XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
         ZDOTDIR = "${config.xdg.configHome}/zsh";
         BAT_CONFIG_DIR = "${config.xdg.configHome}/bat";
