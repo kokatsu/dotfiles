@@ -53,12 +53,12 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.59";
+    version = "2.1.61";
     hashes = {
-      "aarch64-darwin" = "sha256-73Da5u0ItVOPbRV6jIWR9ywmL7jlcMlHEbrTrk7kSvo=";
-      "x86_64-darwin" = "sha256-s7ab6uRmrBt2Wb9XEOwdXnsgyEhBjMcBAZRi4JI/8OA=";
-      "aarch64-linux" = "sha256-eLDqWmR5MUn1UK093Py8cUcSimACQ4OfcD+1tqIZSFk=";
-      "x86_64-linux" = "sha256-ekplOYKwfgqBV/jTssL45EJSCrB7L6LmkroFTbuiEMk=";
+      "aarch64-darwin" = "sha256-P103BnRu/7L4dePbZmgmYuo7XXwZa1oPrY+zem/Gz9s=";
+      "x86_64-darwin" = "sha256-1EgWxjOGfUrIP7sk3O2jOvWHlp2a9B4igvtBDTiobfI=";
+      "aarch64-linux" = "sha256-yfHawFjG60Uw0SzLiSQTY+cw1EUqUyd+yudlJ8RcDF4=";
+      "x86_64-linux" = "sha256-scFZB7PuObLwtsxkJ2ciBtvJ5aaMVESNOw3EEXdusDE=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -502,7 +502,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.14.0";
+    version = "0.15.0";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -520,10 +520,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-b7sPWYLDrAQaLXohgLrYnNfcHGa9iLwV4bfNwHrTnG0=";
+        hash = "sha256-4bmdWjJXqDL9poGMAneIAimiBPAHgLXj/gTv3aTT66Q=";
       };
 
-      npmDepsHash = "sha256-kuph1LT2IDpLQrD1K50Of7tcd7ufYGz2No3guhwULt4=";
+      npmDepsHash = "sha256-SscCV0TEB74gNztdC0Y/wPfehn+7YwVrSpEsRA9Sf1c=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts"];
