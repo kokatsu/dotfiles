@@ -72,7 +72,7 @@ return {
       gen_loader.from_lang(),
     }
     if vim.g.extra_snippets ~= nil then
-      snippets = vim.tbl_deep_extend('force', snippets, vim.g.extra_snippets(gen_loader))
+      vim.list_extend(snippets, vim.g.extra_snippets(gen_loader))
     end
     require('mini.snippets').setup({
       snippets = snippets,

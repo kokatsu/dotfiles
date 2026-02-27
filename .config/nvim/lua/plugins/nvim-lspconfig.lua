@@ -12,7 +12,6 @@ return {
           return diagnostic.message
         end,
       },
-      virtual_lines = false,
       severity_sort = true,
       update_in_insert = false,
       float = {
@@ -72,13 +71,12 @@ return {
     vim.api.nvim_create_user_command('LspRestart', function()
       local clients = vim.lsp.get_clients({ bufnr = 0 })
       for _, client in ipairs(clients) do
-        local name = client.name
+        print('Restarting ' .. client.name .. '...')
         client:stop()
-        vim.defer_fn(function()
-          vim.cmd('edit')
-        end, 100)
-        print('Restarting ' .. name .. '...')
       end
+      vim.defer_fn(function()
+        vim.cmd('edit')
+      end, 100)
     end, { desc = 'Restart LSP clients attached to current buffer' })
 
     local servers = {
