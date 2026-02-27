@@ -5,19 +5,7 @@ return {
   cmd = 'Trouble',
   opts = {
     auto_close = true,
-    auto_preview = true,
     focus = true,
-    follow = true,
-    indent_guides = true,
-    pinned = false,
-    warn_no_results = true,
-    open_no_results = false,
-    icons = {
-      indent = {
-        fold_open = ' ',
-        fold_closed = ' ',
-      },
-    },
     modes = {
       cascade = {
         mode = 'diagnostics',
@@ -33,19 +21,8 @@ return {
       },
     },
     keys = {
-      ['?'] = 'help',
-      r = 'refresh',
-      R = 'toggle_refresh',
-      q = 'close',
-      o = 'jump_close',
-      ['<cr>'] = 'jump',
       ['<tab>'] = 'jump',
-      ['<2-leftmouse>'] = 'jump',
       ['<c-x>'] = 'jump_split',
-      ['<c-v>'] = 'jump_vsplit',
-      p = 'preview',
-      P = 'toggle_preview',
-      i = 'inspect',
     },
   },
   keys = {
