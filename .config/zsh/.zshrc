@@ -44,18 +44,21 @@ source ${ZIM_HOME}/modules/input/init.zsh
 
 # zimfwの初期化（init.zshが古い場合は遅延で再生成）
 if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
-  zsh-defer source ${ZIM_HOME}/zimfw.zsh init -q
+  zsh-defer -a +1 +2 source ${ZIM_HOME}/zimfw.zsh init -q
 fi
 
 # 遅延読み込み（初回プロンプト後に読み込み）
-zsh-defer source ${ZIM_HOME}/modules/utility/init.zsh
-zsh-defer source ${ZIM_HOME}/modules/git/init.zsh
-zsh-defer source ${ZIM_HOME}/modules/termtitle/init.zsh
-zsh-defer source ${ZIM_HOME}/modules/git-open/git-open.plugin.zsh
-zsh-defer source ${ZIM_HOME}/modules/completion/init.zsh
-zsh-defer source ${ZIM_HOME}/modules/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-zsh-defer source ${ZIM_HOME}/modules/zsh-history-substring-search/zsh-history-substring-search.zsh
-zsh-defer source ${ZIM_HOME}/modules/zsh-autosuggestions/zsh-autosuggestions.zsh
+# -a +1 +2: 全フラグ無効 → stdout/stderr リダイレクトのみ有効
+# 個別タスクにすることで、タスク間で KEYS_QUEUED_COUNT チェックが入り
+# キー入力があれば即座に表示される（入力応答性優先）
+zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/utility/init.zsh
+zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/git/init.zsh
+zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/termtitle/init.zsh
+zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/git-open/git-open.plugin.zsh
+zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/completion/init.zsh
+zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-history-substring-search/zsh-history-substring-search.zsh
+zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # Emacs キーバインドを使用（vi モードを無効化）
 bindkey -e
@@ -84,7 +87,8 @@ done
 # mise (https://github.com/jdx/mise)
 # ------------------------------------------------------------------------------
 
-zsh-defer -c 'command -v mise &>/dev/null && _evalcache mise activate zsh'
+# _evalcache はキャッシュ済みでも md5sum 計算で fork するため、直接 source する
+zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-mise-*.sh(Nom[1])); [[ -n $f ]] && source $f || { command -v mise &>/dev/null && _evalcache mise activate zsh; }; }'
 
 # History
 # History file
@@ -148,7 +152,7 @@ fi
 # Delta (https://github.com/dandavison/delta)
 # ------------------------------------------------------------------------------
 
-zsh-defer -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || delta --generate-completion zsh >$ZIM_HOME/modules/zsh-completions/src/_delta'
+zsh-defer -a +1 +2 -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || delta --generate-completion zsh >$ZIM_HOME/modules/zsh-completions/src/_delta'
 
 # ------------------------------------------------------------------------------
 # DuckDB (https://github.com/duckdb/duckdb)
@@ -243,8 +247,8 @@ export TAPLO_CONFIG=$XDG_CONFIG_HOME/taplo/taplo.toml
 # WezTerm (https://github.com/wezterm/wezterm)
 # ------------------------------------------------------------------------------
 
-zsh-defer _evalcache wezterm shell-completion --shell zsh
-. $ZDOTDIR/wezterm-integration.sh
+zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-wezterm-*.sh(Nom[1])); [[ -n $f ]] && source $f || _evalcache wezterm shell-completion --shell zsh; }'
+[[ -n "${WEZTERM_PANE}" ]] && . $ZDOTDIR/wezterm-integration.sh
 
 # ------------------------------------------------------------------------------
 # Yazi (https://github.com/sxyazi/yazi)
@@ -275,7 +279,10 @@ export _ZO_FZF_OPTS='
 --color=border:#6c7086,label:#cdd6f4
 --preview "([[ -e '{2..}/README.md' ]] && bat --color=always --style=numbers --line-range=:50 '{2..}/README.md') || eza --color=always --group-directories-first --oneline {2..}"
 '
-zsh-defer _evalcache zoxide init zsh
+zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-zoxide-*.sh(Nom[1])); [[ -n $f ]] && source $f || _evalcache zoxide init zsh; }'
+
+# 全遅延タスク完了後に1回だけpromptを再描画
+zsh-defer -c 'zle reset-prompt'
 
 # ------------------------------------------------------------------------------
 # Zsh Profiling
