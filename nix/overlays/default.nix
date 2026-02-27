@@ -53,7 +53,7 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.61";
+    version = "2.1.62";
     hashes = {
       "aarch64-darwin" = "sha256-P103BnRu/7L4dePbZmgmYuo7XXwZa1oPrY+zem/Gz9s=";
       "x86_64-darwin" = "sha256-1EgWxjOGfUrIP7sk3O2jOvWHlp2a9B4igvtBDTiobfI=";
@@ -862,7 +862,7 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.5.0";
+      version = "0.5.1";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
