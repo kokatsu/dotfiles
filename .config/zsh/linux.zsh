@@ -27,6 +27,7 @@ if (( _IS_WSL )); then
   # https://github.com/anthropics/claude-code/issues/14352
   export CLAUDE_CODE_SKIP_WINDOWS_PROFILE=1
   export USERPROFILE="/mnt/c/Users/$(whoami)"
+  export WEZTERM_HOSTNAME="$(< /proc/sys/kernel/hostname)"
 
   # https://blog.adglobe.co.jp/entry/2024/07/31/100000
   if [[ ! -f /tmp/.mtu_1400_set ]]; then

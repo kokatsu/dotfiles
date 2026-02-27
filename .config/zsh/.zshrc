@@ -111,6 +111,9 @@ setopt no_beep
 # Alias
 . $ZDOTDIR/aliases.zsh
 
+# GEM_HOME (hm-session-vars.sh の PATH 設定が WezTerm WSL ドメインで反映されない問題の回避)
+[[ -d "$HOME/.gem/bin" ]] && [[ ":$PATH:" != *":$HOME/.gem/bin:"* ]] && export PATH="$HOME/.gem/bin:$PATH"
+
 # Editor
 export EDITOR="nvim"
 # export EDITOR="hx"
