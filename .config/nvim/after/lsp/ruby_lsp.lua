@@ -3,6 +3,9 @@
 
 ---@type vim.lsp.Config
 local ruby_lsp_config = {
+  -- Docker環境のプロジェクトではホスト上で bundle install が成功しないため
+  -- BUNDLE_GEMFILE を設定して bundler セットアップをスキップし直接起動
+  cmd = { 'env', 'BUNDLE_GEMFILE=.', 'ruby-lsp' },
   init_options = {
     -- フォーマッタ設定 ('auto', 'rubocop', 'standard', 'syntax_tree')
     formatter = 'auto',
