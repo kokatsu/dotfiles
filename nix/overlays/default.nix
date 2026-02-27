@@ -526,7 +526,9 @@
       npmDepsHash = "sha256-SscCV0TEB74gNztdC0Y/wPfehn+7YwVrSpEsRA9Sf1c=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
-      npmFlags = ["--ignore-scripts"];
+      # --legacy-peer-deps: upstream has conflicting peer deps
+      # (zod ^3.22.4 vs @anthropic-ai/claude-agent-sdk requiring zod ^4.0.0)
+      npmFlags = ["--ignore-scripts" "--legacy-peer-deps"];
 
       # Set correct PLAYWRIGHT_BROWSERS_PATH during build
       PLAYWRIGHT_BROWSERS_PATH = final.playwright-driver.browsers;
