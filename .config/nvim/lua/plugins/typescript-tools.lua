@@ -29,7 +29,6 @@ return {
     },
     expose_as_code_action = 'all',
     complete_function_calls = true,
-    include_completions_with_insert_text = true,
     single_file_support = false,
     root_dir = function(fname)
       -- Don't start for Deno files (check shebang)

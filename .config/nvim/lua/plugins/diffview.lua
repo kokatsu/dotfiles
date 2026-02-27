@@ -13,17 +13,8 @@ return {
   opts = {
     enhanced_diff_hl = true,
     view = {
-      default = {
-        layout = 'diff2_horizontal',
-      },
       merge_tool = {
         layout = 'diff3_mixed',
-      },
-    },
-    file_panel = {
-      win_config = {
-        position = 'left',
-        width = 35,
       },
     },
     keymaps = {

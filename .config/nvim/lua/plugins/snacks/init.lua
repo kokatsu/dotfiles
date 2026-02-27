@@ -48,16 +48,6 @@ return {
     picker = picker.opts,
     ---@class snacks.terminal.Config
     terminal = terminal.opts,
-    ---@class snacks.picker.debug
-    debug = {
-      scores = false, -- show scores in the list
-      leaks = false, -- show when pickers don't get garbage collected
-      explorer = false, -- show explorer debug info
-      files = false, -- show file debug info
-      grep = false, -- show file debug info
-      proc = false, -- show proc debug info
-      extmarks = false, -- show extmarks errors
-    },
     ---@class snacks.dashboard.Config
     dashboard = dashboard.opts,
     indent = indent.opts,

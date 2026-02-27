@@ -28,22 +28,5 @@ return {
     },
     picker = 'snacks',
     enable_builtin = true,
-    default_to_projects_v2 = false,
-    mappings_disable_default = false,
-    gh_cmd = 'gh',
-    gh_env = {},
-    -- プロジェクト機能を使わない場合はこのクエリを無効化
-    issues = {
-      order_by = {
-        field = 'CREATED_AT',
-        direction = 'DESC',
-      },
-    },
-    pull_requests = {
-      order_by = {
-        field = 'CREATED_AT',
-        direction = 'DESC',
-      },
-    },
   },
 }

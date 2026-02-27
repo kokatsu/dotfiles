@@ -2,57 +2,22 @@
 
 return {
   'romgrk/barbar.nvim',
-  lazy = false, -- 遅延ロードを無効化
+  lazy = false,
   dependencies = {
-    'lewis6991/gitsigns.nvim', -- OPTIONAL: for git status
-    'nvim-tree/nvim-web-devicons', -- OPTIONAL: for file icons
+    'lewis6991/gitsigns.nvim',
+    'nvim-tree/nvim-web-devicons',
   },
   init = function()
     vim.g.barbar_auto_setup = false
   end,
   opts = {
-    -- lazy.nvim will automatically call setup for you. put your options here, anything missing will use the default:
-    -- animation = true,
-    -- insert_at_start = true,
-    -- …etc.
-    auto_hide = false, -- タブラインの自動非表示を無効化
+    animation = false,
   },
-  -- version = '^1.0.0', -- optional: only update when a new 1.x version is released
   keys = {
-    {
-      '[b',
-      '<Cmd>BufferPrevious<CR>',
-      desc = 'Previous Buffer',
-      mode = 'n',
-      silent = true,
-    },
-    {
-      ']b',
-      '<Cmd>BufferNext<CR>',
-      desc = 'Next Buffer',
-      mode = 'n',
-      silent = true,
-    },
-    {
-      '[B',
-      '<Cmd>BufferMovePrevious<CR>',
-      desc = 'Move Buffer to Previous',
-      mode = 'n',
-      silent = true,
-    },
-    {
-      ']B',
-      '<Cmd>BufferMoveNext<CR>',
-      desc = 'Move Buffer to Next',
-      mode = 'n',
-      silent = true,
-    },
-    {
-      ',b',
-      '<Cmd>BufferClose<CR>',
-      desc = 'Close Buffer',
-      mode = 'n',
-      silent = true,
-    },
+    { '[b', '<Cmd>BufferPrevious<CR>', desc = 'Previous Buffer' },
+    { ']b', '<Cmd>BufferNext<CR>', desc = 'Next Buffer' },
+    { '[B', '<Cmd>BufferMovePrevious<CR>', desc = 'Move Buffer to Previous' },
+    { ']B', '<Cmd>BufferMoveNext<CR>', desc = 'Move Buffer to Next' },
+    { ',b', '<Cmd>BufferClose<CR>', desc = 'Close Buffer' },
   },
 }
