@@ -39,6 +39,11 @@ Beyond bugs and security, check for:
   must stay in sync (e.g., frontend validation matching backend validation)
 - **NULL/nil safety**: Null values propagating through a chain of accesses without
   adequate guards
+- **Error/constant semantic match**: When code raises an error or selects a constant,
+  verify that the chosen value semantically matches the condition being checked.
+  Watch for cases where the condition (e.g., "not found") doesn't match the error name
+  (e.g., "status_changed"), which may indicate a copy-paste error or a more specific
+  constant that should be used instead
 
 ## Severity Classification
 
