@@ -289,7 +289,9 @@ jobs:
           mkdir -p /tmp/agent-browser-pkg
           curl -fsSL "$URL" | tar -xzf - -C /tmp/agent-browser-pkg --strip-components=1
           cd /tmp/agent-browser-pkg
-          npm install --package-lock-only --ignore-scripts
+          # --legacy-peer-deps: upstream has conflicting peer deps
+          # (zod ^3.22.4 vs @anthropic-ai/claude-agent-sdk requiring zod ^4.0.0)
+          npm install --package-lock-only --ignore-scripts --legacy-peer-deps
           cp package-lock.json "$GITHUB_WORKSPACE/$LOCK_DIR/"
           cd "$GITHUB_WORKSPACE"
 
