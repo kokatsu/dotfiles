@@ -1,0 +1,10 @@
+# kokatsu private directory
+.kokatsu
+
+# Local config files (e.g., CLAUDE.local.md, settings.local.json)
+.local
+*.local.*
+
+# Claude Code session artifacts
+session-logs
+HANDOVER*.md
