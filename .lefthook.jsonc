@@ -169,7 +169,7 @@
         "run": "commitlint --edit {1}"
       },
       "textlint": {
-        "run": "TEXTLINT_MODULES=$(dirname \"$(readlink -f \"$(which textlint)\")\")/../lib/node_modules/textlint-with-preset/node_modules && NODE_PATH=$TEXTLINT_MODULES textlint --config .textlintrc-commit.json --stdin --stdin-filename commit.txt < {1}"
+        "run": "TEXTLINT_MODULES=$(dirname \"$(readlink -f \"$(which textlint)\")\")/../lib/node_modules/textlint-with-preset/node_modules && sed '1s/([^)]*)//' < {1} | NODE_PATH=$TEXTLINT_MODULES textlint --config .textlintrc-commit.json --stdin --stdin-filename commit.txt"
       }
     }
   }
