@@ -14,6 +14,9 @@ const terminalApps = ifApp([
   "^com\\.googlecode\\.iterm2$",
 ]);
 
+// Chrome bundle identifier
+const chromeApp = ifApp("^com\\.google\\.Chrome$");
+
 // Generate Command+key to Control+key mappings for terminal apps
 // Since simple_modifications swaps Ctrl↔Cmd globally,
 // we need to convert Command (physical Ctrl) back to Control in terminal apps
@@ -94,6 +97,18 @@ writeToProfile(
           map(key, ["command", "shift"]).to(key, ["control", "shift"])
         ),
       ]),
+
+    // Chrome: Command+Tab to Control+Tab (tab switching)
+    rule("Chrome: Command+Tab to Control+Tab", chromeApp).manipulators([
+      map("tab", "command").to("tab", "control"),
+      map("tab", ["command", "shift"]).to("tab", ["control", "shift"]),
+    ]),
+
+    // Disable Command+Tab app switcher globally
+    rule("Disable Command+Tab app switcher").manipulators([
+      map("tab", "command").toVar("__disabled__", 1),
+      map("tab", ["command", "shift"]).toVar("__disabled__", 1),
+    ]),
 
     // Option+Tab to Raycast Switch Windows
     rule("Option+Tab to Raycast Switch Windows").manipulators([
