@@ -307,6 +307,7 @@ in {
         cc-statusline # 高速 Claude Code statusline (Zig)
         # https://github.com/ryoppippi/ccusage
         ccusage # Claude API使用量表示
+        daily # 日記メモツール (Zig)
 
         #--- ユーザースクリプト ラッパー ---#
         mmd # Mermaid図レンダラー (bin/mermaid-render.ts)
