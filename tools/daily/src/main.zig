@@ -523,7 +523,7 @@ fn multilineMode(allocator: std.mem.Allocator) void {
     const importance = selectImportance(allocator);
 
     // Create temp file with PID + timestamp for uniqueness
-    const pid = posix.getpid();
+    const pid = posix.system.getpid();
     const ts = std.time.timestamp();
     const tmp_path = std.fmt.allocPrint(allocator, "/tmp/daily-{d}-{d}.md", .{ pid, ts }) catch fatal("out of memory");
 
