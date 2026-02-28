@@ -16,6 +16,10 @@ When responding to queries, follow this priority:
 
 Use `gomi` instead of `rm` for all file deletion operations.
 
+## Response Quality
+
+Do not use unverified claims to support conclusions. If unsure, say so.
+
 ## Design Principles
 
 Always prefer simplicity over pathological correctness. YAGNI, KISS, DRY. No backward-compat shims or fallback paths unless they come free without adding cyclomatic complexity.
