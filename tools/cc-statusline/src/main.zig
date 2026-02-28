@@ -15,6 +15,8 @@ const token_200k: i64 = 200_000;
 const cache_magic = [4]u8{ 'C', 'C', 'S', 'L' };
 const cache_ver: u32 = 3;
 const file_list_ttl_s: i64 = 300;
+const default_branch_max: usize = 24;
+const bar_width: u8 = 10;
 
 // Theme
 const Theme = struct {
@@ -585,6 +587,23 @@ fn readGitHead(buf: *[256]u8, path: []const u8) ?[]const u8 {
     return content;
 }
 
+fn getBranchMax() usize {
+    if (std.posix.getenv("CC_STATUSLINE_BRANCH_MAX")) |val| {
+        if (parseDecimal(val)) |v| {
+            if (v >= 4) return @intCast(v);
+        }
+    }
+    return default_branch_max;
+}
+
+fn truncateBranch(buf: *[256]u8, branch: []const u8, max_len: usize) []const u8 {
+    if (max_len < 4 or branch.len <= max_len) return branch;
+    const cut = max_len - 1;
+    @memcpy(buf[0..cut], branch[0..cut]);
+    @memcpy(buf[cut..][0..3], "\xe2\x80\xa6"); // U+2026 …
+    return buf[0 .. cut + 3];
+}
+
 // ============================================================
 // Transcript Scanning
 // ============================================================
@@ -1152,7 +1171,9 @@ fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult) !void {
     if (stdin_info.cwd) |cwd| {
         var branch_buf: [256]u8 = undefined;
         if (getGitBranch(&branch_buf, cwd)) |branch| {
-            try w.print(" {s}|{s} \xf0\x9f\x8c\xbf {s}{s}{s}", .{ theme.dim, theme.reset, theme.green, branch, theme.reset });
+            var trunc_buf: [256]u8 = undefined;
+            const display_branch = truncateBranch(&trunc_buf, branch, getBranchMax());
+            try w.print(" {s}|{s} \xf0\x9f\x8c\xbf {s}{s}{s}", .{ theme.dim, theme.reset, theme.green, display_branch, theme.reset });
         }
     }
 
@@ -1160,7 +1181,7 @@ fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult) !void {
     if (stdin_info.context_pct) |pct| {
         const color = contextColor(theme, pct);
         var bar_buf: [128]u8 = undefined;
-        const bar = buildProgressBar(&bar_buf, pct, 20, theme.bar_filled, theme.bar_transition, theme.bar_empty);
+        const bar = buildProgressBar(&bar_buf, pct, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
         try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 {s}{s}{s} {s}{d:.0}%{s}", .{ theme.dim, theme.reset, color, bar, theme.reset, color, pct, theme.reset });
     } else {
         try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 N/A", .{ theme.dim, theme.reset });
@@ -1194,10 +1215,10 @@ fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult) !void {
                 @as(f64, @floatFromInt(@max(remaining, @as(i64, 0)))) / @as(f64, @floatFromInt(block_total_ms)) * 100.0
             else
                 0;
-            const bar_pct = if (remaining_pct > 0) @max(remaining_pct, 100.0 / 20.0) else @as(f64, 0);
+            const bar_pct = if (remaining_pct > 0) @max(remaining_pct, 100.0 / @as(f64, @floatFromInt(bar_width))) else @as(f64, 0);
             const block_bar_color = if (remaining_pct >= 50.0) theme.green else if (remaining_pct >= 20.0) theme.yellow else theme.red;
             var block_bar_buf: [128]u8 = undefined;
-            const block_bar = buildProgressBar(&block_bar_buf, bar_pct, 20, theme.bar_filled, theme.bar_transition, theme.bar_empty);
+            const block_bar = buildProgressBar(&block_bar_buf, bar_pct, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
             try w.print(" {s}{s}{s} {s}", .{ block_bar_color, block_bar, theme.reset, formatDuration(&dur_buf, remaining) });
             var rate_buf: [32]u8 = undefined;
             try w.print(" \xf0\x9f\x94\xa5 {s}{s}{s} {s}/h{s}", .{ theme.yellow, formatCurrency(&rate_buf, block.burn_rate_per_hr), theme.reset, theme.dim, theme.reset });
@@ -1587,6 +1608,38 @@ test "buildProgressBar 0% and 100%" {
 
     const full = buildProgressBar(&buf, 100.0, 4, "#", "=", "-");
     try std.testing.expectEqualStrings("####", full);
+}
+
+test "truncateBranch short branch unchanged" {
+    var buf: [256]u8 = undefined;
+    const branch = "main";
+    const result = truncateBranch(&buf, branch, 24);
+    try std.testing.expectEqualStrings("main", result);
+}
+
+test "truncateBranch exact max unchanged" {
+    var buf: [256]u8 = undefined;
+    const branch = "feature/exactly-twentyfo"; // 24 chars
+    try std.testing.expectEqual(@as(usize, 24), branch.len);
+    const result = truncateBranch(&buf, branch, 24);
+    try std.testing.expectEqualStrings(branch, result);
+}
+
+test "truncateBranch long branch truncated" {
+    var buf: [256]u8 = undefined;
+    const branch = "feature/very-long-branch-name-that-overflows";
+    const result = truncateBranch(&buf, branch, 24);
+    // 23 chars + "…" (3 bytes UTF-8) = 26 bytes
+    try std.testing.expectEqual(@as(usize, 26), result.len);
+    try std.testing.expectEqualStrings("feature/very-long-branc\xe2\x80\xa6", result);
+}
+
+test "truncateBranch min max_len" {
+    var buf: [256]u8 = undefined;
+    const branch = "feature/something";
+    // max_len < 4 returns unchanged
+    const result = truncateBranch(&buf, branch, 3);
+    try std.testing.expectEqualStrings(branch, result);
 }
 
 test "contextColor thresholds" {
