@@ -53,12 +53,12 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.62";
+    version = "2.1.63";
     hashes = {
-      "aarch64-darwin" = "sha256-lPgTVhUZZ2qVE149NjHLx0oUiDIiryDe9tUEDRk81ec=";
-      "x86_64-darwin" = "sha256-Sp1hnN6TEB3TJ5IRzxBT25Qvl9ajI87BtXDVL0Px86k=";
-      "aarch64-linux" = "sha256-aWwvKiKiM3Xp1+4mrwr/QXzUo6jLcE8k5LqcdKTHjTc=";
-      "x86_64-linux" = "sha256-1vBybLjpS3owwkOWRSm6kTXmQsQNITTKCfX4RQcUcbQ=";
+      "aarch64-darwin" = "sha256-LoZnMi4L0QQIffKohX8Xasx11wkaoCgogl3+tKVwhTE=";
+      "x86_64-darwin" = "sha256-B4QtZSH1m8aJedgz7zPLwbmFufXgn6iXXv4DmYlmaqk=";
+      "aarch64-linux" = "sha256-H+yMg2lga0psAK+WM1S31IrueT7V2zeP5M8oAUnzGQo=";
+      "x86_64-linux" = "sha256-c0RH5GG7kvD/1faDu2IWw1o8FujdhL6NFQtDYF05sNE=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -502,7 +502,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.15.0";
+    version = "0.15.1";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -520,10 +520,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-4bmdWjJXqDL9poGMAneIAimiBPAHgLXj/gTv3aTT66Q=";
+        hash = "sha256-DY69oGftjNwiaIXWVBvI9mB9ET2g0HU4RPNLVeGmsPo=";
       };
 
-      npmDepsHash = "sha256-SscCV0TEB74gNztdC0Y/wPfehn+7YwVrSpEsRA9Sf1c=";
+      npmDepsHash = "sha256-hIud2/eY4i4Kp9RlsNxkUwnppiFImM1v5awcGMEJoGE=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       # --legacy-peer-deps: upstream has conflicting peer deps
@@ -862,16 +862,16 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.5.1";
+      version = "0.5.3";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-p1ZkjoFrcsfpY/0w8NlVOn94VO4wEMtQkxOeI49LEaE=";
+        hash = "sha256-IuXzgVVo6OkUpZHAOzW6YoDXGWx13cv6QZz8q8AQv78=";
       };
 
-      cargoHash = "sha256-Ginyyd1FqXx1t1KUxkc7jsqqePzlBF2ujMm4kwL9A/c=";
+      cargoHash = "sha256-DSSe44fpENNjTYdgKFnDWeMxqF7GAuetnDQbXyN54q4=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
