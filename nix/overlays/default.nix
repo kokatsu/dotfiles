@@ -807,6 +807,22 @@
     };
   };
 
+  daily = _final: prev: {
+    daily = prev.stdenvNoCC.mkDerivation {
+      pname = "daily";
+      version = "0.1.0";
+      src = ../../tools/daily;
+      nativeBuildInputs = [prev.zig];
+      dontConfigure = true;
+      dontFixup = true;
+      buildPhase = ''
+        export HOME=$TMPDIR
+        export XDG_CACHE_HOME=$TMPDIR/.cache
+        zig build -Doptimize=ReleaseFast --prefix $out
+      '';
+    };
+  };
+
   # biome - A toolchain for web projects (formatter + linter)
   # nixpkgs の更新が遅いため overlay でバージョン管理
   # Renovate: datasource=github-releases depName=biomejs/biome

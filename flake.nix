@@ -100,6 +100,7 @@
       customOverlays.biome
       customOverlays.cc-statusline
       customOverlays.ccusage
+      customOverlays.daily
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
       customOverlays.deck
