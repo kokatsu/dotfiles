@@ -129,6 +129,13 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }x-api-playground $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'takt'; then
+            echo "has_takt=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=takt" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_takt=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }takt $VERSION"
+          fi
+
           if echo "$DIFF" | grep -q 'textlint'; then
             echo "has_textlint=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=textlint" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -398,6 +405,30 @@ jobs:
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
           sed -i "/unocss-language-server = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+
+      - name: Update takt hashes
+        if: steps.detect.outputs.has_takt == 'true'
+        run: |
+          VERSION="${{ steps.detect.outputs.version_takt }}"
+          OVERLAY="nix/overlays/default.nix"
+          LOCK_DIR="nix/npm-locks/takt"
+
+          # Update tarball hash
+          URL="https://registry.npmjs.org/takt/-/takt-${VERSION}.tgz"
+          TARBALL_HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+          sed -i "/takt = _final: prev: let/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${TARBALL_HASH}\";|}" "$OVERLAY"
+
+          # Regenerate package-lock.json
+          mkdir -p /tmp/takt-pkg
+          curl -fsSL "$URL" | tar -xzf - -C /tmp/takt-pkg --strip-components=1
+          cd /tmp/takt-pkg
+          npm install --package-lock-only --ignore-scripts
+          cp package-lock.json "$GITHUB_WORKSPACE/$LOCK_DIR/"
+          cd "$GITHUB_WORKSPACE"
+
+          # Compute npmDepsHash using prefetch-npm-deps
+          NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
+          sed -i "/takt = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update cssmodules-language-server hashes
         if: steps.detect.outputs.has_cssmodules_language_server == 'true'

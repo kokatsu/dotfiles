@@ -112,6 +112,7 @@
       customOverlays.playwright-browsers-fix
       customOverlays.playwright-cli
       customOverlays.secretlint
+      customOverlays.takt
       customOverlays.termframe
       customOverlays.textlint
       customOverlays.unocss-language-server

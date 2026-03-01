@@ -786,6 +786,42 @@
     };
   };
 
+  # takt - AI Agent orchestration framework
+  # Uses pre-built package from npm with vendored package-lock.json
+  # Renovate: datasource=npm depName=takt
+  takt = _final: prev: let
+    version = "0.27.0";
+    tarball = prev.fetchurl {
+      url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
+      hash = "sha256-4erFyIb+fW4M9j1DAsO6uh1aywJ53ZdAdUVv1lBba+o=";
+    };
+    # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
+    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/takt/package-lock.json);
+  in {
+    takt = prev.buildNpmPackage {
+      pname = "takt";
+      inherit version;
+
+      src = prev.runCommand "takt-src" {} ''
+        mkdir -p $out
+        tar -xzf ${tarball} -C $out --strip-components=1
+        cp ${packageLock} $out/package-lock.json
+      '';
+
+      npmDepsHash = "sha256-W1+gxqjfwjv+cwxR6o6Nv0O0BDcDqcWQgCCUi00c3QY=";
+
+      # Already pre-built
+      dontNpmBuild = true;
+
+      meta = with prev.lib; {
+        description = "AI Agent orchestration framework";
+        homepage = "https://github.com/nrslib/takt";
+        license = licenses.mit;
+        mainProgram = "takt";
+      };
+    };
+  };
+
   # cc-statusline - Fast Claude Code statusline tool (Zig)
   cc-statusline = _final: prev: {
     cc-statusline = prev.stdenvNoCC.mkDerivation {
