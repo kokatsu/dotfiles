@@ -89,6 +89,10 @@
 !spotify-player/
 !spotify-player/**
 
+# takt (https://github.com/nrslib/takt)
+!takt/
+!takt/**
+
 # taplo (https://github.com/tamasfe/taplo)
 !taplo/
 !taplo/**

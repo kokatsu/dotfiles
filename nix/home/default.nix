@@ -234,6 +234,8 @@ in {
         stylua # Lua formatter
         # https://github.com/Kampfkarren/selene
         selene # Lua linter
+        # https://github.com/nrslib/takt
+        takt # AI Agent オーケストレーション (overlay)
         # https://github.com/textlint/textlint
         textlint # 日本語校正 (overlay)
         # https://github.com/crate-ci/typos
@@ -465,6 +467,9 @@ in {
         ".config/claude-chill.toml".source = ../../.config/claude-chill.toml;
         # Gemini CLI (XDG未対応のため ~/.gemini/ にシンボリンク)
         ".gemini/settings.json".source = ../../.config/gemini/settings.json;
+        # takt (XDG未対応のため ~/.takt/ にシンボリンク)
+        ".takt/config.yaml".source = ../../.config/takt/config.yaml;
+        ".takt/pieces".source = ../../.config/takt/pieces;
         ".config/delta".source = ../../.config/delta;
         ".config/fastfetch".source = ../../.config/fastfetch;
         ".config/git-graph".source = ../../.config/git-graph;
