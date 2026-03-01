@@ -920,10 +920,10 @@
         owner = "ushironoko";
         repo = "octorus";
         rev = "v${version}";
-        hash = "sha256-IuXzgVVo6OkUpZHAOzW6YoDXGWx13cv6QZz8q8AQv78=";
+        hash = "sha256-dsuDn9gNcoI8tKimlxiRdqLGwdQQHZxannc1+zRdtcA=";
       };
 
-      cargoHash = "sha256-DSSe44fpENNjTYdgKFnDWeMxqF7GAuetnDQbXyN54q4=";
+      cargoHash = "sha256-K/S4twm7V7cNA6Au30M83E+81dlJsr9l0xfE43fzwDk=";
 
       # Skip tests (require GitHub authentication)
       doCheck = false;
