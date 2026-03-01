@@ -914,7 +914,7 @@
   octorus = _final: prev: {
     octorus = prev.rustPlatform.buildRustPackage rec {
       pname = "octorus";
-      version = "0.5.3";
+      version = "0.5.4";
 
       src = prev.fetchFromGitHub {
         owner = "ushironoko";
