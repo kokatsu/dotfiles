@@ -35,8 +35,18 @@ Beyond bugs and security, check for:
 - **Test coverage for new logic**: New branches (3+ conditions) without tests
 - **Cross-layer consistency**: The same logic or constant defined in multiple places
   must stay in sync (e.g., frontend validation matching backend validation)
+- **Same-name method parity**: When a new method is added with the same name as one
+  on a related type (e.g., `is_active()` on both `User` and `AdminUser`), verify
+  their behavior is identical or intentionally different. Flag any discrepancy
+- **Fallback value semantics**: When `unwrap_or`, `|| default`, `?? fallback`,
+  or similar patterns provide a default value, verify the default is semantically
+  valid in context — not just safe from crashes. A fallback like `"0"` for an ID
+  or `""` for a required field may silently produce incorrect downstream behavior
 - **NULL/nil safety**: Null values propagating through a chain of accesses without
   adequate guards
+- **Schema/type change impact**: When shared data structures are modified (DB types,
+  API response shapes, serialization schemas), consider whether dependent code —
+  callers, consumers, deserializers — will break or silently ignore the new fields
 - **Error/constant semantic match**: When code raises an error or selects a constant,
   verify that the chosen value semantically matches the condition being checked.
   Watch for cases where the condition (e.g., "not found") doesn't match the error name
@@ -74,6 +84,10 @@ Before posting a comment that references language features, framework APIs, or t
    you identified.
 3. **Mark uncertain technical claims explicitly.** Use hedging language such as
    "I believe", "this may", or "worth verifying" rather than asserting as fact.
+4. **Trace the call chain before commenting on branches.** Before flagging an
+   unreachable-looking branch or a missing case within a function, check how
+   the function is called. If the caller's conditions already guarantee that
+   a branch cannot be reached, do not flag it as a real issue.
 
 ## Review Decision
 
