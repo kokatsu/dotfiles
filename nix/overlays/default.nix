@@ -790,10 +790,10 @@
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=takt
   takt = _final: prev: let
-    version = "0.27.0";
+    version = "0.28.0";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
-      hash = "sha256-4erFyIb+fW4M9j1DAsO6uh1aywJ53ZdAdUVv1lBba+o=";
+      hash = "sha256-DEl3O2O2BwxkY9W48R/DpR4ji2bFJ6u5WrbJOPUtXyU=";
     };
     # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/takt/package-lock.json);
@@ -808,7 +808,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-W1+gxqjfwjv+cwxR6o6Nv0O0BDcDqcWQgCCUi00c3QY=";
+      npmDepsHash = "sha256-rw1GiVI1ZchqxeHDO4zopKMoCUSTCxXF0NVJY4D8JF8=";
 
       # Already pre-built
       dontNpmBuild = true;
