@@ -862,12 +862,12 @@
   # nixpkgs の更新が遅いため overlay でバージョン管理
   # Renovate: datasource=github-releases depName=biomejs/biome
   biome = _final: prev: let
-    version = "2.4.4";
+    version = "2.4.5";
     hashes = {
-      "aarch64-darwin" = "sha256-6JARsXFKIOvUtoMyG6cYTOKnmij07j0zvadKTqdJBio=";
-      "x86_64-darwin" = "sha256-T60NUBXrtr5SuJOY7Q6Qch7gI59M3qDDRyV6CihujYQ=";
-      "aarch64-linux" = "sha256-cIz6oB0SsrsWScW32X894koXQfvPzwpGHF+b5Idcdgs=";
-      "x86_64-linux" = "sha256-ulBzAX7AOnAOW5JwskVN99vsalEkYRu3hbaK5xdQbUU=";
+      "aarch64-darwin" = "sha256-tQoaWtyhQFVPRPbIntz2ODsLLjuvnc0I1ZfR/Vn5JUQ=";
+      "x86_64-darwin" = "sha256-f02ADdw3yEoKCarBzR7HfRu73V+Xcn828gYva2OXFOk=";
+      "aarch64-linux" = "sha256-mKEJ1Uv+p98egrc6p9N/wsqogNEhBeskle/g1lOVVRg=";
+      "x86_64-linux" = "sha256-oxgV8ZsLkPoEPrI/v3ae2TH7zebZi7iYlOqL4Th9g5Q=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
