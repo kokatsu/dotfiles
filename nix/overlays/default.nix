@@ -789,7 +789,7 @@
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=takt
   takt = _final: prev: let
-    version = "0.28.0";
+    version = "0.28.1";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
       hash = "sha256-DEl3O2O2BwxkY9W48R/DpR4ji2bFJ6u5WrbJOPUtXyU=";
