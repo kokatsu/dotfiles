@@ -909,29 +909,99 @@
     };
   };
 
-  # octorus - TUI tool for GitHub PR review
-  # Renovate: datasource=github-releases depName=ushironoko/octorus
-  octorus = _final: prev: {
-    octorus = prev.rustPlatform.buildRustPackage rec {
-      pname = "octorus";
-      version = "0.5.4";
+  # kakehashi - Tree-sitter Language Server
+  # Uses pre-built binaries from GitHub releases
+  # Renovate: datasource=github-releases depName=atusy/kakehashi
+  kakehashi = _final: prev: let
+    version = "0.3.0";
+    hashes = {
+      "aarch64-darwin" = "sha256-tuMx+xkBLh8dyQhvB4pCKjEd9Zkg+CclHbVexFZ8ZXQ=";
+      "x86_64-darwin" = "sha256-NdmkzAk6hBghu/9gmJ1QwGAuPS7u7K+YE2xoFr23k6M=";
+      "aarch64-linux" = "sha256-lgB/J/FeBlklA1qS4hgGup15ulzh13QmKnrUDOnxKYI=";
+      "x86_64-linux" = "sha256-phKlxTDjStxULip2nhwl6mgh5g6AIfovwty19o9m03o=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "aarch64-apple-darwin";
+      "x86_64-darwin" = "x86_64-apple-darwin";
+      "aarch64-linux" = "aarch64-unknown-linux-gnu";
+      "x86_64-linux" = "x86_64-unknown-linux-gnu";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    kakehashi = prev.stdenvNoCC.mkDerivation {
+      pname = "kakehashi";
+      inherit version;
 
-      src = prev.fetchFromGitHub {
-        owner = "ushironoko";
-        repo = "octorus";
-        rev = "v${version}";
-        hash = "sha256-dsuDn9gNcoI8tKimlxiRdqLGwdQQHZxannc1+zRdtcA=";
+      src = prev.fetchurl {
+        url = "https://github.com/atusy/kakehashi/releases/download/v${version}/kakehashi-v${version}-${platform}.tar.gz";
+        inherit hash;
       };
 
-      cargoHash = "sha256-K/S4twm7V7cNA6Au30M83E+81dlJsr9l0xfE43fzwDk=";
+      sourceRoot = ".";
 
-      # Skip tests (require GitHub authentication)
-      doCheck = false;
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp kakehashi $out/bin/
+        chmod +x $out/bin/kakehashi
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Tree-sitter Language Server for embedded languages";
+        homepage = "https://github.com/atusy/kakehashi";
+        license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "kakehashi";
+      };
+    };
+  };
+
+  # octorus - TUI tool for GitHub PR review
+  # Uses pre-built binaries from GitHub releases
+  # Renovate: datasource=github-releases depName=ushironoko/octorus
+  octorus = _final: prev: let
+    version = "0.5.4";
+    hashes = {
+      "aarch64-darwin" = "sha256-82oUuZgd1njKC2MFhh8Xc85EsRXn/MwnvBIX2o5BqlA=";
+      "x86_64-darwin" = "sha256-MCzRVNKamX84AKejC45gVPRIiMAfq7EG1Uyj/wP6xU0=";
+      "aarch64-linux" = "sha256-tD+HvoyZu59QaAgcn3hwIlRkwN2z8ArQKtIi8h59Vcg=";
+      "x86_64-linux" = "sha256-z0eDCFBNcb0Vs3J0SJvfc30qkIVMo8s18cFj4pKZjXs=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "aarch64-apple-darwin";
+      "x86_64-darwin" = "x86_64-apple-darwin";
+      "aarch64-linux" = "aarch64-unknown-linux-gnu";
+      "x86_64-linux" = "x86_64-unknown-linux-gnu";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    octorus = prev.stdenvNoCC.mkDerivation {
+      pname = "octorus";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://github.com/ushironoko/octorus/releases/download/v${version}/octorus-${version}-${platform}.tar.gz";
+        inherit hash;
+      };
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp or $out/bin/
+        chmod +x $out/bin/or
+        runHook postInstall
+      '';
 
       meta = with prev.lib; {
         description = "TUI tool for GitHub PR review with Vim-style keybindings";
         homepage = "https://github.com/ushironoko/octorus";
         license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
         mainProgram = "or";
       };
     };

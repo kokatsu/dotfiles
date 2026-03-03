@@ -340,9 +340,8 @@ in {
         # https://github.com/artempyanykh/marksman
         marksman # Markdown LSP (overlay: GitHub バイナリ、.NET ビルド問題回避)
 
-        # Tree-sitter Language Server (埋め込み言語対応)
-        # doCheck = false: Nixサンドボックス内でgitが利用できずテストが失敗するため
-        (inputs.kakehashi.packages.${system}.default.overrideAttrs (_: {doCheck = false;}))
+        # https://github.com/atusy/kakehashi
+        kakehashi # Tree-sitter Language Server (overlay)
 
         #--- Go 製パッケージ ---#
         # https://github.com/k1LoW/deck
