@@ -1,4 +1,4 @@
--- https://github.com/toppair/peek.nvim
+-- https://github.com/kokatsu/peek.nvim
 
 local function inject_favicon(plugin_dir)
   local index_path = plugin_dir .. '/public/index.html'
@@ -20,7 +20,8 @@ local function inject_favicon(plugin_dir)
 end
 
 return {
-  'toppair/peek.nvim',
+  'kokatsu/peek.nvim',
+  branch = 'fix/deprecated-nvim-api',
   event = { 'VeryLazy' },
   build = function(plugin)
     vim.system({ 'git', 'update-index', '--no-skip-worktree', 'public/index.html' }, { cwd = plugin.dir }):wait()
