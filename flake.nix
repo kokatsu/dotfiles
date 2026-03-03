@@ -36,11 +36,6 @@
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    kakehashi = {
-      url = "github:atusy/kakehashi";
-      # nixpkgs.followsを外してkakehashi側のnixpkgsを使用（ビルドキャッシュ効率化）
-    };
   };
 
   outputs = inputs @ {
@@ -105,6 +100,7 @@
       customOverlays.cssmodules-language-server
       customOverlays.deck
       customOverlays.git-graph-fork
+      customOverlays.kakehashi
       customOverlays.keifu
       customOverlays.marksman-binary
       customOverlays.octorus
