@@ -163,8 +163,9 @@ jobs:
 
       - name: Update termframe hashes
         if: steps.detect.outputs.has_termframe == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_termframe }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_termframe }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute hashes for each platform
@@ -179,8 +180,9 @@ jobs:
 
       - name: Update marksman-binary hashes
         if: steps.detect.outputs.has_marksman == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_marksman }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_marksman }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute hashes for each platform
@@ -195,8 +197,9 @@ jobs:
 
       - name: Update biome hashes
         if: steps.detect.outputs.has_biome == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_biome }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_biome }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute hashes for each platform
@@ -211,8 +214,9 @@ jobs:
 
       - name: Update keifu hashes
         if: steps.detect.outputs.has_keifu == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_keifu }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_keifu }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute hashes for each platform
@@ -227,8 +231,9 @@ jobs:
 
       - name: Update claude-code hashes
         if: steps.detect.outputs.has_claude_code == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_claude_code }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_claude_code }}"
           OVERLAY="nix/overlays/default.nix"
           MANIFEST_URL="https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${VERSION}/manifest.json"
 
@@ -255,8 +260,9 @@ jobs:
 
       - name: Update deck hashes
         if: steps.detect.outputs.has_deck == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_deck }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_deck }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute hashes for each platform
@@ -271,8 +277,9 @@ jobs:
 
       - name: Update ccusage hash
         if: steps.detect.outputs.has_ccusage == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_ccusage }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_ccusage }}"
           OVERLAY="nix/overlays/default.nix"
 
           URL="https://registry.npmjs.org/ccusage/-/ccusage-${VERSION}.tgz"
@@ -282,8 +289,9 @@ jobs:
 
       - name: Update agent-browser hashes
         if: steps.detect.outputs.has_agent_browser == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_agent_browser }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_agent_browser }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/agent-browser"
 
@@ -310,8 +318,9 @@ jobs:
 
       - name: Update secretlint hashes
         if: steps.detect.outputs.has_secretlint == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_secretlint }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_secretlint }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/secretlint"
 
@@ -333,8 +342,9 @@ jobs:
 
       - name: Update textlint hashes
         if: steps.detect.outputs.has_textlint == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_textlint }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_textlint }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/textlint"
 
@@ -362,8 +372,9 @@ jobs:
 
       - name: Update playwright-cli hashes
         if: steps.detect.outputs.has_playwright_cli == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_playwright_cli }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_playwright_cli }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/playwright-cli"
 
@@ -384,8 +395,9 @@ jobs:
 
       - name: Update unocss-language-server hashes
         if: steps.detect.outputs.has_unocss_language_server == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_unocss_language_server }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_unocss_language_server }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/unocss-language-server"
 
@@ -408,8 +420,9 @@ jobs:
 
       - name: Update takt hashes
         if: steps.detect.outputs.has_takt == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_takt }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_takt }}"
           OVERLAY="nix/overlays/default.nix"
           LOCK_DIR="nix/npm-locks/takt"
 
@@ -432,8 +445,9 @@ jobs:
 
       - name: Update cssmodules-language-server hashes
         if: steps.detect.outputs.has_cssmodules_language_server == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_cssmodules_language_server }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_cssmodules_language_server }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute GitHub source hash
@@ -455,8 +469,9 @@ jobs:
 
       - name: Update octorus hashes
         if: steps.detect.outputs.has_octorus == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_octorus }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_octorus }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute GitHub source hash
@@ -484,8 +499,9 @@ jobs:
 
       - name: Update x-api-playground hashes
         if: steps.detect.outputs.has_x_api_playground == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_x_api_playground }}
         run: |
-          VERSION="${{ steps.detect.outputs.version_x_api_playground }}"
           OVERLAY="nix/overlays/default.nix"
 
           # Compute GitHub source hash
@@ -515,6 +531,8 @@ jobs:
         run: nix fmt -- .
 
       - name: Commit and push changes
+        env:
+          PACKAGES: ${{ steps.detect.outputs.packages }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -523,7 +541,7 @@ jobs:
             echo "No changes to commit"
           else
             git add -A
-            git commit -m "fix: update nix hashes for ${{ steps.detect.outputs.packages }}"
+            git commit -m "fix: update nix hashes for $PACKAGES"
             git push
           fi
 
