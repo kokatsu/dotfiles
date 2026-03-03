@@ -632,15 +632,14 @@
       };
       "aarch64-linux" = {
         suffix = "linux-arm64";
-        # TODO: Add hashes for aarch64-linux when needed
+        # Chrome for Testing does not provide linux-arm64 builds
         chromiumHash = "";
         headlessShellHash = "";
       };
       "x86_64-darwin" = {
         suffix = "mac-x64";
-        # TODO: Add hashes for x86_64-darwin when needed
-        chromiumHash = "";
-        headlessShellHash = "";
+        chromiumHash = "sha256-+jpk7PuOK4bEurrGt3Z60uY50k4YgtlL2DxTwp/wbbg=";
+        headlessShellHash = "sha256-qXeSBKiJDlmTur6oFc+bIxJEiI1ajUh5F8K7EmZcDK0=";
       };
       "aarch64-darwin" = {
         suffix = "mac-arm64";
