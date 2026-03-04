@@ -71,6 +71,12 @@ Repeat the following cycle for each behavior to implement:
 - Use HTTP fixtures or recorded responses instead of mocking HTTP clients.
 - Use filesystem temp directories instead of mocking `fs` calls.
 
+### Test Boundaries and Edge Cases
+
+- Explicitly test both sides of boundary values (max, max+1, min, min-1, zero, empty).
+- Include error inputs, resource failures, and timeout scenarios as separate Red-Green-Refactor cycles.
+- When fixing a bug, start from Red: write a test that reproduces the bug before writing the fix.
+
 ### Keep Tests Readable
 
 - Each test should read as a specification: **given / when / then**.
