@@ -10,6 +10,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.file_path // .file_path // empty'); EXT=\"${FILE##*.}\"; case \"$EXT\" in nix) alejandra -q \"$FILE\" ;; lua) stylua \"$FILE\" ;; js|ts|json|jsonc) biome check --write \"$FILE\" 2>/dev/null ;; yaml|yml) yamlfmt \"$FILE\" ;; esac; exit 0"
+          }
+        ]
+      }
     ]
   }
 }
