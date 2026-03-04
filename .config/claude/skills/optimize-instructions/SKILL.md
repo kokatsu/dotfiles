@@ -17,19 +17,31 @@ Review CLAUDE.md for redundant or unnecessary content and suggest improvements. 
 
 ## Principle
 
+CLAUDE.md is injected as a User Message (not System Prompt) at session start. As conversation progresses, its influence fades because it becomes an old message buried under newer ones. Therefore, CLAUDE.md should act as a **Session Start Hook** — containing only information needed at session initialization, not persistent rules.
+
 Instruction files hurt performance when they contain:
 
 1. **Discoverable information** — content the agent can find by exploring the codebase
 2. **Duplicated documentation** — content that repeats README, inline comments, or config files
 3. **General knowledge** — well-known facts about tools/frameworks
 4. **Internal redundancy** — the same information repeated within CLAUDE.md itself
+5. **Persistent rules in CLAUDE.md** — rules meant to be enforced throughout the session (they fade as conversation grows)
 
-Instruction files help when they contain:
+CLAUDE.md should contain:
 
-1. **Workflow rules** — constraints the agent cannot infer (e.g., "never edit ~/.config/ directly")
-2. **Project conventions** — commit message format, naming rules, coding style choices
+1. **Project overview** — what the project is and does (helps initial exploration)
+2. **Module/directory guide** — structure that is not obvious from directory names alone
+3. **Session start procedures** — steps to run at the beginning of each session
+
+`.claude/rules/` should contain:
+
+1. **Coding rules** — naming conventions, style choices, patterns to follow
+2. **Project conventions** — commit message format, branching strategy
 3. **Non-obvious commands** — specific tool flags, lint configurations
 4. **Critical warnings** — things that cause hard-to-debug failures if ignored
+5. **Workflow rules** — constraints the agent cannot infer (e.g., "never edit ~/.config/ directly")
+
+Rules in `.claude/rules/` are injected as conditional rules when relevant files are first touched, so they arrive as newer messages closer to the actual work.
 
 ## Workflow
 
@@ -64,10 +76,14 @@ For every section or bullet point in CLAUDE.md and each rule file, classify it:
 | Duplicated | Remove | Content that mirrors README |
 | General knowledge | Remove | "Flakes provide reproducibility" |
 | Internal redundancy | Merge or remove | Same info in two sections |
-| Workflow rule | Keep | "Never edit ~/.config/ directly" |
-| Project convention | Keep | Commit message format |
-| Non-obvious command | Keep | Specific lint/format commands |
-| Critical warning | Keep | "Secretlint prevents committing secrets" |
+| Project overview | Keep in CLAUDE.md | "ECサイトのバックエンドAPI" |
+| Module guide | Keep in CLAUDE.md | Module descriptions not obvious from names |
+| Session start procedure | Keep in CLAUDE.md | "Create worktree with feat/{issue}-{name}" |
+| Coding rule | Move to `.claude/rules/` | "Use interface over type in TypeScript" |
+| Project convention | Move to `.claude/rules/` | Commit message format |
+| Non-obvious command | Move to `.claude/rules/` | Specific lint/format commands |
+| Critical warning | Move to `.claude/rules/` | "Secretlint prevents committing secrets" |
+| Workflow rule | Move to `.claude/rules/` | "Never edit ~/.config/ directly" |
 
 ### 5. Present findings
 
@@ -79,8 +95,12 @@ Report findings organized as:
 ### 削除候補 (Items to remove)
 - **項目名** — 理由 (discoverable / duplicated / general knowledge / redundancy)
 
-### 保持推奨 (Items to keep)
-- **項目名** — 理由
+### CLAUDE.mdに保持 (Keep in CLAUDE.md)
+- **項目名** — 理由 (project overview / module guide / session start procedure)
+
+### `.claude/rules/` に移動 (Move to rules)
+- **項目名** — 理由 (coding rule / convention / warning / workflow rule)
+- Suggest appropriate `paths` frontmatter if the rule applies to specific file patterns
 
 ### 改善提案 (Improvements)
 - Suggestions for restructuring, merging, or rewording
@@ -92,7 +112,11 @@ Use AskUserQuestion to confirm which items to remove before making changes.
 
 ### 7. Apply changes
 
-Edit CLAUDE.md and/or rule files to remove confirmed items. Do not add new content unless explicitly requested.
+Edit CLAUDE.md and/or rule files based on confirmed actions:
+
+- **Remove**: Delete the item entirely
+- **Keep in CLAUDE.md**: Leave as-is
+- **Move to rules**: Remove from CLAUDE.md and create/update the appropriate `.claude/rules/*.md` file with `paths` frontmatter if applicable
 
 ## Notes
 
