@@ -2,6 +2,13 @@
 name: ux-psychology
 description: Apply UX psychology principles when building UI components, forms, pricing pages, onboarding flows, checkout experiences, modals, or any user-facing interface. Use when designing CTAs, implementing progress indicators, creating loading states, improving user engagement, or reviewing UI for psychological effectiveness.
 user-invocable: true
+allowed-tools:
+  - Read
+  - Glob
+  - Grep
+  - Edit
+  - Write
+  - Bash
 ---
 
 # UX Psychology Frontend Development Guide

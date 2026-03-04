@@ -38,10 +38,7 @@ No arguments needed. Reads `plan.md` in the current working directory.
 - **Do not use `any` or `unknown` types** (TypeScript projects).
 - **Keep code clean and minimal.** No over-engineering beyond what the plan specifies.
 - **Run relevant checks after each phase:**
-  - TypeScript: `npx tsc --noEmit` or project-specific typecheck command
-  - Nix: `statix check` and `alejandra --check`
-  - Lua: `selene` with appropriate config
-  - General: Use the project's configured linter
+  - Use the project's configured linter and type checker (refer to CLAUDE.md for project-specific commands)
 - **Mark progress in plan.md** as you go so the user can track status.
 - If you encounter an issue not covered by the plan, note it in plan.md and continue with other tasks.
 
