@@ -29,8 +29,8 @@ jobs:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       # DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
-      # cachix/cachix-action@v15
-      - uses: cachix/cachix-action@29121a2db12c7ff8b89724a8898ca20d33bb4ea3
+      # cachix/cachix-action@v16
+      - uses: cachix/cachix-action@3ba601ff5bbb07c7220846facfa2cd81eeee15a1
         with:
           name: kokatsu
       - name: Check formatting
@@ -46,8 +46,8 @@ jobs:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       # DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
-      # cachix/cachix-action@v15
-      - uses: cachix/cachix-action@29121a2db12c7ff8b89724a8898ca20d33bb4ea3
+      # cachix/cachix-action@v16
+      - uses: cachix/cachix-action@3ba601ff5bbb07c7220846facfa2cd81eeee15a1
         with:
           name: kokatsu
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
@@ -66,8 +66,8 @@ jobs:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       # DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/nix-installer-action@1e3c5df3156622df83bb8f5c467619557d02e284
-      # cachix/cachix-action@v15
-      - uses: cachix/cachix-action@29121a2db12c7ff8b89724a8898ca20d33bb4ea3
+      # cachix/cachix-action@v16
+      - uses: cachix/cachix-action@3ba601ff5bbb07c7220846facfa2cd81eeee15a1
         with:
           name: kokatsu
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
