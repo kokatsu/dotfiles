@@ -502,7 +502,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.15.2";
+    version = "0.15.3";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -520,10 +520,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-S+PmlnIPExWAIJNHYCBbacd/dVrxcgmPnKMXLZIUyW0=";
+        hash = "sha256-dyW1Cve9FLuxWM2FxaehWKHZyCAP/9z9IuImTEpmssQ=";
       };
 
-      npmDepsHash = "sha256-0hnUHEeL9J66X51X4AGuda4yqBA9O6lkewjTmi3b8eY=";
+      npmDepsHash = "sha256-q2cQ4JzrhzwY/gWQOAZdNI5Ba+QeQ9YPzm1M0t9PcXk=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       # --legacy-peer-deps: upstream has conflicting peer deps
