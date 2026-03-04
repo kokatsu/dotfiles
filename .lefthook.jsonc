@@ -9,7 +9,7 @@
       "nix-lint": {
         "glob": ["*.nix"],
         "exclude": ["node_modules/**/*"],
-        "run": "echo {staged_files} | xargs -n1 statix check && deadnix {staged_files}"
+        "run": "echo {staged_files} | xargs -n1 statix check && deadnix --fail {staged_files}"
       },
       "nix-format": {
         "glob": ["*.nix"],
@@ -95,7 +95,7 @@
       "nix-lint": {
         "glob": ["*.nix"],
         "exclude": ["node_modules/**/*"],
-        "run": "echo {push_files} | xargs -n1 statix check && deadnix {push_files}"
+        "run": "echo {push_files} | xargs -n1 statix check && deadnix --fail {push_files}"
       },
       "lua-lint-nvim": {
         "glob": [".config/nvim/**/*.lua"],
