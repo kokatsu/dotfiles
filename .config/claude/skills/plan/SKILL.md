@@ -6,6 +6,7 @@ allowed-tools:
   - Glob
   - Grep
   - Task
+  - Edit
   - Write
 ---
 

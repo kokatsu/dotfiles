@@ -1,7 +1,10 @@
 ---
 name: browser-research
 description: Research web pages using agent-browser and summarize documentation or articles. Use when investigating URLs, checking page content, or summarizing documents.
-allowed-tools: Bash(agent-browser:*), Read, Write
+allowed-tools:
+  - Bash(agent-browser:*)
+  - Read
+  - Write
 ---
 
 # Browser Research Skill
