@@ -37,7 +37,7 @@ return {
           if not line or char_col <= 1 then
             return 0
           end
-          local byte_idx = vim.str_byteindex(line, char_col - 1)
+          local byte_idx = vim.str_byteindex(line, 'utf-32', char_col - 1)
           return byte_idx
         end
 
