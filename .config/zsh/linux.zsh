@@ -19,7 +19,9 @@ alias c="clear && fastfetch"
 # ------------------------------------------------------------------------------
 
 if (( _IS_WSL )); then
-  alias copy="iconv -f utf-8 -t utf-16le | clip.exe"
+  # clip.exe は Nix ラッパー (xsel + win32yank.exe) で UTF-8 をそのまま扱える
+  # alias copy="iconv -f utf-8 -t utf-16le | clip.exe"
+  alias copy="clip.exe"
   export BROWSER="wslview"
 
   # Prevent Claude Code from repeatedly spawning powershell.exe
