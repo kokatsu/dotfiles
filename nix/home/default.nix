@@ -453,7 +453,7 @@ in {
           force = true;
         };
         ".config/claude/settings.json".source = ../../.config/claude/settings.json;
-        ".config/claude/CLAUDE.md".source = ../../.config/claude/CLAUDE.md;
+        ".config/claude/CLAUDE.md".source = ../../.config/claude/.CLAUDE.md;
         ".config/claude/skills".source = ../../.config/claude/skills;
         ".config/claude/rules".source = ../../.config/claude/rules;
         ".config/claude/file-suggestion.sh" = {
