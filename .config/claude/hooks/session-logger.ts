@@ -116,23 +116,9 @@ interface SessionSummary {
 }
 
 async function main() {
-  const decoder = new TextDecoder();
-  const chunks: Uint8Array[] = [];
-  for await (const chunk of Deno.stdin.readable) {
-    chunks.push(chunk);
-  }
-  const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
-  const merged = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const chunk of chunks) {
-    merged.set(chunk, offset);
-    offset += chunk.length;
-  }
-  const inputText = decoder.decode(merged);
-
   let input: HookInput;
   try {
-    input = JSON.parse(inputText);
+    input = JSON.parse(await new Response(Deno.stdin.readable).text());
   } catch {
     console.error("Failed to parse hook input");
     Deno.exitCode = 1;

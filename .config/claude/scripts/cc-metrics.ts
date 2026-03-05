@@ -30,6 +30,8 @@ interface Args {
   action: "show" | "prune";
   days: number;
   format: "text" | "json";
+  yes: boolean;
+  verbose: boolean;
 }
 
 // ============================================================
@@ -50,6 +52,8 @@ function parseArgs(): Args {
   let action: Args["action"] = "show";
   let days = 30;
   let format: Args["format"] = "text";
+  let yes = false;
+  let verbose = false;
 
   for (let i = 0; i < Deno.args.length; i++) {
     switch (Deno.args[i]) {
@@ -68,17 +72,32 @@ function parseArgs(): Args {
       case "--json":
         format = "json";
         break;
+      case "--yes":
+      case "-y":
+        yes = true;
+        break;
+      case "--verbose":
+        verbose = true;
+        break;
     }
   }
 
-  return { subcommand, action, days, format };
+  return { subcommand, action, days, format, yes, verbose };
 }
 
 // ============================================================
 // Common Utilities
 // ============================================================
 
+function localDateStr(d: Date = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 function bar(count: number, max: number, width = 20): string {
+  if (max <= 0) return "\u2591".repeat(width);
   const filled = Math.round((count / max) * width);
   return "\u2588".repeat(filled) + "\u2591".repeat(width - filled);
 }
@@ -109,6 +128,7 @@ async function pruneLog(
   path: string,
   label: string,
   days: number,
+  yes: boolean,
 ): Promise<void> {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
@@ -126,7 +146,7 @@ async function pruneLog(
     const removed = lines.length - kept.length;
     if (removed > 0) {
       if (
-        !confirm(
+        !yes && !confirm(
           `Prune ${removed} ${label} entries older than ${days} days? (${kept.length} remaining)`,
         )
       ) {
@@ -150,7 +170,7 @@ async function pruneLog(
 function countByDay(events: BaseEvent[]): Map<string, number> {
   const byDay = new Map<string, number>();
   for (const e of events) {
-    const day = e.ts.split("T")[0];
+    const day = localDateStr(new Date(e.ts));
     byDay.set(day, (byDay.get(day) || 0) + 1);
   }
   return byDay;
@@ -161,8 +181,9 @@ function countByWeek(events: BaseEvent[]): Map<string, number> {
   for (const e of events) {
     const d = new Date(e.ts);
     const weekStart = new Date(d);
+    // ISO week: Monday as first day (Sun=0 → offset 6, Mon=0 → offset 0, ...)
     weekStart.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-    const weekKey = weekStart.toISOString().split("T")[0];
+    const weekKey = localDateStr(weekStart);
     byWeek.set(weekKey, (byWeek.get(weekKey) || 0) + 1);
   }
   return byWeek;
@@ -178,7 +199,7 @@ function renderDailyLines(
   for (let i = trendDays - 1; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split("T")[0];
+    const dateStr = localDateStr(d);
     dailyData.push({ date: dateStr, count: byDay.get(dateStr) || 0 });
   }
   const maxDaily = Math.max(...dailyData.map((d) => d.count), 1);
@@ -205,9 +226,7 @@ function renderWeeklyLines(
   return weeklyData.map(([weekStart, count]) => {
     const end = new Date(weekStart);
     end.setDate(end.getDate() + 6);
-    const label = `${weekStart.slice(5)} ~ ${
-      end.toISOString().split("T")[0].slice(5)
-    }`;
+    const label = `${weekStart.slice(5)} ~ ${localDateStr(end).slice(5)}`;
     const b = bar(count, maxWeekly, maxWidth);
     return `  ${label}  ${b} ${String(count).padStart(maxWeeklyWidth)}`;
   });
@@ -237,10 +256,57 @@ function periodHeader(days: number): string[] {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
   return [
-    `Period: ${cutoff.toISOString().split("T")[0]} ~ ${
-      now.toISOString().split("T")[0]
-    } (${days} days)`,
+    `Period: ${localDateStr(cutoff)} ~ ${localDateStr(now)} (${days} days)`,
   ];
+}
+
+// ============================================================
+// Aggregation Helpers
+// ============================================================
+
+interface SkillAgg {
+  skill: string;
+  total: number;
+  user: number;
+  auto: number;
+}
+
+function aggregateSkills(events: SkillEvent[]): SkillAgg[] {
+  const bySkill = new Map<string, { user: number; auto: number }>();
+  for (const e of events) {
+    const entry = bySkill.get(e.skill) || { user: 0, auto: 0 };
+    entry[e.type]++;
+    bySkill.set(e.skill, entry);
+  }
+  return [...bySkill.entries()]
+    .map(([skill, counts]) => ({
+      skill,
+      total: counts.user + counts.auto,
+      ...counts,
+    }))
+    .sort((a, b) => b.total - a.total);
+}
+
+interface FileAgg {
+  file: string;
+  total: number;
+  counts: Map<string, number>;
+}
+
+function aggregateFiles(events: InstructionsEvent[]): FileAgg[] {
+  const byFile = new Map<string, Map<string, number>>();
+  for (const e of events) {
+    const entry = byFile.get(e.file) || new Map<string, number>();
+    entry.set(e.type, (entry.get(e.type) || 0) + 1);
+    byFile.set(e.file, entry);
+  }
+  return [...byFile.entries()]
+    .map(([file, counts]) => ({
+      file,
+      total: [...counts.values()].reduce((a, b) => a + b, 0),
+      counts,
+    }))
+    .sort((a, b) => b.total - a.total);
 }
 
 // ============================================================
@@ -271,21 +337,7 @@ function generateSkillMetrics(events: SkillEvent[], days: number): string {
   lines.push("");
 
   // Ranking
-  const bySkill = new Map<string, { user: number; auto: number }>();
-  for (const e of events) {
-    const entry = bySkill.get(e.skill) || { user: 0, auto: 0 };
-    entry[e.type]++;
-    bySkill.set(e.skill, entry);
-  }
-
-  const sorted = [...bySkill.entries()]
-    .map(([skill, counts]) => ({
-      skill,
-      total: counts.user + counts.auto,
-      ...counts,
-    }))
-    .sort((a, b) => b.total - a.total);
-
+  const sorted = aggregateSkills(events);
   const maxCount = sorted[0]?.total || 1;
   const maxNameLen = Math.max(...sorted.map((s) => s.skill.length));
   const maxCountWidth = String(maxCount).length;
@@ -436,21 +488,7 @@ function generateInstructionsMetrics(
   lines.push("");
 
   // File Ranking
-  const byFile = new Map<string, Map<string, number>>();
-  for (const e of events) {
-    const entry = byFile.get(e.file) || new Map<string, number>();
-    entry.set(e.type, (entry.get(e.type) || 0) + 1);
-    byFile.set(e.file, entry);
-  }
-
-  const fileSorted = [...byFile.entries()]
-    .map(([file, counts]) => ({
-      file,
-      total: [...counts.values()].reduce((a, b) => a + b, 0),
-      counts,
-    }))
-    .sort((a, b) => b.total - a.total);
-
+  const fileSorted = aggregateFiles(events);
   const maxFileCount = fileSorted[0]?.total || 1;
   const maxFileLen = Math.max(...fileSorted.map((s) => s.file.length));
   const maxCountWidth = String(maxFileCount).length;
@@ -570,20 +608,7 @@ function generateDashboard(
       `## Skills: ${skillEvents.length} total (user: ${userCount}, auto: ${autoCount})`,
     );
 
-    const bySkill = new Map<string, { user: number; auto: number }>();
-    for (const e of skillEvents) {
-      const entry = bySkill.get(e.skill) || { user: 0, auto: 0 };
-      entry[e.type]++;
-      bySkill.set(e.skill, entry);
-    }
-    const sorted = [...bySkill.entries()]
-      .map(([skill, counts]) => ({
-        skill,
-        total: counts.user + counts.auto,
-        ...counts,
-      }))
-      .sort((a, b) => b.total - a.total)
-      .slice(0, 5);
+    const sorted = aggregateSkills(skillEvents).slice(0, 5);
     const maxCount = sorted[0]?.total || 1;
     const maxNameLen = Math.max(...sorted.map((s) => s.skill.length));
     const maxCountWidth = String(maxCount).length;
@@ -617,23 +642,17 @@ function generateDashboard(
       `## Instructions: ${instrEvents.length} total (${typeSummary})`,
     );
 
-    const byFile = new Map<string, number>();
-    for (const e of instrEvents) {
-      byFile.set(e.file, (byFile.get(e.file) || 0) + 1);
-    }
-    const sorted = [...byFile.entries()]
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, 5);
-    const maxCount = sorted[0]?.[1] || 1;
-    const maxFileLen = Math.max(...sorted.map(([f]) => f.length));
+    const sorted = aggregateFiles(instrEvents).slice(0, 5);
+    const maxCount = sorted[0]?.total || 1;
+    const maxFileLen = Math.max(...sorted.map((s) => s.file.length));
     const maxCountWidth = String(maxCount).length;
     for (let i = 0; i < sorted.length; i++) {
-      const [file, count] = sorted[i];
+      const s = sorted[i];
       const rank = `${i + 1}.`.padEnd(3);
-      const name = file.padEnd(maxFileLen);
-      const b = bar(count, maxCount, 15);
+      const name = s.file.padEnd(maxFileLen);
+      const b = bar(s.total, maxCount, 15);
       lines.push(
-        `  ${rank} ${name} ${b} ${String(count).padStart(maxCountWidth)}`,
+        `  ${rank} ${name} ${b} ${String(s.total).padStart(maxCountWidth)}`,
       );
     }
   } else {
@@ -658,7 +677,7 @@ function generateDashboard(
     for (let i = trendDays - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split("T")[0];
+      const dateStr = localDateStr(d);
       dailyData.push({
         date: dateStr,
         total: allByDay.get(dateStr) || 0,
@@ -693,11 +712,10 @@ function generateDashboard(
 function skillJson(
   events: SkillEvent[],
   days: number,
+  verbose: boolean,
 ): Record<string, unknown> {
-  const from = new Date(Date.now() - days * 86400000)
-    .toISOString()
-    .split("T")[0];
-  const to = new Date().toISOString().split("T")[0];
+  const from = localDateStr(new Date(Date.now() - days * 86400000));
+  const to = localDateStr();
 
   const bySkill: Record<string, { user: number; auto: number }> = {};
   for (const e of events) {
@@ -705,7 +723,7 @@ function skillJson(
     bySkill[e.skill][e.type]++;
   }
 
-  return {
+  const result: Record<string, unknown> = {
     period: { days, from, to },
     total: events.length,
     byType: {
@@ -713,18 +731,18 @@ function skillJson(
       auto: events.filter((e) => e.type === "auto").length,
     },
     bySkill,
-    events,
   };
+  if (verbose) result.events = events;
+  return result;
 }
 
 function instructionsJson(
   events: InstructionsEvent[],
   days: number,
+  verbose: boolean,
 ): Record<string, unknown> {
-  const from = new Date(Date.now() - days * 86400000)
-    .toISOString()
-    .split("T")[0];
-  const to = new Date().toISOString().split("T")[0];
+  const from = localDateStr(new Date(Date.now() - days * 86400000));
+  const to = localDateStr();
 
   const byFile: Record<string, Record<string, number>> = {};
   for (const e of events) {
@@ -742,25 +760,25 @@ function instructionsJson(
     byProject[e.project] = (byProject[e.project] || 0) + 1;
   }
 
-  return {
+  const result: Record<string, unknown> = {
     period: { days, from, to },
     total: events.length,
     byType: byTypeJson,
     byFile,
     byProject,
-    events,
   };
+  if (verbose) result.events = events;
+  return result;
 }
 
 function dashboardJson(
   skills: SkillEvent[],
   instr: InstructionsEvent[],
   days: number,
+  verbose: boolean,
 ): Record<string, unknown> {
-  const from = new Date(Date.now() - days * 86400000)
-    .toISOString()
-    .split("T")[0];
-  const to = new Date().toISOString().split("T")[0];
+  const from = localDateStr(new Date(Date.now() - days * 86400000));
+  const to = localDateStr();
 
   const bySkill: Record<string, { user: number; auto: number }> = {};
   for (const e of skills) {
@@ -774,7 +792,7 @@ function dashboardJson(
     byFile[e.file][e.type] = (byFile[e.file][e.type] || 0) + 1;
   }
 
-  return {
+  const result: Record<string, unknown> = {
     period: { days, from, to },
     skills: {
       total: skills.length,
@@ -789,6 +807,11 @@ function dashboardJson(
       byFile,
     },
   };
+  if (verbose) {
+    result.skillEvents = skills;
+    result.instructionEvents = instr;
+  }
+  return result;
 }
 
 // ============================================================
@@ -796,14 +819,14 @@ function dashboardJson(
 // ============================================================
 
 async function main() {
-  const { subcommand, action, days, format } = parseArgs();
+  const { subcommand, action, days, format, yes, verbose } = parseArgs();
 
   if (action === "prune") {
     if (subcommand === "dashboard" || subcommand === "skills") {
-      await pruneLog(SKILL_LOG, "skill", days);
+      await pruneLog(SKILL_LOG, "skill", days, yes);
     }
     if (subcommand === "dashboard" || subcommand === "instructions") {
-      await pruneLog(INSTRUCTIONS_LOG, "instructions", days);
+      await pruneLog(INSTRUCTIONS_LOG, "instructions", days, yes);
     }
     return;
   }
@@ -811,14 +834,16 @@ async function main() {
   if (subcommand === "skills") {
     const events = await loadEvents<SkillEvent>(SKILL_LOG, days);
     if (format === "json") {
-      console.log(JSON.stringify(skillJson(events, days), null, 2));
+      console.log(JSON.stringify(skillJson(events, days, verbose), null, 2));
     } else {
       console.log(generateSkillMetrics(events, days));
     }
   } else if (subcommand === "instructions") {
     const events = await loadEvents<InstructionsEvent>(INSTRUCTIONS_LOG, days);
     if (format === "json") {
-      console.log(JSON.stringify(instructionsJson(events, days), null, 2));
+      console.log(
+        JSON.stringify(instructionsJson(events, days, verbose), null, 2),
+      );
     } else {
       console.log(generateInstructionsMetrics(events, days));
     }
@@ -828,7 +853,9 @@ async function main() {
       loadEvents<InstructionsEvent>(INSTRUCTIONS_LOG, days),
     ]);
     if (format === "json") {
-      console.log(JSON.stringify(dashboardJson(skills, instr, days), null, 2));
+      console.log(
+        JSON.stringify(dashboardJson(skills, instr, days, verbose), null, 2),
+      );
     } else {
       console.log(generateDashboard(skills, instr, days));
     }

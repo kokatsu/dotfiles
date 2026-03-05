@@ -23,6 +23,21 @@ const HOME = Deno.env.get("HOME") || "";
 const CONFIG_DIR = Deno.env.get("CLAUDE_CONFIG_DIR") ||
   `${HOME}/.claude`;
 const LOG_PATH = `${CONFIG_DIR}/instructions-metrics.jsonl`;
+const MAX_LOG_BYTES = 512 * 1024;
+
+async function maybeRotate(path: string): Promise<void> {
+  try {
+    const stat = await Deno.stat(path);
+    if (stat.size <= MAX_LOG_BYTES) return;
+
+    const content = await Deno.readTextFile(path);
+    const lines = content.trimEnd().split("\n");
+    const kept = lines.slice(Math.floor(lines.length / 2));
+    await Deno.writeTextFile(path, kept.join("\n") + "\n");
+  } catch {
+    // file doesn't exist or other error — ignore
+  }
+}
 
 function shortenPath(filePath: string, cwd: string): string {
   const configDir = `${HOME}/.config/claude/`;
@@ -39,7 +54,7 @@ function shortenPath(filePath: string, cwd: string): string {
     return `${projectName}/${filePath.slice(cwd.length + 1)}`;
   }
   const marker = `/${projectName}/`;
-  const idx = filePath.indexOf(marker);
+  const idx = filePath.lastIndexOf(marker);
   if (idx !== -1) {
     return `${projectName}/${filePath.slice(idx + marker.length)}`;
   }
@@ -54,23 +69,10 @@ function extractProject(cwd: string): string {
 }
 
 async function main() {
-  const chunks: Uint8Array[] = [];
-  for await (const chunk of Deno.stdin.readable) {
-    chunks.push(chunk);
-  }
-  const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
-  const merged = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const chunk of chunks) {
-    merged.set(chunk, offset);
-    offset += chunk.length;
-  }
-
   let input: HookInput;
   try {
-    input = JSON.parse(new TextDecoder().decode(merged));
+    input = JSON.parse(await new Response(Deno.stdin.readable).text());
   } catch {
-    Deno.exitCode = 1;
     return;
   }
 
@@ -85,6 +87,7 @@ async function main() {
     project: extractProject(input.cwd),
   };
 
+  await maybeRotate(LOG_PATH);
   await Deno.writeTextFile(LOG_PATH, JSON.stringify(event) + "\n", {
     append: true,
   });

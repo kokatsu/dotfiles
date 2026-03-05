@@ -2,9 +2,7 @@
 
 interface HookInput {
   session_id: string;
-  transcript_path: string;
   cwd: string;
-  permission_mode: string;
   hook_event_name: string;
   prompt?: string;
   tool_name?: string;
@@ -23,6 +21,22 @@ interface SkillEvent {
 const CONFIG_DIR = Deno.env.get("CLAUDE_CONFIG_DIR") ||
   `${Deno.env.get("HOME")}/.claude`;
 const LOG_PATH = `${CONFIG_DIR}/skill-metrics.jsonl`;
+
+const MAX_LOG_BYTES = 512 * 1024;
+
+async function maybeRotate(path: string): Promise<void> {
+  try {
+    const stat = await Deno.stat(path);
+    if (stat.size <= MAX_LOG_BYTES) return;
+
+    const content = await Deno.readTextFile(path);
+    const lines = content.trimEnd().split("\n");
+    const kept = lines.slice(Math.floor(lines.length / 2));
+    await Deno.writeTextFile(path, kept.join("\n") + "\n");
+  } catch {
+    // file doesn't exist or other error — ignore
+  }
+}
 
 const BUILTINS = new Set([
   "bug",
@@ -47,29 +61,16 @@ const BUILTINS = new Set([
 ]);
 
 async function main() {
-  const decoder = new TextDecoder();
-  const chunks: Uint8Array[] = [];
-  for await (const chunk of Deno.stdin.readable) {
-    chunks.push(chunk);
-  }
-  const totalLength = chunks.reduce((sum, c) => sum + c.length, 0);
-  const merged = new Uint8Array(totalLength);
-  let offset = 0;
-  for (const chunk of chunks) {
-    merged.set(chunk, offset);
-    offset += chunk.length;
-  }
-
   let input: HookInput;
   try {
-    input = JSON.parse(decoder.decode(merged));
+    input = JSON.parse(await new Response(Deno.stdin.readable).text());
   } catch {
-    Deno.exitCode = 1;
     return;
   }
 
   const event = extractEvent(input);
   if (event) {
+    await maybeRotate(LOG_PATH);
     await Deno.writeTextFile(LOG_PATH, JSON.stringify(event) + "\n", {
       append: true,
     });
