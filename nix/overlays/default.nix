@@ -502,7 +502,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.16.1";
+    version = "0.16.3";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -520,10 +520,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-ARsn3gm0H2F9hbSeIirAxXT53OKjDM6dPUGQ7EIRX9Q=";
+        hash = "sha256-eAqmmBaahhDYqrylTcICFUPC0LHNieIRElj/8XUycdM=";
       };
 
-      npmDepsHash = "sha256-wNyXtUENp1QLnet+AokD8NRWkeJ0cR+FwlkPmy0sCEs=";
+      npmDepsHash = "sha256-sHF8WPj8d5LyH+EaLEPWivCBfIicvcBJrv41vUeBtdc=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       # --legacy-peer-deps: upstream has conflicting peer deps
@@ -962,7 +962,7 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = _final: prev: let
-    version = "0.5.4";
+    version = "0.5.5";
     hashes = {
       "aarch64-darwin" = "sha256-82oUuZgd1njKC2MFhh8Xc85EsRXn/MwnvBIX2o5BqlA=";
       "x86_64-darwin" = "sha256-MCzRVNKamX84AKejC45gVPRIiMAfq7EG1Uyj/wP6xU0=";
