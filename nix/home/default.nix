@@ -468,6 +468,10 @@ in {
           source = ../../.config/claude/hooks/pre-compact-handover.ts;
           executable = true;
         };
+        ".config/claude/hooks/run-deno-hook.sh" = {
+          source = ../../.config/claude/hooks/run-deno-hook.sh;
+          executable = true;
+        };
         ".config/claude/hooks/skill-tracker.ts" = {
           source = ../../.config/claude/hooks/skill-tracker.ts;
           executable = true;

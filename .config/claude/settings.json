@@ -42,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/skill-tracker.ts",
+            "command": "~/.config/claude/hooks/run-deno-hook.sh ~/.config/claude/hooks/skill-tracker.ts",
             "async": true
           }
         ]
@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/skill-tracker.ts",
+            "command": "~/.config/claude/hooks/run-deno-hook.sh ~/.config/claude/hooks/skill-tracker.ts",
             "async": true
           }
         ]
@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/instructions-tracker.ts",
+            "command": "~/.config/claude/hooks/run-deno-hook.sh ~/.config/claude/hooks/instructions-tracker.ts",
             "async": true
           }
         ]
