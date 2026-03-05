@@ -25,6 +25,10 @@
     exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${CLAUDE_CONFIG_DIR:-''${HOME}/.config/claude},''${HOME}/.claude,''${HOME}/.config/claude" --allow-env=HOME,CLAUDE_CONFIG_DIR "''${HOME}/.config/claude/scripts/skill-metrics.ts" "$@"
   '';
 
+  cc-instructions = pkgs.writeShellScriptBin "cc-instructions" ''
+    exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${CLAUDE_CONFIG_DIR:-''${HOME}/.config/claude},''${HOME}/.claude,''${HOME}/.config/claude" --allow-env=HOME,CLAUDE_CONFIG_DIR "''${HOME}/.config/claude/scripts/instructions-metrics.ts" "$@"
+  '';
+
   # WSL: Claude Code は clip.exe をハードコードで使用するが UTF-8 を正しく扱えない
   # xsel (X11) + win32yank (Windows/Win+V履歴) の両方に書き込む
   clip-exe-wrapper = pkgs.writeShellScriptBin "clip.exe" ''
@@ -320,6 +324,7 @@ in {
         #--- ユーザースクリプト ラッパー ---#
         mmd # Mermaid図レンダラー (bin/mermaid-render.ts)
         cc-skills # スキル使用メトリクス表示
+        cc-instructions # インストラクション読み込みメトリクス表示
 
         #--- Language Servers (overlay) ---#
         # https://github.com/antonk52/cssmodules-language-server
@@ -472,8 +477,16 @@ in {
           source = ../../.config/claude/hooks/skill-tracker.ts;
           executable = true;
         };
+        ".config/claude/hooks/instructions-tracker.ts" = {
+          source = ../../.config/claude/hooks/instructions-tracker.ts;
+          executable = true;
+        };
         ".config/claude/scripts/skill-metrics.ts" = {
           source = ../../.config/claude/scripts/skill-metrics.ts;
+          executable = true;
+        };
+        ".config/claude/scripts/instructions-metrics.ts" = {
+          source = ../../.config/claude/scripts/instructions-metrics.ts;
           executable = true;
         };
         # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
