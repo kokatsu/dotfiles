@@ -118,16 +118,19 @@ function generateMetrics(events: SkillEvent[], days: number): string {
     .sort((a, b) => b.total - a.total);
 
   const maxCount = sorted[0]?.total || 1;
+  const maxNameLen = Math.max(...sorted.map((s) => s.skill.length));
+  const maxCountWidth = String(maxCount).length;
+  const maxRankWidth = String(sorted.length).length + 1;
 
   lines.push("## Ranking");
   for (let i = 0; i < sorted.length; i++) {
     const s = sorted[i];
-    const rank = `${i + 1}.`.padEnd(3);
-    const name = s.skill.padEnd(20);
+    const rank = `${i + 1}.`.padEnd(maxRankWidth + 1);
+    const name = s.skill.padEnd(maxNameLen);
     const b = bar(s.total, maxCount, 15);
     lines.push(
       `  ${rank} ${name} ${b} ${
-        String(s.total).padStart(3)
+        String(s.total).padStart(maxCountWidth)
       }  (user: ${s.user}, auto: ${s.auto})`,
     );
   }
@@ -151,11 +154,13 @@ function generateMetrics(events: SkillEvent[], days: number): string {
 
   const maxDaily = Math.max(...dailyData.map((d) => d.count), 1);
 
+  const maxDailyWidth = String(maxDaily).length;
+
   lines.push(`## Daily (last ${trendDays} days)`);
   for (const d of dailyData) {
     const label = d.date.slice(5);
     const b = d.count > 0 ? bar(d.count, maxDaily, 15) : "\u2591".repeat(15);
-    lines.push(`  ${label}  ${b} ${d.count}`);
+    lines.push(`  ${label}  ${b} ${String(d.count).padStart(maxDailyWidth)}`);
   }
   lines.push("");
 
@@ -175,6 +180,7 @@ function generateMetrics(events: SkillEvent[], days: number): string {
 
   if (weeklyData.length > 1) {
     const maxWeekly = Math.max(...weeklyData.map(([, c]) => c), 1);
+    const maxWeeklyWidth = String(maxWeekly).length;
 
     lines.push("## Weekly");
     for (const [weekStart, count] of weeklyData) {
@@ -184,7 +190,7 @@ function generateMetrics(events: SkillEvent[], days: number): string {
         end.toISOString().split("T")[0].slice(5)
       }`;
       const b = bar(count, maxWeekly, 15);
-      lines.push(`  ${label}  ${b} ${count}`);
+      lines.push(`  ${label}  ${b} ${String(count).padStart(maxWeeklyWidth)}`);
     }
     lines.push("");
   }
@@ -232,34 +238,43 @@ function generateMetrics(events: SkillEvent[], days: number): string {
         : "-";
 
     lines.push("## Duration Correlation");
-    lines.push(
-      `  Short  (<10min):  ${String(short.length).padStart(3)} sessions, avg ${
-        avg(short)
-      } skills/session`,
-    );
-    lines.push(
-      `  Medium (10-30min): ${
-        String(medium.length).padStart(3)
-      } sessions, avg ${avg(medium)} skills/session`,
-    );
-    lines.push(
-      `  Long   (>30min):  ${String(long.length).padStart(3)} sessions, avg ${
-        avg(long)
-      } skills/session`,
-    );
+    const durationRows: Array<[string, typeof short]> = [
+      ["Short  (<10min)", short],
+      ["Medium (10-30min)", medium],
+      ["Long   (>30min)", long],
+    ];
+    const maxLabelLen = Math.max(...durationRows.map(([l]) => l.length));
+    const maxSessionCountWidth = String(Math.max(...durationRows.map(([, d]) =>
+      d.length
+    ))).length;
+    for (const [label, data] of durationRows) {
+      lines.push(
+        `  ${label.padEnd(maxLabelLen)}: ${
+          String(data.length).padStart(maxSessionCountWidth)
+        } sessions, avg ${avg(data)} skills/session`,
+      );
+    }
     lines.push("");
   }
 
   // --- User/Auto breakdown per skill ---
+  const maxBreakdownCount = Math.max(...sorted.map((s) => s.total), 1);
+
   lines.push("## Breakdown");
   for (const s of sorted) {
-    const userDots = s.user > 0 ? "\u25cf".repeat(Math.min(s.user, 30)) : "";
-    const autoDots = s.auto > 0 ? "\u25cb".repeat(Math.min(s.auto, 30)) : "";
+    const userWidth = s.user > 0
+      ? Math.max(1, Math.round((s.user / maxBreakdownCount) * 30))
+      : 0;
+    const autoWidth = s.auto > 0
+      ? Math.max(1, Math.round((s.auto / maxBreakdownCount) * 30))
+      : 0;
+    const userDots = "\u25cf".repeat(userWidth);
+    const autoDots = "\u25cb".repeat(autoWidth);
     lines.push(
-      `  ${s.skill.padEnd(20)} ${userDots}${autoDots}`,
+      `  ${s.skill.padEnd(maxNameLen)} ${userDots}${autoDots}`,
     );
   }
-  lines.push(`  ${"".padEnd(20)} \u25cf = user, \u25cb = auto`);
+  lines.push(`  ${"".padEnd(maxNameLen)} \u25cf = user, \u25cb = auto`);
   lines.push("");
 
   return lines.join("\n");

@@ -23,7 +23,6 @@ interface SkillEvent {
 const CONFIG_DIR = Deno.env.get("CLAUDE_CONFIG_DIR") ||
   `${Deno.env.get("HOME")}/.claude`;
 const LOG_PATH = `${CONFIG_DIR}/skill-metrics.jsonl`;
-const RETENTION_DAYS = 90;
 
 const BUILTINS = new Set([
   "bug",
