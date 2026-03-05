@@ -474,28 +474,15 @@ jobs:
         run: |
           OVERLAY="nix/overlays/default.nix"
 
-          # Compute GitHub source hash
-          SRC_HASH=$(nix-prefetch-url --unpack --type sha256 \
-            "https://github.com/ushironoko/octorus/archive/refs/tags/v${VERSION}.tar.gz" 2>/dev/null | \
-            xargs nix hash convert --hash-algo sha256 --to sri)
-          sed -i "/octorus = _final: prev: {/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${SRC_HASH}\";|}" "$OVERLAY"
-
-          # Compute cargoHash using FOD trick
-          FAKE_HASH="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
-          sed -i "/octorus = _final: prev: {/,/^  };/{s|cargoHash = \"sha256-[^\"]*\";|cargoHash = \"${FAKE_HASH}\";|}" "$OVERLAY"
-          CARGO_HASH=$(nix build --no-link --impure --expr '
-            let pkgs = import (builtins.getFlake "nixpkgs") {
-              system = "x86_64-linux";
-              overlays = [ (import ./nix/overlays/default.nix).octorus ];
-            };
-            in pkgs.octorus
-          ' 2>&1 | grep -oP "got:\s+\Ksha256-\S+" | head -1)
-          if [ -n "$CARGO_HASH" ]; then
-            sed -i "/octorus = _final: prev: {/,/^  };/{s|cargoHash = \"sha256-[^\"]*\";|cargoHash = \"${CARGO_HASH}\";|}" "$OVERLAY"
-          else
-            echo "::error::Failed to compute cargoHash for octorus"
-            exit 1
-          fi
+          # Compute hashes for each platform
+          for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
+                          "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
+            PLAT_NAME="${platform%%:*}"
+            NIX_SYSTEM="${platform##*:}"
+            URL="https://github.com/ushironoko/octorus/releases/download/v${VERSION}/octorus-${VERSION}-${PLAT_NAME}.tar.gz"
+            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            sed -i "/octorus = _final: prev: let/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+          done
 
       - name: Update x-api-playground hashes
         if: steps.detect.outputs.has_x_api_playground == 'true'
