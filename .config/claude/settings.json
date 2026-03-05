@@ -80,6 +80,17 @@
         ]
       }
     ],
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/claude/hooks/instructions-tracker.ts",
+            "async": true
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "permission_prompt",
