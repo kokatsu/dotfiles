@@ -21,12 +21,8 @@
     exec ${pkgs.deno}/bin/deno run --allow-read --allow-write "''${DOTFILES_DIR:-${dotfilesDir}}/bin/mermaid-render.ts" "$@"
   '';
 
-  cc-skills = pkgs.writeShellScriptBin "cc-skills" ''
-    exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${CLAUDE_CONFIG_DIR:-''${HOME}/.config/claude},''${HOME}/.claude,''${HOME}/.config/claude" --allow-env=HOME,CLAUDE_CONFIG_DIR "''${HOME}/.config/claude/scripts/skill-metrics.ts" "$@"
-  '';
-
-  cc-instructions = pkgs.writeShellScriptBin "cc-instructions" ''
-    exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${CLAUDE_CONFIG_DIR:-''${HOME}/.config/claude},''${HOME}/.claude,''${HOME}/.config/claude" --allow-env=HOME,CLAUDE_CONFIG_DIR "''${HOME}/.config/claude/scripts/instructions-metrics.ts" "$@"
+  cc-metrics = pkgs.writeShellScriptBin "cc-metrics" ''
+    exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${CLAUDE_CONFIG_DIR:-''${HOME}/.config/claude},''${HOME}/.claude,''${HOME}/.config/claude" --allow-env=HOME,CLAUDE_CONFIG_DIR "''${HOME}/.config/claude/scripts/cc-metrics.ts" "$@"
   '';
 
   # WSL: Claude Code は clip.exe をハードコードで使用するが UTF-8 を正しく扱えない
@@ -323,8 +319,7 @@ in {
 
         #--- ユーザースクリプト ラッパー ---#
         mmd # Mermaid図レンダラー (bin/mermaid-render.ts)
-        cc-skills # スキル使用メトリクス表示
-        cc-instructions # インストラクション読み込みメトリクス表示
+        cc-metrics # スキル・インストラクション統合メトリクス表示
 
         #--- Language Servers (overlay) ---#
         # https://github.com/antonk52/cssmodules-language-server
@@ -481,12 +476,8 @@ in {
           source = ../../.config/claude/hooks/instructions-tracker.ts;
           executable = true;
         };
-        ".config/claude/scripts/skill-metrics.ts" = {
-          source = ../../.config/claude/scripts/skill-metrics.ts;
-          executable = true;
-        };
-        ".config/claude/scripts/instructions-metrics.ts" = {
-          source = ../../.config/claude/scripts/instructions-metrics.ts;
+        ".config/claude/scripts/cc-metrics.ts" = {
+          source = ../../.config/claude/scripts/cc-metrics.ts;
           executable = true;
         };
         # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
