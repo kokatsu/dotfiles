@@ -964,7 +964,7 @@
   octorus = _final: prev: let
     version = "0.5.5";
     hashes = {
-      "aarch64-darwin" = "sha256-82oUuZgd1njKC2MFhh8Xc85EsRXn/MwnvBIX2o5BqlA=";
+      "aarch64-darwin" = "sha256-uCubdQaMqU+NlF+Z3tqX8LU+E03kAETani4rYDeZwus=";
       "x86_64-darwin" = "sha256-MCzRVNKamX84AKejC45gVPRIiMAfq7EG1Uyj/wP6xU0=";
       "aarch64-linux" = "sha256-tD+HvoyZu59QaAgcn3hwIlRkwN2z8ArQKtIi8h59Vcg=";
       "x86_64-linux" = "sha256-z0eDCFBNcb0Vs3J0SJvfc30qkIVMo8s18cFj4pKZjXs=";
