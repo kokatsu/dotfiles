@@ -13,7 +13,7 @@ const scan_window_ms: i64 = 25 * 60 * 60 * 1000; // 25h: 24h + 1h margin for tim
 const token_200k: i64 = 200_000;
 
 const cache_magic = [4]u8{ 'C', 'C', 'S', 'L' };
-const cache_ver: u32 = 3;
+const cache_ver: u32 = 4;
 const file_list_ttl_s: i64 = 300;
 const default_branch_max: usize = 24;
 const bar_width: u8 = 10;
@@ -106,21 +106,6 @@ const StdinInfo = struct {
 const ScanResult = struct {
     today_cost: f64 = 0,
     block: ?BlockInfo = null,
-};
-
-const CacheHeader = extern struct {
-    magic: [4]u8,
-    version: u32,
-    write_time_s: i64,
-    last_full_scan_s: i64,
-    today_cost: f64,
-    has_block: u8,
-    block_start_ms: i64,
-    block_end_ms: i64,
-    block_cost: f64,
-    block_burn_rate: f64,
-    day_start_ms: i64,
-    file_count: u32,
 };
 
 const CachedFileEntry = struct {
@@ -333,7 +318,8 @@ fn parseDecimal(s: []const u8) ?i64 {
     var result: i64 = 0;
     for (s) |c| {
         if (c < '0' or c > '9') return null;
-        result = result * 10 + @as(i64, c - '0');
+        result = std.math.mul(i64, result, 10) catch return null;
+        result = std.math.add(i64, result, @as(i64, c - '0')) catch return null;
     }
     return result;
 }
@@ -782,39 +768,64 @@ fn computeCosts(allocator: std.mem.Allocator, entries: []TranscriptEntry, now_ms
 // Cache
 // ============================================================
 
+const cache_header_size: usize = 4 + 4 + 8 + 8 + 8 + 1 + 8 + 8 + 8 + 8 + 8 + 4; // 77 bytes
+
+fn readI64(data: []const u8, pos: usize) i64 {
+    return @bitCast(mem.readInt(u64, data[pos..][0..8], .little));
+}
+
+fn readF64(data: []const u8, pos: usize) f64 {
+    return @bitCast(mem.readInt(u64, data[pos..][0..8], .little));
+}
+
+fn readU32(data: []const u8, pos: usize) u32 {
+    return mem.readInt(u32, data[pos..][0..4], .little);
+}
+
 fn readCache(allocator: std.mem.Allocator, day_start_ms: i64) ?CacheResult {
     var f = fs.openFileAbsolute(cache_path, .{}) catch return null;
     defer f.close();
     const content = f.readToEndAlloc(allocator, 64 * 1024 * 1024) catch return null;
 
-    if (content.len < @sizeOf(CacheHeader)) return null;
+    if (content.len < cache_header_size) return null;
 
-    var header: CacheHeader = undefined;
-    @memcpy(mem.asBytes(&header), content[0..@sizeOf(CacheHeader)]);
+    // Deserialize header fields manually
+    if (!mem.eql(u8, content[0..4], &cache_magic)) return null;
+    const version = readU32(content, 4);
+    if (version != cache_ver) return null;
 
-    if (!mem.eql(u8, &header.magic, &cache_magic)) return null;
-    if (header.version != cache_ver) return null;
+    const write_time_s = readI64(content, 8);
+    const last_full_scan_s = readI64(content, 16);
+    const today_cost = readF64(content, 24);
+    const has_block = content[32];
+    const block_start_ms = readI64(content, 33);
+    const block_end_ms = readI64(content, 41);
+    const block_cost = readF64(content, 49);
+    const block_burn_rate = readF64(content, 57);
+    const hdr_day_start_ms = readI64(content, 65);
+    const file_count = readU32(content, 73);
+
     // Invalidate on day boundary change
-    if (header.day_start_ms != day_start_ms) return null;
+    if (hdr_day_start_ms != day_start_ms) return null;
 
     var scan = ScanResult{
-        .today_cost = header.today_cost,
+        .today_cost = today_cost,
         .block = null,
     };
-    if (header.has_block != 0) {
+    if (has_block != 0) {
         scan.block = .{
-            .start_ms = header.block_start_ms,
-            .end_ms = header.block_end_ms,
-            .cost = header.block_cost,
-            .burn_rate_per_hr = header.block_burn_rate,
+            .start_ms = block_start_ms,
+            .end_ms = block_end_ms,
+            .cost = block_cost,
+            .burn_rate_per_hr = block_burn_rate,
         };
     }
 
     // Read file entries
     var files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
-    var pos: usize = @sizeOf(CacheHeader);
+    var pos: usize = cache_header_size;
     var i: u32 = 0;
-    while (i < header.file_count) : (i += 1) {
+    while (i < file_count) : (i += 1) {
         if (pos + 2 > content.len) break;
         const path_len = mem.readInt(u16, content[pos..][0..2], .little);
         pos += 2;
@@ -839,53 +850,63 @@ fn readCache(allocator: std.mem.Allocator, day_start_ms: i64) ?CacheResult {
     return .{
         .scan = scan,
         .files = files.toOwnedSlice(allocator) catch &.{},
-        .write_time_s = header.write_time_s,
-        .last_full_scan_s = header.last_full_scan_s,
-        .day_start_ms = header.day_start_ms,
+        .write_time_s = write_time_s,
+        .last_full_scan_s = last_full_scan_s,
+        .day_start_ms = hdr_day_start_ms,
     };
 }
 
-fn writeCache(result: ScanResult, files: []const CachedFileEntry, now_s: i64, last_full_scan_s: i64, day_start_ms: i64) void {
-    const header = CacheHeader{
-        .magic = cache_magic,
-        .version = cache_ver,
-        .write_time_s = now_s,
-        .last_full_scan_s = last_full_scan_s,
-        .today_cost = result.today_cost,
-        .has_block = if (result.block != null) 1 else 0,
-        .block_start_ms = if (result.block) |b| b.start_ms else 0,
-        .block_end_ms = if (result.block) |b| b.end_ms else 0,
-        .block_cost = if (result.block) |b| b.cost else 0,
-        .block_burn_rate = if (result.block) |b| b.burn_rate_per_hr else 0,
-        .day_start_ms = day_start_ms,
-        .file_count = @intCast(files.len),
-    };
+fn writeI64(w: anytype, value: i64) !void {
+    var buf: [8]u8 = undefined;
+    mem.writeInt(u64, &buf, @bitCast(value), .little);
+    try w.writeAll(&buf);
+}
 
+fn writeF64(w: anytype, value: f64) !void {
+    var buf: [8]u8 = undefined;
+    mem.writeInt(u64, &buf, @bitCast(value), .little);
+    try w.writeAll(&buf);
+}
+
+fn writeU32(w: anytype, value: u32) !void {
+    var buf: [4]u8 = undefined;
+    mem.writeInt(u32, &buf, value, .little);
+    try w.writeAll(&buf);
+}
+
+fn writeCache(result: ScanResult, files: []const CachedFileEntry, now_s: i64, last_full_scan_s: i64, day_start_ms: i64) void {
     const tmp_path = cache_path ++ ".tmp";
     var f = fs.createFileAbsolute(tmp_path, .{}) catch return;
     defer f.close();
     var wbuf: [8192]u8 = undefined;
-    var w = f.writer(&wbuf);
+    var writer = f.writer(&wbuf);
+    const w = &writer.interface;
 
-    w.interface.writeAll(mem.asBytes(&header)) catch return;
+    // Serialize header fields manually
+    w.writeAll(&cache_magic) catch return;
+    writeU32(w, cache_ver) catch return;
+    writeI64(w, now_s) catch return;
+    writeI64(w, last_full_scan_s) catch return;
+    writeF64(w, result.today_cost) catch return;
+    w.writeAll(&[_]u8{if (result.block != null) 1 else 0}) catch return;
+    writeI64(w, if (result.block) |b| b.start_ms else 0) catch return;
+    writeI64(w, if (result.block) |b| b.end_ms else 0) catch return;
+    writeF64(w, if (result.block) |b| b.cost else 0) catch return;
+    writeF64(w, if (result.block) |b| b.burn_rate_per_hr else 0) catch return;
+    writeI64(w, day_start_ms) catch return;
+    writeU32(w, @intCast(files.len)) catch return;
 
     for (files) |entry| {
         var len_buf: [2]u8 = undefined;
         mem.writeInt(u16, &len_buf, @intCast(entry.path.len), .little);
-        w.interface.writeAll(&len_buf) catch return;
-        w.interface.writeAll(entry.path) catch return;
-        var size_buf: [8]u8 = undefined;
-        mem.writeInt(u64, &size_buf, @bitCast(entry.file_size), .little);
-        w.interface.writeAll(&size_buf) catch return;
-        var cost_buf: [8]u8 = undefined;
-        mem.writeInt(u64, &cost_buf, @bitCast(entry.per_file_cost), .little);
-        w.interface.writeAll(&cost_buf) catch return;
-        var parsed_buf: [8]u8 = undefined;
-        mem.writeInt(u64, &parsed_buf, @bitCast(entry.parsed_size), .little);
-        w.interface.writeAll(&parsed_buf) catch return;
+        w.writeAll(&len_buf) catch return;
+        w.writeAll(entry.path) catch return;
+        writeI64(w, entry.file_size) catch return;
+        writeF64(w, entry.per_file_cost) catch return;
+        writeI64(w, entry.parsed_size) catch return;
     }
 
-    w.interface.flush() catch return;
+    writer.interface.flush() catch return;
     fs.renameAbsolute(tmp_path, cache_path) catch {};
 }
 
@@ -918,7 +939,7 @@ fn scanTranscripts(allocator: std.mem.Allocator, now_ms: i64) ?ScanResult {
 /// Stat-only diff scan: check cached files for size changes, parse only new bytes.
 /// Returns null if any file shrank/disappeared (caller should fall back to full scan).
 fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_s: i64, day_start_ms: i64) ?ScanResult {
-    var changed: std.ArrayListUnmanaged(CachedFileEntry) = .{};
+    var changed: std.StringHashMapUnmanaged(CachedFileEntry) = .{};
     var any_shrunk = false;
 
     for (cached.files) |entry| {
@@ -932,7 +953,7 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
             any_shrunk = true;
             break;
         } else if (current_size > entry.file_size) {
-            changed.append(allocator, .{
+            changed.put(allocator, entry.path, .{
                 .path = entry.path,
                 .file_size = current_size,
                 .per_file_cost = entry.per_file_cost,
@@ -943,7 +964,7 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
 
     if (any_shrunk) return null;
 
-    if (changed.items.len == 0) {
+    if (changed.count() == 0) {
         // No changes — refresh TTL and return
         writeCache(cached.scan, cached.files, now_s, cached.last_full_scan_s, day_start_ms);
         return cached.scan;
@@ -954,15 +975,7 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
     var new_files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
 
     for (cached.files) |entry| {
-        var changed_entry: ?CachedFileEntry = null;
-        for (changed.items) |ch| {
-            if (mem.eql(u8, ch.path, entry.path)) {
-                changed_entry = ch;
-                break;
-            }
-        }
-
-        if (changed_entry) |ch| {
+        if (changed.get(entry.path)) |ch| {
             var seen = std.StringHashMapUnmanaged(void){};
             var entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
 
@@ -1032,19 +1045,35 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
 fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64, now_s: i64, day_start_ms: i64) ScanResult {
     const file_infos = collectTranscriptFiles(allocator, projects_path, now_ms);
     var all_entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
-    var all_seen = std.StringHashMapUnmanaged(void){};
     var cache_files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
 
+    var tmp_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer tmp_arena.deinit();
+
     for (file_infos) |fi| {
+        _ = tmp_arena.reset(.retain_capacity);
+        const tmp = tmp_arena.allocator();
+
         var f = fs.openFileAbsolute(fi.path, .{}) catch continue;
         defer f.close();
-        const content = f.readToEndAlloc(allocator, 100 * 1024 * 1024) catch continue;
+        const content = f.readToEndAlloc(tmp, 100 * 1024 * 1024) catch continue;
 
-        const before_len = all_entries.items.len;
-        parseJsonlContent(allocator, content, &all_entries, &all_seen);
+        var file_seen = std.StringHashMapUnmanaged(void){};
+        var file_entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
+        parseJsonlContent(tmp, content, &file_entries, &file_seen);
 
+        // Copy entries from tmp arena into parent allocator
+        for (file_entries.items) |entry| {
+            all_entries.append(allocator, .{
+                .timestamp_ms = entry.timestamp_ms,
+                .model = allocator.dupe(u8, entry.model) catch "unknown",
+                .usage = entry.usage,
+            }) catch continue;
+        }
+
+        const new_items = all_entries.items[all_entries.items.len - file_entries.items.len ..];
         var per_cost: f64 = 0;
-        for (all_entries.items[before_len..]) |entry| {
+        for (new_items) |entry| {
             if (entry.timestamp_ms >= day_start_ms) {
                 if (findPricing(entry.model)) |pricing| {
                     per_cost += calculateEntryCost(pricing, entry.usage);
@@ -1157,7 +1186,7 @@ fn formatDuration(buf: []u8, remaining_ms: i64) []const u8 {
     return std.fmt.bufPrint(buf, "{d}m left", .{mins}) catch "??";
 }
 
-fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult) !void {
+fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult, now_ms: i64) !void {
     const stdout = fs.File{ .handle = std.posix.STDOUT_FILENO };
     var buf: [4096]u8 = undefined;
     var writer = stdout.writer(&buf);
@@ -1201,7 +1230,6 @@ fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult) !void {
         if (s.block) |block| {
             var block_buf: [32]u8 = undefined;
             var dur_buf: [64]u8 = undefined;
-            const now_ms = std.time.milliTimestamp();
             const remaining = block.end_ms - now_ms;
             try w.print(" {s}|{s} {s}{s}{s} block", .{
                 theme.dim,
@@ -1262,10 +1290,12 @@ fn mainImpl() !void {
     // Parse stdin JSON
     const stdin_info = parseStdin(allocator, stdin_data);
 
-    // Scan transcripts (or use cache)
-    const scan = scanTranscripts(allocator, std.time.milliTimestamp());
+    const now_ms = std.time.milliTimestamp();
 
-    try printOutput(theme, stdin_info, scan);
+    // Scan transcripts (or use cache)
+    const scan = scanTranscripts(allocator, now_ms);
+
+    try printOutput(theme, stdin_info, scan, now_ms);
 }
 
 // ============================================================
@@ -1284,6 +1314,18 @@ test "parseIso8601ToMs" {
 
     try std.testing.expectEqual(@as(?i64, null), parseIso8601ToMs("invalid"));
     try std.testing.expectEqual(@as(?i64, null), parseIso8601ToMs(""));
+}
+
+test "parseDecimal overflow" {
+    // Normal values
+    try std.testing.expectEqual(@as(?i64, 12345), parseDecimal("12345"));
+    try std.testing.expectEqual(@as(?i64, 0), parseDecimal("0"));
+    // Overflow: a string of 20 nines exceeds i64 max
+    try std.testing.expectEqual(@as(?i64, null), parseDecimal("99999999999999999999"));
+    // Non-digit
+    try std.testing.expectEqual(@as(?i64, null), parseDecimal("12a3"));
+    // Empty
+    try std.testing.expectEqual(@as(?i64, 0), parseDecimal(""));
 }
 
 test "daysFromCivil" {
