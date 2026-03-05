@@ -53,7 +53,7 @@
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = _final: prev: let
-    version = "2.1.68";
+    version = "2.1.69";
     hashes = {
       "aarch64-darwin" = "sha256-MbHl+l5HSApiSEpEr7yX+RWdwcfQ0aSy9BFFubPCzPw=";
       "x86_64-darwin" = "sha256-THgU99mx6J8VKrYCbBXTh+sR2lCkI2lskyTChMikfR8=";
@@ -502,7 +502,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.15.3";
+    version = "0.16.1";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -789,7 +789,7 @@
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=takt
   takt = _final: prev: let
-    version = "0.28.1";
+    version = "0.29.0";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
       hash = "sha256-vNefmWfgqgFWfmesPfRqLhNtdvmIkvbtBBNtUEy86NQ=";
