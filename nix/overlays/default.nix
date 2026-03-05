@@ -502,7 +502,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.16.1";
+    version = "0.16.3";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -962,7 +962,7 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = _final: prev: let
-    version = "0.5.4";
+    version = "0.5.5";
     hashes = {
       "aarch64-darwin" = "sha256-82oUuZgd1njKC2MFhh8Xc85EsRXn/MwnvBIX2o5BqlA=";
       "x86_64-darwin" = "sha256-MCzRVNKamX84AKejC45gVPRIiMAfq7EG1Uyj/wP6xU0=";
