@@ -520,10 +520,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-ARsn3gm0H2F9hbSeIirAxXT53OKjDM6dPUGQ7EIRX9Q=";
+        hash = "sha256-eAqmmBaahhDYqrylTcICFUPC0LHNieIRElj/8XUycdM=";
       };
 
-      npmDepsHash = "sha256-wNyXtUENp1QLnet+AokD8NRWkeJ0cR+FwlkPmy0sCEs=";
+      npmDepsHash = "sha256-sHF8WPj8d5LyH+EaLEPWivCBfIicvcBJrv41vUeBtdc=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       # --legacy-peer-deps: upstream has conflicting peer deps
