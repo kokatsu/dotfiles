@@ -6,11 +6,14 @@
 !rules/
 !rules/**
 
+!scripts/
+!scripts/**
+
 !skills/
 !skills/**
 
 !.gitignore
-!CLAUDE.md
+!.CLAUDE.md
 !file-suggestion.sh
 !keybindings.json
 !settings.json
