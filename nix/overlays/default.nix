@@ -55,10 +55,10 @@
   claude-code = _final: prev: let
     version = "2.1.69";
     hashes = {
-      "aarch64-darwin" = "sha256-MbHl+l5HSApiSEpEr7yX+RWdwcfQ0aSy9BFFubPCzPw=";
-      "x86_64-darwin" = "sha256-THgU99mx6J8VKrYCbBXTh+sR2lCkI2lskyTChMikfR8=";
-      "aarch64-linux" = "sha256-SMYxJx3471OjSZdfJ28eLQ7X8Z/4iQQLZUbxbh3xwls=";
-      "x86_64-linux" = "sha256-lpogzEqdluNEkJDtOU7+SEbpIM7F0Sy5zove9eGr5XU=";
+      "aarch64-darwin" = "sha256-qG4U9EsWfB6Nv3ZPdnVbkuz1LAl9cyo0Yf5ltftgvgU=";
+      "x86_64-darwin" = "sha256-5Zh7TdUCplQr+Gw8C80dUzt3Rhb8fUlWbOCyBA5sE3Q=";
+      "aarch64-linux" = "sha256-7Me78QUT/xIjJ4ZuuXISlFtzr9f4HjBwA3XN8Q9QsqM=";
+      "x86_64-linux" = "sha256-s729Wjy/jKr+NTAiFw33f++oCwAAMHTU0n59qMWeYpo=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -520,10 +520,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-dyW1Cve9FLuxWM2FxaehWKHZyCAP/9z9IuImTEpmssQ=";
+        hash = "sha256-ARsn3gm0H2F9hbSeIirAxXT53OKjDM6dPUGQ7EIRX9Q=";
       };
 
-      npmDepsHash = "sha256-q2cQ4JzrhzwY/gWQOAZdNI5Ba+QeQ9YPzm1M0t9PcXk=";
+      npmDepsHash = "sha256-wNyXtUENp1QLnet+AokD8NRWkeJ0cR+FwlkPmy0sCEs=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       # --legacy-peer-deps: upstream has conflicting peer deps
@@ -792,7 +792,7 @@
     version = "0.29.0";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
-      hash = "sha256-vNefmWfgqgFWfmesPfRqLhNtdvmIkvbtBBNtUEy86NQ=";
+      hash = "sha256-QnTZj6jTPZhlw2F1TkUnvs2mPV1XguHMsovEKruAiQ8=";
     };
     # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/takt/package-lock.json);
@@ -807,7 +807,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-pR4idvq78MJpelknrOXFP7zgrVKxfgRin1kGmpqI3xc=";
+      npmDepsHash = "sha256-JOVGkPox9rWNoBlxLvt+UvBbaPX+m5OTiBuWP1ujh6s=";
 
       # Already pre-built
       dontNpmBuild = true;
