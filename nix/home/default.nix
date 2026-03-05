@@ -179,6 +179,8 @@ in {
         cava # 音声ビジュアライザ
         # https://github.com/dominikwilkowski/cfonts
         cfonts # ASCIIアート
+        # https://exiftool.org/
+        exiftool # 画像/動画メタデータ編集
         # https://github.com/ImageMagick/ImageMagick
         imagemagick # 画像処理ツールキット
         # https://github.com/eddieantonio/imgcat
