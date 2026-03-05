@@ -21,8 +21,8 @@
     exec ${pkgs.deno}/bin/deno run --allow-read --allow-write "''${DOTFILES_DIR:-${dotfilesDir}}/bin/mermaid-render.ts" "$@"
   '';
 
-  skill-metrics = pkgs.writeShellScriptBin "skill-metrics" ''
-    exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${HOME}/.config/claude" --allow-env=HOME "''${HOME}/.config/claude/scripts/skill-metrics.ts" "$@"
+  cc-skills = pkgs.writeShellScriptBin "cc-skills" ''
+    exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${CLAUDE_CONFIG_DIR:-''${HOME}/.config/claude},''${HOME}/.claude,''${HOME}/.config/claude" --allow-env=HOME,CLAUDE_CONFIG_DIR "''${HOME}/.config/claude/scripts/skill-metrics.ts" "$@"
   '';
 
   # WSL: Claude Code は clip.exe をハードコードで使用するが UTF-8 を正しく扱えない
@@ -319,7 +319,7 @@ in {
 
         #--- ユーザースクリプト ラッパー ---#
         mmd # Mermaid図レンダラー (bin/mermaid-render.ts)
-        skill-metrics # スキル使用メトリクス表示
+        cc-skills # スキル使用メトリクス表示
 
         #--- Language Servers (overlay) ---#
         # https://github.com/antonk52/cssmodules-language-server
