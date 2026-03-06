@@ -129,7 +129,7 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=pamburus/termframe
   termframe = _final: prev: let
-    version = "0.8.1";
+    version = "0.8.2";
     hashes = {
       "aarch64-darwin" = "sha256-NuoC0bkYQHRcvC1ha5q9Qhqs9yZ0bv5IVKDphZ4widg=";
       "x86_64-darwin" = "sha256-VDyuSAvPzZc7XGzAhmIsDHTSUh0JbopG2zNhyxBxh1M=";
@@ -789,7 +789,7 @@
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=takt
   takt = _final: prev: let
-    version = "0.29.0";
+    version = "0.30.0";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
       hash = "sha256-QnTZj6jTPZhlw2F1TkUnvs2mPV1XguHMsovEKruAiQ8=";
@@ -986,7 +986,7 @@
   # nixpkgs の更新が遅いため overlay でバージョン管理
   # Renovate: datasource=github-releases depName=biomejs/biome
   biome = _final: prev: let
-    version = "2.4.5";
+    version = "2.4.6";
     hashes = {
       "aarch64-darwin" = "sha256-tQoaWtyhQFVPRPbIntz2ODsLLjuvnc0I1ZfR/Vn5JUQ=";
       "x86_64-darwin" = "sha256-f02ADdw3yEoKCarBzR7HfRu73V+Xcn828gYva2OXFOk=";
