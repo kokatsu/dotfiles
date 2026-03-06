@@ -215,8 +215,8 @@ async function analyzeTranscript(
           summary.endTime = entry.timestamp;
         }
 
-        // ブランチ名の取得（最初のエントリから）
-        if (entry.gitBranch && summary.gitBranch === "unknown") {
+        // ブランチ名の取得（最後のエントリを採用）
+        if (entry.gitBranch) {
           summary.gitBranch = entry.gitBranch;
         }
 
@@ -230,7 +230,7 @@ async function analyzeTranscript(
 
         // アシスタントメッセージからツール使用と最終回答を抽出
         if (entry.type === "assistant" && entry.message?.role === "assistant") {
-          // トークン使用量の累計
+          // トークン使用量は sidechain 含め全エントリから集計
           const usage = entry.message.usage;
           if (usage) {
             summary.tokenUsage.inputTokens += usage.input_tokens || 0;
@@ -239,6 +239,9 @@ async function analyzeTranscript(
               (usage.cache_creation_input_tokens || 0) +
               (usage.cache_read_input_tokens || 0);
           }
+
+          // sidechain はツール使用・最終回答の抽出対象外
+          if (entry.isSidechain) continue;
 
           const contentArray = entry.message.content;
           if (Array.isArray(contentArray)) {
@@ -262,8 +265,8 @@ async function analyzeTranscript(
         // 行のパースエラーは無視
       }
     }
-  } catch {
-    // ファイル読み込みエラーは無視
+  } catch (e) {
+    console.error(`Failed to read transcript: ${transcriptPath}`, e);
   }
 
   // Bashコマンドから成果物を抽出
@@ -292,6 +295,7 @@ function processToolUse(
       const existing = summary.filesChanged.get(relativePath);
       if (existing) {
         existing.count++;
+        existing.operation = name;
       } else {
         summary.filesChanged.set(relativePath, {
           path: relativePath,
@@ -360,7 +364,7 @@ function extractOutcomes(summary: SessionSummary): void {
   for (const cmd of summary.bashCommands) {
     // git commit メッセージ抽出
     const commitMatch = cmd.match(
-      /git commit -m "\$\(cat <<'EOF'\n(.+?)(?:\n|$)/,
+      /git commit -m "\$\(cat <<'EOF'\n([^\n]+)/,
     );
     if (commitMatch) {
       summary.outcomes.push(`**commit**: ${commitMatch[1]}`);
@@ -382,7 +386,7 @@ function extractOutcomes(summary: SessionSummary): void {
     }
 
     // git push -u origin <branch>
-    const pushMatch = cmd.match(/git push(?:\s+-u)?\s+origin\s+(\S+)/);
+    const pushMatch = cmd.match(/git push(?:\s+(?:--?\S+))*\s+origin\s+(\S+)/);
     if (pushMatch) {
       summary.outcomes.push(`**push**: ${pushMatch[1]}`);
     }
@@ -458,16 +462,28 @@ function toRelativePath(filePath: string, cwd: string): string {
 }
 
 function extractUserText(content: string | ContentItem[]): string {
+  let text = "";
   if (typeof content === "string") {
-    return content;
-  }
-  if (Array.isArray(content)) {
-    return content
+    text = content;
+  } else if (Array.isArray(content)) {
+    text = content
       .filter((c): c is TextContent => c.type === "text" && "text" in c)
       .map((c) => c.text)
       .join("\n");
   }
-  return "";
+  return stripSystemTags(text);
+}
+
+function stripSystemTags(text: string): string {
+  let result = text.replace(
+    /<(system-reminder|local-command-caveat|local-command-stdout)>[\s\S]*?<\/\1>/g,
+    "",
+  );
+  result = result.replace(
+    /<\/?(command-name|command-message|command-args)[^>]*>/g,
+    "",
+  );
+  return result.replace(/\n{3,}/g, "\n\n").trim();
 }
 
 interface MarkdownParams {
@@ -548,18 +564,20 @@ function generateMarkdown(
   // 調査（重複を除いて最大15件）
   if (summary.investigations.length > 0) {
     lines.push("### 調査");
+    const unique: string[] = [];
     const seen = new Set<string>();
-    let count = 0;
     for (const inv of summary.investigations) {
       const key = `${inv.type}: ${inv.target}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      if (count >= 15) break;
-      lines.push(`- ${inv.type}: ${inv.target}`);
-      count++;
+      unique.push(key);
     }
-    if (seen.size > 15) {
-      lines.push(`- ... and ${seen.size - 15} more`);
+    const maxInvShow = 15;
+    for (const key of unique.slice(0, maxInvShow)) {
+      lines.push(`- ${key}`);
+    }
+    if (unique.length > maxInvShow) {
+      lines.push(`- ... and ${unique.length - maxInvShow} more`);
     }
     lines.push("");
   }
@@ -641,6 +659,9 @@ function formatTimeRange(
       hour: "2-digit",
       minute: "2-digit",
     });
+    if (startHM === endHM) {
+      return `${startDate} ${startHM}`;
+    }
     return `${startDate} ${startHM} → ${endHM} (${durationMin}分)`;
   }
 
