@@ -224,7 +224,26 @@ M.apply = function()
     window:set_config_overrides(overrides)
 
     window:set_left_status(wezterm.format({}))
-    window:set_right_status(wezterm.format({}))
+
+    -- ダブルプレス確認メッセージの表示/クリア
+    local g = wezterm.GLOBAL or {}
+    if g.status_message and g.status_expire then
+      if os.time() >= g.status_expire then
+        -- タイムアウト: メッセージをクリア
+        wezterm.GLOBAL.status_message = nil
+        wezterm.GLOBAL.status_expire = nil
+        window:set_right_status(wezterm.format({}))
+      else
+        -- まだ有効: メッセージを再描画（update-statusで上書きされるため）
+        window:set_right_status(wezterm.format({
+          { Background = { Color = colors.palette.red } },
+          { Foreground = { Color = colors.palette.crust } },
+          { Text = ' ' .. g.status_message .. ' ' },
+        }))
+      end
+    else
+      window:set_right_status(wezterm.format({}))
+    end
   end)
 
   -- タブのタイトルを変更
