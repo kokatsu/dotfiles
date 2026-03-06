@@ -517,6 +517,98 @@ jobs:
       - name: Format code
         run: nix fmt -- .
 
+      - name: Verify all hashes in overlay
+        run: |
+          OVERLAY="nix/overlays/default.nix"
+          ERRORS=0
+
+          verify_hash() {
+            local pkg="$1" url="$2" nix_system="$3"
+            local actual
+            actual=$(nix-prefetch-url --type sha256 "$url" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            if [ -z "$actual" ]; then
+              echo "::warning::$pkg ($nix_system): could not fetch $url"
+              return
+            fi
+
+            # Extract hash from overlay for this package and system
+            local expected
+            expected=$(sed -n "/^\s*${pkg} = /,/^  };/{/\"${nix_system}\" = \"sha256-/s/.*\"sha256-\([^\"]*\)\".*/sha256-\1/p}" "$OVERLAY" | head -1)
+            if [ -z "$expected" ]; then
+              echo "::warning::$pkg ($nix_system): no hash found in overlay"
+              return
+            fi
+
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::$pkg ($nix_system): hash mismatch! overlay=$expected actual=$actual"
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "$pkg ($nix_system): OK"
+            fi
+          }
+
+          # marksman-binary
+          VER=$(sed -n '/marksman-binary = /,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          for p in "macos:aarch64-darwin" "macos:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "marksman-binary" "https://github.com/artempyanykh/marksman/releases/download/${VER}/marksman-${PLAT}" "$SYS"
+          done
+
+          # termframe
+          VER=$(sed -n '/termframe = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          for p in "macos-arm64:aarch64-darwin" "macos-x86_64:x86_64-darwin" "linux-arm64-gnu:aarch64-linux" "linux-x86_64-gnu:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "termframe" "https://github.com/pamburus/termframe/releases/download/v${VER}/termframe-${PLAT}.tar.gz" "$SYS"
+          done
+
+          # biome
+          VER=$(sed -n '/biome = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "biome" "https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${VER}/biome-${PLAT}" "$SYS"
+          done
+
+          # deck
+          VER=$(sed -n '/deck = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          for p in "darwin_arm64.zip:aarch64-darwin" "darwin_amd64.zip:x86_64-darwin" "linux_arm64.tar.gz:aarch64-linux" "linux_amd64.tar.gz:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "deck" "https://github.com/k1LoW/deck/releases/download/v${VER}/deck_v${VER}_${PLAT}" "$SYS"
+          done
+
+          # keifu
+          VER=$(sed -n '/keifu = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "keifu" "https://github.com/trasta298/keifu/releases/download/v${VER}/keifu-v${VER}-${PLAT}.tar.gz" "$SYS"
+          done
+
+          # kakehashi
+          VER=$(sed -n '/kakehashi = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "kakehashi" "https://github.com/atusy/kakehashi/releases/download/v${VER}/kakehashi-v${VER}-${PLAT}.tar.gz" "$SYS"
+          done
+
+          # octorus
+          VER=$(sed -n '/octorus = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "octorus" "https://github.com/ushironoko/octorus/releases/download/v${VER}/octorus-${VER}-${PLAT}.tar.gz" "$SYS"
+          done
+
+          # claude-code
+          VER=$(sed -n '/claude-code = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "claude-code" "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${VER}/${PLAT}/claude" "$SYS"
+          done
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "::error::${ERRORS} hash mismatch(es) found. The sed-based hash update likely failed."
+            exit 1
+          fi
+          echo "All hashes verified successfully."
+
       - name: Commit and push changes
         env:
           PACKAGES: ${{ steps.detect.outputs.packages }}
