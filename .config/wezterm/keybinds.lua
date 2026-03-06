@@ -14,6 +14,7 @@ wezterm.GLOBAL = wezterm.GLOBAL or {}
 local is_wsl_domain = platform.is_wsl_domain
 
 --- ダブルプレスで実行するアクションを作成
+--- 1回目はステータスバーにメッセージを表示し、タイムアウト内に再度押すと実行
 ---@param key_name string キー名（状態管理用）
 ---@param action table 実行するアクション
 ---@param timeout_sec number タイムアウト（秒）
@@ -25,14 +26,24 @@ local function double_press_action(key_name, action, timeout_sec, message)
     local elapsed = now - last_press
 
     if elapsed < timeout_sec then
-      -- 2回目: アクションを実行
+      -- 2回目: アクションを実行し、ステータスをクリア
       wezterm.GLOBAL[key_name] = 0
+      wezterm.GLOBAL.status_message = nil
+      wezterm.GLOBAL.status_expire = nil
+      window:set_right_status(wezterm.format({}))
       window:perform_action(action, pane)
     else
-      -- 1回目: 待機（メッセージがあれば通知を表示）
+      -- 1回目: ステータスバーにメッセージを表示
       wezterm.GLOBAL[key_name] = now
       if message then
-        window:toast_notification('WezTerm', message, nil, timeout_sec * 1000)
+        local colors = require('colors')
+        wezterm.GLOBAL.status_message = message
+        wezterm.GLOBAL.status_expire = now + timeout_sec
+        window:set_right_status(wezterm.format({
+          { Background = { Color = colors.palette.red } },
+          { Foreground = { Color = colors.palette.crust } },
+          { Text = ' ' .. message .. ' ' },
+        }))
       end
     end
   end)
