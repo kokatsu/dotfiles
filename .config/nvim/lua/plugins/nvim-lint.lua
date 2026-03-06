@@ -37,8 +37,9 @@ return {
           if not line or char_col <= 1 then
             return 0
           end
-          local byte_idx = vim.str_byteindex(line, 'utf-32', char_col - 1)
-          return byte_idx
+          local char_len = vim.str_utfindex(line, 'utf-32')
+          local clamped = math.min(char_col - 1, char_len)
+          return vim.str_byteindex(line, 'utf-32', clamped)
         end
 
         local diagnostics = {}
