@@ -106,7 +106,7 @@ in {
         # https://github.com/rclone/rclone
         rclone # クラウドストレージ同期
         # https://github.com/github/copilot-cli
-        github-copilot-cli # GitHub Copilot CLI
+        github-copilot-cli # GitHub Copilot CLI (overlay)
         # https://github.com/aristocratos/btop
         btop # リソースモニター
         # https://github.com/hpjansson/chafa
@@ -121,6 +121,8 @@ in {
         fastfetch # システム情報表示
         # https://github.com/sharkdp/fd
         fd # ファイル検索 (find alternative)
+        # https://github.com/sinelaw/fresh
+        fresh-editor # ターミナルテキストエディタ (LSP対応)
         # https://github.com/cmatsuoka/figlet
         figlet # ASCIIアート
         # https://github.com/b4b4r07/gomi
@@ -221,7 +223,7 @@ in {
         claude-code # AI コーディングエージェント (overlay)
         inputs.claude-chill.packages.${system}.default # PTY proxy for Claude Code
         # https://github.com/openai/codex
-        codex # OpenAI Codex CLI
+        codex # OpenAI Codex CLI (overlay)
         # https://github.com/google-gemini/gemini-cli
         gemini-cli # Google Gemini CLI
         # https://github.com/gitleaks/gitleaks
@@ -422,6 +424,7 @@ in {
         PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
         RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
         INPUTRC = "${config.xdg.configHome}/readline/inputrc";
+        CODEX_HOME = "${config.xdg.configHome}/codex";
         TERMFRAME_CONFIG = "${config.xdg.configHome}/termframe/config.toml";
         # Playwright ブラウザパス (Nix管理)
         PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
@@ -494,6 +497,7 @@ in {
         ".takt/pieces".source = ../../.config/takt/pieces;
         ".config/delta".source = ../../.config/delta;
         ".config/fastfetch".source = ../../.config/fastfetch;
+        ".config/fresh".source = ../../.config/fresh;
         ".config/git-graph".source = ../../.config/git-graph;
         ".config/gomi".source = ../../.config/gomi;
         ".config/keifu".source = ../../.config/keifu;
@@ -639,6 +643,24 @@ in {
         $DRY_RUN_CMD mkdir -p "$HOME/.config/btop"
         $DRY_RUN_CMD cp -r "$BTOP_TARGET/"* "$HOME/.config/btop/"
         $DRY_RUN_CMD chmod -R u+w "$HOME/.config/btop"
+      fi
+    '';
+
+    # codex: git管理の設定 (tui等) とローカルの [projects] をマージ
+    mergeCodexConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      CODEX_DIR="$HOME/.config/codex"
+      BASE="${dotfilesDir}/.config/codex/config.toml"
+      TARGET="$CODEX_DIR/config.toml"
+      $DRY_RUN_CMD mkdir -p "$CODEX_DIR"
+      if [ -f "$TARGET" ]; then
+        # 既存の [projects] セクションを抽出
+        PROJECTS=$(${pkgs.gnused}/bin/sed -n '/^\[projects[."\[]/,$ p' "$TARGET")
+        $DRY_RUN_CMD cp "$BASE" "$TARGET"
+        if [ -n "$PROJECTS" ]; then
+          printf '\n%s\n' "$PROJECTS" >> "$TARGET"
+        fi
+      else
+        $DRY_RUN_CMD cp "$BASE" "$TARGET"
       fi
     '';
 

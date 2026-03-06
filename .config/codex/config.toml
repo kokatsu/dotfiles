@@ -1,0 +1,13 @@
+[tui]
+status_line = [
+  "model-with-reasoning",
+  "context-remaining",
+  "context-used",
+  "five-hour-limit",
+  "weekly-limit",
+  "codex-version",
+  "context-window-size",
+  "used-tokens",
+  "total-input-tokens",
+  "total-output-tokens",
+]
