@@ -97,6 +97,8 @@
       customOverlays.ccusage
       customOverlays.daily
       customOverlays.claude-code
+      customOverlays.codex
+      customOverlays.copilot
       customOverlays.cssmodules-language-server
       customOverlays.deck
       customOverlays.git-graph-fork

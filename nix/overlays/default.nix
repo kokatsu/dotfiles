@@ -821,6 +821,130 @@
     };
   };
 
+  # copilot - GitHub Copilot CLI
+  # nixpkgs の更新が遅いため overlay でバージョン管理
+  # Uses pre-built static binaries from npm platform packages
+  # Renovate: datasource=npm depName=@github/copilot
+  copilot = _final: prev: let
+    version = "0.0.422";
+    hashes = {
+      "aarch64-darwin" = "sha256-ZZST/bEJTUfM9KYh81mXkEVefouhxhJ07qMSo0IG8Cg=";
+      "x86_64-darwin" = "sha256-3oqon8peOsinzn0CG+lVyVU5FMkyRpEL0sfyADRSyac=";
+      "aarch64-linux" = "sha256-o5ye3j93GMVonZ5BVeaWa8H1yRFubQOcDqVGYcdp6hc=";
+      "x86_64-linux" = "sha256-Ll4bAqUnMRq0Tb18yZx3dFHalUsTLAvkBdUTrVFfj/g=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "darwin-arm64";
+      "x86_64-darwin" = "darwin-x64";
+      "aarch64-linux" = "linux-arm64";
+      "x86_64-linux" = "linux-x64";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    github-copilot-cli = prev.stdenvNoCC.mkDerivation {
+      pname = "github-copilot-cli";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://registry.npmjs.org/@github/copilot-${platform}/-/copilot-${platform}-${version}.tgz";
+        inherit hash;
+      };
+
+      unpackPhase = ''
+        runHook preUnpack
+        mkdir -p source
+        tar -xzf $src -C source --strip-components=1
+        runHook postUnpack
+      '';
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp source/copilot $out/bin/copilot
+        chmod +x $out/bin/copilot
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "GitHub Copilot CLI";
+        homepage = "https://github.com/github/copilot-cli";
+        license = licenses.unfree;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "copilot";
+      };
+    };
+  };
+
+  # codex - OpenAI Codex CLI
+  # nixpkgs の更新が遅いため overlay でバージョン管理
+  # Uses pre-built static binaries from npm platform packages
+  # Renovate: datasource=npm depName=@openai/codex
+  codex = _final: prev: let
+    version = "0.111.0";
+    hashes = {
+      "aarch64-darwin" = "sha256-a2U2Y/n0TiWBMOX4pXTo0LV/GX+u3g79DD3iLMdQ3b0=";
+      "x86_64-darwin" = "sha256-0hJ3gWkfzCvduQCbLGCetdLKgb4KQKGX22JdjjQ4wB0=";
+      "aarch64-linux" = "sha256-E3491nZyXrVFRTAGtbasbrs4rVntHXWNhJqo8at4zUc=";
+      "x86_64-linux" = "sha256-isT7jOJJ/aUBPYCiSBsj4c4VLqZGok05eqFlVgWQnHo=";
+    };
+    platformMap = {
+      "aarch64-darwin" = {
+        npm = "darwin-arm64";
+        vendor = "aarch64-apple-darwin";
+      };
+      "x86_64-darwin" = {
+        npm = "darwin-x64";
+        vendor = "x86_64-apple-darwin";
+      };
+      "aarch64-linux" = {
+        npm = "linux-arm64";
+        vendor = "aarch64-unknown-linux-musl";
+      };
+      "x86_64-linux" = {
+        npm = "linux-x64";
+        vendor = "x86_64-unknown-linux-musl";
+      };
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    codex = prev.stdenvNoCC.mkDerivation {
+      pname = "codex";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://registry.npmjs.org/@openai/codex/-/codex-${version}-${platform.npm}.tgz";
+        inherit hash;
+      };
+
+      unpackPhase = ''
+        runHook preUnpack
+        mkdir -p source
+        tar -xzf $src -C source --strip-components=1
+        runHook postUnpack
+      '';
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp source/vendor/${platform.vendor}/codex/codex $out/bin/codex
+        chmod +x $out/bin/codex
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Lightweight coding agent that runs in your terminal";
+        homepage = "https://github.com/openai/codex";
+        license = licenses.asl20;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "codex";
+      };
+    };
+  };
+
   # cc-statusline - Fast Claude Code statusline tool (Zig)
   cc-statusline = _final: prev: {
     cc-statusline = prev.stdenvNoCC.mkDerivation {
