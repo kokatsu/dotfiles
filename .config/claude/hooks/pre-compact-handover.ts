@@ -69,21 +69,17 @@ async function main() {
   }
 
   // HANDOVER ファイルを保存
-  const dateStr = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${
+    String(now.getMonth() + 1).padStart(2, "0")
+  }-${String(now.getDate()).padStart(2, "0")}`;
   const handoverDir = `${cwd}/.claude`;
   await Deno.mkdir(handoverDir, { recursive: true });
 
   const handoverPath = `${handoverDir}/HANDOVER-${dateStr}.md`;
-
-  // 既存ファイルがあれば追記、なければ新規作成
-  try {
-    await Deno.stat(handoverPath);
-    await Deno.writeTextFile(handoverPath, `\n---\n\n${summary}\n`, {
-      append: true,
-    });
-  } catch {
-    await Deno.writeTextFile(handoverPath, `${summary}\n`);
-  }
+  await Deno.writeTextFile(handoverPath, `\n---\n\n${summary}\n`, {
+    append: true,
+  });
 
   console.log(`Handover saved: ${handoverPath}`);
 }
@@ -125,20 +121,21 @@ async function extractConversation(
                   tool.name === "Write" || tool.name === "Edit" ||
                   tool.name === "NotebookEdit"
                 ) {
-                  const path = (tool.input.file_path ||
-                    tool.input.notebook_path) as string;
+                  const path = String(
+                    tool.input?.file_path ?? tool.input?.notebook_path ?? "",
+                  );
                   if (path) filesChanged.add(toRelative(path, cwd));
                 }
                 if (tool.name === "Bash") {
-                  const cmd = tool.input.command as string;
+                  const cmd = String(tool.input?.command ?? "");
                   if (cmd) commands.push(cmd.split("\n")[0]);
                 }
               }
             }
           }
         }
-      } catch {
-        // skip
+      } catch (e) {
+        console.error(`Failed to parse transcript line: ${e}`);
       }
     }
 
@@ -159,7 +156,8 @@ async function extractConversation(
     }
 
     return result;
-  } catch {
+  } catch (e) {
+    console.error(`Failed to read transcript: ${e}`);
     return null;
   }
 }
@@ -185,7 +183,7 @@ function toRelative(filePath: string, cwd: string): string {
 async function generateSummary(
   conversationText: string,
 ): Promise<string | null> {
-  const prompt = `以下はClaude Codeのセッショントランスクリプトです。
+  const systemPrompt = `以下はClaude Codeのセッショントランスクリプトです。
 次のセッションに引き継ぐための簡潔なハンドオーバー文書を日本語で作成してください。
 
 フォーマット:
@@ -206,19 +204,24 @@ async function generateSummary(
 ## 注意事項
 - 既知の問題、ワークアラウンド、注意点
 
-不要なセクションは省略してください。簡潔に記述してください。
-
----
-${conversationText}`;
+不要なセクションは省略してください。簡潔に記述してください。`;
 
   try {
     const proc = new Deno.Command("claude", {
-      args: ["-p", prompt, "--model", "haiku"],
+      args: ["-p", "--model", "sonnet"],
+      stdin: "piped",
       stdout: "piped",
       stderr: "piped",
     });
 
-    const output = await proc.output();
+    const child = proc.spawn();
+    const writer = child.stdin.getWriter();
+    await writer.write(
+      new TextEncoder().encode(`${systemPrompt}\n\n---\n${conversationText}`),
+    );
+    await writer.close();
+
+    const output = await child.output();
     if (!output.success) {
       const stderr = new TextDecoder().decode(output.stderr);
       console.error(`claude -p failed: ${stderr}`);
