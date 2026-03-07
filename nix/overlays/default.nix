@@ -129,12 +129,12 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=pamburus/termframe
   termframe = _final: prev: let
-    version = "0.8.1";
+    version = "0.8.2";
     hashes = {
-      "aarch64-darwin" = "sha256-NuoC0bkYQHRcvC1ha5q9Qhqs9yZ0bv5IVKDphZ4widg=";
-      "x86_64-darwin" = "sha256-VDyuSAvPzZc7XGzAhmIsDHTSUh0JbopG2zNhyxBxh1M=";
-      "aarch64-linux" = "sha256-bxTKW258ieuGitiPbESZoF/pecay9V7mU0NCUkMF4kM=";
-      "x86_64-linux" = "sha256-jttPwFHYl7s08vIFIHfLAygUaUqkWTeo39vCdzIGgg4=";
+      "aarch64-darwin" = "sha256-Xr9n8FszlTW1IsPqtem77bxykka9e71hhnQbbvSo4w4=";
+      "x86_64-darwin" = "sha256-4kLXVW1ebi6vlyGUpgHrvkt4uEXyUWmQgSJ8DAORSzI=";
+      "aarch64-linux" = "sha256-dvUoWd3HoVor2CVigIWAJcL4DeSXH8vM4M7dSOiAHck=";
+      "x86_64-linux" = "sha256-7ntrcjO0mNkC42TY742hcL119PV6ON6ENvkdtdEF3AI=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-arm64";
@@ -789,10 +789,10 @@
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=takt
   takt = _final: prev: let
-    version = "0.29.0";
+    version = "0.30.0";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
-      hash = "sha256-QnTZj6jTPZhlw2F1TkUnvs2mPV1XguHMsovEKruAiQ8=";
+      hash = "sha256-ge8UgslHZTWTqp8xpGfH54dQrcdgpOIqZnO1SwEFYQU=";
     };
     # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/takt/package-lock.json);
@@ -807,7 +807,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-JOVGkPox9rWNoBlxLvt+UvBbaPX+m5OTiBuWP1ujh6s=";
+      npmDepsHash = "sha256-vmpKFKU5FSzRdex+1oeQI/TiI/yBxR2B1W35Ii7wrro=";
 
       # Already pre-built
       dontNpmBuild = true;
@@ -986,12 +986,12 @@
   # nixpkgs の更新が遅いため overlay でバージョン管理
   # Renovate: datasource=github-releases depName=biomejs/biome
   biome = _final: prev: let
-    version = "2.4.5";
+    version = "2.4.6";
     hashes = {
-      "aarch64-darwin" = "sha256-tQoaWtyhQFVPRPbIntz2ODsLLjuvnc0I1ZfR/Vn5JUQ=";
-      "x86_64-darwin" = "sha256-f02ADdw3yEoKCarBzR7HfRu73V+Xcn828gYva2OXFOk=";
-      "aarch64-linux" = "sha256-mKEJ1Uv+p98egrc6p9N/wsqogNEhBeskle/g1lOVVRg=";
-      "x86_64-linux" = "sha256-oxgV8ZsLkPoEPrI/v3ae2TH7zebZi7iYlOqL4Th9g5Q=";
+      "aarch64-darwin" = "sha256-hFKxF18pe2nFtx/jvQRLOBp4yBLXwPQ3Y4/LOjJZc8k=";
+      "x86_64-darwin" = "sha256-Fp8/MdG9i+CfGE7KVRhOcdBEnvV8eepW0CAjWHCUMfs=";
+      "aarch64-linux" = "sha256-LaC40Cjnf3eJAKyE4dRLvHAzLan/2uPsOqBDVfM5+no=";
+      "x86_64-linux" = "sha256-a8GS8fCzSVRDRy2VvU2/yTcsF/esUSVtY1GSylJdpZ0=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
