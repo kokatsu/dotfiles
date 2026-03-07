@@ -792,7 +792,7 @@
     version = "0.31.0";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
-      hash = "sha256-ge8UgslHZTWTqp8xpGfH54dQrcdgpOIqZnO1SwEFYQU=";
+      hash = "sha256-w+EMww+7OWemWxdcPF9b/xD/lGofw5epn+ln3b0Ti94=";
     };
     # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/takt/package-lock.json);
@@ -807,7 +807,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-vmpKFKU5FSzRdex+1oeQI/TiI/yBxR2B1W35Ii7wrro=";
+      npmDepsHash = "sha256-n/JzdTuJ0xaqVpMhNxKJSkW/DwQO5Wjx4Flw5m9B/ME=";
 
       # Already pre-built
       dontNpmBuild = true;
