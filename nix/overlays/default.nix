@@ -792,7 +792,7 @@
     version = "0.31.0";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
-      hash = "sha256-ge8UgslHZTWTqp8xpGfH54dQrcdgpOIqZnO1SwEFYQU=";
+      hash = "sha256-w+EMww+7OWemWxdcPF9b/xD/lGofw5epn+ln3b0Ti94=";
     };
     # Pre-generated package-lock.json (npm install --package-lock-only --ignore-scripts)
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/takt/package-lock.json);
@@ -807,7 +807,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-vmpKFKU5FSzRdex+1oeQI/TiI/yBxR2B1W35Ii7wrro=";
+      npmDepsHash = "sha256-n/JzdTuJ0xaqVpMhNxKJSkW/DwQO5Wjx4Flw5m9B/ME=";
 
       # Already pre-built
       dontNpmBuild = true;
@@ -1088,10 +1088,10 @@
   octorus = _final: prev: let
     version = "0.5.6";
     hashes = {
-      "aarch64-darwin" = "sha256-uCubdQaMqU+NlF+Z3tqX8LU+E03kAETani4rYDeZwus=";
-      "x86_64-darwin" = "sha256-i79vyZPtdL6UEJ6BtJ3ElLvWYUtTZBPtnFZBR2D4STk=";
-      "aarch64-linux" = "sha256-krWWrtnSCzzFaBOQiU2XGbUr/z9mMkdu2ZO+ZWQ/EMk=";
-      "x86_64-linux" = "sha256-0jeBPwyI141XCkmn/vZi+VWkoEQZQa9bUb7eQJctzsU=";
+      "aarch64-darwin" = "sha256-1tnFxE6vs7qR0Wh10lZLTCM7YjLABw45p3176Zr9Dik=";
+      "x86_64-darwin" = "sha256-NXldfuJf9B80VD9sUIku8NoXuC6nwzDEjgxbmHoNz/Q=";
+      "aarch64-linux" = "sha256-ExDxrJnYX097ASfGiL6UmH8dnxdT6FU2osiQYPtvQcc=";
+      "x86_64-linux" = "sha256-ztuyFtFQWwi1asXAmEIH2sIW0jI22OMbhISxn14CLmk=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
