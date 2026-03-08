@@ -789,7 +789,7 @@
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=takt
   takt = _final: prev: let
-    version = "0.30.0";
+    version = "0.31.0";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
       hash = "sha256-ge8UgslHZTWTqp8xpGfH54dQrcdgpOIqZnO1SwEFYQU=";
@@ -826,7 +826,7 @@
   # Uses pre-built static binaries from npm platform packages
   # Renovate: datasource=npm depName=@github/copilot
   copilot = _final: prev: let
-    version = "0.0.422";
+    version = "0.0.423";
     hashes = {
       "aarch64-darwin" = "sha256-ZZST/bEJTUfM9KYh81mXkEVefouhxhJ07qMSo0IG8Cg=";
       "x86_64-darwin" = "sha256-3oqon8peOsinzn0CG+lVyVU5FMkyRpEL0sfyADRSyac=";
@@ -1086,7 +1086,7 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = _final: prev: let
-    version = "0.5.5";
+    version = "0.5.6";
     hashes = {
       "aarch64-darwin" = "sha256-uCubdQaMqU+NlF+Z3tqX8LU+E03kAETani4rYDeZwus=";
       "x86_64-darwin" = "sha256-i79vyZPtdL6UEJ6BtJ3ElLvWYUtTZBPtnFZBR2D4STk=";
