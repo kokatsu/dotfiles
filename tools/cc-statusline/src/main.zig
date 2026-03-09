@@ -647,7 +647,7 @@ fn scanDirRecursive(allocator: std.mem.Allocator, base_path: []const u8, rel_pat
     }
 }
 
-fn parseJsonlContent(allocator: std.mem.Allocator, content: []const u8, entries: *std.ArrayListUnmanaged(TranscriptEntry), seen: *std.StringHashMapUnmanaged(void)) void {
+fn parseJsonlContent(allocator: std.mem.Allocator, dedup_alloc: std.mem.Allocator, content: []const u8, entries: *std.ArrayListUnmanaged(TranscriptEntry), seen: *std.StringHashMapUnmanaged(void)) void {
     var lines = mem.splitSequence(u8, content, "\n");
     while (lines.next()) |line| {
         if (line.len == 0) continue;
@@ -663,8 +663,8 @@ fn parseJsonlContent(allocator: std.mem.Allocator, content: []const u8, entries:
         } else null;
         const req_id = if (root.get("requestId")) |v| getStr(v) else null;
         if (msg_id != null and req_id != null) {
-            const dedup_key = std.fmt.allocPrint(allocator, "{s}:{s}", .{ msg_id.?, req_id.? }) catch continue;
-            const gop = seen.getOrPut(allocator, dedup_key) catch continue;
+            const dedup_key = std.fmt.allocPrint(dedup_alloc, "{s}:{s}", .{ msg_id.?, req_id.? }) catch continue;
+            const gop = seen.getOrPut(dedup_alloc, dedup_key) catch continue;
             if (gop.found_existing) continue;
         }
 
@@ -973,10 +973,10 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
     // Diff-parse each changed file individually (per-file cost attribution)
     var total_diff_cost: f64 = 0;
     var new_files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
+    var global_seen = std.StringHashMapUnmanaged(void){};
 
     for (cached.files) |entry| {
         if (changed.get(entry.path)) |ch| {
-            var seen = std.StringHashMapUnmanaged(void){};
             var entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
 
             parse_file: {
@@ -987,7 +987,7 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
                 }
                 const content = f.readToEndAlloc(allocator, 100 * 1024 * 1024) catch break :parse_file;
                 if (content.len > 0) {
-                    parseJsonlContent(allocator, content, &entries, &seen);
+                    parseJsonlContent(allocator, allocator, content, &entries, &global_seen);
                 }
             }
 
@@ -1049,6 +1049,7 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
 
     var tmp_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer tmp_arena.deinit();
+    var global_seen = std.StringHashMapUnmanaged(void){};
 
     for (file_infos) |fi| {
         _ = tmp_arena.reset(.retain_capacity);
@@ -1058,9 +1059,8 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
         defer f.close();
         const content = f.readToEndAlloc(tmp, 100 * 1024 * 1024) catch continue;
 
-        var file_seen = std.StringHashMapUnmanaged(void){};
         var file_entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
-        parseJsonlContent(tmp, content, &file_entries, &file_seen);
+        parseJsonlContent(tmp, allocator, content, &file_entries, &global_seen);
 
         // Copy entries from tmp arena into parent allocator
         for (file_entries.items) |entry| {
@@ -1682,6 +1682,67 @@ test "truncateBranch min max_len" {
     // max_len < 4 returns unchanged
     const result = truncateBranch(&buf, branch, 3);
     try std.testing.expectEqualStrings(branch, result);
+}
+
+test "parseJsonlContent global dedup across files" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const alloc = arena.allocator();
+
+    // Shared seen map simulates global dedup across multiple files
+    var global_seen = std.StringHashMapUnmanaged(void){};
+
+    const line =
+        \\{"timestamp":"2025-06-15T10:00:00Z","message":{"id":"msg_001","model":"claude-sonnet-4-5-20250929","usage":{"input_tokens":1000,"output_tokens":500}},"requestId":"req_001"}
+    ;
+
+    // File 1: parse the entry
+    var entries1: std.ArrayListUnmanaged(TranscriptEntry) = .{};
+    parseJsonlContent(alloc, alloc, line, &entries1, &global_seen);
+    try std.testing.expectEqual(@as(usize, 1), entries1.items.len);
+
+    // File 2: same entry should be deduplicated
+    var entries2: std.ArrayListUnmanaged(TranscriptEntry) = .{};
+    parseJsonlContent(alloc, alloc, line, &entries2, &global_seen);
+    try std.testing.expectEqual(@as(usize, 0), entries2.items.len);
+}
+
+test "parseJsonlContent per-file dedup still works" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const alloc = arena.allocator();
+
+    var seen = std.StringHashMapUnmanaged(void){};
+
+    // Two identical lines in the same file content
+    const content =
+        \\{"timestamp":"2025-06-15T10:00:00Z","message":{"id":"msg_001","model":"claude-sonnet-4-5-20250929","usage":{"input_tokens":1000,"output_tokens":500}},"requestId":"req_001"}
+        \\
+        \\{"timestamp":"2025-06-15T10:00:00Z","message":{"id":"msg_001","model":"claude-sonnet-4-5-20250929","usage":{"input_tokens":1000,"output_tokens":500}},"requestId":"req_001"}
+    ;
+
+    var entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
+    parseJsonlContent(alloc, alloc, content, &entries, &seen);
+    try std.testing.expectEqual(@as(usize, 1), entries.items.len);
+}
+
+test "parseJsonlContent no dedup without ids" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const alloc = arena.allocator();
+
+    var seen = std.StringHashMapUnmanaged(void){};
+
+    // Entries without message.id and requestId cannot be deduplicated
+    const content =
+        \\{"timestamp":"2025-06-15T10:00:00Z","message":{"model":"claude-sonnet-4-5-20250929","usage":{"input_tokens":1000,"output_tokens":500}}}
+        \\
+        \\{"timestamp":"2025-06-15T10:00:00Z","message":{"model":"claude-sonnet-4-5-20250929","usage":{"input_tokens":1000,"output_tokens":500}}}
+    ;
+
+    var entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
+    parseJsonlContent(alloc, alloc, content, &entries, &seen);
+    try std.testing.expectEqual(@as(usize, 2), entries.items.len);
 }
 
 test "contextColor thresholds" {
