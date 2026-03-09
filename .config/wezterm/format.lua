@@ -46,8 +46,6 @@ local process_icons = {
   ['bag'] = { icon = nf.md_file_document, color = colors.palette.yellow },
   ['eza'] = { icon = nf.md_folder, color = colors.palette.blue },
   ['fd'] = { icon = nf.md_file_search, color = colors.palette.mauve },
-  ['spotify_player'] = { icon = nf.md_spotify, color = colors.palette.green },
-  ['sp'] = { icon = nf.md_spotify, color = colors.palette.green },
   -- Build & System
   ['make'] = { icon = nf.seti_makefile, color = colors.palette.peach },
   ['nix'] = { icon = nf.linux_nixos, color = colors.palette.sky },

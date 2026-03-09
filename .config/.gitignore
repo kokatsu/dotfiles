@@ -93,10 +93,6 @@
 !readline/
 !readline/**
 
-# spotify-player (https://github.com/aome510/spotify-player)
-!spotify-player/
-!spotify-player/**
-
 # takt (https://github.com/nrslib/takt)
 !takt/
 !takt/**

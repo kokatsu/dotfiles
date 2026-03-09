@@ -24,7 +24,6 @@ export default defineConfig(({ env }) => {
     },
     { name: "lazygit", keyword: "lg", snippet: "lazygit" },
     { name: "neovim", keyword: "vi", snippet: "nvim" },
-    { name: "spotify-player", keyword: "sp", snippet: "spotify_player" },
     { name: "yazi", keyword: "y", snippet: "yazi" },
 
     // -------------------------------------------------------------------------
