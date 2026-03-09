@@ -3,6 +3,9 @@
 \pset null '[NULL]'
 \pset pager off
 
+\set COMP_KEYWORD_CASE upper
+\set HISTCONTROL ignoredups
+\set HISTFILE ~/.psql_history- :DBNAME
 \set HISTSIZE 10000
 \set PROMPT1 '%[%033[1;32m%]%/ [%`date +%H:%M:%S`] %R%#%[%033[0m%] '
 \set PROMPT2 '[more] %R > '
