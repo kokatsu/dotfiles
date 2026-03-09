@@ -828,10 +828,10 @@
   copilot = _final: prev: let
     version = "1.0.2";
     hashes = {
-      "aarch64-darwin" = "sha256-ZZST/bEJTUfM9KYh81mXkEVefouhxhJ07qMSo0IG8Cg=";
-      "x86_64-darwin" = "sha256-3oqon8peOsinzn0CG+lVyVU5FMkyRpEL0sfyADRSyac=";
-      "aarch64-linux" = "sha256-o5ye3j93GMVonZ5BVeaWa8H1yRFubQOcDqVGYcdp6hc=";
-      "x86_64-linux" = "sha256-Ll4bAqUnMRq0Tb18yZx3dFHalUsTLAvkBdUTrVFfj/g=";
+      "aarch64-darwin" = "sha256-S6dk8h8ZUPZxID3/LU2ONSfi5kmDhDtORDZlfOksGts=";
+      "x86_64-darwin" = "sha256-rzfL+kgRvm7gI9jYcOA4qJqxPaxQFNNbgEewrRM5YUQ=";
+      "aarch64-linux" = "sha256-9FH/UlDyGodGMQuLlDLwUU8yhHonq4BdBu/+4eIF3pY=";
+      "x86_64-linux" = "sha256-rUeRZHi603jsU9IqqTmcrRphFOrwV8xC5x52qN9enMA=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
