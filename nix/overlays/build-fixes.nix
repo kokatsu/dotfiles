@@ -105,6 +105,23 @@
     nodejs-slim_22 = prev.nodejs-slim_24;
   };
 
+  # Fix gemini-cli npm deps for nodejs_24 (npm 11 requires fetcher v2)
+  gemini-cli-npm11-fix = _final: prev: {
+    gemini-cli = prev.gemini-cli.overrideAttrs (old: {
+      env =
+        (old.env or {})
+        // {
+          NIX_NPM_FETCHER_VERSION = "2";
+        };
+      npmDeps = prev.fetchNpmDeps {
+        inherit (old) src;
+        name = "${old.pname}-${old.version}-npm-deps";
+        hash = "sha256-5Ce1aI0PjJsVhbuQyLxCHOrQStjEyoaJVbgPsvAwW9o=";
+        fetcherVersion = 2;
+      };
+    });
+  };
+
   # Fix playwright-driver.browsers to include chromium revision 1208
   # Required for agent-browser 0.8.x which uses Playwright 1.58+
   # nixpkgs has playwright-driver 1.57+ but browsers.json still uses revision 1200

@@ -102,6 +102,7 @@
       customOverlays.cssmodules-language-server
       customOverlays.deck
       customOverlays.nodejs-22-fix
+      customOverlays.gemini-cli-npm11-fix
       customOverlays.git-graph-fork
       customOverlays.kakehashi
       customOverlays.keifu
