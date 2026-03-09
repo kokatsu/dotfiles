@@ -8,8 +8,8 @@
 # Zimの設定ファイル
 !.zimrc
 
-# シェルのエイリアス
-!aliases.zsh
+# シェルの関数
+!functions.zsh
 
 # OS依存の設定ファイル
 !darwin.zsh
