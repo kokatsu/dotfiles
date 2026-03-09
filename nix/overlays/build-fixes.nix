@@ -117,7 +117,7 @@
       npmDeps = prev.fetchNpmDeps {
         inherit (old) src;
         name = "${old.pname}-${old.version}-npm-deps";
-        hash = "sha256-5Ce1aI0PjJsVhbuQyLxCHOrQStjEyoaJVbgPsvAwW9o=";
+        hash = "sha256-Nkd5Q2ugRqsTqaFbCSniC3Obl++uEjVUmoa8MVT5++8=";
       };
     });
   };
