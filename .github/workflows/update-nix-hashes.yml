@@ -143,6 +143,13 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }textlint $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'copilot'; then
+            echo "has_copilot=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=@github/copilot" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_copilot=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }copilot $VERSION"
+          fi
+
           if echo "$DIFF" | grep -q 'claude-code'; then
             echo "has_claude_code=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=claude-code" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -257,6 +264,23 @@ jobs:
             s|"aarch64-linux" = "sha256-[^"]*"|"aarch64-linux" = "'"${HASH_LINUX_ARM64}"'"|
             s|"x86_64-linux" = "sha256-[^"]*"|"x86_64-linux" = "'"${HASH_LINUX_X64}"'"|
           }' "$OVERLAY"
+
+      - name: Update copilot hashes
+        if: steps.detect.outputs.has_copilot == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_copilot }}
+        run: |
+          OVERLAY="nix/overlays/default.nix"
+
+          # Compute hashes for each platform
+          for platform in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" \
+                          "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
+            PLAT_NAME="${platform%%:*}"
+            NIX_SYSTEM="${platform##*:}"
+            URL="https://registry.npmjs.org/@github/copilot-${PLAT_NAME}/-/copilot-${PLAT_NAME}-${VERSION}.tgz"
+            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            sed -i "/copilot = _final: prev: let/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+          done
 
       - name: Update deck hashes
         if: steps.detect.outputs.has_deck == 'true'
@@ -601,6 +625,13 @@ jobs:
           for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
             verify_hash "claude-code" "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${VER}/${PLAT}/claude" "$SYS"
+          done
+
+          # copilot
+          VER=$(sed -n '/copilot = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "copilot" "https://registry.npmjs.org/@github/copilot-${PLAT}/-/copilot-${PLAT}-${VER}.tgz" "$SYS"
           done
 
           if [ "$ERRORS" -gt 0 ]; then
