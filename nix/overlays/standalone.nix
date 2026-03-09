@@ -1,0 +1,239 @@
+{
+  # win32yank - Windows clipboard tool for WSL
+  # Renovate: datasource=github-releases depName=equalsraf/win32yank
+  win32yank = _final: prev: {
+    win32yank = prev.stdenvNoCC.mkDerivation {
+      pname = "win32yank";
+      version = "0.1.1";
+
+      src = prev.fetchzip {
+        url = "https://github.com/equalsraf/win32yank/releases/download/v0.1.1/win32yank-x64.zip";
+        hash = "sha256-4ivE1cYZhYs4ibx5oiYMOhbse9bdOomk7RjgdVl5lD0=";
+        stripRoot = false;
+      };
+
+      dontFixup = true;
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp $src/win32yank.exe $out/bin/
+        chmod +x $out/bin/win32yank.exe
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Windows clipboard tool for WSL";
+        homepage = "https://github.com/equalsraf/win32yank";
+        license = licenses.mit;
+        platforms = ["x86_64-linux"];
+        mainProgram = "win32yank.exe";
+      };
+    };
+  };
+
+  # agent-browser - Browser automation agent
+  # Uses pre-built native binaries from npm package
+  # Renovate: datasource=npm depName=agent-browser
+  agent-browser = final: prev: let
+    version = "0.16.3";
+    platformMap = {
+      "aarch64-darwin" = "darwin-arm64";
+      "x86_64-darwin" = "darwin-x64";
+      "aarch64-linux" = "linux-arm64";
+      "x86_64-linux" = "linux-x64";
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/agent-browser/package-lock.json);
+  in {
+    agent-browser = prev.buildNpmPackage {
+      pname = "agent-browser";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
+        hash = "sha256-eAqmmBaahhDYqrylTcICFUPC0LHNieIRElj/8XUycdM=";
+      };
+
+      npmDepsHash = "sha256-sHF8WPj8d5LyH+EaLEPWivCBfIicvcBJrv41vUeBtdc=";
+      dontNpmBuild = true;
+      npmPackFlags = ["--ignore-scripts"];
+      npmFlags = ["--ignore-scripts" "--legacy-peer-deps"];
+
+      PLAYWRIGHT_BROWSERS_PATH = final.playwright-driver.browsers;
+
+      nativeBuildInputs = [prev.makeWrapper];
+
+      postPatch = ''
+        cp ${packageLock} package-lock.json
+      '';
+
+      postInstall = ''
+        rm -f $out/bin/agent-browser
+        mkdir -p $out/lib/agent-browser
+        cp $out/lib/node_modules/agent-browser/bin/agent-browser-${platform} $out/lib/agent-browser/agent-browser
+        chmod +x $out/lib/agent-browser/agent-browser
+
+        makeWrapper $out/lib/agent-browser/agent-browser $out/bin/agent-browser \
+          --set AGENT_BROWSER_HOME $out/lib/node_modules/agent-browser \
+          --unset PLAYWRIGHT_BROWSERS_PATH \
+          --set-default PLAYWRIGHT_BROWSERS_PATH ${final.playwright-driver.browsers} \
+          --prefix PATH : ${prev.lib.makeBinPath [prev.nodejs]}
+      '';
+
+      meta = with prev.lib; {
+        description = "Browser automation agent";
+        homepage = "https://github.com/anthropics/agent-browser";
+        license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "agent-browser";
+      };
+    };
+  };
+
+  # k1LoW/deck - Markdown to Google Slides
+  # Uses pre-built binaries from GitHub releases
+  # Renovate: datasource=github-releases depName=k1LoW/deck
+  deck = _final: prev: let
+    version = "1.23.0";
+    hashes = {
+      "aarch64-darwin" = "sha256-UcKJ4lwdyNi+h6bMbyEJhsdizI/x1cQU6mE1bTreF6I=";
+      "x86_64-darwin" = "sha256-KccUz9rrM0X0yyCDHNNfP/7IbGRu+JR5nC7n1pNoJ5E=";
+      "aarch64-linux" = "sha256-dBRTGxGgkEStG9nypMm/XSZB+Qiuktz7v87kJZxvSHw=";
+      "x86_64-linux" = "sha256-NfYJn0lq7zBw2Kr6cmOUYdGGoJlwfCzgAXFBSrp/2x8=";
+    };
+    platformMap = {
+      "aarch64-darwin" = {
+        platform = "darwin_arm64";
+        ext = "zip";
+      };
+      "x86_64-darwin" = {
+        platform = "darwin_amd64";
+        ext = "zip";
+      };
+      "aarch64-linux" = {
+        platform = "linux_arm64";
+        ext = "tar.gz";
+      };
+      "x86_64-linux" = {
+        platform = "linux_amd64";
+        ext = "tar.gz";
+      };
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platformInfo = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    deck-slides = prev.stdenvNoCC.mkDerivation {
+      pname = "deck-slides";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://github.com/k1LoW/deck/releases/download/v${version}/deck_v${version}_${platformInfo.platform}.${platformInfo.ext}";
+        inherit hash;
+      };
+
+      nativeBuildInputs = prev.lib.optionals (platformInfo.ext == "zip") [prev.unzip];
+
+      sourceRoot = ".";
+
+      unpackPhase =
+        if platformInfo.ext == "zip"
+        then ''
+          runHook preUnpack
+          unzip $src
+          runHook postUnpack
+        ''
+        else ''
+          runHook preUnpack
+          tar -xzf $src
+          runHook postUnpack
+        '';
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp deck $out/bin/deck-slides
+        chmod +x $out/bin/deck-slides
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "A tool for creating deck using Markdown and Google Slides";
+        homepage = "https://github.com/k1LoW/deck";
+        license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "deck-slides";
+      };
+    };
+  };
+
+  # codex - OpenAI Codex CLI
+  # nixpkgs の更新が遅いため overlay でバージョン管理
+  # Uses pre-built static binaries from npm platform packages
+  # Renovate: datasource=npm depName=@openai/codex
+  codex = _final: prev: let
+    version = "0.111.0";
+    hashes = {
+      "aarch64-darwin" = "sha256-a2U2Y/n0TiWBMOX4pXTo0LV/GX+u3g79DD3iLMdQ3b0=";
+      "x86_64-darwin" = "sha256-0hJ3gWkfzCvduQCbLGCetdLKgb4KQKGX22JdjjQ4wB0=";
+      "aarch64-linux" = "sha256-E3491nZyXrVFRTAGtbasbrs4rVntHXWNhJqo8at4zUc=";
+      "x86_64-linux" = "sha256-isT7jOJJ/aUBPYCiSBsj4c4VLqZGok05eqFlVgWQnHo=";
+    };
+    platformMap = {
+      "aarch64-darwin" = {
+        npm = "darwin-arm64";
+        vendor = "aarch64-apple-darwin";
+      };
+      "x86_64-darwin" = {
+        npm = "darwin-x64";
+        vendor = "x86_64-apple-darwin";
+      };
+      "aarch64-linux" = {
+        npm = "linux-arm64";
+        vendor = "aarch64-unknown-linux-musl";
+      };
+      "x86_64-linux" = {
+        npm = "linux-x64";
+        vendor = "x86_64-unknown-linux-musl";
+      };
+    };
+    inherit (prev.stdenv.hostPlatform) system;
+    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
+    hash = hashes.${system} or (throw "No hash for system: ${system}");
+  in {
+    codex = prev.stdenvNoCC.mkDerivation {
+      pname = "codex";
+      inherit version;
+
+      src = prev.fetchurl {
+        url = "https://registry.npmjs.org/@openai/codex/-/codex-${version}-${platform.npm}.tgz";
+        inherit hash;
+      };
+
+      unpackPhase = ''
+        runHook preUnpack
+        mkdir -p source
+        tar -xzf $src -C source --strip-components=1
+        runHook postUnpack
+      '';
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp source/vendor/${platform.vendor}/codex/codex $out/bin/codex
+        chmod +x $out/bin/codex
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Lightweight coding agent that runs in your terminal";
+        homepage = "https://github.com/openai/codex";
+        license = licenses.asl20;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+        mainProgram = "codex";
+      };
+    };
+  };
+}

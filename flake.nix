@@ -119,6 +119,32 @@
       customOverlays.x-api-playground
     ];
 
+    # CI用ヘルパー
+    mkCIConfig = system: let
+      isDarwin = builtins.elem system darwinSystems;
+    in
+      home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          overlays =
+            commonOverlays
+            ++ (
+              if isDarwin
+              then darwinOnlyOverlays
+              else []
+            );
+        };
+        modules = [./nix/home];
+        extraSpecialArgs = {
+          inherit inputs self;
+          username = "ci";
+          isCI = true;
+          dotfilesDir = "/tmp/dotfiles";
+          stablePkgs = stablePkgsFor system;
+        };
+      };
+
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
       customOverlays.cava-darwin-fix
@@ -179,37 +205,8 @@
       };
 
       # CI用 (純粋評価、ビルドテスト用)
-      "ci-linux" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = "x86_64-linux";
-          config.allowUnfree = true;
-          overlays = commonOverlays;
-        };
-        modules = [./nix/home];
-        extraSpecialArgs = {
-          inherit inputs self;
-          username = "ci";
-          isCI = true;
-          dotfilesDir = "/tmp/dotfiles";
-          stablePkgs = stablePkgsFor "x86_64-linux";
-        };
-      };
-
-      "ci-darwin" = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = "aarch64-darwin";
-          config.allowUnfree = true;
-          overlays = commonOverlays ++ darwinOnlyOverlays;
-        };
-        modules = [./nix/home];
-        extraSpecialArgs = {
-          inherit inputs self;
-          username = "ci";
-          isCI = true;
-          dotfilesDir = "/tmp/dotfiles";
-          stablePkgs = stablePkgsFor "aarch64-darwin";
-        };
-      };
+      "ci-linux" = mkCIConfig "x86_64-linux";
+      "ci-darwin" = mkCIConfig "aarch64-darwin";
     };
 
     # 開発シェル
