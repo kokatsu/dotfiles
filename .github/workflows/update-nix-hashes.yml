@@ -3,7 +3,7 @@ name: Update Nix Hashes
 on:
   pull_request:
     paths:
-      - nix/overlays/default.nix
+      - nix/overlays/**/*.nix
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
@@ -40,126 +40,125 @@ jobs:
         run: |
           # Get the diff to detect which packages were changed
           git fetch origin main
-          DIFF=$(git diff origin/main -- nix/overlays/default.nix)
-          OVERLAY="nix/overlays/default.nix"
+          DIFF=$(git diff origin/main -- nix/overlays/)
           PACKAGES=""
 
           # Check each package independently
           if echo "$DIFF" | grep -q 'termframe'; then
             echo "has_termframe=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*termframe" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*termframe" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_termframe=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }termframe $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'deck'; then
             echo "has_deck=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*deck" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*deck" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_deck=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }deck $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'ccusage'; then
             echo "has_ccusage=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*ccusage" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*ccusage" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_ccusage=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }ccusage $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'agent-browser'; then
             echo "has_agent_browser=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*agent-browser" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*agent-browser" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_agent_browser=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }agent-browser $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'secretlint'; then
             echo "has_secretlint=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*secretlint" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*secretlint" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_secretlint=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }secretlint $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'cssmodules-language-server'; then
             echo "has_cssmodules_language_server=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*cssmodules-language-server" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*cssmodules-language-server" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_cssmodules_language_server=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }cssmodules-language-server $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'unocss-language-server'; then
             echo "has_unocss_language_server=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*unocss-language-server" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*unocss-language-server" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_unocss_language_server=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }unocss-language-server $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'playwright-cli\|@playwright/cli'; then
             echo "has_playwright_cli=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=@playwright/cli" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=@playwright/cli" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_playwright_cli=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }playwright-cli $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'marksman'; then
             echo "has_marksman=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*marksman" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*marksman" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_marksman=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }marksman $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'keifu'; then
             echo "has_keifu=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*keifu" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*keifu" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_keifu=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }keifu $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'octorus'; then
             echo "has_octorus=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*octorus" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*octorus" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_octorus=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }octorus $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'x-api-playground'; then
             echo "has_x_api_playground=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*playground" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*playground" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_x_api_playground=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }x-api-playground $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'takt'; then
             echo "has_takt=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=takt" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=takt" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_takt=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }takt $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'textlint'; then
             echo "has_textlint=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=textlint" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=textlint" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_textlint=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }textlint $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'copilot'; then
             echo "has_copilot=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=@github/copilot" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=@github/copilot" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_copilot=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }copilot $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'claude-code'; then
             echo "has_claude_code=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=claude-code" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=claude-code" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_claude_code=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }claude-code $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'biome'; then
             echo "has_biome=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*biome" "$OVERLAY" | grep -oP 'version = "\K[^"]+' | head -1)
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*biome" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_biome=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }biome $VERSION"
           fi
@@ -173,7 +172,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_termframe }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/binary-releases.nix"
 
           # Compute hashes for each platform
           for platform in "macos-arm64:aarch64-darwin" "macos-x86_64:x86_64-darwin" \
@@ -182,7 +181,7 @@ jobs:
             NIX_SYSTEM="${platform##*:}"
             URL="https://github.com/pamburus/termframe/releases/download/v${VERSION}/termframe-${PLAT_NAME}.tar.gz"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/termframe = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+            sed -i "/termframe = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update marksman-binary hashes
@@ -190,7 +189,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_marksman }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/binary-releases.nix"
 
           # Compute hashes for each platform
           for platform in "macos:aarch64-darwin" "macos:x86_64-darwin" \
@@ -199,7 +198,7 @@ jobs:
             NIX_SYSTEM="${platform##*:}"
             URL="https://github.com/artempyanykh/marksman/releases/download/${VERSION}/marksman-${PLAT_NAME}"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/marksman-binary = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+            sed -i "/marksman-binary = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update biome hashes
@@ -207,7 +206,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_biome }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/binary-releases.nix"
 
           # Compute hashes for each platform
           for platform in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" \
@@ -216,7 +215,7 @@ jobs:
             NIX_SYSTEM="${platform##*:}"
             URL="https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${VERSION}/biome-${PLAT_NAME}"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/biome = _final: prev: let/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+            sed -i "/biome = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update keifu hashes
@@ -224,7 +223,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_keifu }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/binary-releases.nix"
 
           # Compute hashes for each platform
           for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
@@ -233,7 +232,7 @@ jobs:
             NIX_SYSTEM="${platform##*:}"
             URL="https://github.com/trasta298/keifu/releases/download/v${VERSION}/keifu-v${VERSION}-${PLAT_NAME}.tar.gz"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/keifu = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+            sed -i "/keifu = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update claude-code hashes
@@ -241,7 +240,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_claude_code }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/binary-releases.nix"
           MANIFEST_URL="https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${VERSION}/manifest.json"
 
           # Get hashes from manifest and convert to SRI format (sha256-...)
@@ -258,7 +257,7 @@ jobs:
           HASH_LINUX_X64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["linux-x64"].checksum')")
 
           # Update claude-code section only
-          sed -i '/# Claude Code - agentic coding tool/,/^  };$/{
+          sed -i '/# Claude Code - agentic coding tool/,/^  };/{
             s|"aarch64-darwin" = "sha256-[^"]*"|"aarch64-darwin" = "'"${HASH_DARWIN_ARM64}"'"|
             s|"x86_64-darwin" = "sha256-[^"]*"|"x86_64-darwin" = "'"${HASH_DARWIN_X64}"'"|
             s|"aarch64-linux" = "sha256-[^"]*"|"aarch64-linux" = "'"${HASH_LINUX_ARM64}"'"|
@@ -270,7 +269,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_copilot }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/binary-releases.nix"
 
           # Compute hashes for each platform
           for platform in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" \
@@ -279,7 +278,7 @@ jobs:
             NIX_SYSTEM="${platform##*:}"
             URL="https://registry.npmjs.org/@github/copilot-${PLAT_NAME}/-/copilot-${PLAT_NAME}-${VERSION}.tgz"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/copilot = _final: prev: let/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+            sed -i "/copilot = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update deck hashes
@@ -287,7 +286,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_deck }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/standalone.nix"
 
           # Compute hashes for each platform
           for platform in "darwin_arm64.zip:aarch64-darwin" "darwin_amd64.zip:x86_64-darwin" \
@@ -304,7 +303,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_ccusage }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/source-builds.nix"
 
           URL="https://registry.npmjs.org/ccusage/-/ccusage-${VERSION}.tgz"
           HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
@@ -316,13 +315,13 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_agent_browser }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/standalone.nix"
           LOCK_DIR="nix/npm-locks/agent-browser"
 
           # Update tarball hash
           URL="https://registry.npmjs.org/agent-browser/-/agent-browser-${VERSION}.tgz"
           TARBALL_HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-          sed -i "/agent-browser = _\\?final: prev: let/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${TARBALL_HASH}\";|}" "$OVERLAY"
+          sed -i "/agent-browser = _\?final: prev: let/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${TARBALL_HASH}\";|}" "$OVERLAY"
 
           # Regenerate package-lock.json
           mkdir -p /tmp/agent-browser-pkg
@@ -336,7 +335,7 @@ jobs:
 
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
-          sed -i "/agent-browser = _\\?final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+          sed -i "/agent-browser = _\?final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       # === NPM packages with buildNpmPackage ===
 
@@ -345,7 +344,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_secretlint }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/npm-packages.nix"
           LOCK_DIR="nix/npm-locks/secretlint"
 
           # Update version in custom package.json (secretlint-with-preset)
@@ -362,14 +361,14 @@ jobs:
 
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
-          sed -i "/secretlint = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+          sed -i "/secretlint = mkVendoredNpmPackage/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update textlint hashes
         if: steps.detect.outputs.has_textlint == 'true'
         env:
           VERSION: ${{ steps.detect.outputs.version_textlint }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/npm-packages.nix"
           LOCK_DIR="nix/npm-locks/textlint"
 
           # Update version in custom package.json (textlint-with-preset)
@@ -392,14 +391,14 @@ jobs:
 
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
-          sed -i "/textlint = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+          sed -i "/textlint = mkVendoredNpmPackage/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update playwright-cli hashes
         if: steps.detect.outputs.has_playwright_cli == 'true'
         env:
           VERSION: ${{ steps.detect.outputs.version_playwright_cli }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/npm-packages.nix"
           LOCK_DIR="nix/npm-locks/playwright-cli"
 
           # Update version in custom package.json (playwright-cli-wrapper)
@@ -422,7 +421,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_unocss_language_server }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/npm-packages.nix"
           LOCK_DIR="nix/npm-locks/unocss-language-server"
 
           # Update tarball hash
@@ -447,7 +446,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_takt }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/npm-packages.nix"
           LOCK_DIR="nix/npm-locks/takt"
 
           # Update tarball hash
@@ -472,7 +471,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_cssmodules_language_server }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/source-builds.nix"
 
           # Compute GitHub source hash
           SRC_HASH=$(nix-prefetch-url --unpack --type sha256 \
@@ -496,7 +495,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_octorus }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/binary-releases.nix"
 
           # Compute hashes for each platform
           for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
@@ -505,7 +504,7 @@ jobs:
             NIX_SYSTEM="${platform##*:}"
             URL="https://github.com/ushironoko/octorus/releases/download/v${VERSION}/octorus-${VERSION}-${PLAT_NAME}.tar.gz"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/octorus = _final: prev: let/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+            sed -i "/octorus = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update x-api-playground hashes
@@ -513,7 +512,7 @@ jobs:
         env:
           VERSION: ${{ steps.detect.outputs.version_x_api_playground }}
         run: |
-          OVERLAY="nix/overlays/default.nix"
+          OVERLAY="nix/overlays/source-builds.nix"
 
           # Compute GitHub source hash
           SRC_HASH=$(nix-prefetch-url --unpack --type sha256 \
@@ -527,7 +526,7 @@ jobs:
           VENDOR_HASH=$(nix build --no-link --impure --expr '
             let pkgs = import (builtins.getFlake "nixpkgs") {
               system = "x86_64-linux";
-              overlays = [ (import ./nix/overlays/default.nix).x-api-playground ];
+              overlays = [ (import ./nix/overlays).x-api-playground ];
             };
             in pkgs.x-api-playground
           ' 2>&1 | grep -oP "got:\s+\Ksha256-\S+" | head -1)
@@ -543,11 +542,10 @@ jobs:
 
       - name: Verify all hashes in overlay
         run: |
-          OVERLAY="nix/overlays/default.nix"
           ERRORS=0
 
           verify_hash() {
-            local pkg="$1" url="$2" nix_system="$3"
+            local pkg="$1" url="$2" nix_system="$3" overlay="$4"
             local actual
             actual=$(nix-prefetch-url --type sha256 "$url" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
             if [ -z "$actual" ]; then
@@ -557,7 +555,7 @@ jobs:
 
             # Extract hash from overlay for this package and system
             local expected
-            expected=$(sed -n "/^\s*${pkg} = /,/^  };/{/\"${nix_system}\" = \"sha256-/s/.*\"sha256-\([^\"]*\)\".*/sha256-\1/p}" "$OVERLAY" | head -1)
+            expected=$(sed -n "/^\s*${pkg} = /,/^  };/{/\"${nix_system}\" = \"sha256-/s/.*\"sha256-\([^\"]*\)\".*/sha256-\1/p}" "$overlay" | head -1)
             if [ -z "$expected" ]; then
               echo "::warning::$pkg ($nix_system): no hash found in overlay"
               return
@@ -571,67 +569,70 @@ jobs:
             fi
           }
 
+          BINARY="nix/overlays/binary-releases.nix"
+          STANDALONE="nix/overlays/standalone.nix"
+
           # marksman-binary
-          VER=$(sed -n '/marksman-binary = /,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          VER=$(sed -n '/marksman-binary = /,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
           for p in "macos:aarch64-darwin" "macos:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "marksman-binary" "https://github.com/artempyanykh/marksman/releases/download/${VER}/marksman-${PLAT}" "$SYS"
+            verify_hash "marksman-binary" "https://github.com/artempyanykh/marksman/releases/download/${VER}/marksman-${PLAT}" "$SYS" "$BINARY"
           done
 
           # termframe
-          VER=$(sed -n '/termframe = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          VER=$(sed -n '/termframe = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
           for p in "macos-arm64:aarch64-darwin" "macos-x86_64:x86_64-darwin" "linux-arm64-gnu:aarch64-linux" "linux-x86_64-gnu:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "termframe" "https://github.com/pamburus/termframe/releases/download/v${VER}/termframe-${PLAT}.tar.gz" "$SYS"
+            verify_hash "termframe" "https://github.com/pamburus/termframe/releases/download/v${VER}/termframe-${PLAT}.tar.gz" "$SYS" "$BINARY"
           done
 
           # biome
-          VER=$(sed -n '/biome = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          VER=$(sed -n '/biome = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
           for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "biome" "https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${VER}/biome-${PLAT}" "$SYS"
+            verify_hash "biome" "https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${VER}/biome-${PLAT}" "$SYS" "$BINARY"
           done
 
           # deck
-          VER=$(sed -n '/deck = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          VER=$(sed -n '/deck = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$STANDALONE" | head -1)
           for p in "darwin_arm64.zip:aarch64-darwin" "darwin_amd64.zip:x86_64-darwin" "linux_arm64.tar.gz:aarch64-linux" "linux_amd64.tar.gz:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "deck" "https://github.com/k1LoW/deck/releases/download/v${VER}/deck_v${VER}_${PLAT}" "$SYS"
+            verify_hash "deck" "https://github.com/k1LoW/deck/releases/download/v${VER}/deck_v${VER}_${PLAT}" "$SYS" "$STANDALONE"
           done
 
           # keifu
-          VER=$(sed -n '/keifu = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          VER=$(sed -n '/keifu = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
           for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "keifu" "https://github.com/trasta298/keifu/releases/download/v${VER}/keifu-v${VER}-${PLAT}.tar.gz" "$SYS"
+            verify_hash "keifu" "https://github.com/trasta298/keifu/releases/download/v${VER}/keifu-v${VER}-${PLAT}.tar.gz" "$SYS" "$BINARY"
           done
 
           # kakehashi
-          VER=$(sed -n '/kakehashi = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          VER=$(sed -n '/kakehashi = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
           for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "kakehashi" "https://github.com/atusy/kakehashi/releases/download/v${VER}/kakehashi-v${VER}-${PLAT}.tar.gz" "$SYS"
+            verify_hash "kakehashi" "https://github.com/atusy/kakehashi/releases/download/v${VER}/kakehashi-v${VER}-${PLAT}.tar.gz" "$SYS" "$BINARY"
           done
 
           # octorus
-          VER=$(sed -n '/octorus = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          VER=$(sed -n '/octorus = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
           for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "octorus" "https://github.com/ushironoko/octorus/releases/download/v${VER}/octorus-${VER}-${PLAT}.tar.gz" "$SYS"
+            verify_hash "octorus" "https://github.com/ushironoko/octorus/releases/download/v${VER}/octorus-${VER}-${PLAT}.tar.gz" "$SYS" "$BINARY"
           done
 
           # claude-code
-          VER=$(sed -n '/claude-code = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          VER=$(sed -n '/claude-code = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
           for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "claude-code" "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${VER}/${PLAT}/claude" "$SYS"
+            verify_hash "claude-code" "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${VER}/${PLAT}/claude" "$SYS" "$BINARY"
           done
 
           # copilot
-          VER=$(sed -n '/copilot = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$OVERLAY" | head -1)
+          VER=$(sed -n '/copilot = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
           for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "copilot" "https://registry.npmjs.org/@github/copilot-${PLAT}/-/copilot-${PLAT}-${VER}.tgz" "$SYS"
+            verify_hash "copilot" "https://registry.npmjs.org/@github/copilot-${PLAT}/-/copilot-${PLAT}-${VER}.tgz" "$SYS" "$BINARY"
           done
 
           if [ "$ERRORS" -gt 0 ]; then

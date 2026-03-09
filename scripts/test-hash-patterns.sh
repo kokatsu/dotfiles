@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-OVERLAY="${1:-nix/overlays/default.nix}"
+OVERLAY_DIR="${1:-nix/overlays}"
 ERRORS=0
 TESTS=0
 
@@ -30,39 +30,40 @@ fail() {
 }
 
 # --- パッケージ定義 ---
-# 形式: "name|sed_start_pattern|renovate_pattern|hash_type|systems"
+# 形式: "name|file|sed_start_pattern|renovate_pattern|hash_type|systems"
 # hash_type: "platform" = per-platform hashes, "single" = hash = "...", "npm" = npmDepsHash, "both" = hash + npmDepsHash, "vendor" = hash + vendorHash
 PACKAGES=(
-  'termframe|termframe = _final: prev:|# Renovate:.*depName=.*termframe|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'marksman-binary|marksman-binary = _final: prev:|# Renovate:.*depName=.*marksman|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'biome|biome = _final: prev: let|# Renovate:.*depName=.*biome|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'keifu|keifu = _final: prev:|# Renovate:.*depName=.*keifu|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'claude-code|# Claude Code - agentic coding tool|# Renovate:.*depName=claude-code|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'copilot|copilot = _final: prev: let|# Renovate:.*depName=@github/copilot|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'deck|deck = _final: prev:|# Renovate:.*depName=.*deck|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'octorus|octorus = _final: prev: let|# Renovate:.*depName=.*octorus|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'kakehashi|kakehashi = _final: prev: let|# Renovate:.*depName=.*kakehashi|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'ccusage|ccusage = _final: prev: {|# Renovate:.*depName=.*ccusage|single|'
-  'agent-browser|agent-browser = _\?final: prev: let|# Renovate:.*depName=.*agent-browser|both|'
-  'secretlint|secretlint = _final: prev: let|# Renovate:.*depName=.*secretlint|npm|'
-  'textlint|textlint = _final: prev: let|# Renovate:.*depName=textlint|npm|'
-  'playwright-cli|playwright-cli = _final: prev: let|# Renovate:.*depName=@playwright/cli|npm|'
-  'unocss-language-server|unocss-language-server = _final: prev: let|# Renovate:.*depName=.*unocss-language-server|both|'
-  'takt|takt = _final: prev: let|# Renovate:.*depName=takt|both|'
-  'cssmodules-language-server|cssmodules-language-server = _final: prev: {|# Renovate:.*depName=.*cssmodules-language-server|both|'
-  'x-api-playground|x-api-playground = _final: prev: {|# Renovate:.*depName=.*playground|vendor|'
+  'termframe|binary-releases.nix|termframe = mkBinaryRelease|# Renovate:.*depName=.*termframe|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'marksman-binary|binary-releases.nix|marksman-binary = mkBinaryRelease|# Renovate:.*depName=.*marksman|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'biome|binary-releases.nix|biome = mkBinaryRelease|# Renovate:.*depName=.*biome|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'keifu|binary-releases.nix|keifu = mkBinaryRelease|# Renovate:.*depName=.*keifu|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'claude-code|binary-releases.nix|# Claude Code - agentic coding tool|# Renovate:.*depName=claude-code|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'copilot|binary-releases.nix|copilot = mkBinaryRelease|# Renovate:.*depName=@github/copilot|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'deck|standalone.nix|deck = _final: prev:|# Renovate:.*depName=.*deck|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'octorus|binary-releases.nix|octorus = mkBinaryRelease|# Renovate:.*depName=.*octorus|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'kakehashi|binary-releases.nix|kakehashi = mkBinaryRelease|# Renovate:.*depName=.*kakehashi|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'ccusage|source-builds.nix|ccusage = _final: prev: {|# Renovate:.*depName=.*ccusage|single|'
+  'agent-browser|standalone.nix|agent-browser = _\?final: prev: let|# Renovate:.*depName=.*agent-browser|both|'
+  'secretlint|npm-packages.nix|secretlint = mkVendoredNpmPackage|# Renovate:.*depName=.*secretlint|npm|'
+  'textlint|npm-packages.nix|textlint = mkVendoredNpmPackage|# Renovate:.*depName=textlint|npm|'
+  'playwright-cli|npm-packages.nix|playwright-cli = _final: prev: let|# Renovate:.*depName=@playwright/cli|npm|'
+  'unocss-language-server|npm-packages.nix|unocss-language-server = _final: prev: let|# Renovate:.*depName=.*unocss-language-server|both|'
+  'takt|npm-packages.nix|takt = _final: prev: let|# Renovate:.*depName=takt|both|'
+  'cssmodules-language-server|source-builds.nix|cssmodules-language-server = _final: prev: {|# Renovate:.*depName=.*cssmodules-language-server|both|'
+  'x-api-playground|source-builds.nix|x-api-playground = _final: prev: {|# Renovate:.*depName=.*playground|vendor|'
 )
 
-echo "=== Test: sed pattern matching for $OVERLAY ==="
+echo "=== Test: sed pattern matching for $OVERLAY_DIR ==="
 echo ""
 
 for entry in "${PACKAGES[@]}"; do
-  IFS='|' read -r name sed_pattern renovate_pattern hash_type systems <<<"$entry"
+  IFS='|' read -r name file sed_pattern renovate_pattern hash_type systems <<<"$entry"
+  filepath="$OVERLAY_DIR/$file"
 
-  echo "[$name]"
+  echo "[$name] ($file)"
 
   # Test 1: セクション開始パターンのマッチ数 (sed -n でカウント、sed基本正規表現互換)
-  match_count=$(sed -n "/$sed_pattern/p" "$OVERLAY" 2>/dev/null | wc -l)
+  match_count=$(sed -n "/$sed_pattern/p" "$filepath" 2>/dev/null | wc -l)
   if [ "$match_count" -eq 1 ]; then
     pass "section start pattern matches exactly once"
   elif [ "$match_count" -eq 0 ]; then
@@ -72,7 +73,7 @@ for entry in "${PACKAGES[@]}"; do
   fi
 
   # Test 2: sed 範囲内にセクション終了 (^  };) が到達可能か
-  section=$(sed -n "/$sed_pattern/,/^  };/p" "$OVERLAY" 2>/dev/null || echo "")
+  section=$(sed -n "/$sed_pattern/,/^  };/p" "$filepath" 2>/dev/null || echo "")
   if [ -n "$section" ]; then
     pass "section end (^  };) is reachable"
   else
@@ -80,7 +81,7 @@ for entry in "${PACKAGES[@]}"; do
   fi
 
   # Test 3: Renovate コメントからバージョン抽出
-  version=$(grep -A 20 "$renovate_pattern" "$OVERLAY" 2>/dev/null | grep -oP 'version = "\K[^"]+' | head -1 || echo "")
+  version=$(grep -A 20 "$renovate_pattern" "$filepath" 2>/dev/null | grep -oP 'version = "\K[^"]+' | head -1 || echo "")
   if [ -n "$version" ]; then
     pass "version extracted: $version"
   else
@@ -140,31 +141,31 @@ done
 echo "=== Test: dry-run sed replacement ==="
 echo ""
 
-TMPFILE=$(mktemp)
-cp "$OVERLAY" "$TMPFILE"
-
 DUMMY_HASH="sha256-TESTDUMMYHASH000000000000000000000000000000="
 
 # 各パッケージでダミーハッシュに置換し、反映されたか確認
 DRY_RUN_PACKAGES=(
-  'termframe|termframe = _final: prev:|aarch64-darwin'
-  'marksman-binary|marksman-binary = _final: prev:|aarch64-darwin'
-  'biome|biome = _final: prev: let|aarch64-darwin'
-  'keifu|keifu = _final: prev:|aarch64-darwin'
-  'copilot|copilot = _final: prev: let|aarch64-darwin'
-  'deck|deck = _final: prev:|aarch64-darwin'
-  'octorus|octorus = _final: prev: let|aarch64-darwin'
-  'kakehashi|kakehashi = _final: prev: let|aarch64-darwin'
-  'ccusage|ccusage = _final: prev: {|SINGLE'
-  'secretlint|secretlint = _final: prev: let|NPM'
-  'textlint|textlint = _final: prev: let|NPM'
-  'agent-browser|agent-browser = _\?final: prev: let|SINGLE'
+  'termframe|binary-releases.nix|termframe = mkBinaryRelease|aarch64-darwin'
+  'marksman-binary|binary-releases.nix|marksman-binary = mkBinaryRelease|aarch64-darwin'
+  'biome|binary-releases.nix|biome = mkBinaryRelease|aarch64-darwin'
+  'keifu|binary-releases.nix|keifu = mkBinaryRelease|aarch64-darwin'
+  'copilot|binary-releases.nix|copilot = mkBinaryRelease|aarch64-darwin'
+  'deck|standalone.nix|deck = _final: prev:|aarch64-darwin'
+  'octorus|binary-releases.nix|octorus = mkBinaryRelease|aarch64-darwin'
+  'kakehashi|binary-releases.nix|kakehashi = mkBinaryRelease|aarch64-darwin'
+  'ccusage|source-builds.nix|ccusage = _final: prev: {|SINGLE'
+  'secretlint|npm-packages.nix|secretlint = mkVendoredNpmPackage|NPM'
+  'textlint|npm-packages.nix|textlint = mkVendoredNpmPackage|NPM'
+  'agent-browser|standalone.nix|agent-browser = _\?final: prev: let|SINGLE'
 )
 
-for entry in "${DRY_RUN_PACKAGES[@]}"; do
-  IFS='|' read -r name sed_pattern target <<<"$entry"
+TMPFILE=$(mktemp)
 
-  cp "$OVERLAY" "$TMPFILE"
+for entry in "${DRY_RUN_PACKAGES[@]}"; do
+  IFS='|' read -r name file sed_pattern target <<<"$entry"
+  filepath="$OVERLAY_DIR/$file"
+
+  cp "$filepath" "$TMPFILE"
 
   case "$target" in
   SINGLE)
@@ -186,8 +187,8 @@ for entry in "${DRY_RUN_PACKAGES[@]}"; do
 done
 
 # claude-code は特別なパターン（コメントでセクション検出）
-cp "$OVERLAY" "$TMPFILE"
-sed -i '/# Claude Code - agentic coding tool/,/^  };$/{
+cp "$OVERLAY_DIR/binary-releases.nix" "$TMPFILE"
+sed -i '/# Claude Code - agentic coding tool/,/^  };/{
   s|"aarch64-darwin" = "sha256-[^"]*"|"aarch64-darwin" = "'"${DUMMY_HASH}"'"|
 }' "$TMPFILE"
 if grep -q "$DUMMY_HASH" "$TMPFILE"; then
