@@ -60,6 +60,21 @@ zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-syntax-highlighting/zsh-syntax
 zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-history-substring-search/zsh-history-substring-search.zsh
 zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-autosuggestions/zsh-autosuggestions.zsh
 
+# ------------------------------------------------------------------------------
+# zeno.zsh (https://github.com/yuki-yano/zeno.zsh)
+# ------------------------------------------------------------------------------
+
+export ZENO_HOME="${XDG_CONFIG_HOME}/zeno"
+export ZENO_GIT_CAT="bat --color=always"
+export ZENO_GIT_TREE="eza --tree"
+
+zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zeno.zsh/zeno.zsh
+zsh-defer -a +1 +2 -c 'bindkey " " zeno-auto-snippet'
+zsh-defer -a +1 +2 -c 'bindkey "^m" zeno-auto-snippet-and-accept-line'
+zsh-defer -a +1 +2 -c 'bindkey "^i" zeno-completion'
+zsh-defer -a +1 +2 -c 'bindkey "^x " zeno-insert-space'
+zsh-defer -a +1 +2 -c 'bindkey "^x^m" accept-line'
+
 # Emacs キーバインドを使用（vi モードを無効化）
 bindkey -e
 
@@ -108,8 +123,8 @@ setopt share_history
 # Disable beep
 setopt no_beep
 
-# Alias
-. $ZDOTDIR/aliases.zsh
+# Functions
+. $ZDOTDIR/functions.zsh
 
 # GEM_HOME (hm-session-vars.sh の PATH 設定が WezTerm WSL ドメインで反映されない問題の回避)
 [[ -d "$HOME/.gem/bin" ]] && [[ ":$PATH:" != *":$HOME/.gem/bin:"* ]] && export PATH="$HOME/.gem/bin:$PATH"
@@ -252,21 +267,6 @@ export TAPLO_CONFIG=$XDG_CONFIG_HOME/taplo/taplo.toml
 
 zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-wezterm-*.sh(Nom[1])); [[ -n $f ]] && source $f || _evalcache wezterm shell-completion --shell zsh; }'
 [[ -n "${WEZTERM_PANE}" ]] && . $ZDOTDIR/wezterm-integration.sh
-
-# ------------------------------------------------------------------------------
-# Yazi (https://github.com/sxyazi/yazi)
-# ------------------------------------------------------------------------------
-
-alias y='yazi'
-# https://yazi-rs.github.io/docs/quick-start/#shell-wrapper
-function yi() {
-  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
-  yazi "$@" --cwd-file="$tmp"
-  if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
-    builtin cd -- "$cwd"
-  fi
-  rm -f -- "$tmp"
-}
 
 # ------------------------------------------------------------------------------
 # zoxide (https://github.com/ajeetdsouza/zoxide)

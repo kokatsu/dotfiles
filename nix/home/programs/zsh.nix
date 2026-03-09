@@ -16,7 +16,8 @@
   home.file = {
     "${config.xdg.configHome}/zsh/.zshrc".source = ../../../.config/zsh/.zshrc;
     "${config.xdg.configHome}/zsh/.zimrc".source = ../../../.config/zsh/.zimrc;
-    "${config.xdg.configHome}/zsh/aliases.zsh".source = ../../../.config/zsh/aliases.zsh;
+    "${config.xdg.configHome}/zsh/functions.zsh".source = ../../../.config/zsh/functions.zsh;
+    "${config.xdg.configHome}/zeno/config.ts".source = ../../../.config/zeno/config.ts;
     "${config.xdg.configHome}/zsh/darwin.zsh".source = ../../../.config/zsh/darwin.zsh;
     "${config.xdg.configHome}/zsh/linux.zsh".source = ../../../.config/zsh/linux.zsh;
     "${config.xdg.configHome}/zsh/wezterm-integration.sh".source = ../../../.config/zsh/wezterm-integration.sh;

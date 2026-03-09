@@ -125,6 +125,10 @@
 !yazi/
 !yazi/**
 
+# zeno.zsh (https://github.com/yuki-yano/zeno.zsh)
+!zeno/
+!zeno/**
+
 # Zsh (https://www.zsh.org/)
 !zsh/
 !zsh/**

@@ -31,8 +31,3 @@ if [[ -n "$GHOSTTY_RESOURCES_DIR" ]]; then
   source "$GHOSTTY_RESOURCES_DIR/shell-integration/zsh/ghostty-integration"
 fi
 
-# ------------------------------------------------------------------------------
-# Nix
-# ------------------------------------------------------------------------------
-
-alias rebuild='sudo HOSTNAME=$(hostname -s) darwin-rebuild switch --flake ~/workspace/dotfiles --impure'
