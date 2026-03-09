@@ -12,6 +12,8 @@ fd_opts=(
   --full-path
   --fixed-strings
   --hidden
+  --no-ignore-vcs
+  --ignore-file .gitignore
   --exclude .git
   --exclude node_modules
   --exclude dist
@@ -22,6 +24,7 @@ fd_opts=(
   --exclude __pycache__
   --exclude .cache
   --exclude target
+  --strip-cwd-prefix
   --color never
 )
 
@@ -30,5 +33,5 @@ if [[ -d "$query" ]]; then
   fd --type f --type d --max-depth 1 --max-results 15 "${fd_opts[@]}" . "$query" 2>/dev/null || true
 else
   # Sort by path depth (shallow first) so partial folder names surface the folder itself
-  fd --type f --type d --max-results 200 "${fd_opts[@]}" "$query" 2>/dev/null | awk -F/ '{print NF, $0}' | sort -n | head -15 | cut -d' ' -f2- || true
+  fd --type f --type d --max-results 200 "${fd_opts[@]}" "$query" 2>/dev/null | awk -F/ '{print NF, $0}' | sort -sn | head -15 | cut -d' ' -f2- || true
 fi
