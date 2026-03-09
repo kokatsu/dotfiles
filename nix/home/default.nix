@@ -265,10 +265,6 @@ in {
         # https://github.com/mfontanini/presenterm
         presenterm # ターミナルプレゼンテーション
 
-        #--- Spotify ---#
-        # https://github.com/aome510/spotify-player
-        spotify-player # Spotify TUI クライアント
-
         #####################################
         # Language Servers
         #####################################
