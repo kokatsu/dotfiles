@@ -22,7 +22,18 @@ if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
 fi
 
 # zimfw() 関数の定義（zimfw コマンド用）
-if [[ -e ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]] zimfw() { source ${ZIM_HOME}/zimfw.zsh "${@}" }
+if [[ -e ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]] zimfw() {
+  source ${ZIM_HOME}/zimfw.zsh "${@}"
+  # zeno-completion の local options が zsh/parameter の $options をシャドウし
+  # _zsh_highlight で "bad set of key/value pairs" エラーになる問題を修正
+  local _f=${ZIM_HOME}/modules/zeno.zsh/shells/zsh/widgets/zeno-completion
+  if [[ -f $_f ]] && grep -q 'local.*expect_key options ' $_f; then
+    sed -i 's/expect_key options /expect_key fzf_options /' $_f
+    sed -i 's/^options=/fzf_options=/' $_f
+    sed -i 's/${options}/${fzf_options}/g' $_f
+    sed -i 's/${(z)options}/${(z)fzf_options}/g' $_f
+  fi
+}
 
 # fpath 設定（autoload 用、コスト: ~0ms）
 fpath=(
