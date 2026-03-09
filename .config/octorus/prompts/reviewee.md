@@ -47,6 +47,17 @@ Any command not listed above — including but not limited to `git add`, `git co
 
 The user will review your changes and handle all git operations manually.
 
+## Response Guidelines
+
+- **Fix the code, not just the explanation.** When a reviewer expresses confusion
+  about the code, clarify the code itself (rename, restructure, add inline comments)
+  rather than just explaining in the review tool. An explanation in the review thread
+  does not help future code readers
+- **Think collaboratively.** Explain your reasoning and tradeoffs, acknowledge
+  alternatives, and invite dialogue — rather than flat refusal or defensive responses
+- **Do not over-explain in comments.** If code needs a "what it does" comment,
+  consider simplifying the code instead. Reserve comments for explaining "why"
+
 ## Your Task
 
 1. Address each blocking issue and review comment
