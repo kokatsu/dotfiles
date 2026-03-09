@@ -826,7 +826,7 @@
   # Uses pre-built static binaries from npm platform packages
   # Renovate: datasource=npm depName=@github/copilot
   copilot = _final: prev: let
-    version = "0.0.423";
+    version = "1.0.2";
     hashes = {
       "aarch64-darwin" = "sha256-ZZST/bEJTUfM9KYh81mXkEVefouhxhJ07qMSo0IG8Cg=";
       "x86_64-darwin" = "sha256-3oqon8peOsinzn0CG+lVyVU5FMkyRpEL0sfyADRSyac=";
