@@ -36,6 +36,17 @@ jobs:
       - name: Check formatting
         run: nix fmt -- --check .
 
+  hash-patterns:
+    name: Hash update patterns
+    if: github.actor != 'renovate[bot]' || github.event_name == 'workflow_call'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # actions/checkout@v4
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - name: Verify sed patterns match overlay file
+        run: bash scripts/test-hash-patterns.sh
+
   build-linux:
     name: Build (Linux)
     if: github.actor != 'renovate[bot]' || github.event_name == 'workflow_call'
