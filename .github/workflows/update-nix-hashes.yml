@@ -156,6 +156,13 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }claude-code $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'codex\|@openai/codex'; then
+            echo "has_codex=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=@openai/codex" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_codex=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }codex $VERSION"
+          fi
+
           if echo "$DIFF" | grep -q 'biome'; then
             echo "has_biome=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*biome" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -279,6 +286,23 @@ jobs:
             URL="https://registry.npmjs.org/@github/copilot-${PLAT_NAME}/-/copilot-${PLAT_NAME}-${VERSION}.tgz"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
             sed -i "/copilot = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+          done
+
+      - name: Update codex hashes
+        if: steps.detect.outputs.has_codex == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_codex }}
+        run: |
+          OVERLAY="nix/overlays/standalone.nix"
+
+          # Compute hashes for each platform
+          for platform in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" \
+                          "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
+            PLAT_NAME="${platform%%:*}"
+            NIX_SYSTEM="${platform##*:}"
+            URL="https://registry.npmjs.org/@openai/codex/-/codex-${VERSION}-${PLAT_NAME}.tgz"
+            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            sed -i "/codex = _final: prev: let/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update deck hashes
@@ -626,6 +650,13 @@ jobs:
           for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
             verify_hash "claude-code" "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${VER}/${PLAT}/claude" "$SYS" "$BINARY"
+          done
+
+          # codex
+          VER=$(sed -n '/codex = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$STANDALONE" | head -1)
+          for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "codex" "https://registry.npmjs.org/@openai/codex/-/codex-${VER}-${PLAT}.tgz" "$SYS" "$STANDALONE"
           done
 
           # copilot
