@@ -131,6 +131,8 @@ in {
         terminaltexteffects # ターミナルテキストエフェクト (tte)
         # https://gitlab.com/graphviz/graphviz
         graphviz # グラフ可視化
+        # https://github.com/casey/just
+        just # コマンドランナー
         # https://github.com/jqlang/jq
         jq # JSON プロセッサ
         # https://github.com/johnkerl/miller
