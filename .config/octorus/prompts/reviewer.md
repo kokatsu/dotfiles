@@ -125,6 +125,13 @@ When evaluating severity for null/undefined access or type errors:
 4. Reserve **critical/major** for issues reachable under normal conditions
    without requiring unusual state
 
+When evaluating error propagation through callbacks or injected functions:
+
+1. Check whether the callback's implementation is visible in the diff
+2. If NOT visible, assume it may have its own error handling internally
+3. Cap severity at **minor** (defensive coding suggestion) unless the diff
+   proves the error path is reachable
+
 ## Comment Accuracy Rules
 
 Before posting a comment that references language features, framework APIs, or tools:
@@ -137,10 +144,17 @@ Before posting a comment that references language features, framework APIs, or t
    you identified.
 3. **Mark uncertain technical claims explicitly.** Use hedging language such as
    "I believe", "this may", or "worth verifying" rather than asserting as fact.
-4. **Trace the call chain before commenting on branches.** Before flagging an
-   unreachable-looking branch or a missing case within a function, check how
-   the function is called. If the caller's conditions already guarantee that
-   a branch cannot be reached, do not flag it as a real issue.
+4. **Trace the call chain before flagging issues.** Before flagging unreachable
+   branches, exception risks, or missing error handling, check how the function
+   is called. If the caller's conditions already guarantee that a branch cannot
+   be reached, do not flag it as a real issue. **If the implementation is not
+   visible in the diff, acknowledge this limitation** — do not elevate to
+   critical/major based on unverified assumptions about code you cannot see.
+5. **Be conservative about error claims for callbacks.** When a callback or
+   function is passed as a parameter but its implementation is not in the diff,
+   do not assert it will throw. The implementation may have its own error
+   handling. Hedge with "if this function can throw" and cap severity at
+   **minor** unless the diff itself shows the exception path is reachable.
 
 ## Review Decision
 
