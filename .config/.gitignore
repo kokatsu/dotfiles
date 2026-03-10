@@ -61,10 +61,6 @@
 !helix/
 !helix/**
 
-# keifu (https://github.com/trasta298/keifu)
-!keifu/
-!keifu/**
-
 # lazydocker (https://github.com/jesseduffield/lazydocker)
 !lazydocker/
 !lazydocker/**
@@ -129,8 +125,6 @@
 !zsh/
 !zsh/**
 
-# claude-chill (https://github.com/davidbeesley/claude-chill)
-!claude-chill.toml
 
 # ripgrep (https://github.com/BurntSushi/ripgrep)
 !.ripgreprc

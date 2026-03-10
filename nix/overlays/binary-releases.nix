@@ -80,33 +80,6 @@ in {
     };
   };
 
-  # keifu - Git commit graph TUI visualizer
-  # Uses pre-built binaries from GitHub releases
-  # Renovate: datasource=github-releases depName=trasta298/keifu
-  keifu = mkBinaryRelease rec {
-    pname = "keifu";
-    version = "0.2.3";
-    hashes = {
-      "aarch64-darwin" = "sha256-EhaebJ1yXnm1vBPKKIrFveIbH9aSSTpdoEBKQHHI6yo=";
-      "x86_64-darwin" = "sha256-bxXfILwGQgumxfFsCd6P9hFVFkjrSGA38Uq0bjnGOHM=";
-      "aarch64-linux" = "sha256-67lAAzIUHNI7LFNX2QQX2msWACJA65AjIk5M/gL5B44=";
-      "x86_64-linux" = "sha256-xt8COXNMFAu3kcd8dbqwNNN8DdFDjTx3IHP0CXNFpdk=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
-      "aarch64-linux" = "aarch64-unknown-linux-gnu";
-      "x86_64-linux" = "x86_64-unknown-linux-gnu";
-    };
-    url = platform: "https://github.com/trasta298/keifu/releases/download/v${version}/keifu-v${version}-${platform}.tar.gz";
-    format = "tar";
-    extraAttrs = {sourceRoot = ".";};
-    meta = {
-      description = "Git commit graph TUI visualizer";
-      homepage = "https://github.com/trasta298/keifu";
-    };
-  };
-
   # kakehashi - Tree-sitter Language Server
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=atusy/kakehashi

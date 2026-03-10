@@ -107,13 +107,6 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }marksman $VERSION"
           fi
 
-          if echo "$DIFF" | grep -q 'keifu'; then
-            echo "has_keifu=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*keifu" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            echo "version_keifu=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }keifu $VERSION"
-          fi
-
           if echo "$DIFF" | grep -q 'octorus'; then
             echo "has_octorus=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*octorus" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -223,23 +216,6 @@ jobs:
             URL="https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${VERSION}/biome-${PLAT_NAME}"
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
             sed -i "/biome = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
-
-      - name: Update keifu hashes
-        if: steps.detect.outputs.has_keifu == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_keifu }}
-        run: |
-          OVERLAY="nix/overlays/binary-releases.nix"
-
-          # Compute hashes for each platform
-          for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
-                          "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/trasta298/keifu/releases/download/v${VERSION}/keifu-v${VERSION}-${PLAT_NAME}.tar.gz"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/keifu = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update claude-code hashes
@@ -622,13 +598,6 @@ jobs:
           for p in "darwin_arm64.zip:aarch64-darwin" "darwin_amd64.zip:x86_64-darwin" "linux_arm64.tar.gz:aarch64-linux" "linux_amd64.tar.gz:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
             verify_hash "deck" "https://github.com/k1LoW/deck/releases/download/v${VER}/deck_v${VER}_${PLAT}" "$SYS" "$STANDALONE"
-          done
-
-          # keifu
-          VER=$(sed -n '/keifu = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "keifu" "https://github.com/trasta298/keifu/releases/download/v${VER}/keifu-v${VER}-${PLAT}.tar.gz" "$SYS" "$BINARY"
           done
 
           # kakehashi
