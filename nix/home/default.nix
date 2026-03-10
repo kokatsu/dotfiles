@@ -479,6 +479,10 @@ in {
           source = ../../.config/claude/hooks/instructions-tracker.ts;
           executable = true;
         };
+        ".config/claude/hooks/post-skill-review.ts" = {
+          source = ../../.config/claude/hooks/post-skill-review.ts;
+          executable = true;
+        };
         ".config/claude/scripts/cc-metrics.ts" = {
           source = ../../.config/claude/scripts/cc-metrics.ts;
           executable = true;
