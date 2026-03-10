@@ -1,7 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.2/schema.json",
   "files": {
-    "includes": ["**", "!karabiner-config"]
+    "includes": ["**", "!karabiner-config", "!scripts/*.ts"]
   },
   "vcs": {
     "enabled": true,

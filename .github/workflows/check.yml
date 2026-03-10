@@ -46,6 +46,10 @@ jobs:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       - name: Verify sed patterns match overlay file
         run: bash scripts/test-hash-patterns.sh
+      # denoland/setup-deno@v2
+      - uses: denoland/setup-deno@e53f9de853fa5a1f3d4bcb3f5e929cbc20393dba
+      - name: Verify Renovate regex patterns match overlay files
+        run: deno run --allow-read scripts/test-renovate-patterns.ts
 
   build-linux:
     name: Build (Linux)
