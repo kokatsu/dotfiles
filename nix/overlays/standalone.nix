@@ -36,7 +36,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.16.3";
+    version = "0.17.0";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -53,10 +53,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-eAqmmBaahhDYqrylTcICFUPC0LHNieIRElj/8XUycdM=";
+        hash = "sha256-70ol0VE8Kjiz6McyO6sf5OpgGURHZxbBoweuJZQXBAs=";
       };
 
-      npmDepsHash = "sha256-sHF8WPj8d5LyH+EaLEPWivCBfIicvcBJrv41vUeBtdc=";
+      npmDepsHash = "sha256-h6mLoufMZz50XXgB+UZ6HIMPvLqnAy9WlJFTNCnWJGo=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts" "--legacy-peer-deps"];
@@ -174,7 +174,7 @@
   # Uses pre-built static binaries from npm platform packages
   # Renovate: datasource=npm depName=@openai/codex
   codex = _final: prev: let
-    version = "0.111.0";
+    version = "0.112.0";
     hashes = {
       "aarch64-darwin" = "sha256-a2U2Y/n0TiWBMOX4pXTo0LV/GX+u3g79DD3iLMdQ3b0=";
       "x86_64-darwin" = "sha256-0hJ3gWkfzCvduQCbLGCetdLKgb4KQKGX22JdjjQ4wB0=";
