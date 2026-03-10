@@ -23,20 +23,12 @@
     {
       customType: 'regex',
       managerFilePatterns: [
-        '/nix/overlays/default\\.nix$/',
+        '/nix/overlays/[\\w-]+\\.nix$/',
       ],
       matchStrings: [
         '#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*_?final:\\s*prev:\\s*let\\n\\s+version\\s*=\\s*"(?<currentValue>[^"]+)"',
-      ],
-      versioningTemplate: 'semver',
-    },
-    {
-      customType: 'regex',
-      managerFilePatterns: [
-        '/nix/overlays/default\\.nix$/',
-      ],
-      matchStrings: [
-        '#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*_final:\\s*prev:\\s*\\{\\n\\s+[\\w-]+\\s*=\\s*prev\\.[\\w.]+\\s+rec\\s*\\{\\n\\s+pname\\s*=\\s*"[^"]+";\\n\\s+version\\s*=\\s*"(?<currentValue>[^"]+)"',
+        '#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*_final:\\s*prev:\\s*\\{\\n\\s+[\\w-]+\\s*=\\s*prev\\.[\\w.]+\\s+(?:rec\\s)?\\{\\n\\s+pname\\s*=\\s*"[^"]+";\\n\\s+version\\s*=\\s*"(?<currentValue>[^"]+)"',
+        '#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w@/-]+)\\n\\s+[\\w-]+\\s*=\\s*mk\\w+\\s+(?:rec\\s)?\\{\\n\\s+pname\\s*=\\s*"[^"]+";\\n\\s+version\\s*=\\s*"(?<currentValue>[^"]+)"',
       ],
       versioningTemplate: 'semver',
     },
@@ -44,7 +36,7 @@
   packageRules: [
     {
       matchFileNames: [
-        'nix/overlays/default.nix',
+        'nix/overlays/*.nix',
       ],
       groupName: 'nix overlay packages',
       semanticCommitType: 'build',
