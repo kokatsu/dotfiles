@@ -221,7 +221,7 @@ in {
         bun # JavaScript ランタイム + バンドラー
         # https://github.com/anthropics/claude-code
         claude-code # AI コーディングエージェント (overlay)
-        inputs.claude-chill.packages.${system}.default # PTY proxy for Claude Code
+
         # https://github.com/openai/codex
         codex # OpenAI Codex CLI (overlay)
         # https://github.com/google-gemini/gemini-cli
@@ -355,8 +355,6 @@ in {
         #--- Rust 製パッケージ ---#
         # https://github.com/mlange-42/git-graph
         git-graph # Git コミットグラフ可視化 (fork: kokatsu/git-graph)
-        # https://github.com/trasta298/keifu
-        keifu # Git コミットグラフ TUI (overlay)
         # https://github.com/ushironoko/octorus
         octorus # GitHub PR レビュー TUI (overlay)
         # https://github.com/pamburus/termframe
@@ -485,8 +483,8 @@ in {
         };
         # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
         ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
-        ".config/claude-chill.toml".source = ../../.config/claude-chill.toml;
-        # Gemini CLI (XDG未対応のため ~/.gemini/ にシンボリンク)
+
+        # Gemini CLI (XDG未対応のため ~/.gemini/ にシンボリックリンク)
         ".gemini/settings.json".source = ../../.config/gemini/settings.json;
         # takt (XDG未対応のため ~/.takt/ にシンボリンク)
         ".takt/config.yaml".source = ../../.config/takt/config.yaml;
@@ -496,7 +494,6 @@ in {
         ".config/fresh".source = ../../.config/fresh;
         ".config/git-graph".source = ../../.config/git-graph;
         ".config/gomi".source = ../../.config/gomi;
-        ".config/keifu".source = ../../.config/keifu;
         ".config/ov".source = ../../.config/ov;
         ".config/pg".source = ../../.config/pg;
         ".config/.ripgreprc".source = ../../.config/.ripgreprc;

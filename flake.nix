@@ -27,11 +27,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    claude-chill = {
-      url = "github:davidbeesley/claude-chill";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     helix = {
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -105,7 +100,6 @@
       customOverlays.gemini-cli-npm11-fix
       customOverlays.git-graph-fork
       customOverlays.kakehashi
-      customOverlays.keifu
       customOverlays.marksman-binary
       customOverlays.octorus
       customOverlays.plotly-test-fix
