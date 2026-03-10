@@ -47,7 +47,7 @@ jobs:
       - name: Verify sed patterns match overlay file
         run: bash scripts/test-hash-patterns.sh
       # denoland/setup-deno@v2
-      - uses: denoland/setup-deno@e53f9de853fa5a1f3d4bcb3f5e929cbc20393dba
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb
       - name: Verify Renovate regex patterns match overlay files
         run: deno run --allow-read scripts/test-renovate-patterns.ts
 
