@@ -176,10 +176,10 @@
   codex = _final: prev: let
     version = "0.112.0";
     hashes = {
-      "aarch64-darwin" = "sha256-a2U2Y/n0TiWBMOX4pXTo0LV/GX+u3g79DD3iLMdQ3b0=";
-      "x86_64-darwin" = "sha256-0hJ3gWkfzCvduQCbLGCetdLKgb4KQKGX22JdjjQ4wB0=";
-      "aarch64-linux" = "sha256-E3491nZyXrVFRTAGtbasbrs4rVntHXWNhJqo8at4zUc=";
-      "x86_64-linux" = "sha256-isT7jOJJ/aUBPYCiSBsj4c4VLqZGok05eqFlVgWQnHo=";
+      "aarch64-darwin" = "sha256-KI7VKFjVN+Sq9gQcuqXovCYnGiyBOq3sK2h2zBglsmc=";
+      "x86_64-darwin" = "sha256-t2Spv1eLJE7ns2uUj4O6rKia20L1poBevfHCFALSa2E=";
+      "aarch64-linux" = "sha256-gC7sQWDDiiqSn0S2VKdWUNiRhu2UtuG+nvc0bWCWVmo=";
+      "x86_64-linux" = "sha256-WCeXsmiZuw48VCxruyGqQ3J/LXZbkv3szRZQORMPj54=";
     };
     platformMap = {
       "aarch64-darwin" = {
