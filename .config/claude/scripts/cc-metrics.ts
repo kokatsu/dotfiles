@@ -430,12 +430,8 @@ function generateSkillMetrics(events: SkillEvent[], days: number): string {
 
   lines.push("## Breakdown");
   for (const s of sorted) {
-    const userWidth = s.user > 0
-      ? Math.max(1, Math.round(s.user * scale))
-      : 0;
-    const autoWidth = s.auto > 0
-      ? Math.max(1, Math.round(s.auto * scale))
-      : 0;
+    const userWidth = s.user > 0 ? Math.max(1, Math.round(s.user * scale)) : 0;
+    const autoWidth = s.auto > 0 ? Math.max(1, Math.round(s.auto * scale)) : 0;
     const userDots = "\u25cf".repeat(userWidth);
     const autoDots = "\u25cb".repeat(autoWidth);
     lines.push(
@@ -443,7 +439,9 @@ function generateSkillMetrics(events: SkillEvent[], days: number): string {
     );
   }
   const scaleNote = scale < 1 ? ` (1 dot ≈ ${(1 / scale).toFixed(0)})` : "";
-  lines.push(`  ${"".padEnd(maxNameLen)} \u25cf = user, \u25cb = auto${scaleNote}`);
+  lines.push(
+    `  ${"".padEnd(maxNameLen)} \u25cf = user, \u25cb = auto${scaleNote}`,
+  );
   lines.push("");
 
   return lines.join("\n");
@@ -569,9 +567,7 @@ function generateInstructionsMetrics(
     const dots = [...s.counts.entries()]
       .map(([type, count]) => {
         const sym = typeSymbols[type] || defaultSymbol;
-        const width = count > 0
-          ? Math.max(1, Math.round(count * scale))
-          : 0;
+        const width = count > 0 ? Math.max(1, Math.round(count * scale)) : 0;
         return sym.repeat(width);
       })
       .join("");
