@@ -34,7 +34,7 @@ fi
 
 # https://github.com/wezterm/wezterm/issues/5503
 # https://github.com/wezterm/wezterm/issues/5503#issuecomment-2600490028
-precmd_wsl() {
+function precmd_wsl() {
   if (( _IS_WSL )); then
     printf "\033]7;file://%s%s\033\\" "${HOSTNAME}" "${PWD}"
   fi
