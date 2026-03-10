@@ -14,13 +14,13 @@
  *   --verbose                 Show all keybindings (not just conflicts)
  */
 
-import { parse as parseTOML } from 'jsr:@std/toml@1';
+import { parse as parseTOML } from "jsr:@std/toml@1";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type Tool = 'wezterm' | 'neovim' | 'yazi';
+type Tool = "wezterm" | "neovim" | "yazi";
 
 interface Keybinding {
   canonical: string;
@@ -32,7 +32,7 @@ interface Keybinding {
   isPassthrough: boolean;
 }
 
-type Severity = 'critical' | 'info';
+type Severity = "critical" | "info";
 
 interface Conflict {
   canonical: string;
@@ -42,7 +42,7 @@ interface Conflict {
 }
 
 interface Options {
-  platform: 'linux' | 'darwin';
+  platform: "linux" | "darwin";
   json: boolean;
   verbose: boolean;
 }
@@ -53,7 +53,7 @@ interface Options {
 
 function parseArgs(args: string[]): Options {
   const opts: Options = {
-    platform: Deno.build.os === 'darwin' ? 'darwin' : 'linux',
+    platform: Deno.build.os === "darwin" ? "darwin" : "linux",
     json: false,
     verbose: false,
   };
@@ -61,24 +61,24 @@ function parseArgs(args: string[]): Options {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
-      case '--platform':
+      case "--platform":
         {
           const v = args[++i];
-          if (v !== 'linux' && v !== 'darwin') {
+          if (v !== "linux" && v !== "darwin") {
             console.error(`Invalid platform: ${v}`);
             Deno.exit(1);
           }
           opts.platform = v;
         }
         break;
-      case '--json':
+      case "--json":
         opts.json = true;
         break;
-      case '--verbose':
+      case "--verbose":
         opts.verbose = true;
         break;
-      case '--help':
-      case '-h':
+      case "--help":
+      case "-h":
         console.log(`Usage: keybind-check.ts [options]
   --platform linux|darwin   Platform override (default: auto-detect)
   --json                    JSON output
@@ -104,7 +104,7 @@ function findDotfilesRoot(): string {
     // If run from the repo
     Deno.cwd(),
     // If the script is inside bin/
-    new URL('.', import.meta.url).pathname.replace(/\/bin\/?$/, ''),
+    new URL(".", import.meta.url).pathname.replace(/\/bin\/?$/, ""),
   ];
 
   for (const dir of candidates) {
@@ -116,7 +116,7 @@ function findDotfilesRoot(): string {
     }
   }
 
-  console.error('Could not find dotfiles root (flake.nix not found).');
+  console.error("Could not find dotfiles root (flake.nix not found).");
   Deno.exit(1);
 }
 
@@ -125,7 +125,7 @@ function findDotfilesRoot(): string {
 // ---------------------------------------------------------------------------
 
 /** Modifier sort order for canonical form. */
-const MOD_ORDER = ['ctrl', 'alt', 'shift', 'super'] as const;
+const MOD_ORDER = ["ctrl", "alt", "shift", "super"] as const;
 
 /** Normalise a key binding string to `<sorted-mods>+<lowercase key>`. */
 function normalizeKey(mods: string[], key: string): string {
@@ -139,36 +139,36 @@ function normalizeKey(mods: string[], key: string): string {
 
   const lowerKey = key.toLowerCase();
   return sortedMods.length > 0
-    ? `${sortedMods.join('+')}+${lowerKey}`
+    ? `${sortedMods.join("+")}+${lowerKey}`
     : lowerKey;
 }
 
 // -- WezTerm helpers -------------------------------------------------------
 
 const WEZTERM_KEY_MAP: Record<string, string> = {
-  leftarrow: 'left',
-  rightarrow: 'right',
-  uparrow: 'up',
-  downarrow: 'down',
-  enter: 'enter',
-  escape: 'escape',
-  backspace: 'backspace',
-  tab: 'tab',
+  leftarrow: "left",
+  rightarrow: "right",
+  uparrow: "up",
+  downarrow: "down",
+  enter: "enter",
+  escape: "escape",
+  backspace: "backspace",
+  tab: "tab",
 };
 
 function normalizeWeztermKey(
   rawKey: string,
   rawMods: string,
   // Keep for future platform-specific modifier mapping (e.g. CMD on darwin)
-  _platform: 'linux' | 'darwin',
+  _platform: "linux" | "darwin",
 ): { canonical: string; mods: string[] } | null {
   // Resolve modifier aliases
   const modsMap: Record<string, string> = {
-    PRIMARY: 'CTRL',
-    SECONDARY: 'ALT',
-    OPT: 'ALT',
-    CMD: 'SUPER',
-    SUPER: 'SUPER',
+    PRIMARY: "CTRL",
+    SECONDARY: "ALT",
+    OPT: "ALT",
+    CMD: "SUPER",
+    SUPER: "SUPER",
   };
 
   let modsStr = rawMods;
@@ -177,21 +177,20 @@ function normalizeWeztermKey(
   }
 
   const modParts = modsStr
-    .split('|')
+    .split("|")
     .map((m) => m.trim())
-    .filter((m) => m !== '' && m !== 'NONE');
+    .filter((m) => m !== "" && m !== "NONE");
 
   // Uppercase single-char key implies Shift
-  const hasShiftImplied =
-    rawKey.length === 1 &&
+  const hasShiftImplied = rawKey.length === 1 &&
     rawKey === rawKey.toUpperCase() &&
     rawKey !== rawKey.toLowerCase();
 
   const mods = modParts.map((m) => m.toLowerCase());
   let key = rawKey;
 
-  if (hasShiftImplied && !mods.includes('shift')) {
-    mods.push('shift');
+  if (hasShiftImplied && !mods.includes("shift")) {
+    mods.push("shift");
   }
 
   const mapped = WEZTERM_KEY_MAP[key.toLowerCase()];
@@ -203,40 +202,40 @@ function normalizeWeztermKey(
 // -- Neovim helpers --------------------------------------------------------
 
 const NVIM_MOD_MAP: Record<string, string> = {
-  C: 'ctrl',
-  M: 'alt',
-  A: 'alt',
-  S: 'shift',
-  D: 'super',
+  C: "ctrl",
+  M: "alt",
+  A: "alt",
+  S: "shift",
+  D: "super",
 };
 
 const NVIM_KEY_MAP: Record<string, string> = {
-  cr: 'enter',
-  return: 'enter',
-  enter: 'enter',
-  esc: 'escape',
-  bs: 'backspace',
-  tab: 'tab',
-  space: 'space',
-  lt: '<',
-  bar: '|',
-  bslash: '\\',
-  up: 'up',
-  down: 'down',
-  left: 'left',
-  right: 'right',
-  f1: 'f1',
-  f2: 'f2',
-  f3: 'f3',
-  f4: 'f4',
-  f5: 'f5',
-  f6: 'f6',
-  f7: 'f7',
-  f8: 'f8',
-  f9: 'f9',
-  f10: 'f10',
-  f11: 'f11',
-  f12: 'f12',
+  cr: "enter",
+  return: "enter",
+  enter: "enter",
+  esc: "escape",
+  bs: "backspace",
+  tab: "tab",
+  space: "space",
+  lt: "<",
+  bar: "|",
+  bslash: "\\",
+  up: "up",
+  down: "down",
+  left: "left",
+  right: "right",
+  f1: "f1",
+  f2: "f2",
+  f3: "f3",
+  f4: "f4",
+  f5: "f5",
+  f6: "f6",
+  f7: "f7",
+  f8: "f8",
+  f9: "f9",
+  f10: "f10",
+  f11: "f11",
+  f12: "f12",
 };
 
 /**
@@ -252,7 +251,7 @@ function parseNvimLhs(
 
   if (m) {
     const inner = m[1];
-    const parts = inner.split('-');
+    const parts = inner.split("-");
     const keyPart = parts[parts.length - 1];
     const modParts = parts.slice(0, -1);
 
@@ -286,7 +285,7 @@ function parseYaziKey(
 
   if (m) {
     const inner = m[1];
-    const parts = inner.split('-');
+    const parts = inner.split("-");
     const keyPart = parts[parts.length - 1];
     const modParts = parts.slice(0, -1);
 
@@ -344,15 +343,15 @@ function extractLuaTables(source: string): WezTableInfo[] {
         const quote = ch;
         i++;
         while (i < source.length && source[i] !== quote) {
-          if (source[i] === '\\') i++; // skip escaped char
+          if (source[i] === "\\") i++; // skip escaped char
           i++;
         }
-      } else if (ch === '-' && source[i + 1] === '-') {
+      } else if (ch === "-" && source[i + 1] === "-") {
         // Skip line comment
-        while (i < source.length && source[i] !== '\n') i++;
-      } else if (ch === '{') {
+        while (i < source.length && source[i] !== "\n") i++;
+      } else if (ch === "{") {
         depth++;
-      } else if (ch === '}') {
+      } else if (ch === "}") {
         depth--;
       }
       i++;
@@ -368,7 +367,7 @@ function extractLuaTables(source: string): WezTableInfo[] {
 function parseWezEntries(
   tableContent: string,
   tableName: string,
-  platform: 'linux' | 'darwin',
+  platform: "linux" | "darwin",
   sourceFile: string,
 ): Keybinding[] {
   const bindings: Keybinding[] = [];
@@ -395,14 +394,14 @@ function parseWezEntries(
         const quote = ch;
         i++;
         while (i < tableContent.length && tableContent[i] !== quote) {
-          if (tableContent[i] === '\\') i++;
+          if (tableContent[i] === "\\") i++;
           i++;
         }
-      } else if (ch === '-' && tableContent[i + 1] === '-') {
-        while (i < tableContent.length && tableContent[i] !== '\n') i++;
-      } else if (ch === '{') {
+      } else if (ch === "-" && tableContent[i + 1] === "-") {
+        while (i < tableContent.length && tableContent[i] !== "\n") i++;
+      } else if (ch === "{") {
         depth++;
-      } else if (ch === '}') {
+      } else if (ch === "}") {
         depth--;
       }
       i++;
@@ -417,36 +416,36 @@ function parseWezEntries(
     // Extract action: everything between 'action = ' and the entry's closing brace
     const entryBody = entryContent.slice(1, -1); // remove outer { }
     const actionIdx = entryBody.search(/action\s*=\s*/);
-    let actionStr = '';
+    let actionStr = "";
     if (actionIdx !== -1) {
-      const eqIdx = entryBody.indexOf('=', actionIdx);
+      const eqIdx = entryBody.indexOf("=", actionIdx);
       actionStr = entryBody
         .slice(eqIdx + 1)
         .trim()
-        .replace(/,\s*$/, '')
+        .replace(/,\s*$/, "")
         .trim();
     }
 
     // Detect passthrough actions
-    const isPassthrough =
-      actionStr.includes('act.SendKey') || actionStr.includes('act.SendString');
+    const isPassthrough = actionStr.includes("act.SendKey") ||
+      actionStr.includes("act.SendString");
 
     // Extract description from the nearest preceding comment.
     // Look for the main description comment (starting with -- `key combo`),
     // skipping annotation comments like "selene: allow(...)".
     const beforeEntry = tableContent.slice(0, entryStart);
-    const commentLines = beforeEntry.split('\n').reverse();
-    let description = '';
+    const commentLines = beforeEntry.split("\n").reverse();
+    let description = "";
     for (const line of commentLines) {
       const trimmed = line.trim();
-      if (trimmed.startsWith('--')) {
-        const commentText = trimmed.replace(/^--\s*/, '');
+      if (trimmed.startsWith("--")) {
+        const commentText = trimmed.replace(/^--\s*/, "");
         // Skip annotation/pragma comments
         if (/^(selene:|@diagnostic)/.test(commentText)) continue;
         description = commentText;
         break;
       }
-      if (trimmed === '' || trimmed === ',') continue;
+      if (trimmed === "" || trimmed === ",") continue;
       break;
     }
 
@@ -456,7 +455,7 @@ function parseWezEntries(
     bindings.push({
       canonical: norm.canonical,
       rawKey: `key='${rawKey}', mods='${rawMods}'`,
-      tool: 'wezterm',
+      tool: "wezterm",
       context: tableName,
       description,
       sourceFile,
@@ -469,7 +468,7 @@ function parseWezEntries(
 
 function parseWezterm(
   root: string,
-  platform: 'linux' | 'darwin',
+  platform: "linux" | "darwin",
 ): Keybinding[] {
   const filePath = `${root}/.config/wezterm/keybinds.lua`;
   let source: string;
@@ -486,13 +485,15 @@ function parseWezterm(
   for (const table of tables) {
     // Skip tables that don't apply to this platform
     if (
-      platform === 'linux' &&
-      (table.name === 'darwin_specific_keys' ||
-        table.name === 'windows_specific_keys')
-    )
+      platform === "linux" &&
+      (table.name === "darwin_specific_keys" ||
+        table.name === "windows_specific_keys")
+    ) {
       continue;
-    if (platform === 'darwin' && table.name === 'windows_specific_keys')
+    }
+    if (platform === "darwin" && table.name === "windows_specific_keys") {
       continue;
+    }
 
     bindings.push(
       ...parseWezEntries(table.content, table.name, platform, filePath),
@@ -531,10 +532,10 @@ print(vim.json.encode(maps))
 `.trim();
 
   try {
-    const cmd = new Deno.Command('nvim', {
-      args: ['--headless', '-c', `lua ${luaScript}`, '-c', 'qa'],
-      stdout: 'piped',
-      stderr: 'piped',
+    const cmd = new Deno.Command("nvim", {
+      args: ["--headless", "-c", `lua ${luaScript}`, "-c", "qa"],
+      stdout: "piped",
+      stderr: "piped",
     });
 
     const output = await cmd.output();
@@ -542,18 +543,18 @@ print(vim.json.encode(maps))
     const stderrStr = new TextDecoder()
       .decode(output.stderr)
       .trim()
-      .replace(/\r/g, '');
+      .replace(/\r/g, "");
     const stdoutStr = new TextDecoder()
       .decode(output.stdout)
       .trim()
-      .replace(/\r/g, '');
+      .replace(/\r/g, "");
 
     // nvim may print extra lines; find the JSON line in stderr or stdout
-    let jsonLine = '';
+    let jsonLine = "";
     for (const raw of [stderrStr, stdoutStr]) {
-      for (const line of raw.split('\n')) {
+      for (const line of raw.split("\n")) {
         const trimmed = line.trim();
-        if (trimmed.startsWith('[')) {
+        if (trimmed.startsWith("[")) {
           jsonLine = trimmed;
           break;
         }
@@ -562,7 +563,7 @@ print(vim.json.encode(maps))
     }
 
     if (!jsonLine) {
-      console.error('Warning: Could not get keymaps from Neovim.');
+      console.error("Warning: Could not get keymaps from Neovim.");
       return [];
     }
 
@@ -576,10 +577,10 @@ print(vim.json.encode(maps))
       bindings.push({
         canonical: parsed.canonical,
         rawKey: entry.lhs,
-        tool: 'neovim',
+        tool: "neovim",
         context: entry.mode,
         description: entry.desc,
-        sourceFile: '(nvim keymap)',
+        sourceFile: "(nvim keymap)",
         isPassthrough: false,
       });
     }
@@ -620,7 +621,7 @@ function parseYazi(root: string): Keybinding[] {
   const bindings: Keybinding[] = [];
 
   for (const [sectionName, section] of Object.entries(parsed)) {
-    if (!section || typeof section !== 'object') continue;
+    if (!section || typeof section !== "object") continue;
 
     const keymaps = section.prepend_keymap;
     if (!Array.isArray(keymaps)) continue;
@@ -628,18 +629,17 @@ function parseYazi(root: string): Keybinding[] {
     for (const entry of keymaps) {
       // on が string または string[] の両方に対応
       const onValue = entry.on;
-      const onList: string[] =
-        typeof onValue === 'string'
-          ? [onValue]
-          : Array.isArray(onValue)
-            ? onValue
-            : [];
+      const onList: string[] = typeof onValue === "string"
+        ? [onValue]
+        : Array.isArray(onValue)
+        ? onValue
+        : [];
 
       // 複数キーのシーケンスはスキップ
       if (onList.length !== 1) continue;
 
       const on = onList[0];
-      if (typeof on !== 'string') continue;
+      if (typeof on !== "string") continue;
 
       const result = parseYaziKey(on);
       if (!result || result.isSequence) continue;
@@ -647,9 +647,9 @@ function parseYazi(root: string): Keybinding[] {
       bindings.push({
         canonical: result.canonical,
         rawKey: on,
-        tool: 'yazi',
+        tool: "yazi",
         context: sectionName,
-        description: entry.desc ?? '',
+        description: entry.desc ?? "",
         sourceFile: filePath,
         isPassthrough: false,
       });
@@ -678,24 +678,24 @@ function detectConflicts(bindings: Keybinding[]): Conflict[] {
     const tools = new Set(group.map((b) => b.tool));
     if (tools.size < 2) continue;
 
-    const weztermBindings = group.filter((b) => b.tool === 'wezterm');
-    const neovimBindings = group.filter((b) => b.tool === 'neovim');
-    const yaziBindings = group.filter((b) => b.tool === 'yazi');
+    const weztermBindings = group.filter((b) => b.tool === "wezterm");
+    const neovimBindings = group.filter((b) => b.tool === "neovim");
+    const yaziBindings = group.filter((b) => b.tool === "yazi");
 
     // WezTerm normal-mode (non-passthrough, non-copy/search mode) bindings
     const weztermNormal = weztermBindings.filter(
       (b) =>
         !b.isPassthrough &&
-        b.context !== 'copy_mode' &&
-        b.context !== 'search_mode',
+        b.context !== "copy_mode" &&
+        b.context !== "search_mode",
     );
 
     // WezTerm vs Neovim
     if (weztermNormal.length > 0 && neovimBindings.length > 0) {
       conflicts.push({
         canonical,
-        severity: 'critical',
-        label: 'WezTerm intercepts before Neovim',
+        severity: "critical",
+        label: "WezTerm intercepts before Neovim",
         bindings: [...weztermNormal, ...neovimBindings],
       });
     }
@@ -704,8 +704,8 @@ function detectConflicts(bindings: Keybinding[]): Conflict[] {
     if (weztermNormal.length > 0 && yaziBindings.length > 0) {
       conflicts.push({
         canonical,
-        severity: 'critical',
-        label: 'WezTerm intercepts before Yazi',
+        severity: "critical",
+        label: "WezTerm intercepts before Yazi",
         bindings: [...weztermNormal, ...yaziBindings],
       });
     }
@@ -714,8 +714,8 @@ function detectConflicts(bindings: Keybinding[]): Conflict[] {
     if (neovimBindings.length > 0 && yaziBindings.length > 0) {
       conflicts.push({
         canonical,
-        severity: 'info',
-        label: 'Neovim vs Yazi (different tools, same key)',
+        severity: "info",
+        label: "Neovim vs Yazi (different tools, same key)",
         bindings: [...neovimBindings, ...yaziBindings],
       });
     }
@@ -723,7 +723,7 @@ function detectConflicts(bindings: Keybinding[]): Conflict[] {
 
   // Sort: critical first, then by canonical key
   conflicts.sort((a, b) => {
-    if (a.severity !== b.severity) return a.severity === 'critical' ? -1 : 1;
+    if (a.severity !== b.severity) return a.severity === "critical" ? -1 : 1;
     return a.canonical.localeCompare(b.canonical);
   });
 
@@ -735,20 +735,19 @@ function detectConflicts(bindings: Keybinding[]): Conflict[] {
 // ---------------------------------------------------------------------------
 
 function formatBinding(b: Keybinding): string {
-  const loc =
-    b.tool === 'neovim'
-      ? `${b.context} mode`
-      : `${b.sourceFile.split('/').pop()}, ${b.context}`;
-  const desc = b.description ? b.description : '(no description)';
+  const loc = b.tool === "neovim"
+    ? `${b.context} mode`
+    : `${b.sourceFile.split("/").pop()}, ${b.context}`;
+  const desc = b.description ? b.description : "(no description)";
   const toolLabel = b.tool.charAt(0).toUpperCase() + b.tool.slice(1);
   return `    ${toolLabel}: ${desc} (${loc})`;
 }
 
 function formatKeyDisplay(canonical: string): string {
   return canonical
-    .split('+')
+    .split("+")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('+');
+    .join("+");
 }
 
 function reportText(
@@ -757,18 +756,17 @@ function reportText(
   allBindings: Keybinding[],
   opts: Options,
 ): void {
-  const modsInfo =
-    opts.platform === 'darwin'
-      ? 'PRIMARY=CTRL, SECONDARY=ALT'
-      : 'PRIMARY=CTRL, SECONDARY=ALT';
+  const modsInfo = opts.platform === "darwin"
+    ? "PRIMARY=CTRL, SECONDARY=ALT"
+    : "PRIMARY=CTRL, SECONDARY=ALT";
 
-  console.log('=== Keybinding Conflict Report ===');
+  console.log("=== Keybinding Conflict Report ===");
   console.log(`Platform: ${opts.platform} (${modsInfo})`);
   console.log();
 
   // Critical conflicts
-  const critical = conflicts.filter((c) => c.severity === 'critical');
-  const info = conflicts.filter((c) => c.severity === 'info');
+  const critical = conflicts.filter((c) => c.severity === "critical");
+  const info = conflicts.filter((c) => c.severity === "info");
 
   if (critical.length > 0) {
     // Group by label
@@ -792,7 +790,7 @@ function reportText(
   }
 
   if (info.length > 0) {
-    console.log('--- INFO: Neovim vs Yazi (different tools, same key) ---');
+    console.log("--- INFO: Neovim vs Yazi (different tools, same key) ---");
     for (const item of info) {
       console.log(`  ${formatKeyDisplay(item.canonical)}`);
       for (const b of item.bindings) {
@@ -803,24 +801,26 @@ function reportText(
   }
 
   if (passthroughBindings.length > 0) {
-    console.log('--- Passthrough keys (WezTerm forwards to terminal) ---');
+    console.log("--- Passthrough keys (WezTerm forwards to terminal) ---");
     for (const b of passthroughBindings) {
       console.log(
-        `  ${formatKeyDisplay(b.canonical)}: ${b.description || '(no description)'} (passthrough)`,
+        `  ${formatKeyDisplay(b.canonical)}: ${
+          b.description || "(no description)"
+        } (passthrough)`,
       );
     }
     console.log();
   }
 
   // Summary
-  console.log('=== Summary ===');
+  console.log("=== Summary ===");
   console.log(`  Critical conflicts: ${critical.length}`);
   console.log(`  Informational overlaps: ${info.length}`);
   console.log(`  Passthrough keys: ${passthroughBindings.length}`);
 
   if (opts.verbose) {
     console.log();
-    console.log('=== All Keybindings ===');
+    console.log("=== All Keybindings ===");
     const byTool = new Map<string, Keybinding[]>();
     for (const b of allBindings) {
       const existing = byTool.get(b.tool) ?? [];
@@ -828,18 +828,22 @@ function reportText(
       byTool.set(b.tool, existing);
     }
 
-    for (const tool of ['wezterm', 'neovim', 'yazi'] as const) {
+    for (const tool of ["wezterm", "neovim", "yazi"] as const) {
       const toolBindings = byTool.get(tool) ?? [];
       if (toolBindings.length === 0) continue;
       console.log();
       console.log(
-        `--- ${tool.charAt(0).toUpperCase() + tool.slice(1)} (${toolBindings.length} bindings) ---`,
+        `--- ${
+          tool.charAt(0).toUpperCase() + tool.slice(1)
+        } (${toolBindings.length} bindings) ---`,
       );
       for (const b of toolBindings) {
-        const desc = b.description || '(no description)';
-        const pt = b.isPassthrough ? ' [passthrough]' : '';
+        const desc = b.description || "(no description)";
+        const pt = b.isPassthrough ? " [passthrough]" : "";
         console.log(
-          `  ${formatKeyDisplay(b.canonical).padEnd(24)} ${b.context.padEnd(14)} ${desc}${pt}`,
+          `  ${formatKeyDisplay(b.canonical).padEnd(24)} ${
+            b.context.padEnd(14)
+          } ${desc}${pt}`,
         );
       }
     }
@@ -880,8 +884,8 @@ function reportJson(
   allBindings: Keybinding[],
   opts: Options,
 ): void {
-  const critical = conflicts.filter((c) => c.severity === 'critical');
-  const info = conflicts.filter((c) => c.severity === 'info');
+  const critical = conflicts.filter((c) => c.severity === "critical");
+  const info = conflicts.filter((c) => c.severity === "info");
 
   const report: JsonReport = {
     platform: opts.platform,
@@ -943,7 +947,7 @@ async function main(): Promise<void> {
   }
 
   // Exit with code 1 if there are critical conflicts
-  const hasCritical = conflicts.some((c) => c.severity === 'critical');
+  const hasCritical = conflicts.some((c) => c.severity === "critical");
   if (hasCritical) Deno.exit(1);
 }
 
