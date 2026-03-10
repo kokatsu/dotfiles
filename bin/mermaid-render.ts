@@ -24,7 +24,7 @@ import {
   renderMermaid,
   renderMermaidAscii,
   THEMES,
-} from 'npm:beautiful-mermaid';
+} from "npm:beautiful-mermaid@^1.1.3";
 
 function usage(): never {
   console.log(`Usage: mermaid-render.ts <input.mmd|input.md> [options]
@@ -44,7 +44,7 @@ Markdown (.md) files are auto-detected and mermaid code blocks are extracted.`);
 }
 
 function listThemes(): never {
-  console.log('Available themes:');
+  console.log("Available themes:");
   for (const name of Object.keys(THEMES)) {
     console.log(`  ${name}`);
   }
@@ -54,7 +54,7 @@ function listThemes(): never {
 interface Options {
   input: string;
   fromStdin: boolean;
-  mode: 'ascii' | 'svg';
+  mode: "ascii" | "svg";
   out?: string;
   theme?: string;
   useAscii: boolean;
@@ -63,9 +63,9 @@ interface Options {
 
 function parseArgs(args: string[]): Options {
   const opts: Options = {
-    input: '',
+    input: "",
     fromStdin: false,
-    mode: 'ascii',
+    mode: "ascii",
     useAscii: false,
     index: 0,
   };
@@ -74,40 +74,40 @@ function parseArgs(args: string[]): Options {
   while (i < args.length) {
     const arg = args[i];
     switch (arg) {
-      case '--help':
-      case '-h':
+      case "--help":
+      case "-h":
         usage();
         break;
-      case '--list-themes':
+      case "--list-themes":
         listThemes();
         break;
-      case '--ascii':
-        opts.mode = 'ascii';
+      case "--ascii":
+        opts.mode = "ascii";
         break;
-      case '--svg':
-        opts.mode = 'svg';
+      case "--svg":
+        opts.mode = "svg";
         break;
-      case '--use-ascii':
+      case "--use-ascii":
         opts.useAscii = true;
         break;
-      case '--out':
-      case '-o':
+      case "--out":
+      case "-o":
         opts.out = args[++i];
         break;
-      case '--theme':
-      case '-t':
+      case "--theme":
+      case "-t":
         opts.theme = args[++i];
         break;
-      case '--index':
-      case '-n':
+      case "--index":
+      case "-n":
         opts.index = parseInt(args[++i], 10);
         break;
       default:
-        if (arg.startsWith('-') && arg !== '-') {
+        if (arg.startsWith("-") && arg !== "-") {
           console.error(`Unknown option: ${arg}`);
           Deno.exit(1);
         }
-        if (arg === '-') {
+        if (arg === "-") {
           opts.fromStdin = true;
         } else {
           opts.input = arg;
@@ -125,7 +125,7 @@ function parseArgs(args: string[]): Options {
 
 function extractMermaidBlocks(markdown: string): string[] {
   return [...markdown.matchAll(/```mermaid\s*\n([\s\S]*?)```/g)].map((m) =>
-    m[1].trim(),
+    m[1].trim()
   );
 }
 
@@ -143,14 +143,14 @@ async function readInput(opts: Options): Promise<string> {
   raw = raw.trim();
 
   const shouldExtract = opts.fromStdin
-    ? raw.includes('```mermaid')
+    ? raw.includes("```mermaid")
     : isMarkdown(opts.input);
 
   if (!shouldExtract) return raw;
 
   const blocks = extractMermaidBlocks(raw);
   if (blocks.length === 0) {
-    console.error('No ```mermaid blocks found.');
+    console.error("No ```mermaid blocks found.");
     Deno.exit(1);
   }
   if (opts.index >= blocks.length) {
@@ -171,7 +171,7 @@ async function main() {
   const opts = parseArgs([...Deno.args]);
   const text = await readInput(opts);
 
-  if (opts.mode === 'ascii') {
+  if (opts.mode === "ascii") {
     const result = renderMermaidAscii(text, {
       useAscii: opts.useAscii,
     });
@@ -191,9 +191,8 @@ async function main() {
     }
 
     const svg = await renderMermaid(text, themeColors ?? {});
-    const outPath =
-      opts.out ??
-      (opts.fromStdin ? undefined : opts.input.replace(/\.[^.]+$/, '.svg'));
+    const outPath = opts.out ??
+      (opts.fromStdin ? undefined : opts.input.replace(/\.[^.]+$/, ".svg"));
 
     if (outPath) {
       await Deno.writeTextFile(outPath, svg);
