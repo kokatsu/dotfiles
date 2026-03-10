@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# analyze - Gather file statistics for bug-hunt target analysis
+#
+# Usage:
+#   analyze <path> [path2 ...]  Analyze files or directories (multiple OK)
+#   analyze --diff [branch]     Analyze files changed since branch (auto-detects main)
+set -euo pipefail
+
+mode="path"
+targets=()
+
+case "${1:-}" in
+  --diff)
+    mode="diff"
+    targets+=("${2:-$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null \
+      | sed 's@^refs/remotes/origin/@@' || echo main)}")
+    ;;
+  "")
+    targets+=(".")
+    ;;
+  *)
+    targets=("$@")
+    ;;
+esac
+
+collect_files() {
+  case "$mode" in
+    diff)
+      git diff --name-only --diff-filter=ACMR "${targets[0]}...HEAD" 2>/dev/null \
+        || git diff --name-only --diff-filter=ACMR "${targets[0]}" 2>/dev/null \
+        || true
+      ;;
+    path)
+      for target in "${targets[@]}"; do
+        if [[ -f "$target" ]]; then
+          echo "$target"
+        elif [[ -d "$target" ]]; then
+          git ls-files -- "$target" 2>/dev/null \
+            | grep -E '\.(ts|tsx|js|jsx|py|rb|go|rs|nix|sh|bash|zsh|lua|vim|java|kt|c|cpp|h|hpp|swift|ex|exs|vue|sql)$' \
+            || find "$target" -type f \( \
+              -name '*.ts' -o -name '*.tsx' -o -name '*.js' -o -name '*.jsx' -o \
+              -name '*.py' -o -name '*.rb' -o -name '*.go' -o -name '*.rs' -o \
+              -name '*.nix' -o -name '*.sh' -o -name '*.bash' -o -name '*.zsh' -o \
+              -name '*.lua' -o -name '*.vim' -o -name '*.java' -o -name '*.kt' -o \
+              -name '*.c' -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' -o \
+              -name '*.swift' -o -name '*.ex' -o -name '*.exs' -o -name '*.vue' -o \
+              -name '*.sql' \
+            \) ! -path '*/node_modules/*' ! -path '*/.git/*' ! -path '*/vendor/*' \
+              ! -path '*/__pycache__/*' ! -path '*/result/*' \
+            | sort
+        fi
+      done
+      ;;
+  esac
+}
+
+ext_to_lang() {
+  case "$1" in
+    ts|tsx) echo typescript ;;
+    js|jsx) echo javascript ;;
+    vue) echo vue ;;
+    py) echo python ;;
+    rb) echo ruby ;;
+    go) echo go ;;
+    rs) echo rust ;;
+    nix) echo nix ;;
+    sh|bash|zsh) echo shell ;;
+    lua) echo lua ;;
+    vim) echo vim ;;
+    java) echo java ;;
+    kt) echo kotlin ;;
+    c|h) echo c ;;
+    cpp|hpp) echo cpp ;;
+    swift) echo swift ;;
+    ex|exs) echo elixir ;;
+    sql) echo sql ;;
+    *) echo other ;;
+  esac
+}
+
+declare -A lang_files=() lang_lines=()
+total_files=0
+total_lines=0
+
+while IFS= read -r file; do
+  [[ -z "$file" || ! -f "$file" ]] && continue
+  ext="${file##*.}"
+  lang=$(ext_to_lang "$ext")
+  lines=$(wc -l < "$file" 2>/dev/null || echo 0)
+  lines=$((lines + 0))
+  lang_files[$lang]=$(( ${lang_files[$lang]:-0} + 1 ))
+  lang_lines[$lang]=$(( ${lang_lines[$lang]:-0} + lines ))
+  total_files=$((total_files + 1))
+  total_lines=$((total_lines + lines))
+done < <(collect_files)
+
+if [[ $total_files -le 3 || $total_lines -le 200 ]]; then
+  strategy="direct"
+else
+  strategy="3-agent"
+fi
+
+echo "files: $total_files"
+echo "total_lines: $total_lines"
+echo "strategy: $strategy"
+echo "languages:"
+for lang in "${!lang_lines[@]}"; do
+  echo "  ${lang}: ${lang_files[$lang]} files, ${lang_lines[$lang]} lines"
+done | sort -t',' -k2 -rn
+
+if [[ $total_files -eq 0 ]]; then
+  echo ""
+  echo "No source files found."
+fi

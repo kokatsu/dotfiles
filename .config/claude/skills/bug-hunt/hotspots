@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# hotspots - Identify bug-prone files by git churn x file size
+#
+# Usage:
+#   hotspots [--limit N] [--since PERIOD] [--no-filter] [directory]
+#
+# Score = commits x lines. Higher score = more likely to contain bugs.
+# Auto-generated files, lock files, and data files are excluded by default.
+# Use --no-filter to include them.
+set -euo pipefail
+
+limit=10
+since="6 months ago"
+dir="."
+filter=true
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --limit) [[ $# -ge 2 ]] || { echo "--limit requires a value" >&2; exit 1; }; limit="$2"; shift 2 ;;
+    --since) [[ $# -ge 2 ]] || { echo "--since requires a value" >&2; exit 1; }; since="$2"; shift 2 ;;
+    --no-filter) filter=false; shift ;;
+    *) dir="$1"; shift ;;
+  esac
+done
+
+# Patterns excluded by default (auto-generated, lock files, build output, tests, i18n)
+EXCLUDE_PATTERN='(Cargo\.lock|package-lock\.json|yarn\.lock|pnpm-lock\.yaml|Gemfile\.lock|poetry\.lock|go\.sum|\.min\.js|\.iife\.js|\.bundle\.js|dist/|build/|/locales/.*\.(yml|yaml|json)$|/i18n/.*\.(yml|yaml|json)$|/messages/.*\.(yml|yaml|json)$|_spec\.rb$|_test\.(go|rs)$|\.test\.(ts|tsx|js|jsx)$|\.spec\.(ts|tsx|js|jsx)$|__tests__/|__snapshots__/)'
+
+echo "# Hotspots (since: $since, limit: $limit)"
+echo "# score = commits x lines"
+if $filter; then
+  echo "# auto-generated/lock files excluded (use --no-filter to include)"
+fi
+echo ""
+printf "%-8s %-8s %-8s %s\n" "score" "commits" "lines" "file"
+echo "-------- -------- -------- ----"
+
+git log --since="$since" --format=format: --name-only -- "$dir" 2>/dev/null \
+  | sed '/^$/d' \
+  | if $filter; then grep -v -E "$EXCLUDE_PATTERN" || true; else cat; fi \
+  | sort \
+  | uniq -c \
+  | sort -rn \
+  | while read -r count file; do
+      [[ -f "$file" ]] || continue
+      lines=$(wc -l < "$file" 2>/dev/null || echo 0)
+      lines=$((lines + 0))
+      score=$((count * lines))
+      printf "%-8d %-8d %-8d %s\n" "$score" "$count" "$lines" "$file"
+    done \
+  | sort -rn \
+  | head -n "$limit"
