@@ -107,6 +107,13 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }marksman $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'kakehashi'; then
+            echo "has_kakehashi=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*kakehashi" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_kakehashi=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }kakehashi $VERSION"
+          fi
+
           if echo "$DIFF" | grep -q 'octorus'; then
             echo "has_octorus=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*octorus" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -489,6 +496,23 @@ jobs:
           sed -i "/cssmodules-language-server = _final: prev: {/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       # === Source-built packages ===
+
+      - name: Update kakehashi hashes
+        if: steps.detect.outputs.has_kakehashi == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_kakehashi }}
+        run: |
+          OVERLAY="nix/overlays/binary-releases.nix"
+
+          # Compute hashes for each platform
+          for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
+                          "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
+            PLAT_NAME="${platform%%:*}"
+            NIX_SYSTEM="${platform##*:}"
+            URL="https://github.com/atusy/kakehashi/releases/download/v${VERSION}/kakehashi-v${VERSION}-${PLAT_NAME}.tar.gz"
+            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            sed -i "/kakehashi = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+          done
 
       - name: Update octorus hashes
         if: steps.detect.outputs.has_octorus == 'true'
