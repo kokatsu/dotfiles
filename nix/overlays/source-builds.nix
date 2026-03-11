@@ -5,7 +5,7 @@
   ccusage = _final: prev: {
     ccusage = prev.stdenvNoCC.mkDerivation rec {
       pname = "ccusage";
-      version = "18.0.9";
+      version = "18.0.10";
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/${pname}/-/${pname}-${version}.tgz";

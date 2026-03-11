@@ -85,7 +85,7 @@ in {
   # Renovate: datasource=github-releases depName=atusy/kakehashi
   kakehashi = mkBinaryRelease rec {
     pname = "kakehashi";
-    version = "0.3.0";
+    version = "0.4.1";
     hashes = {
       "aarch64-darwin" = "sha256-tuMx+xkBLh8dyQhvB4pCKjEd9Zkg+CclHbVexFZ8ZXQ=";
       "x86_64-darwin" = "sha256-NdmkzAk6hBghu/9gmJ1QwGAuPS7u7K+YE2xoFr23k6M=";
@@ -112,7 +112,7 @@ in {
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = mkBinaryRelease rec {
     pname = "octorus";
-    version = "0.5.6";
+    version = "0.5.7";
     hashes = {
       "aarch64-darwin" = "sha256-1tnFxE6vs7qR0Wh10lZLTCM7YjLABw45p3176Zr9Dik=";
       "x86_64-darwin" = "sha256-NXldfuJf9B80VD9sUIku8NoXuC6nwzDEjgxbmHoNz/Q=";
@@ -165,7 +165,7 @@ in {
   # Renovate: datasource=npm depName=@github/copilot
   copilot = mkBinaryRelease rec {
     pname = "github-copilot-cli";
-    version = "1.0.2";
+    version = "1.0.3";
     hashes = {
       "aarch64-darwin" = "sha256-S6dk8h8ZUPZxID3/LU2ONSfi5kmDhDtORDZlfOksGts=";
       "x86_64-darwin" = "sha256-rzfL+kgRvm7gI9jYcOA4qJqxPaxQFNNbgEewrRM5YUQ=";
