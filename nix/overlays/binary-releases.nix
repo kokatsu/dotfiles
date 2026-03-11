@@ -85,12 +85,12 @@ in {
   # Renovate: datasource=github-releases depName=atusy/kakehashi
   kakehashi = mkBinaryRelease rec {
     pname = "kakehashi";
-    version = "0.3.0";
+    version = "0.4.1";
     hashes = {
-      "aarch64-darwin" = "sha256-tuMx+xkBLh8dyQhvB4pCKjEd9Zkg+CclHbVexFZ8ZXQ=";
-      "x86_64-darwin" = "sha256-NdmkzAk6hBghu/9gmJ1QwGAuPS7u7K+YE2xoFr23k6M=";
-      "aarch64-linux" = "sha256-lgB/J/FeBlklA1qS4hgGup15ulzh13QmKnrUDOnxKYI=";
-      "x86_64-linux" = "sha256-phKlxTDjStxULip2nhwl6mgh5g6AIfovwty19o9m03o=";
+      "aarch64-darwin" = "sha256-nvWXxqsWoX6NsULa0qSx7TFeMlgid5hd4/keK0wGEtk=";
+      "x86_64-darwin" = "sha256-iFwXleFxBDO6hRUUZldk0JR/1PRmEZhZ4yBZ6qemtHc=";
+      "aarch64-linux" = "sha256-mEe90L7/P2TphiEbvcFw8qRVjeLLLikADJCdbPKFHIk=";
+      "x86_64-linux" = "sha256-DFSVXRLBZ4qvNYzItnu9t2K3KxK9D2Jpppz0gae2vRo=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
@@ -112,12 +112,12 @@ in {
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = mkBinaryRelease rec {
     pname = "octorus";
-    version = "0.5.6";
+    version = "0.5.7";
     hashes = {
-      "aarch64-darwin" = "sha256-1tnFxE6vs7qR0Wh10lZLTCM7YjLABw45p3176Zr9Dik=";
-      "x86_64-darwin" = "sha256-NXldfuJf9B80VD9sUIku8NoXuC6nwzDEjgxbmHoNz/Q=";
-      "aarch64-linux" = "sha256-ExDxrJnYX097ASfGiL6UmH8dnxdT6FU2osiQYPtvQcc=";
-      "x86_64-linux" = "sha256-ztuyFtFQWwi1asXAmEIH2sIW0jI22OMbhISxn14CLmk=";
+      "aarch64-darwin" = "sha256-mP8LXcTPZExiuLLxfxyAB7gW7YGOX6Uh8pTO44ysT5s=";
+      "x86_64-darwin" = "sha256-i6NKmW0EV/Mppy3LALt12xA7fvV0zWH9KBSmg3VpYWM=";
+      "aarch64-linux" = "sha256-oLV2rp0PvEklSRDd+oOCNPYXhg8eLJ+ArjO07aO7mmA=";
+      "x86_64-linux" = "sha256-dP7y08c9l+MQQxSM7MUtlTZcocivhZzjVjY6dB+1vVk=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
@@ -165,12 +165,12 @@ in {
   # Renovate: datasource=npm depName=@github/copilot
   copilot = mkBinaryRelease rec {
     pname = "github-copilot-cli";
-    version = "1.0.2";
+    version = "1.0.3";
     hashes = {
-      "aarch64-darwin" = "sha256-S6dk8h8ZUPZxID3/LU2ONSfi5kmDhDtORDZlfOksGts=";
-      "x86_64-darwin" = "sha256-rzfL+kgRvm7gI9jYcOA4qJqxPaxQFNNbgEewrRM5YUQ=";
-      "aarch64-linux" = "sha256-9FH/UlDyGodGMQuLlDLwUU8yhHonq4BdBu/+4eIF3pY=";
-      "x86_64-linux" = "sha256-rUeRZHi603jsU9IqqTmcrRphFOrwV8xC5x52qN9enMA=";
+      "aarch64-darwin" = "sha256-SCPuOHI8HMRatWcioARrSKwgnoF4tVgmYb7QbL1wsck=";
+      "x86_64-darwin" = "sha256-TPhQVz/U//WRqIldLflXMJx40tTaduiQ9w8jj2E0mCk=";
+      "aarch64-linux" = "sha256-qyWiMk1PfVI14S+ivNNYTCuReccQEnX8eAUCp831Y7w=";
+      "x86_64-linux" = "sha256-Ek+RWm1Ljmuq2rayuQr/e7kTWy5Iha6srTKgc2hKXgI=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
