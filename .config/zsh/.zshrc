@@ -28,10 +28,10 @@ if [[ -e ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]] zimfw() {
   # _zsh_highlight で "bad set of key/value pairs" エラーになる問題を修正
   local _f=${ZIM_HOME}/modules/zeno.zsh/shells/zsh/widgets/zeno-completion
   if [[ -f $_f ]] && grep -q 'local.*expect_key options ' $_f; then
-    sed -i 's/expect_key options /expect_key fzf_options /' $_f
-    sed -i 's/^options=/fzf_options=/' $_f
-    sed -i 's/${options}/${fzf_options}/g' $_f
-    sed -i 's/${(z)options}/${(z)fzf_options}/g' $_f
+    sed -i '' 's/expect_key options /expect_key fzf_options /' $_f
+    sed -i '' 's/^options=/fzf_options=/' $_f
+    sed -i '' 's/${options}/${fzf_options}/g' $_f
+    sed -i '' 's/${(z)options}/${(z)fzf_options}/g' $_f
   fi
 }
 
@@ -78,6 +78,18 @@ zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-autosuggestions/zsh-autosugges
 export ZENO_HOME="${XDG_CONFIG_HOME}/zeno"
 export ZENO_GIT_CAT="bat --color=always"
 export ZENO_GIT_TREE="eza --tree"
+
+# zeno-completion の local options が zsh/parameter の $options をシャドウし
+# _zsh_highlight で "bad set of key/value pairs" エラーになる問題を修正
+() {
+  local _f=${ZIM_HOME}/modules/zeno.zsh/shells/zsh/widgets/zeno-completion
+  if [[ -f $_f ]] && grep -q 'local.*expect_key options ' $_f; then
+    sed -i '' 's/expect_key options /expect_key fzf_options /' $_f
+    sed -i '' 's/^options=/fzf_options=/' $_f
+    sed -i '' 's/${options}/${fzf_options}/g' $_f
+    sed -i '' 's/${(z)options}/${(z)fzf_options}/g' $_f
+  fi
+}
 
 zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zeno.zsh/zeno.zsh
 zsh-defer -a +1 +2 -c 'bindkey " " zeno-auto-snippet'
