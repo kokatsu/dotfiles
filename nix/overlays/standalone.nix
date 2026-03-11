@@ -174,12 +174,12 @@
   # Uses pre-built static binaries from npm platform packages
   # Renovate: datasource=npm depName=@openai/codex
   codex = _final: prev: let
-    version = "0.112.0";
+    version = "0.113.0";
     hashes = {
-      "aarch64-darwin" = "sha256-KI7VKFjVN+Sq9gQcuqXovCYnGiyBOq3sK2h2zBglsmc=";
-      "x86_64-darwin" = "sha256-t2Spv1eLJE7ns2uUj4O6rKia20L1poBevfHCFALSa2E=";
-      "aarch64-linux" = "sha256-gC7sQWDDiiqSn0S2VKdWUNiRhu2UtuG+nvc0bWCWVmo=";
-      "x86_64-linux" = "sha256-WCeXsmiZuw48VCxruyGqQ3J/LXZbkv3szRZQORMPj54=";
+      "aarch64-darwin" = "sha256-pPO2iuT4NgY+L53wiulSJbbwwQZk/cgBxwRUNV8zdrk=";
+      "x86_64-darwin" = "sha256-YCPcLJUjzb4NdrVlYAR+4kOVDUegrinG5MrA+rXfQTQ=";
+      "aarch64-linux" = "sha256-wyN9xBKGB6MGfY8YQViq2unvAeAFJiYwmb2SOfoyslc=";
+      "x86_64-linux" = "sha256-SNe/LMuQDJJONocCnVeOjhG1UnABR9yUQRmc1kZb5SA=";
     };
     platformMap = {
       "aarch64-darwin" = {
