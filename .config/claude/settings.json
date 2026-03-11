@@ -70,17 +70,6 @@
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.config/claude/hooks/run-deno-hook.sh ~/.config/claude/hooks/post-skill-review.ts"
-          }
-        ]
-      }
-    ],
     "PreCompact": [
       {
         "matcher": "auto",
