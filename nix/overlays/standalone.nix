@@ -174,7 +174,7 @@
   # Uses pre-built static binaries from npm platform packages
   # Renovate: datasource=npm depName=@openai/codex
   codex = _final: prev: let
-    version = "0.112.0";
+    version = "0.113.0";
     hashes = {
       "aarch64-darwin" = "sha256-KI7VKFjVN+Sq9gQcuqXovCYnGiyBOq3sK2h2zBglsmc=";
       "x86_64-darwin" = "sha256-t2Spv1eLJE7ns2uUj4O6rKia20L1poBevfHCFALSa2E=";
