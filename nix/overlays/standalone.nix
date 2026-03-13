@@ -36,7 +36,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.17.1";
+    version = "0.18.0";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -174,7 +174,7 @@
   # Uses pre-built static binaries from npm platform packages
   # Renovate: datasource=npm depName=@openai/codex
   codex = _final: prev: let
-    version = "0.113.0";
+    version = "0.114.0";
     hashes = {
       "aarch64-darwin" = "sha256-pPO2iuT4NgY+L53wiulSJbbwwQZk/cgBxwRUNV8zdrk=";
       "x86_64-darwin" = "sha256-YCPcLJUjzb4NdrVlYAR+4kOVDUegrinG5MrA+rXfQTQ=";
