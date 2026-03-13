@@ -31,7 +31,7 @@ in {
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = mkBinaryRelease rec {
     pname = "claude-code";
-    version = "2.1.73";
+    version = "2.1.75";
     hashes = {
       "aarch64-darwin" = "sha256-XUAvgE3eaZw4JOk/78GY2BpSlHpD5XgobqAc6pwCmnM=";
       "x86_64-darwin" = "sha256-OwPhXj6AmtpJ5aQSXrNlCFhbbVrc1xWyPRyjvt6ypOk=";
@@ -165,7 +165,7 @@ in {
   # Renovate: datasource=npm depName=@github/copilot
   copilot = mkBinaryRelease rec {
     pname = "github-copilot-cli";
-    version = "1.0.3";
+    version = "1.0.4";
     hashes = {
       "aarch64-darwin" = "sha256-SCPuOHI8HMRatWcioARrSKwgnoF4tVgmYb7QbL1wsck=";
       "x86_64-darwin" = "sha256-TPhQVz/U//WRqIldLflXMJx40tTaduiQ9w8jj2E0mCk=";
