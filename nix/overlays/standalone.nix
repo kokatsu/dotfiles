@@ -53,10 +53,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-V7Y9iPO7diEWMhiKYLRQLBunZPfTyMzuCFmcj1K67nI=";
+        hash = "sha256-igvFdqWsf185aXsCXxiudVWJprWMq7PnmLxKaF/5Kzk=";
       };
 
-      npmDepsHash = "sha256-ca/uRzBgAUDsavqtpef3FK2o1gtg3nN5sGvH3GR6Wqs=";
+      npmDepsHash = "sha256-hXZI5rYUfWvt4abzoVxiLdgd/z49sfithWGh1GqKEN0=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts" "--legacy-peer-deps"];
@@ -176,10 +176,10 @@
   codex = _final: prev: let
     version = "0.114.0";
     hashes = {
-      "aarch64-darwin" = "sha256-pPO2iuT4NgY+L53wiulSJbbwwQZk/cgBxwRUNV8zdrk=";
-      "x86_64-darwin" = "sha256-YCPcLJUjzb4NdrVlYAR+4kOVDUegrinG5MrA+rXfQTQ=";
-      "aarch64-linux" = "sha256-wyN9xBKGB6MGfY8YQViq2unvAeAFJiYwmb2SOfoyslc=";
-      "x86_64-linux" = "sha256-SNe/LMuQDJJONocCnVeOjhG1UnABR9yUQRmc1kZb5SA=";
+      "aarch64-darwin" = "sha256-T9IVepFpw4jg6o3+1Cd41qQ173SnQ7kfwWcPOXcIeOo=";
+      "x86_64-darwin" = "sha256-c8jsJrGeZPc5XvPGyt/AOYdauaVoZ5ST895Z3FdeSGk=";
+      "aarch64-linux" = "sha256-BbKaOAYkIVXpmQVF46yXg9Zmvz/ZKQkBmvjKd+JalX8=";
+      "x86_64-linux" = "sha256-IAsvVZnT/HBwAsrGZhNQe5taFs2RVMffu7zbFwYLCL0=";
     };
     platformMap = {
       "aarch64-darwin" = {
