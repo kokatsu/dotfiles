@@ -31,12 +31,12 @@ in {
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = mkBinaryRelease rec {
     pname = "claude-code";
-    version = "2.1.73";
+    version = "2.1.75";
     hashes = {
-      "aarch64-darwin" = "sha256-XUAvgE3eaZw4JOk/78GY2BpSlHpD5XgobqAc6pwCmnM=";
-      "x86_64-darwin" = "sha256-OwPhXj6AmtpJ5aQSXrNlCFhbbVrc1xWyPRyjvt6ypOk=";
-      "aarch64-linux" = "sha256-ep1oUcV99K96woAIF6gZcM8Xw4jgLTdJYQ0v4ZnC0PA=";
-      "x86_64-linux" = "sha256-lgzQ1xoiXzuUa7Sd1cGWJMVYB32c89pOtXA4C0MTW30=";
+      "aarch64-darwin" = "sha256-jFQaXpJO2iBw6vFwKkgEevZxxN/2oRpediB2YUoIJnU=";
+      "x86_64-darwin" = "sha256-gskLkaChj2AZH4F7m0IwTYsX2+11eVtxXEH0/f5MeC0=";
+      "aarch64-linux" = "sha256-7I9Pf3u1BhHa5wwQmnbuHaajq0VRHGXxF98hWEjsyQU=";
+      "x86_64-linux" = "sha256-MosKQpwFoE+REVfYhr5RI88YJKGbqMofnVlMAE6sMsk=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -165,12 +165,12 @@ in {
   # Renovate: datasource=npm depName=@github/copilot
   copilot = mkBinaryRelease rec {
     pname = "github-copilot-cli";
-    version = "1.0.3";
+    version = "1.0.4";
     hashes = {
-      "aarch64-darwin" = "sha256-SCPuOHI8HMRatWcioARrSKwgnoF4tVgmYb7QbL1wsck=";
-      "x86_64-darwin" = "sha256-TPhQVz/U//WRqIldLflXMJx40tTaduiQ9w8jj2E0mCk=";
-      "aarch64-linux" = "sha256-qyWiMk1PfVI14S+ivNNYTCuReccQEnX8eAUCp831Y7w=";
-      "x86_64-linux" = "sha256-Ek+RWm1Ljmuq2rayuQr/e7kTWy5Iha6srTKgc2hKXgI=";
+      "aarch64-darwin" = "sha256-ExxjK4oWxp2WlP9go9iaz5oBC99/D8KL/gqE+m4bHXk=";
+      "x86_64-darwin" = "sha256-OHdWwzPzB5jAWknbl4PBkGJ+clhfJlKvdrHOyxRZOpg=";
+      "aarch64-linux" = "sha256-D/oAMzfZ5Kq5uJpMcqRNfujX0ipHnNmWLNiwdZeSBlc=";
+      "x86_64-linux" = "sha256-fMYmE/Q3NHAMOTrxEetV5hikQCVx5F6RzSFPF8fmMts=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
