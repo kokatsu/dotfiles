@@ -108,7 +108,7 @@ in {
     version = "0.32.1";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
-      hash = "sha256-YlbK+I6Fm/iyP2IAerwpFhULIiCkFRvtpw6ef/L3jUw=";
+      hash = "sha256-wA08cdwQq08l9CL0JzXYzYHLvq3WyhYMNK112lWxClA=";
     };
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/takt/package-lock.json);
   in {
@@ -122,7 +122,7 @@ in {
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-5Lkr3wExSCIt+9GsTLENbeQz92G09z5AieO/P+EAj9k=";
+      npmDepsHash = "sha256-pJktveWO5GTc0ApV8tR+4Sa3fVLcErQbfS/BhjaAaIg=";
 
       dontNpmBuild = true;
 
