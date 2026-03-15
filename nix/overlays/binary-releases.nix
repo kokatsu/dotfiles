@@ -139,7 +139,7 @@ in {
   # Renovate: datasource=github-releases depName=biomejs/biome
   biome = mkBinaryRelease rec {
     pname = "biome";
-    version = "2.4.6";
+    version = "2.4.7";
     hashes = {
       "aarch64-darwin" = "sha256-hFKxF18pe2nFtx/jvQRLOBp4yBLXwPQ3Y4/LOjJZc8k=";
       "x86_64-darwin" = "sha256-Fp8/MdG9i+CfGE7KVRhOcdBEnvV8eepW0CAjWHCUMfs=";
@@ -165,7 +165,7 @@ in {
   # Renovate: datasource=npm depName=@github/copilot
   copilot = mkBinaryRelease rec {
     pname = "github-copilot-cli";
-    version = "1.0.4";
+    version = "1.0.5";
     hashes = {
       "aarch64-darwin" = "sha256-ExxjK4oWxp2WlP9go9iaz5oBC99/D8KL/gqE+m4bHXk=";
       "x86_64-darwin" = "sha256-OHdWwzPzB5jAWknbl4PBkGJ+clhfJlKvdrHOyxRZOpg=";
