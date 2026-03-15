@@ -36,7 +36,7 @@
   # Uses pre-built native binaries from npm package
   # Renovate: datasource=npm depName=agent-browser
   agent-browser = final: prev: let
-    version = "0.18.0";
+    version = "0.20.1";
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
       "x86_64-darwin" = "darwin-x64";
@@ -53,10 +53,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-igvFdqWsf185aXsCXxiudVWJprWMq7PnmLxKaF/5Kzk=";
+        hash = "sha256-pN056Dui1ZNSVSDifo+3ZCLDl4Zw4ZqmX5wtto608tc=";
       };
 
-      npmDepsHash = "sha256-hXZI5rYUfWvt4abzoVxiLdgd/z49sfithWGh1GqKEN0=";
+      npmDepsHash = "sha256-DjkTS2I1hRBAfMaC5SVi4pi4EeE/rUMx90gIoPXhVog=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts" "--legacy-peer-deps"];
