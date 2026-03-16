@@ -106,7 +106,7 @@ in {
         # https://github.com/rclone/rclone
         rclone # クラウドストレージ同期
         # https://github.com/github/copilot-cli
-        github-copilot-cli # GitHub Copilot CLI (overlay)
+        github-copilot-cli # GitHub Copilot CLI
         # https://github.com/aristocratos/btop
         btop # リソースモニター
         # https://github.com/hpjansson/chafa
@@ -225,9 +225,7 @@ in {
         claude-code # AI コーディングエージェント (overlay)
 
         # https://github.com/openai/codex
-        codex # OpenAI Codex CLI (overlay)
-        # https://github.com/google-gemini/gemini-cli
-        gemini-cli # Google Gemini CLI
+        codex # OpenAI Codex CLI
         # https://github.com/gitleaks/gitleaks
         gitleaks # シークレット検出
         # https://github.com/denoland/deno
@@ -305,7 +303,7 @@ in {
         # Git hooks/lint ツール
         #####################################
         # https://github.com/biomejs/biome
-        biome # Web ツールチェーン (formatter + linter, overlay)
+        biome # Web ツールチェーン (formatter + linter)
         # https://github.com/conventional-changelog/commitlint
         commitlint # コミットメッセージ lint
         # https://github.com/evilmartians/lefthook
@@ -488,8 +486,6 @@ in {
         # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
         ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
 
-        # Gemini CLI (XDG未対応のため ~/.gemini/ にシンボリックリンク)
-        ".gemini/settings.json".source = ../../.config/gemini/settings.json;
         # takt (XDG未対応のため ~/.takt/ にシンボリンク)
         ".takt/config.yaml".source = ../../.config/takt/config.yaml;
         ".takt/pieces".source = ../../.config/takt/pieces;

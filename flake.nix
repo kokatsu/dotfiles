@@ -87,7 +87,6 @@
       inputs.helix.overlays.default
       inputs.neovim-nightly-overlay.overlays.default
       customOverlays.agent-browser
-      customOverlays.biome
       customOverlays.cc-statusline
       customOverlays.ccusage
       customOverlays.daily
@@ -142,7 +141,7 @@
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
       customOverlays.nodejs-22-fix
-      customOverlays.gemini-cli-npm11-fix
+
       customOverlays.cava-darwin-fix
       customOverlays.jp2a-darwin-fix
       customOverlays.ldc-darwin-fix

@@ -99,27 +99,10 @@
   };
 
   # Fix nodejs 22.x build failure (clang crash during V8 compilation on macOS)
-  # Alias nodejs_22 to nodejs_24 so all dependent packages (gemini-cli, vtsls, etc.) build
+  # Alias nodejs_22 to nodejs_24 so all dependent packages (vtsls, etc.) build
   nodejs-22-fix = _final: prev: {
     nodejs_22 = prev.nodejs_24;
     nodejs-slim_22 = prev.nodejs-slim_24;
-  };
-
-  # Fix gemini-cli npm deps for nodejs_24 (npm 11 requires fetcher v2)
-  gemini-cli-npm11-fix = _final: prev: {
-    gemini-cli = prev.gemini-cli.overrideAttrs (old: {
-      env =
-        (old.env or {})
-        // {
-          NIX_NPM_FETCHER_VERSION = "2";
-        };
-      npmDeps = prev.fetchNpmDeps {
-        inherit (old) src;
-        name = "${old.pname}-${old.version}-npm-deps";
-        hash = "sha256-qf/4ExlMfPi7OkhVs2AKrooWKA+MdA6m4sP7qoAnfRM=";
-        fetcherVersion = 2;
-      };
-    });
   };
 
   # Fix playwright-driver.browsers to include chromium revision 1208
