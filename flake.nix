@@ -96,8 +96,6 @@
       customOverlays.copilot
       customOverlays.cssmodules-language-server
       customOverlays.deck
-      customOverlays.nodejs-22-fix
-      customOverlays.gemini-cli-npm11-fix
       customOverlays.git-graph-fork
       customOverlays.kakehashi
       customOverlays.marksman-binary
@@ -143,6 +141,8 @@
 
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
+      customOverlays.nodejs-22-fix
+      customOverlays.gemini-cli-npm11-fix
       customOverlays.cava-darwin-fix
       customOverlays.jp2a-darwin-fix
       customOverlays.ldc-darwin-fix
