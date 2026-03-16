@@ -91,7 +91,7 @@ return {
       'jsonls',
       'kakehashi',
       'lua_ls',
-      'marksman',
+      'markdown_oxide',
       'nixd',
       'postgres_lsp',
       'svelte',
