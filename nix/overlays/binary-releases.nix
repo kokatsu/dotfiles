@@ -165,7 +165,7 @@ in {
   # Renovate: datasource=npm depName=@github/copilot
   copilot = mkBinaryRelease rec {
     pname = "github-copilot-cli";
-    version = "1.0.4";
+    version = "1.0.5";
     hashes = {
       "aarch64-darwin" = "sha256-ExxjK4oWxp2WlP9go9iaz5oBC99/D8KL/gqE+m4bHXk=";
       "x86_64-darwin" = "sha256-OHdWwzPzB5jAWknbl4PBkGJ+clhfJlKvdrHOyxRZOpg=";
