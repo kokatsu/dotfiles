@@ -344,8 +344,8 @@ in {
         # https://github.com/dlang/tools
         dtools # D言語ツール (rdmd, dustmite 等)
 
-        # https://github.com/artempyanykh/marksman
-        marksman # Markdown LSP (overlay: GitHub バイナリ、.NET ビルド問題回避)
+        # https://github.com/Feel-ix-343/markdown-oxide
+        markdown-oxide # Markdown PKM LSP (Obsidian互換、バックリンク/デイリーノート)
 
         # https://github.com/atusy/kakehashi
         kakehashi # Tree-sitter Language Server (overlay)
@@ -496,6 +496,7 @@ in {
         ".config/fresh".source = ../../.config/fresh;
         ".config/git-graph".source = ../../.config/git-graph;
         ".config/gomi".source = ../../.config/gomi;
+        ".config/moxide".source = ../../.config/moxide;
         ".config/ov".source = ../../.config/ov;
         ".config/pg".source = ../../.config/pg;
         ".config/.ripgreprc".source = ../../.config/.ripgreprc;

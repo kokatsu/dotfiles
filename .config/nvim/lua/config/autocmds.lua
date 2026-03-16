@@ -264,6 +264,71 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
   end,
 })
 
+-- Daily note コマンド (markdown-oxide LSP / フォールバック: 直接ファイルを開く)
+do
+  local lsp_commands = { today = true, tomorrow = true, yesterday = true }
+
+  local function daily(input)
+    if not input or input == '' then
+      input = 'today'
+    end
+
+    -- markdown-oxide の jump コマンドは today/tomorrow/yesterday のみ対応
+    local clients = vim.lsp.get_clients({ name = 'markdown_oxide' })
+    if #clients > 0 and lsp_commands[input] then
+      clients[1]:exec_cmd({
+        title = ('Markdown-Oxide-%s'):format(input),
+        command = 'jump',
+        arguments = { input },
+      }, { bufnr = vim.api.nvim_get_current_buf() })
+      return
+    end
+
+    -- LSP未起動時 or 数値オフセット: パスを直接計算して開く
+    local time = os.time()
+    if input == 'tomorrow' then
+      time = time + 86400
+    elseif input == 'yesterday' then
+      time = time - 86400
+    elseif input:match('^[+-]?%d+$') then
+      time = time + tonumber(input) * 86400
+    elseif input ~= 'today' then
+      vim.notify('Invalid input: ' .. input, vim.log.levels.WARN)
+      return
+    end
+
+    local git_root = vim.trim(vim.fn.system('git rev-parse --show-toplevel'))
+    if vim.v.shell_error ~= 0 then
+      vim.notify('Not in a git repository', vim.log.levels.ERROR)
+      return
+    end
+
+    local path = git_root .. '/.kokatsu/daily/' .. os.date('%Y/%m/%Y-%m-%d', time) .. '.md'
+    vim.fn.mkdir(vim.fn.fnamemodify(path, ':h'), 'p')
+    if vim.fn.filereadable(path) == 0 then
+      local f = io.open(path, 'w')
+      if f then
+        f:write('# ' .. os.date('%Y-%m-%d', time) .. '\n')
+        f:close()
+      end
+    end
+    vim.cmd.edit(path)
+  end
+
+  vim.api.nvim_create_user_command('Daily', function(args)
+    daily(args.args)
+  end, { desc = 'Open daily note', nargs = '*' })
+  vim.api.nvim_create_user_command('Today', function()
+    daily('today')
+  end, { desc = "Open today's daily note" })
+  vim.api.nvim_create_user_command('Tomorrow', function()
+    daily('tomorrow')
+  end, { desc = "Open tomorrow's daily note" })
+  vim.api.nvim_create_user_command('Yesterday', function()
+    daily('yesterday')
+  end, { desc = "Open yesterday's daily note" })
+end
+
 -- :quit時に特殊ウィンドウ(quickfix, help等)だけが残る場合は一括で閉じる
 -- https://zenn.dev/vim_jp/articles/ff6cd224fab0c7
 vim.api.nvim_create_autocmd('QuitPre', {
