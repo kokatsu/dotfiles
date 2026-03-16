@@ -114,10 +114,10 @@ in {
     pname = "octorus";
     version = "0.5.8";
     hashes = {
-      "aarch64-darwin" = "sha256-mP8LXcTPZExiuLLxfxyAB7gW7YGOX6Uh8pTO44ysT5s=";
-      "x86_64-darwin" = "sha256-i6NKmW0EV/Mppy3LALt12xA7fvV0zWH9KBSmg3VpYWM=";
-      "aarch64-linux" = "sha256-oLV2rp0PvEklSRDd+oOCNPYXhg8eLJ+ArjO07aO7mmA=";
-      "x86_64-linux" = "sha256-dP7y08c9l+MQQxSM7MUtlTZcocivhZzjVjY6dB+1vVk=";
+      "aarch64-darwin" = "sha256-+2NnSehxPVO8xJgcZgvyAGbGtNOu+QSjHgpbJT8oxys=";
+      "x86_64-darwin" = "sha256-dcZqsa0ngvLcTnc4Slf7zEM8aVnf+wX/vYYBwT+xTMg=";
+      "aarch64-linux" = "sha256-Nj4RbYdgCe7SWU+WJziMEXW2VAxxczPN2ljypJysht4=";
+      "x86_64-linux" = "sha256-jSM62QZgbBPIxzKuAVcgmHfaLPSJAC/0X1+xFQALfRE=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
@@ -141,10 +141,10 @@ in {
     pname = "biome";
     version = "2.4.7";
     hashes = {
-      "aarch64-darwin" = "sha256-hFKxF18pe2nFtx/jvQRLOBp4yBLXwPQ3Y4/LOjJZc8k=";
-      "x86_64-darwin" = "sha256-Fp8/MdG9i+CfGE7KVRhOcdBEnvV8eepW0CAjWHCUMfs=";
-      "aarch64-linux" = "sha256-LaC40Cjnf3eJAKyE4dRLvHAzLan/2uPsOqBDVfM5+no=";
-      "x86_64-linux" = "sha256-a8GS8fCzSVRDRy2VvU2/yTcsF/esUSVtY1GSylJdpZ0=";
+      "aarch64-darwin" = "sha256-xziDa44xrCV4XmUd7qsP0PJk80VcrVCRtO4KdPnx9Ao=";
+      "x86_64-darwin" = "sha256-AeRd80asKC2/iSqnmy4i0iwsHcwVqLbElGlLkNIN41A=";
+      "aarch64-linux" = "sha256-vEdso4TgDjqLhlA61JQXa8ZQY8Gp51ftTcMB0jOZTM0=";
+      "x86_64-linux" = "sha256-qb1AYSaSFMlltGiGfBCYmW1rGyULfizqfQslopsN4rA=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
@@ -167,10 +167,10 @@ in {
     pname = "github-copilot-cli";
     version = "1.0.5";
     hashes = {
-      "aarch64-darwin" = "sha256-ExxjK4oWxp2WlP9go9iaz5oBC99/D8KL/gqE+m4bHXk=";
-      "x86_64-darwin" = "sha256-OHdWwzPzB5jAWknbl4PBkGJ+clhfJlKvdrHOyxRZOpg=";
-      "aarch64-linux" = "sha256-D/oAMzfZ5Kq5uJpMcqRNfujX0ipHnNmWLNiwdZeSBlc=";
-      "x86_64-linux" = "sha256-fMYmE/Q3NHAMOTrxEetV5hikQCVx5F6RzSFPF8fmMts=";
+      "aarch64-darwin" = "sha256-ZcPnoFoH6dKoUyZ2FPtGXdQJ+lMxxrAViNYbdhF5ZR8=";
+      "x86_64-darwin" = "sha256-yobxnJG0/i4IEvKgj5VXDtvfk6WumZAbwnJ1wlX5ly4=";
+      "aarch64-linux" = "sha256-StNqfi/C+PRYiJkFwYZGADUO00+QzZnUJBh8EaO8ujs=";
+      "x86_64-linux" = "sha256-Ok0LAj5BsnAxG7O4SvkBCXYfj/CwkyaCta/LPldCNQs=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
