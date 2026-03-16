@@ -141,10 +141,10 @@ in {
     pname = "biome";
     version = "2.4.7";
     hashes = {
-      "aarch64-darwin" = "sha256-hFKxF18pe2nFtx/jvQRLOBp4yBLXwPQ3Y4/LOjJZc8k=";
-      "x86_64-darwin" = "sha256-Fp8/MdG9i+CfGE7KVRhOcdBEnvV8eepW0CAjWHCUMfs=";
-      "aarch64-linux" = "sha256-LaC40Cjnf3eJAKyE4dRLvHAzLan/2uPsOqBDVfM5+no=";
-      "x86_64-linux" = "sha256-a8GS8fCzSVRDRy2VvU2/yTcsF/esUSVtY1GSylJdpZ0=";
+      "aarch64-darwin" = "sha256-xziDa44xrCV4XmUd7qsP0PJk80VcrVCRtO4KdPnx9Ao=";
+      "x86_64-darwin" = "sha256-AeRd80asKC2/iSqnmy4i0iwsHcwVqLbElGlLkNIN41A=";
+      "aarch64-linux" = "sha256-vEdso4TgDjqLhlA61JQXa8ZQY8Gp51ftTcMB0jOZTM0=";
+      "x86_64-linux" = "sha256-qb1AYSaSFMlltGiGfBCYmW1rGyULfizqfQslopsN4rA=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
