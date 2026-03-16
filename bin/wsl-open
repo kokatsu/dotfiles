@@ -1,0 +1,5 @@
+#!/bin/bash
+# Open URLs/files in Windows default application from WSL
+# Replaces wslview to avoid PowerShell Constrained Language Mode errors
+[ -z "$1" ] && exit 1
+cmd.exe /c start "${1//&/^&}" 2>/dev/null
