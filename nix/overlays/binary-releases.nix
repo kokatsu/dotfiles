@@ -167,10 +167,10 @@ in {
     pname = "github-copilot-cli";
     version = "1.0.5";
     hashes = {
-      "aarch64-darwin" = "sha256-ExxjK4oWxp2WlP9go9iaz5oBC99/D8KL/gqE+m4bHXk=";
-      "x86_64-darwin" = "sha256-OHdWwzPzB5jAWknbl4PBkGJ+clhfJlKvdrHOyxRZOpg=";
-      "aarch64-linux" = "sha256-D/oAMzfZ5Kq5uJpMcqRNfujX0ipHnNmWLNiwdZeSBlc=";
-      "x86_64-linux" = "sha256-fMYmE/Q3NHAMOTrxEetV5hikQCVx5F6RzSFPF8fmMts=";
+      "aarch64-darwin" = "sha256-ZcPnoFoH6dKoUyZ2FPtGXdQJ+lMxxrAViNYbdhF5ZR8=";
+      "x86_64-darwin" = "sha256-yobxnJG0/i4IEvKgj5VXDtvfk6WumZAbwnJ1wlX5ly4=";
+      "aarch64-linux" = "sha256-StNqfi/C+PRYiJkFwYZGADUO00+QzZnUJBh8EaO8ujs=";
+      "x86_64-linux" = "sha256-Ok0LAj5BsnAxG7O4SvkBCXYfj/CwkyaCta/LPldCNQs=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
