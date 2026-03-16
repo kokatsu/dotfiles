@@ -48,15 +48,6 @@
       extractVersion: '^v?(?<version>.*)$',
     },
     {
-      matchDatasources: [
-        'github-releases',
-      ],
-      matchDepNames: [
-        'biomejs/biome',
-      ],
-      extractVersion: '^@biomejs/biome@(?<version>.*)$',
-    },
-    {
       matchManagers: [
         'github-actions',
       ],

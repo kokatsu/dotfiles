@@ -2,31 +2,6 @@ let
   lib = import ./lib.nix;
   inherit (lib) mkBinaryRelease;
 in {
-  # marksman - Markdown LSP (binary release)
-  # nixpkgs の marksman は .NET 依存で Swift ビルド失敗するため GitHub バイナリを使用
-  # Renovate: datasource=github-releases depName=artempyanykh/marksman
-  marksman-binary = mkBinaryRelease rec {
-    pname = "marksman";
-    version = "2025-12-13";
-    hashes = {
-      "aarch64-darwin" = "sha256-7JSfQwwYZ5BXmDvNiiT5VVDt6iqFX8BAswfaZ8ePCYk=";
-      "x86_64-darwin" = "sha256-7JSfQwwYZ5BXmDvNiiT5VVDt6iqFX8BAswfaZ8ePCYk=";
-      "aarch64-linux" = "sha256-X8vETHw2brLD8LcnDX2RKrofnCaod1sz7X0ydMUrOqA=";
-      "x86_64-linux" = "sha256-1K9buN6h620jWhK3UTZW21FotG1AfSbnDl9o6RQ84G0=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "macos";
-      "x86_64-darwin" = "macos";
-      "aarch64-linux" = "linux-arm64";
-      "x86_64-linux" = "linux-x64";
-    };
-    url = platform: "https://github.com/artempyanykh/marksman/releases/download/${version}/marksman-${platform}";
-    meta = {
-      description = "Markdown LSP server";
-      homepage = "https://github.com/artempyanykh/marksman";
-    };
-  };
-
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = mkBinaryRelease rec {
@@ -131,61 +106,6 @@ in {
     meta = {
       description = "TUI tool for GitHub PR review with Vim-style keybindings";
       homepage = "https://github.com/ushironoko/octorus";
-    };
-  };
-
-  # biome - A toolchain for web projects (formatter + linter)
-  # nixpkgs の更新が遅いため overlay でバージョン管理
-  # Renovate: datasource=github-releases depName=biomejs/biome
-  biome = mkBinaryRelease rec {
-    pname = "biome";
-    version = "2.4.6";
-    hashes = {
-      "aarch64-darwin" = "sha256-hFKxF18pe2nFtx/jvQRLOBp4yBLXwPQ3Y4/LOjJZc8k=";
-      "x86_64-darwin" = "sha256-Fp8/MdG9i+CfGE7KVRhOcdBEnvV8eepW0CAjWHCUMfs=";
-      "aarch64-linux" = "sha256-LaC40Cjnf3eJAKyE4dRLvHAzLan/2uPsOqBDVfM5+no=";
-      "x86_64-linux" = "sha256-a8GS8fCzSVRDRy2VvU2/yTcsF/esUSVtY1GSylJdpZ0=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "darwin-arm64";
-      "x86_64-darwin" = "darwin-x64";
-      "aarch64-linux" = "linux-arm64";
-      "x86_64-linux" = "linux-x64";
-    };
-    url = platform: "https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${version}/biome-${platform}";
-    meta = {
-      description = "A toolchain for web projects (formatter + linter)";
-      homepage = "https://github.com/biomejs/biome";
-    };
-  };
-
-  # copilot - GitHub Copilot CLI
-  # nixpkgs の更新が遅いため overlay でバージョン管理
-  # Uses pre-built static binaries from npm platform packages
-  # Renovate: datasource=npm depName=@github/copilot
-  copilot = mkBinaryRelease rec {
-    pname = "github-copilot-cli";
-    version = "1.0.4";
-    hashes = {
-      "aarch64-darwin" = "sha256-ExxjK4oWxp2WlP9go9iaz5oBC99/D8KL/gqE+m4bHXk=";
-      "x86_64-darwin" = "sha256-OHdWwzPzB5jAWknbl4PBkGJ+clhfJlKvdrHOyxRZOpg=";
-      "aarch64-linux" = "sha256-D/oAMzfZ5Kq5uJpMcqRNfujX0ipHnNmWLNiwdZeSBlc=";
-      "x86_64-linux" = "sha256-fMYmE/Q3NHAMOTrxEetV5hikQCVx5F6RzSFPF8fmMts=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "darwin-arm64";
-      "x86_64-darwin" = "darwin-x64";
-      "aarch64-linux" = "linux-arm64";
-      "x86_64-linux" = "linux-x64";
-    };
-    url = platform: "https://registry.npmjs.org/@github/copilot-${platform}/-/copilot-${platform}-${version}.tgz";
-    format = "tgz";
-    binName = "copilot";
-    binPath = "source/copilot";
-    meta = {
-      description = "GitHub Copilot CLI";
-      homepage = "https://github.com/github/copilot-cli";
-      license = "unfree";
     };
   };
 }
