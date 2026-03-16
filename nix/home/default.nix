@@ -244,6 +244,8 @@ in {
         stylua # Lua formatter
         # https://github.com/Kampfkarren/selene
         selene # Lua linter
+        # https://github.com/lunarmodules/luacheck
+        luaPackages.luacheck # Lua linter (.luacheckrc 用)
         # https://github.com/nrslib/takt
         takt # AI Agent オーケストレーション (overlay)
         # https://github.com/textlint/textlint
