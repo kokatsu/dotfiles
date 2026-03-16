@@ -91,13 +91,10 @@
       customOverlays.ccusage
       customOverlays.daily
       customOverlays.claude-code
-      customOverlays.codex
-      customOverlays.copilot
       customOverlays.cssmodules-language-server
       customOverlays.deck
       customOverlays.git-graph-fork
       customOverlays.kakehashi
-      customOverlays.marksman-binary
       customOverlays.octorus
       customOverlays.plotly-test-fix
       customOverlays.playwright-browsers-fix

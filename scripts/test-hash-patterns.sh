@@ -34,9 +34,7 @@ fail() {
 # hash_type: "platform" = per-platform hashes, "single" = hash = "...", "npm" = npmDepsHash, "both" = hash + npmDepsHash, "vendor" = hash + vendorHash
 PACKAGES=(
   'termframe|binary-releases.nix|termframe = mkBinaryRelease|# Renovate:.*depName=.*termframe|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'marksman-binary|binary-releases.nix|marksman-binary = mkBinaryRelease|# Renovate:.*depName=.*marksman|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'claude-code|binary-releases.nix|# Claude Code - agentic coding tool|# Renovate:.*depName=claude-code|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'copilot|binary-releases.nix|copilot = mkBinaryRelease|# Renovate:.*depName=@github/copilot|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'deck|standalone.nix|deck = _final: prev:|# Renovate:.*depName=.*deck|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'octorus|binary-releases.nix|octorus = mkBinaryRelease|# Renovate:.*depName=.*octorus|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'kakehashi|binary-releases.nix|kakehashi = mkBinaryRelease|# Renovate:.*depName=.*kakehashi|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
@@ -144,8 +142,6 @@ DUMMY_HASH="sha256-TESTDUMMYHASH000000000000000000000000000000="
 # 各パッケージでダミーハッシュに置換し、反映されたか確認
 DRY_RUN_PACKAGES=(
   'termframe|binary-releases.nix|termframe = mkBinaryRelease|aarch64-darwin'
-  'marksman-binary|binary-releases.nix|marksman-binary = mkBinaryRelease|aarch64-darwin'
-  'copilot|binary-releases.nix|copilot = mkBinaryRelease|aarch64-darwin'
   'deck|standalone.nix|deck = _final: prev:|aarch64-darwin'
   'octorus|binary-releases.nix|octorus = mkBinaryRelease|aarch64-darwin'
   'kakehashi|binary-releases.nix|kakehashi = mkBinaryRelease|aarch64-darwin'
