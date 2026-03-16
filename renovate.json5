@@ -38,7 +38,6 @@
       matchFileNames: [
         'nix/overlays/*.nix',
       ],
-      groupName: 'nix overlay packages',
       semanticCommitType: 'build',
       semanticCommitScope: 'deps',
     },

@@ -14,7 +14,11 @@ export default defineConfig(({ env }) => {
     { name: "fd", keyword: "fd", snippet: "fd --hidden" },
     { name: "eza", keyword: "e", snippet: "eza --icons --git" },
     { name: "eza -a", keyword: "ea", snippet: "eza -a --icons --git" },
-    { name: "eza -aahl", keyword: "ee", snippet: "eza -aahl --icons --git" },
+    {
+      name: "eza -aahl",
+      keyword: "ee",
+      snippet: "eza -aahl --icons --git --time-style='+%Y-%m-%d %H:%M:%S'",
+    },
     { name: "lazydocker", keyword: "lzd", snippet: "lazydocker" },
     {
       name: "git-graph",
