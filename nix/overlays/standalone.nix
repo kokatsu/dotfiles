@@ -53,10 +53,10 @@
 
       src = prev.fetchurl {
         url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-igvFdqWsf185aXsCXxiudVWJprWMq7PnmLxKaF/5Kzk=";
+        hash = "sha256-r77rXmiIe+HaDrOrmN/xY8O9jOKuyXg6gpkcQt/TMD8=";
       };
 
-      npmDepsHash = "sha256-hXZI5rYUfWvt4abzoVxiLdgd/z49sfithWGh1GqKEN0=";
+      npmDepsHash = "sha256-IlVXoCGjKVyured9B7moeW7K58Z5lswfnxSBVqMecEE=";
       dontNpmBuild = true;
       npmPackFlags = ["--ignore-scripts"];
       npmFlags = ["--ignore-scripts" "--legacy-peer-deps"];
