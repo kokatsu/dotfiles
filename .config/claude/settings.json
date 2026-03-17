@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.command' | grep -qE '\\brm\\b'; then echo 'Use gomi instead of rm' >&2; exit 2; fi"
+            "command": "~/.config/claude/hooks/check-banned-commands.sh"
           }
         ]
       },
