@@ -1,0 +1,3 @@
+[
+  { "pattern": "\\brm\\b", "message": "Use gomi instead of rm" }
+]

@@ -479,6 +479,11 @@ in {
           source = ../../.config/claude/hooks/instructions-tracker.ts;
           executable = true;
         };
+        ".config/claude/hooks/banned-commands.json".source = ../../.config/claude/hooks/banned-commands.json;
+        ".config/claude/hooks/check-banned-commands.sh" = {
+          source = ../../.config/claude/hooks/check-banned-commands.sh;
+          executable = true;
+        };
         ".config/claude/scripts/cc-metrics.ts" = {
           source = ../../.config/claude/scripts/cc-metrics.ts;
           executable = true;

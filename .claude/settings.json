@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.file_path // empty'); case \"$FILE\" in \"$HOME\"/.config/*|\"$HOME\"/.claude/*) echo \"Do not edit Home Manager managed paths directly. Edit the corresponding file in the repository's .config/ directory instead.\" >&2; exit 2;; esac"
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); case \"$FILE\" in \"$HOME\"/.config/*|\"$HOME\"/.claude/*) echo \"Do not edit Home Manager managed paths directly. Edit the corresponding file in the repository's .config/ directory instead.\" >&2; exit 2;; esac"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r '.file_path // .file_path // empty'); EXT=\"${FILE##*.}\"; case \"$EXT\" in nix) alejandra -q \"$FILE\" ;; lua) stylua \"$FILE\" ;; js|ts|json|jsonc) biome check --write \"$FILE\" 2>/dev/null ;; yaml|yml) yamlfmt \"$FILE\" ;; esac; exit 0"
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | jq -r '.tool_input.file_path // empty'); EXT=\"${FILE##*.}\"; case \"$EXT\" in nix) alejandra -q \"$FILE\" ;; lua) stylua \"$FILE\" ;; js|ts|json|jsonc) biome check --write \"$FILE\" 2>/dev/null ;; yaml|yml) yamlfmt \"$FILE\" ;; esac; exit 0"
           }
         ]
       }
