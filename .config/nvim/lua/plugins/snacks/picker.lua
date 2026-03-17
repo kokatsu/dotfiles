@@ -38,6 +38,14 @@ M.opts = {
   -- https://www.reddit.com/r/neovim/comments/1kbqsdc/snacks_explorer_preview_to_the_right/
   sources = {
     explorer = explorer.config,
+    grep = {
+      formatters = {
+        file = {
+          truncate = 'left',
+          min_width = 80,
+        },
+      },
+    },
   },
 }
 
