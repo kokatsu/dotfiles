@@ -1,10 +1,44 @@
 ---@type vim.lsp.Config
 local vue_ls_config = {
+  on_init = function(client)
+    ---@param _ lsp.ResponseError
+    ---@param result any
+    ---@param context lsp.HandlerContext
+    local function typescriptHandler(_, result, context)
+      local ts_client = vim.lsp.get_clients({ bufnr = context.bufnr, name = 'ts_ls' })[1]
+        or vim.lsp.get_clients({ bufnr = context.bufnr, name = 'vtsls' })[1]
+        or vim.lsp.get_clients({ bufnr = context.bufnr, name = 'typescript-tools' })[1]
+
+      if not ts_client then
+        -- typescript-tools の起動を待つ（最大5秒）
+        vim.defer_fn(function()
+          typescriptHandler(_, result, context)
+        end, 200)
+        return
+      end
+
+      local param = unpack(result)
+      local id, command, payload = unpack(param)
+      ts_client:exec_cmd({
+        title = 'vue_request_forward',
+        command = 'typescript.tsserverRequest',
+        arguments = {
+          command,
+          payload,
+        },
+      }, { bufnr = context.bufnr }, function(_, r)
+        local response_data = { { id, r and r.body } }
+        ---@diagnostic disable-next-line: param-type-mismatch
+        client:notify('tsserver/response', response_data)
+      end)
+    end
+
+    client.handlers['tsserver/request'] = typescriptHandler
+  end,
   init_options = {
     vue = {
-      -- Hybrid Mode: vtsls が TypeScript を処理、vue_ls はテンプレートのみ
-      -- false にすると vue_ls が全て処理（より安定）
-      hybridMode = false,
+      -- Hybrid Mode: typescript-tools が TypeScript を処理、vue_ls はテンプレート/CSS のみ
+      hybridMode = true,
     },
     typescript = {
       -- プロジェクトの TypeScript を優先、なければグローバルを使用
