@@ -3,8 +3,13 @@
 
 # Local config files (e.g., CLAUDE.local.md, settings.local.json)
 .local
+*.local
 *.local.*
 
 # Claude Code session artifacts
 session-logs
 HANDOVER*.md
+
+# Environment variables
+.env
+.env.*
