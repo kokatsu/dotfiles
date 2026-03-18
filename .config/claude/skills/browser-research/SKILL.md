@@ -29,24 +29,17 @@ agent-browser close
 
 Ignore errors if no session exists.
 
-### 1. Open the page
+### 1. Open the page and get structure
+
+Use command chaining (`&&`) to combine related commands in a single bash call:
 
 ```bash
-agent-browser open "<URL>"
-agent-browser wait --load networkidle
+agent-browser open "<URL>" && agent-browser wait --load networkidle && agent-browser snapshot -c
 ```
 
 If `open` fails: verify the URL is well-formed, retry once. If it fails again, report the error to the user and stop.
 
-### 2. Get page structure
-
-```bash
-agent-browser snapshot --compact
-```
-
-Use `--compact` to remove empty structural elements for cleaner output.
-
-### 3. Get detailed content if needed
+### 2. Get detailed content if needed
 
 Get text from specific element:
 
@@ -60,42 +53,70 @@ Get full page text:
 agent-browser eval "document.body.innerText"
 ```
 
-### 4. Handle long pages
+Get page metadata:
+
+```bash
+agent-browser get title && agent-browser get url
+```
+
+Find elements by role, text, or label:
+
+```bash
+agent-browser find role heading
+agent-browser find text "keyword"
+```
+
+### 3. Handle long pages
 
 Scroll to load more content:
 
 ```bash
-agent-browser scroll down 500
-agent-browser snapshot --compact
+agent-browser scroll down 500 && agent-browser snapshot -c
 ```
 
-### 5. Navigate to linked pages
+Scroll a specific element into view:
+
+```bash
+agent-browser scrollintoview "@ref" && agent-browser snapshot -c
+```
+
+### 4. Navigate to linked pages
 
 Click a link:
 
 ```bash
-agent-browser click "@ref"
-agent-browser snapshot --compact
+agent-browser click "@ref" && agent-browser wait --load networkidle && agent-browser snapshot -c
 ```
 
 Go back:
 
 ```bash
-agent-browser back
+agent-browser back && agent-browser snapshot -c
 ```
 
-### 6. Research additional URLs
+### 5. Research additional URLs
 
-For each additional URL, cycle through:
+Use tabs to research multiple pages without losing previous context:
 
 ```bash
-agent-browser close
-agent-browser open "<next-URL>"
-agent-browser wait --load networkidle
-agent-browser snapshot --compact
+agent-browser tab new && agent-browser open "<next-URL>" && agent-browser wait --load networkidle && agent-browser snapshot -c
 ```
 
-Then repeat steps 3–5 as needed.
+Switch between tabs or close current tab:
+
+```bash
+agent-browser tab list
+agent-browser tab <n>
+agent-browser tab close
+```
+
+### 6. Save page as PDF (optional)
+
+When the user requests a saved copy:
+
+```bash
+agent-browser pdf "/path/to/output.pdf"
+```
 
 ### 7. Close when done
 
@@ -109,7 +130,7 @@ agent-browser close
 - **Read-only** — never submit forms, click buttons that trigger writes, or enter data.
 - **No guessing** — do not fabricate or assume page content; only report what `snapshot`/`get`/`eval` return.
 - **Authentication pages** — if a page requires login, report it immediately and stop. Do not attempt to authenticate.
-- **One session at a time** — never open a second page without closing the first.
+- **Prefer command chaining** — use `&&` to combine related commands in a single bash call for efficiency.
 
 ## Output Format
 
@@ -122,8 +143,21 @@ Always respond in Japanese. Summarize findings in the following format:
 
 When researching multiple URLs or when the user requests it, save results to a file using the Write tool. For a single-URL quick lookup, respond directly in chat.
 
-## Notes
+## Snapshot Options
 
-- `snapshot` additional options: `--interactive` (show interactive elements), `--depth <n>` (limit DOM depth), `--selector "<css>"` (scope to element)
-- `screenshot --full` captures the entire page; `screenshot --annotate` overlays element refs
-- `diff snapshot` compares current page state against the previous snapshot
+| Flag | Description |
+|------|-------------|
+| `-i`, `--interactive` | Show only interactive elements |
+| `-c`, `--compact` | Remove empty structural elements |
+| `-d <n>`, `--depth <n>` | Limit DOM tree depth |
+| `-s <sel>`, `--selector <sel>` | Scope to CSS selector |
+
+## Additional Useful Commands
+
+- `screenshot --full` — Capture full page screenshot
+- `screenshot --annotate` — Screenshot with numbered element labels
+- `diff snapshot` — Compare current page state against previous snapshot
+- `console` — View browser console logs (useful for debugging)
+- `errors` — View page errors
+- `get count "<sel>"` — Count matching elements
+- `--max-output <chars>` — Truncate output for large pages
