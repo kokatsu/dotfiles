@@ -1,3 +1,6 @@
 [
-  { "pattern": "\\brm\\b", "message": "Use gomi instead of rm" }
+  {
+    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*(sudo\\s+)?rm\\b",
+    "message": "Use gomi instead of rm"
+  }
 ]
