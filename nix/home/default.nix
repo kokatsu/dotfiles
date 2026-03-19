@@ -484,6 +484,10 @@ in {
           source = ../../.config/claude/hooks/check-banned-commands.sh;
           executable = true;
         };
+        ".config/claude/hooks/check-managed-paths.sh" = {
+          source = ../../.config/claude/hooks/check-managed-paths.sh;
+          executable = true;
+        };
         ".config/claude/scripts/cc-metrics.ts" = {
           source = ../../.config/claude/scripts/cc-metrics.ts;
           executable = true;
