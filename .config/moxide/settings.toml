@@ -1,2 +1,2 @@
-dailynote = "YYYY/MM/YYYY-MM-DD"
+dailynote = "%Y/%m/%Y-%m-%d"
 daily_notes_folder = ".kokatsu/daily"
