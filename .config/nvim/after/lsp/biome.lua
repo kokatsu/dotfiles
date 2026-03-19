@@ -11,6 +11,8 @@ local biome_config = {
     'vue',
   },
   root_markers = {
+    '.biome.json',
+    '.biome.jsonc',
     'biome.json',
     'biome.jsonc',
   },
