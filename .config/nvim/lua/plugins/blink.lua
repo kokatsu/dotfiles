@@ -36,12 +36,13 @@ return {
       ['<Up>'] = { 'select_prev', 'fallback' },
       ['<Down>'] = { 'select_next', 'fallback' },
       ['<Tab>'] = {
+        'accept',
         function()
           if vim.lsp.inline_completion.get() then
+            vim.lsp.inline_completion.accept()
             return true
           end
         end,
-        'accept',
         'fallback',
       },
     },
