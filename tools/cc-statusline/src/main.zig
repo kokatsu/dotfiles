@@ -2,6 +2,14 @@ const std = @import("std");
 const json = std.json;
 const mem = std.mem;
 const fs = std.fs;
+const output = @import("output.zig");
+
+const Theme = output.Theme;
+const StdinInfo = output.StdinInfo;
+const RateLimitWindow = output.RateLimitWindow;
+const ScanResult = output.ScanResult;
+const BlockInfo = output.BlockInfo;
+
 // ============================================================
 // Constants
 // ============================================================
@@ -15,55 +23,6 @@ const token_200k: i64 = 200_000;
 const cache_magic = [4]u8{ 'C', 'C', 'S', 'L' };
 const cache_ver: u32 = 4;
 const file_list_ttl_s: i64 = 300;
-const default_branch_max: usize = 24;
-const bar_width: u8 = 10;
-
-// Theme
-const Theme = struct {
-    model: []const u8,
-    green: []const u8,
-    yellow: []const u8,
-    red: []const u8,
-    dim: []const u8,
-    reset: []const u8 = "\x1b[0m",
-    bar_filled: []const u8 = "\xe2\x96\x88", // █ U+2588
-    bar_transition: []const u8 = "\xe2\x96\x93", // ▓ U+2593
-    bar_empty: []const u8 = "\xe2\x96\x91", // ░ U+2591
-};
-
-const theme_default = Theme{
-    .model = "\x1b[36m",
-    .green = "\x1b[32m",
-    .yellow = "\x1b[33m",
-    .red = "\x1b[31m",
-    .dim = "\x1b[2m",
-};
-
-const theme_catppuccin_mocha = Theme{
-    .model = "\x1b[38;2;137;180;250m", // Blue (#89b4fa)
-    .green = "\x1b[38;2;166;227;161m", // Green (#a6e3a1)
-    .yellow = "\x1b[38;2;249;226;175m", // Yellow (#f9e2af)
-    .red = "\x1b[38;2;243;139;168m", // Red (#f38ba8)
-    .dim = "\x1b[38;2;108;112;134m", // Overlay0 (#6c7086)
-};
-
-fn initTheme() Theme {
-    var theme = if (std.posix.getenv("CC_STATUSLINE_THEME")) |name| blk: {
-        if (mem.eql(u8, name, "catppuccin-mocha")) break :blk theme_catppuccin_mocha;
-        break :blk theme_default;
-    } else theme_default;
-
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_MODEL")) |v| theme.model = v;
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_GREEN")) |v| theme.green = v;
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_YELLOW")) |v| theme.yellow = v;
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_RED")) |v| theme.red = v;
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_DIM")) |v| theme.dim = v;
-    if (std.posix.getenv("CC_STATUSLINE_BAR_FILLED")) |v| theme.bar_filled = v;
-    if (std.posix.getenv("CC_STATUSLINE_BAR_TRANSITION")) |v| theme.bar_transition = v;
-    if (std.posix.getenv("CC_STATUSLINE_BAR_EMPTY")) |v| theme.bar_empty = v;
-
-    return theme;
-}
 
 // ============================================================
 // Types
@@ -80,32 +39,6 @@ const TranscriptEntry = struct {
     timestamp_ms: i64,
     model: []const u8,
     usage: TokenUsage,
-};
-
-const BlockInfo = struct {
-    start_ms: i64,
-    end_ms: i64,
-    cost: f64,
-    burn_rate_per_hr: f64,
-};
-
-const StdinInfo = struct {
-    model_id: ?[]const u8 = null,
-    model_name: ?[]const u8 = null,
-    session_cost: ?f64 = null,
-    session_duration_ms: ?i64 = null,
-    context_pct: ?f64 = null,
-    context_tokens: ?i64 = null,
-    lines_added: ?i64 = null,
-    lines_removed: ?i64 = null,
-    session_id: ?[]const u8 = null,
-    transcript_path: ?[]const u8 = null,
-    cwd: ?[]const u8 = null,
-};
-
-const ScanResult = struct {
-    today_cost: f64 = 0,
-    block: ?BlockInfo = null,
 };
 
 const CachedFileEntry = struct {
@@ -484,6 +417,18 @@ fn floorToHourMs(ms: i64) i64 {
 // Stdin Parsing
 // ============================================================
 
+fn parseRateLimitWindow(obj: json.ObjectMap) ?RateLimitWindow {
+    const pct_val = obj.get("used_percentage") orelse return null;
+    const pct = getF64(pct_val) orelse return null;
+    var window = RateLimitWindow{ .used_percentage = pct };
+    if (obj.get("resets_at")) |ra| {
+        if (getStr(ra)) |s| {
+            window.resets_at_ms = parseIso8601ToMs(s);
+        }
+    }
+    return window;
+}
+
 fn parseStdin(allocator: std.mem.Allocator, data: []const u8) StdinInfo {
     var info = StdinInfo{};
     if (data.len == 0) return info;
@@ -522,6 +467,23 @@ fn parseStdin(allocator: std.mem.Allocator, data: []const u8) StdinInfo {
     if (root.get("session_id")) |v| info.session_id = getStr(v);
     if (root.get("transcript_path")) |v| info.transcript_path = getStr(v);
     if (root.get("cwd")) |v| info.cwd = getStr(v);
+
+    // Parse rate_limits (added in Claude Code v2.1.80)
+    if (root.get("rate_limits")) |rl_val| {
+        if (getObj(rl_val)) |rl| {
+            if (rl.get("five_hour")) |fh_val| {
+                if (getObj(fh_val)) |fh| {
+                    info.rate_limit_5h = parseRateLimitWindow(fh);
+                }
+            }
+            if (rl.get("seven_day")) |sd_val| {
+                if (getObj(sd_val)) |sd| {
+                    info.rate_limit_7d = parseRateLimitWindow(sd);
+                }
+            }
+        }
+    }
+
     return info;
 }
 
@@ -571,23 +533,6 @@ fn readGitHead(buf: *[256]u8, path: []const u8) ?[]const u8 {
     // Detached HEAD: show short hash (first 7 chars)
     if (content.len >= 7) return content[0..7];
     return content;
-}
-
-fn getBranchMax() usize {
-    if (std.posix.getenv("CC_STATUSLINE_BRANCH_MAX")) |val| {
-        if (parseDecimal(val)) |v| {
-            if (v >= 4) return @intCast(v);
-        }
-    }
-    return default_branch_max;
-}
-
-fn truncateBranch(buf: *[256]u8, branch: []const u8, max_len: usize) []const u8 {
-    if (max_len < 4 or branch.len <= max_len) return branch;
-    const cut = max_len - 1;
-    @memcpy(buf[0..cut], branch[0..cut]);
-    @memcpy(buf[cut..][0..3], "\xe2\x80\xa6"); // U+2026 …
-    return buf[0 .. cut + 3];
 }
 
 // ============================================================
@@ -782,11 +727,7 @@ fn readU32(data: []const u8, pos: usize) u32 {
     return mem.readInt(u32, data[pos..][0..4], .little);
 }
 
-fn readCache(allocator: std.mem.Allocator, day_start_ms: i64) ?CacheResult {
-    var f = fs.openFileAbsolute(cache_path, .{}) catch return null;
-    defer f.close();
-    const content = f.readToEndAlloc(allocator, 64 * 1024 * 1024) catch return null;
-
+fn parseCacheBytes(allocator: std.mem.Allocator, content: []const u8, day_start_ms: i64) ?CacheResult {
     if (content.len < cache_header_size) return null;
 
     // Deserialize header fields manually
@@ -856,6 +797,13 @@ fn readCache(allocator: std.mem.Allocator, day_start_ms: i64) ?CacheResult {
     };
 }
 
+fn readCache(allocator: std.mem.Allocator, day_start_ms: i64) ?CacheResult {
+    var f = fs.openFileAbsolute(cache_path, .{}) catch return null;
+    defer f.close();
+    const content = f.readToEndAlloc(allocator, 64 * 1024 * 1024) catch return null;
+    return parseCacheBytes(allocator, content, day_start_ms);
+}
+
 fn writeI64(w: anytype, value: i64) !void {
     var buf: [8]u8 = undefined;
     mem.writeInt(u64, &buf, @bitCast(value), .little);
@@ -874,38 +822,38 @@ fn writeU32(w: anytype, value: u32) !void {
     try w.writeAll(&buf);
 }
 
+fn serializeCacheBytes(w: anytype, result: ScanResult, files: []const CachedFileEntry, now_s: i64, last_full_scan_s: i64, day_start_ms: i64) !void {
+    try w.writeAll(&cache_magic);
+    try writeU32(w, cache_ver);
+    try writeI64(w, now_s);
+    try writeI64(w, last_full_scan_s);
+    try writeF64(w, result.today_cost);
+    try w.writeAll(&[_]u8{if (result.block != null) 1 else 0});
+    try writeI64(w, if (result.block) |b| b.start_ms else 0);
+    try writeI64(w, if (result.block) |b| b.end_ms else 0);
+    try writeF64(w, if (result.block) |b| b.cost else 0);
+    try writeF64(w, if (result.block) |b| b.burn_rate_per_hr else 0);
+    try writeI64(w, day_start_ms);
+    try writeU32(w, @intCast(files.len));
+
+    for (files) |entry| {
+        var len_buf: [2]u8 = undefined;
+        mem.writeInt(u16, &len_buf, @intCast(entry.path.len), .little);
+        try w.writeAll(&len_buf);
+        try w.writeAll(entry.path);
+        try writeI64(w, entry.file_size);
+        try writeF64(w, entry.per_file_cost);
+        try writeI64(w, entry.parsed_size);
+    }
+}
+
 fn writeCache(result: ScanResult, files: []const CachedFileEntry, now_s: i64, last_full_scan_s: i64, day_start_ms: i64) void {
     const tmp_path = cache_path ++ ".tmp";
     var f = fs.createFileAbsolute(tmp_path, .{}) catch return;
     defer f.close();
     var wbuf: [8192]u8 = undefined;
     var writer = f.writer(&wbuf);
-    const w = &writer.interface;
-
-    // Serialize header fields manually
-    w.writeAll(&cache_magic) catch return;
-    writeU32(w, cache_ver) catch return;
-    writeI64(w, now_s) catch return;
-    writeI64(w, last_full_scan_s) catch return;
-    writeF64(w, result.today_cost) catch return;
-    w.writeAll(&[_]u8{if (result.block != null) 1 else 0}) catch return;
-    writeI64(w, if (result.block) |b| b.start_ms else 0) catch return;
-    writeI64(w, if (result.block) |b| b.end_ms else 0) catch return;
-    writeF64(w, if (result.block) |b| b.cost else 0) catch return;
-    writeF64(w, if (result.block) |b| b.burn_rate_per_hr else 0) catch return;
-    writeI64(w, day_start_ms) catch return;
-    writeU32(w, @intCast(files.len)) catch return;
-
-    for (files) |entry| {
-        var len_buf: [2]u8 = undefined;
-        mem.writeInt(u16, &len_buf, @intCast(entry.path.len), .little);
-        w.writeAll(&len_buf) catch return;
-        w.writeAll(entry.path) catch return;
-        writeI64(w, entry.file_size) catch return;
-        writeF64(w, entry.per_file_cost) catch return;
-        writeI64(w, entry.parsed_size) catch return;
-    }
-
+    serializeCacheBytes(&writer.interface, result, files, now_s, last_full_scan_s, day_start_ms) catch return;
     writer.interface.flush() catch return;
     fs.renameAbsolute(tmp_path, cache_path) catch {};
 }
@@ -943,7 +891,6 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
     var any_shrunk = false;
 
     for (cached.files) |entry| {
-        // NOTE: No statFileAbsolute in std; cwd().statFile works with absolute paths on POSIX
         const stat = fs.cwd().statFile(entry.path) catch {
             any_shrunk = true;
             break;
@@ -965,12 +912,10 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
     if (any_shrunk) return null;
 
     if (changed.count() == 0) {
-        // No changes — refresh TTL and return
         writeCache(cached.scan, cached.files, now_s, cached.last_full_scan_s, day_start_ms);
         return cached.scan;
     }
 
-    // Diff-parse each changed file individually (per-file cost attribution)
     var total_diff_cost: f64 = 0;
     var new_files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
     var global_seen = std.StringHashMapUnmanaged(void){};
@@ -1010,13 +955,11 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
         }
     }
 
-    // Recalculate today_cost from per-file costs
     var new_today_cost: f64 = 0;
     for (new_files.items) |entry| {
         new_today_cost += entry.per_file_cost;
     }
 
-    // Update block info
     const block = blk: {
         if (total_diff_cost == 0) break :blk cached.scan.block;
         if (cached.scan.block) |existing_block| {
@@ -1062,7 +1005,6 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
         var file_entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
         parseJsonlContent(tmp, allocator, content, &file_entries, &global_seen);
 
-        // Copy entries from tmp arena into parent allocator
         for (file_entries.items) |entry| {
             all_entries.append(allocator, .{
                 .timestamp_ms = entry.timestamp_ms,
@@ -1095,184 +1037,16 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
 }
 
 // ============================================================
-// Output
-// ============================================================
-
-fn formatCurrency(buf: []u8, value: f64) []const u8 {
-    if (value < 0) return "$0.00";
-    if (value > 0 and value < 0.01) {
-        return std.fmt.bufPrint(buf, "${d:.4}", .{value}) catch "$?.??";
-    }
-    return std.fmt.bufPrint(buf, "${d:.2}", .{value}) catch "$?.??";
-}
-
-fn contextColor(theme: Theme, pct: f64) []const u8 {
-    if (pct < 50.0) return theme.green;
-    if (pct < 75.0) return theme.yellow;
-    return theme.red;
-}
-
-fn buildProgressBar(buf: []u8, pct: f64, width: u8, bar_filled: []const u8, bar_transition: []const u8, bar_empty: []const u8) []const u8 {
-    const clamped = @max(@as(f64, 0), @min(@as(f64, 100), pct));
-    const width_f: f64 = @floatFromInt(width);
-    const filled_f = clamped * width_f / 100.0;
-    const filled: u8 = @intCast(@min(@as(u64, @intFromFloat(filled_f)), @as(u64, width)));
-    const frac = filled_f - @as(f64, @floatFromInt(filled));
-    const has_transition = frac > 0 and filled < width;
-    const empty = width - filled - if (has_transition) @as(u8, 1) else @as(u8, 0);
-    var pos: usize = 0;
-    var i: u8 = 0;
-    while (i < filled) : (i += 1) {
-        if (pos + bar_filled.len > buf.len) break;
-        @memcpy(buf[pos..][0..bar_filled.len], bar_filled);
-        pos += bar_filled.len;
-    }
-    if (has_transition) {
-        if (pos + bar_transition.len <= buf.len) {
-            @memcpy(buf[pos..][0..bar_transition.len], bar_transition);
-            pos += bar_transition.len;
-        }
-    }
-    i = 0;
-    while (i < empty) : (i += 1) {
-        if (pos + bar_empty.len > buf.len) break;
-        @memcpy(buf[pos..][0..bar_empty.len], bar_empty);
-        pos += bar_empty.len;
-    }
-    return buf[0..pos];
-}
-
-fn formatIntComma(buf: []u8, value: i64) []const u8 {
-    // Format integer with comma separators (e.g., 56000 -> "56,000")
-    var tmp: [32]u8 = undefined;
-    const digits = std.fmt.bufPrint(&tmp, "{d}", .{value}) catch return "?";
-    const len = digits.len;
-    if (len <= 3) return std.fmt.bufPrint(buf, "{s}", .{digits}) catch "?";
-
-    var pos: usize = 0;
-    const first_group = len % 3;
-    if (first_group > 0) {
-        for (digits[0..first_group]) |ch| {
-            if (pos >= buf.len) return "?";
-            buf[pos] = ch;
-            pos += 1;
-        }
-    }
-    var i: usize = first_group;
-    while (i < len) {
-        if (pos > 0) {
-            if (pos >= buf.len) return "?";
-            buf[pos] = ',';
-            pos += 1;
-        }
-        for (digits[i..][0..3]) |ch| {
-            if (pos >= buf.len) return "?";
-            buf[pos] = ch;
-            pos += 1;
-        }
-        i += 3;
-    }
-    return buf[0..pos];
-}
-
-fn formatDuration(buf: []u8, remaining_ms: i64) []const u8 {
-    if (remaining_ms <= 0) return "0m left";
-    const total_min = @divFloor(remaining_ms, @as(i64, 60000));
-    const hours = @divFloor(total_min, @as(i64, 60));
-    const mins = total_min - hours * 60;
-    if (hours > 0) {
-        return std.fmt.bufPrint(buf, "{d}h {d}m left", .{ hours, mins }) catch "??";
-    }
-    return std.fmt.bufPrint(buf, "{d}m left", .{mins}) catch "??";
-}
-
-fn printOutput(theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult, now_ms: i64) !void {
-    const stdout = fs.File{ .handle = std.posix.STDOUT_FILENO };
-    var buf: [4096]u8 = undefined;
-    var writer = stdout.writer(&buf);
-    const w = &writer.interface;
-
-    // === Line 1: Model + Branch + Context + Lines ===
-    const model_name = stdin_info.model_name orelse "Unknown";
-    try w.print("\xf0\x9f\xa4\x96 {s}{s}{s}", .{ theme.model, model_name, theme.reset });
-
-    // Git branch
-    if (stdin_info.cwd) |cwd| {
-        var branch_buf: [256]u8 = undefined;
-        if (getGitBranch(&branch_buf, cwd)) |branch| {
-            var trunc_buf: [256]u8 = undefined;
-            const display_branch = truncateBranch(&trunc_buf, branch, getBranchMax());
-            try w.print(" {s}|{s} \xf0\x9f\x8c\xbf {s}{s}{s}", .{ theme.dim, theme.reset, theme.green, display_branch, theme.reset });
-        }
-    }
-
-    // Context
-    if (stdin_info.context_pct) |pct| {
-        const color = contextColor(theme, pct);
-        var bar_buf: [128]u8 = undefined;
-        const bar = buildProgressBar(&bar_buf, pct, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
-        try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 {s}{s}{s} {s}{d:.0}%{s}", .{ theme.dim, theme.reset, color, bar, theme.reset, color, pct, theme.reset });
-    } else {
-        try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 N/A", .{ theme.dim, theme.reset });
-    }
-
-    try w.writeAll("\n");
-
-    // === Line 2: Cost + Block ===
-    var today_buf: [32]u8 = undefined;
-    if (scan) |s| {
-        try w.print("\xf0\x9f\x92\xb0 {s}{s}{s} today", .{ theme.yellow, formatCurrency(&today_buf, s.today_cost), theme.reset });
-    } else {
-        try w.writeAll("\xf0\x9f\x92\xb0 N/A today");
-    }
-
-    if (scan) |s| {
-        if (s.block) |block| {
-            var block_buf: [32]u8 = undefined;
-            var dur_buf: [64]u8 = undefined;
-            const remaining = block.end_ms - now_ms;
-            try w.print(" {s}|{s} {s}{s}{s} block", .{
-                theme.dim,
-                theme.reset,
-                theme.yellow,
-                formatCurrency(&block_buf, block.cost),
-                theme.reset,
-            });
-            const block_total_ms = block.end_ms - block.start_ms;
-            const remaining_pct: f64 = if (block_total_ms > 0)
-                @as(f64, @floatFromInt(@max(remaining, @as(i64, 0)))) / @as(f64, @floatFromInt(block_total_ms)) * 100.0
-            else
-                0;
-            const bar_pct = if (remaining_pct > 0) @max(remaining_pct, 100.0 / @as(f64, @floatFromInt(bar_width))) else @as(f64, 0);
-            const block_bar_color = if (remaining_pct >= 50.0) theme.green else if (remaining_pct >= 20.0) theme.yellow else theme.red;
-            var block_bar_buf: [128]u8 = undefined;
-            const block_bar = buildProgressBar(&block_bar_buf, bar_pct, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
-            try w.print(" {s}{s}{s} {s}", .{ block_bar_color, block_bar, theme.reset, formatDuration(&dur_buf, remaining) });
-            var rate_buf: [32]u8 = undefined;
-            try w.print(" \xf0\x9f\x94\xa5 {s}{s}{s} {s}/h{s}", .{ theme.yellow, formatCurrency(&rate_buf, block.burn_rate_per_hr), theme.reset, theme.dim, theme.reset });
-        }
-    }
-
-    try w.writeAll("\n");
-    try w.flush();
-}
-
-fn printFallback() void {
-    const stdout = fs.File{ .handle = std.posix.STDOUT_FILENO };
-    var buf: [256]u8 = undefined;
-    var writer = stdout.writer(&buf);
-    const w = &writer.interface;
-    w.writeAll("\xf0\x9f\xa4\x96 Unknown | \xf0\x9f\xa7\xa0 N/A\n\xf0\x9f\x92\xb0 N/A today\n") catch {};
-    w.flush() catch {};
-}
-
-// ============================================================
 // Main
 // ============================================================
 
 pub fn main() void {
     mainImpl() catch {
-        printFallback();
+        const stdout = fs.File{ .handle = std.posix.STDOUT_FILENO };
+        var buf: [256]u8 = undefined;
+        var writer = stdout.writer(&buf);
+        output.printFallback(&writer.interface);
+        writer.interface.flush() catch {};
     };
 }
 
@@ -1281,7 +1055,7 @@ fn mainImpl() !void {
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    const theme = initTheme();
+    const theme = output.initTheme();
 
     // Read stdin
     const stdin = fs.File{ .handle = std.posix.STDIN_FILENO };
@@ -1295,7 +1069,15 @@ fn mainImpl() !void {
     // Scan transcripts (or use cache)
     const scan = scanTranscripts(allocator, now_ms);
 
-    try printOutput(theme, stdin_info, scan, now_ms);
+    // Resolve git branch
+    var branch_buf: [256]u8 = undefined;
+    const git_branch: ?[]const u8 = if (stdin_info.cwd) |cwd| getGitBranch(&branch_buf, cwd) else null;
+
+    const stdout = fs.File{ .handle = std.posix.STDOUT_FILENO };
+    var buf: [4096]u8 = undefined;
+    var writer = stdout.writer(&buf);
+    try output.printOutput(&writer.interface, theme, stdin_info, scan, now_ms, git_branch);
+    try writer.interface.flush();
 }
 
 // ============================================================
@@ -1304,8 +1086,6 @@ fn mainImpl() !void {
 
 test "parseIso8601ToMs" {
     const ts1 = parseIso8601ToMs("2025-01-15T10:30:00Z").?;
-    // 2025-01-15 = 20103 days from epoch
-    // 10:30:00 = 37800 seconds
     const expected1: i64 = (daysFromCivil(2025, 1, 15) * 86400 + 10 * 3600 + 30 * 60) * 1000;
     try std.testing.expectEqual(expected1, ts1);
 
@@ -1317,26 +1097,19 @@ test "parseIso8601ToMs" {
 }
 
 test "parseDecimal overflow" {
-    // Normal values
     try std.testing.expectEqual(@as(?i64, 12345), parseDecimal("12345"));
     try std.testing.expectEqual(@as(?i64, 0), parseDecimal("0"));
-    // Overflow: a string of 20 nines exceeds i64 max
     try std.testing.expectEqual(@as(?i64, null), parseDecimal("99999999999999999999"));
-    // Non-digit
     try std.testing.expectEqual(@as(?i64, null), parseDecimal("12a3"));
-    // Empty
     try std.testing.expectEqual(@as(?i64, 0), parseDecimal(""));
 }
 
 test "daysFromCivil" {
-    // Unix epoch: 1970-01-01 = day 0
     try std.testing.expectEqual(@as(i64, 0), daysFromCivil(1970, 1, 1));
-    // 2000-01-01 = 10957 days
     try std.testing.expectEqual(@as(i64, 10957), daysFromCivil(2000, 1, 1));
 }
 
 test "floorToHourMs" {
-    // 1h 30m 15s in ms = 5415000
     const ms = 3600 * 1000 + 30 * 60 * 1000 + 15 * 1000;
     try std.testing.expectEqual(@as(i64, 3600 * 1000), floorToHourMs(ms));
     try std.testing.expectEqual(@as(i64, 0), floorToHourMs(0));
@@ -1364,7 +1137,6 @@ test "calculateEntryCost" {
         .cache_read_input_tokens = 0,
     };
     const cost = calculateEntryCost(pricing, usage);
-    // 1000 * 5e-6 + 500 * 25e-6 = 0.005 + 0.0125 = 0.0175
     try std.testing.expectApproxEqAbs(@as(f64, 0.0175), cost, 1e-10);
 }
 
@@ -1377,9 +1149,6 @@ test "calculateEntryCost tiered" {
         .cache_read_input_tokens = 0,
     };
     const cost = calculateEntryCost(pricing, usage);
-    // total_input = 250000 > 200K → all-or-nothing premium
-    // input: 250000 * 6e-6 = 1.5
-    // output: 100 * 22.5e-6 = 0.00225
     try std.testing.expectApproxEqAbs(@as(f64, 1.50225), cost, 1e-10);
 }
 
@@ -1392,11 +1161,6 @@ test "calculateEntryCost opus tiered with cache" {
         .cache_read_input_tokens = 100_000,
     };
     const cost = calculateEntryCost(pricing, usage);
-    // total_input = 50000 + 100000 + 100000 = 250000 > 200K → premium
-    // input: 50000 * 10e-6 = 0.5
-    // output: 10000 * 37.5e-6 = 0.375
-    // cache_creation: 100000 * 12.5e-6 = 1.25
-    // cache_read: 100000 * 1e-6 = 0.1
     try std.testing.expectApproxEqAbs(@as(f64, 2.225), cost, 1e-10);
 }
 
@@ -1409,40 +1173,27 @@ test "calculateEntryCost under 200k with cache uses base rate" {
         .cache_read_input_tokens = 60_000,
     };
     const cost = calculateEntryCost(pricing, usage);
-    // total_input = 50000 + 80000 + 60000 = 190000 <= 200K → base rate
-    // input: 50000 * 5e-6 = 0.25
-    // output: 5000 * 25e-6 = 0.125
-    // cache_creation: 80000 * 6.25e-6 = 0.5
-    // cache_read: 60000 * 5e-7 = 0.03
     try std.testing.expectApproxEqAbs(@as(f64, 0.905), cost, 1e-10);
 }
 
 test "parseTzif v2 fixed offset" {
-    // Minimal TZIFv2 file: UTC+9 (JST), no transitions
     const header_size = 44;
-
-    // V1 header: version '2', typecnt=1, charcnt=4, rest=0
     var v1_header: [header_size]u8 = .{0} ** header_size;
     @memcpy(v1_header[0..4], "TZif");
     v1_header[4] = '2';
-    // v1 typecnt=1 at offset 36
     v1_header[39] = 1;
-    // v1 charcnt=4 at offset 40
     v1_header[43] = 4;
 
-    // V1 data: 1 type entry (6 bytes) + 4 bytes charcnt = 10 bytes
     var v1_type: [6]u8 = .{0} ** 6;
-    std.mem.writeInt(u32, v1_type[0..4], @bitCast(@as(i32, 32400)), .big); // UTC+9
+    std.mem.writeInt(u32, v1_type[0..4], @bitCast(@as(i32, 32400)), .big);
     const v1_abbr = [4]u8{ 'J', 'S', 'T', 0 };
 
-    // V2 header: same structure
     var v2_header: [header_size]u8 = .{0} ** header_size;
     @memcpy(v2_header[0..4], "TZif");
     v2_header[4] = '2';
-    v2_header[39] = 1; // typecnt=1
-    v2_header[43] = 4; // charcnt=4
+    v2_header[39] = 1;
+    v2_header[43] = 4;
 
-    // V2 data: same type entry + abbr
     var buf: [header_size + 10 + header_size + 10]u8 = undefined;
     var pos: usize = 0;
     @memcpy(buf[pos..][0..header_size], &v1_header);
@@ -1471,10 +1222,8 @@ test "parseTzif invalid data" {
 }
 
 test "parseTzif reads /etc/localtime" {
-    // Verify we can read the system timezone file (if available)
     const now_s: i64 = @divFloor(std.time.milliTimestamp(), @as(i64, 1000));
     if (readTzifOffset(std.testing.allocator, "/etc/localtime", now_s)) |offset| {
-        // Offset should be within -14h to +14h
         try std.testing.expect(offset >= -14 * 3600 and offset <= 14 * 3600);
     }
 }
@@ -1482,11 +1231,8 @@ test "parseTzif reads /etc/localtime" {
 test "getLocalDayStartMs returns valid day boundary" {
     const now_ms = std.time.milliTimestamp();
     const day_start = getLocalDayStartMs(std.testing.allocator, now_ms);
-    // Day start should be before or equal to now
     try std.testing.expect(day_start <= now_ms);
-    // Day start should be within the last 24 hours
     try std.testing.expect(now_ms - day_start < 86400 * 1000);
-    // Day start should be aligned (offset from UTC midnight by timezone offset)
     const diff_ms = day_start - @divFloor(day_start, @as(i64, 1000)) * 1000;
     try std.testing.expectEqual(@as(i64, 0), diff_ms);
 }
@@ -1509,7 +1255,7 @@ test "identifyActiveBlock single entry" {
 
 test "identifyActiveBlock gap detection" {
     const base_ms: i64 = 1700000000 * 1000;
-    const gap = block_duration_ms + 1000; // exceeds block_duration
+    const gap = block_duration_ms + 1000;
     var entries = [_]TranscriptEntry{
         .{ .timestamp_ms = base_ms, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 1000, .output_tokens = 500 } },
         .{ .timestamp_ms = base_ms + gap, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 2000, .output_tokens = 1000 } },
@@ -1517,20 +1263,16 @@ test "identifyActiveBlock gap detection" {
     const now_ms = base_ms + gap + 60000;
     const block = identifyActiveBlock(&entries, now_ms);
     try std.testing.expect(block != null);
-    // Block should start at the second entry (after the gap)
     try std.testing.expect(block.?.start_ms >= base_ms + gap - 3600 * 1000);
 }
 
 test "computeCosts today entries only" {
-    // Use a fixed timestamp for "now" (2025-06-15 12:00:00 UTC)
     const now_ms: i64 = (daysFromCivil(2025, 6, 15) * 86400 + 12 * 3600) * 1000;
-    // Entry from today (2 hours ago)
     const today_entry = TranscriptEntry{
         .timestamp_ms = now_ms - 2 * 3600 * 1000,
         .model = "claude-sonnet-4-5-20250929",
         .usage = .{ .input_tokens = 1000, .output_tokens = 500 },
     };
-    // Entry from yesterday
     const old_entry = TranscriptEntry{
         .timestamp_ms = now_ms - 30 * 3600 * 1000,
         .model = "claude-sonnet-4-5-20250929",
@@ -1539,17 +1281,13 @@ test "computeCosts today entries only" {
 
     var entries = [_]TranscriptEntry{ old_entry, today_entry };
     const result = computeCosts(std.testing.allocator, &entries, now_ms);
-
-    // Today cost should only include the today entry
     const pricing = findPricing("claude-sonnet-4-5-20250929").?;
     const expected_today = calculateEntryCost(pricing, today_entry.usage);
     try std.testing.expectApproxEqAbs(expected_today, result.today_cost, 1e-10);
 }
 
 test "computeCosts old entries excluded from today" {
-    // Use a fixed timestamp for "now" (2025-06-15 12:00:00 UTC)
     const now_ms: i64 = (daysFromCivil(2025, 6, 15) * 86400 + 12 * 3600) * 1000;
-    // Only old entries (2 days ago)
     var entries = [_]TranscriptEntry{
         .{ .timestamp_ms = now_ms - 48 * 3600 * 1000, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 5000, .output_tokens = 2000 } },
     };
@@ -1613,75 +1351,46 @@ test "parseStdin empty input" {
     try std.testing.expectEqual(@as(?i64, null), info.context_tokens);
 }
 
-test "buildProgressBar default UTF-8 chars" {
-    var buf: [128]u8 = undefined;
-    const bar = buildProgressBar(&buf, 50.0, 10, "\xe2\x96\x88", "\xe2\x96\x93", "\xe2\x96\x91");
-    // 5 filled (3 bytes each) + 5 empty (3 bytes each) = 30 bytes
-    try std.testing.expectEqual(@as(usize, 30), bar.len);
-    // First char should be █ (0xe2 0x96 0x88)
-    try std.testing.expectEqualStrings("\xe2\x96\x88", bar[0..3]);
-    // Last char should be ░ (0xe2 0x96 0x91)
-    try std.testing.expectEqualStrings("\xe2\x96\x91", bar[27..30]);
+test "parseStdin rate_limits full" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const input =
+        \\{"rate_limits":{"five_hour":{"used_percentage":42.3,"resets_at":"2026-03-20T15:00:00Z"},"seven_day":{"used_percentage":85.7,"resets_at":"2026-03-24T00:00:00Z"}}}
+    ;
+    const info = parseStdin(arena.allocator(), input);
+
+    try std.testing.expect(info.rate_limit_5h != null);
+    try std.testing.expectApproxEqAbs(@as(f64, 42.3), info.rate_limit_5h.?.used_percentage, 1e-10);
+    try std.testing.expect(info.rate_limit_5h.?.resets_at_ms != null);
+
+    try std.testing.expect(info.rate_limit_7d != null);
+    try std.testing.expectApproxEqAbs(@as(f64, 85.7), info.rate_limit_7d.?.used_percentage, 1e-10);
+    try std.testing.expect(info.rate_limit_7d.?.resets_at_ms != null);
 }
 
-test "buildProgressBar single-byte chars" {
-    var buf: [128]u8 = undefined;
-    const bar = buildProgressBar(&buf, 75.0, 8, "#", "=", "-");
-    // 6 filled + 2 empty = 8 bytes
-    try std.testing.expectEqual(@as(usize, 8), bar.len);
-    try std.testing.expectEqualStrings("######--", bar);
+test "parseStdin rate_limits partial (5h only, no resets_at)" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const input =
+        \\{"rate_limits":{"five_hour":{"used_percentage":10.0}}}
+    ;
+    const info = parseStdin(arena.allocator(), input);
+
+    try std.testing.expect(info.rate_limit_5h != null);
+    try std.testing.expectApproxEqAbs(@as(f64, 10.0), info.rate_limit_5h.?.used_percentage, 1e-10);
+    try std.testing.expectEqual(@as(?i64, null), info.rate_limit_5h.?.resets_at_ms);
+    try std.testing.expectEqual(@as(?RateLimitWindow, null), info.rate_limit_7d);
 }
 
-test "buildProgressBar transition char" {
-    var buf: [128]u8 = undefined;
-    // 37.5% of 8 = 3.0 filled → no transition
-    const bar1 = buildProgressBar(&buf, 37.5, 8, "#", "=", "-");
-    try std.testing.expectEqualStrings("###-----", bar1);
-
-    // 40% of 8 = 3.2 filled → 3 filled + 1 transition + 4 empty
-    const bar2 = buildProgressBar(&buf, 40.0, 8, "#", "=", "-");
-    try std.testing.expectEqualStrings("###=----", bar2);
-}
-
-test "buildProgressBar 0% and 100%" {
-    var buf: [128]u8 = undefined;
-    const empty = buildProgressBar(&buf, 0.0, 4, "#", "=", "-");
-    try std.testing.expectEqualStrings("----", empty);
-
-    const full = buildProgressBar(&buf, 100.0, 4, "#", "=", "-");
-    try std.testing.expectEqualStrings("####", full);
-}
-
-test "truncateBranch short branch unchanged" {
-    var buf: [256]u8 = undefined;
-    const branch = "main";
-    const result = truncateBranch(&buf, branch, 24);
-    try std.testing.expectEqualStrings("main", result);
-}
-
-test "truncateBranch exact max unchanged" {
-    var buf: [256]u8 = undefined;
-    const branch = "feature/exactly-twentyfo"; // 24 chars
-    try std.testing.expectEqual(@as(usize, 24), branch.len);
-    const result = truncateBranch(&buf, branch, 24);
-    try std.testing.expectEqualStrings(branch, result);
-}
-
-test "truncateBranch long branch truncated" {
-    var buf: [256]u8 = undefined;
-    const branch = "feature/very-long-branch-name-that-overflows";
-    const result = truncateBranch(&buf, branch, 24);
-    // 23 chars + "…" (3 bytes UTF-8) = 26 bytes
-    try std.testing.expectEqual(@as(usize, 26), result.len);
-    try std.testing.expectEqualStrings("feature/very-long-branc\xe2\x80\xa6", result);
-}
-
-test "truncateBranch min max_len" {
-    var buf: [256]u8 = undefined;
-    const branch = "feature/something";
-    // max_len < 4 returns unchanged
-    const result = truncateBranch(&buf, branch, 3);
-    try std.testing.expectEqualStrings(branch, result);
+test "parseStdin no rate_limits" {
+    var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+    defer arena.deinit();
+    const input =
+        \\{"model":{"id":"claude-opus-4-6","display_name":"Opus"}}
+    ;
+    const info = parseStdin(arena.allocator(), input);
+    try std.testing.expectEqual(@as(?RateLimitWindow, null), info.rate_limit_5h);
+    try std.testing.expectEqual(@as(?RateLimitWindow, null), info.rate_limit_7d);
 }
 
 test "parseJsonlContent global dedup across files" {
@@ -1689,19 +1398,16 @@ test "parseJsonlContent global dedup across files" {
     defer arena.deinit();
     const alloc = arena.allocator();
 
-    // Shared seen map simulates global dedup across multiple files
     var global_seen = std.StringHashMapUnmanaged(void){};
 
     const line =
         \\{"timestamp":"2025-06-15T10:00:00Z","message":{"id":"msg_001","model":"claude-sonnet-4-5-20250929","usage":{"input_tokens":1000,"output_tokens":500}},"requestId":"req_001"}
     ;
 
-    // File 1: parse the entry
     var entries1: std.ArrayListUnmanaged(TranscriptEntry) = .{};
     parseJsonlContent(alloc, alloc, line, &entries1, &global_seen);
     try std.testing.expectEqual(@as(usize, 1), entries1.items.len);
 
-    // File 2: same entry should be deduplicated
     var entries2: std.ArrayListUnmanaged(TranscriptEntry) = .{};
     parseJsonlContent(alloc, alloc, line, &entries2, &global_seen);
     try std.testing.expectEqual(@as(usize, 0), entries2.items.len);
@@ -1714,7 +1420,6 @@ test "parseJsonlContent per-file dedup still works" {
 
     var seen = std.StringHashMapUnmanaged(void){};
 
-    // Two identical lines in the same file content
     const content =
         \\{"timestamp":"2025-06-15T10:00:00Z","message":{"id":"msg_001","model":"claude-sonnet-4-5-20250929","usage":{"input_tokens":1000,"output_tokens":500}},"requestId":"req_001"}
         \\
@@ -1733,7 +1438,6 @@ test "parseJsonlContent no dedup without ids" {
 
     var seen = std.StringHashMapUnmanaged(void){};
 
-    // Entries without message.id and requestId cannot be deduplicated
     const content =
         \\{"timestamp":"2025-06-15T10:00:00Z","message":{"model":"claude-sonnet-4-5-20250929","usage":{"input_tokens":1000,"output_tokens":500}}}
         \\
@@ -1745,12 +1449,102 @@ test "parseJsonlContent no dedup without ids" {
     try std.testing.expectEqual(@as(usize, 2), entries.items.len);
 }
 
-test "contextColor thresholds" {
-    const theme = theme_default;
-    try std.testing.expectEqualStrings(theme.green, contextColor(theme, 0.0));
-    try std.testing.expectEqualStrings(theme.green, contextColor(theme, 49.9));
-    try std.testing.expectEqualStrings(theme.yellow, contextColor(theme, 50.0));
-    try std.testing.expectEqualStrings(theme.yellow, contextColor(theme, 74.9));
-    try std.testing.expectEqualStrings(theme.red, contextColor(theme, 75.0));
-    try std.testing.expectEqualStrings(theme.red, contextColor(theme, 100.0));
+test "cache roundtrip with block" {
+    const Writer = std.io.Writer;
+    var aw: Writer.Allocating = .init(std.testing.allocator);
+    defer aw.deinit();
+
+    const scan = ScanResult{
+        .today_cost = 12.345,
+        .block = .{
+            .start_ms = 1000000,
+            .end_ms = 19000000,
+            .cost = 5.67,
+            .burn_rate_per_hr = 1.23,
+        },
+    };
+    const files = [_]CachedFileEntry{
+        .{ .path = "/tmp/test/file1.jsonl", .file_size = 4096, .per_file_cost = 3.21, .parsed_size = 4096 },
+        .{ .path = "/tmp/test/file2.jsonl", .file_size = 8192, .per_file_cost = 9.12, .parsed_size = 8000 },
+    };
+    const now_s: i64 = 1700000000;
+    const last_full_scan_s: i64 = 1699999900;
+    const day_start_ms: i64 = 1699920000000;
+
+    try serializeCacheBytes(&aw.writer, scan, &files, now_s, last_full_scan_s, day_start_ms);
+
+    const result = parseCacheBytes(std.testing.allocator, aw.writer.buffered(), day_start_ms) orelse
+        return error.TestUnexpectedResult;
+    defer {
+        for (result.files) |f| std.testing.allocator.free(f.path);
+        std.testing.allocator.free(result.files);
+    }
+
+    try std.testing.expectEqual(now_s, result.write_time_s);
+    try std.testing.expectEqual(last_full_scan_s, result.last_full_scan_s);
+    try std.testing.expectEqual(day_start_ms, result.day_start_ms);
+    try std.testing.expectApproxEqAbs(@as(f64, 12.345), result.scan.today_cost, 1e-10);
+
+    const block = result.scan.block orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(i64, 1000000), block.start_ms);
+    try std.testing.expectEqual(@as(i64, 19000000), block.end_ms);
+    try std.testing.expectApproxEqAbs(@as(f64, 5.67), block.cost, 1e-10);
+    try std.testing.expectApproxEqAbs(@as(f64, 1.23), block.burn_rate_per_hr, 1e-10);
+
+    try std.testing.expectEqual(@as(usize, 2), result.files.len);
+    try std.testing.expectEqualStrings("/tmp/test/file1.jsonl", result.files[0].path);
+    try std.testing.expectEqual(@as(i64, 4096), result.files[0].file_size);
+    try std.testing.expectApproxEqAbs(@as(f64, 3.21), result.files[0].per_file_cost, 1e-10);
+    try std.testing.expectEqual(@as(i64, 4096), result.files[0].parsed_size);
+    try std.testing.expectEqualStrings("/tmp/test/file2.jsonl", result.files[1].path);
+    try std.testing.expectEqual(@as(i64, 8192), result.files[1].file_size);
+    try std.testing.expectEqual(@as(i64, 8000), result.files[1].parsed_size);
+}
+
+test "cache roundtrip without block" {
+    const Writer = std.io.Writer;
+    var aw: Writer.Allocating = .init(std.testing.allocator);
+    defer aw.deinit();
+
+    const scan = ScanResult{ .today_cost = 0.50 };
+    const files = [_]CachedFileEntry{};
+    const day_start_ms: i64 = 1699920000000;
+
+    try serializeCacheBytes(&aw.writer, scan, &files, 100, 100, day_start_ms);
+
+    const result = parseCacheBytes(std.testing.allocator, aw.writer.buffered(), day_start_ms) orelse
+        return error.TestUnexpectedResult;
+    defer std.testing.allocator.free(result.files);
+
+    try std.testing.expectApproxEqAbs(@as(f64, 0.50), result.scan.today_cost, 1e-10);
+    try std.testing.expectEqual(@as(?BlockInfo, null), result.scan.block);
+    try std.testing.expectEqual(@as(usize, 0), result.files.len);
+}
+
+test "cache day boundary invalidation" {
+    const Writer = std.io.Writer;
+    var aw: Writer.Allocating = .init(std.testing.allocator);
+    defer aw.deinit();
+
+    const day_start_ms: i64 = 1699920000000;
+    try serializeCacheBytes(&aw.writer, ScanResult{}, &.{}, 100, 100, day_start_ms);
+
+    // Different day_start_ms should return null
+    const different_day: i64 = day_start_ms + 86400 * 1000;
+    try std.testing.expectEqual(@as(?CacheResult, null), parseCacheBytes(std.testing.allocator, aw.writer.buffered(), different_day));
+}
+
+test "cache invalid magic" {
+    var data: [cache_header_size]u8 = .{0} ** cache_header_size;
+    @memcpy(data[0..4], "NOPE");
+    try std.testing.expectEqual(@as(?CacheResult, null), parseCacheBytes(std.testing.allocator, &data, 0));
+}
+
+test "cache too short" {
+    const data = [_]u8{ 'C', 'C', 'S', 'L' };
+    try std.testing.expectEqual(@as(?CacheResult, null), parseCacheBytes(std.testing.allocator, &data, 0));
+}
+
+test {
+    _ = output;
 }
