@@ -33,12 +33,12 @@ in {
   # Renovate: datasource=github-releases depName=pamburus/termframe
   termframe = mkBinaryRelease rec {
     pname = "termframe";
-    version = "0.8.2";
+    version = "0.8.3";
     hashes = {
-      "aarch64-darwin" = "sha256-Xr9n8FszlTW1IsPqtem77bxykka9e71hhnQbbvSo4w4=";
-      "x86_64-darwin" = "sha256-4kLXVW1ebi6vlyGUpgHrvkt4uEXyUWmQgSJ8DAORSzI=";
-      "aarch64-linux" = "sha256-dvUoWd3HoVor2CVigIWAJcL4DeSXH8vM4M7dSOiAHck=";
-      "x86_64-linux" = "sha256-7ntrcjO0mNkC42TY742hcL119PV6ON6ENvkdtdEF3AI=";
+      "aarch64-darwin" = "sha256-/VIuBBdH+MDTRkFoy/0a1kmFWyIuEBGp9RNnU26YkXU=";
+      "x86_64-darwin" = "sha256-O4CGEP3IC8qhY9o9XyEee/wQE25eykUcaxyaSnNwkUs=";
+      "aarch64-linux" = "sha256-ErOVyg4HXTAjHIBYs13h5Fn3EJGiMZBKLvjXMTFC83I=";
+      "x86_64-linux" = "sha256-XGN10FwEEk06wtydfUvAXlccONtHxb+3A5PbIpongjw=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-arm64";
