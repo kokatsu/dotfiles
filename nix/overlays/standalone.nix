@@ -96,12 +96,12 @@
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=k1LoW/deck
   deck = _final: prev: let
-    version = "1.23.0";
+    version = "1.23.1";
     hashes = {
-      "aarch64-darwin" = "sha256-UcKJ4lwdyNi+h6bMbyEJhsdizI/x1cQU6mE1bTreF6I=";
-      "x86_64-darwin" = "sha256-KccUz9rrM0X0yyCDHNNfP/7IbGRu+JR5nC7n1pNoJ5E=";
-      "aarch64-linux" = "sha256-dBRTGxGgkEStG9nypMm/XSZB+Qiuktz7v87kJZxvSHw=";
-      "x86_64-linux" = "sha256-NfYJn0lq7zBw2Kr6cmOUYdGGoJlwfCzgAXFBSrp/2x8=";
+      "aarch64-darwin" = "sha256-+ot2Ur1X6RFxTy7vgPYqFR+WKotqNp+lTCmOLuKGBXE=";
+      "x86_64-darwin" = "sha256-l7vstvf8UZyDT5Hf4Irf5M3QtKVl7Zegg/ziw4IOFTs=";
+      "aarch64-linux" = "sha256-h+MdFTV4h17mHDBw613CGyMr0uBFdfJNzjfs7bfmE/A=";
+      "x86_64-linux" = "sha256-3fw6KzyNZeLvWzcq358oHvDrT7or3NRz6HhGfGJ5f5o=";
     };
     platformMap = {
       "aarch64-darwin" = {
