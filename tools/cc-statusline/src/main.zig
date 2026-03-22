@@ -691,7 +691,32 @@ fn identifyActiveBlock(entries: []TranscriptEntry, now_ms: i64) ?BlockInfo {
     };
 }
 
-fn computeCosts(allocator: std.mem.Allocator, entries: []TranscriptEntry, now_ms: i64) ScanResult {
+fn computeBlockFromWindow(entries: []const TranscriptEntry, window_start_ms: i64, window_end_ms: i64, now_ms: i64) ?BlockInfo {
+    var block_cost: f64 = 0;
+    var count: usize = 0;
+    for (entries) |entry| {
+        if (entry.timestamp_ms >= window_start_ms and entry.timestamp_ms <= window_end_ms) {
+            if (findPricing(entry.model)) |pricing| {
+                block_cost += calculateEntryCost(pricing, entry.usage);
+            }
+            count += 1;
+        }
+    }
+    if (count == 0) return null;
+
+    const elapsed_ms: i64 = @max(now_ms - window_start_ms, 60000);
+    const duration_min: f64 = @as(f64, @floatFromInt(elapsed_ms)) / 60000.0;
+    const burn_rate = block_cost / duration_min * 60.0;
+
+    return .{
+        .start_ms = window_start_ms,
+        .end_ms = window_end_ms,
+        .cost = block_cost,
+        .burn_rate_per_hr = burn_rate,
+    };
+}
+
+fn computeCosts(allocator: std.mem.Allocator, entries: []TranscriptEntry, now_ms: i64, resets_at_ms: ?i64) ScanResult {
     const today_start_ms = getLocalDayStartMs(allocator, now_ms);
     var today_cost: f64 = 0;
     for (entries) |entry| {
@@ -702,7 +727,13 @@ fn computeCosts(allocator: std.mem.Allocator, entries: []TranscriptEntry, now_ms
         }
     }
 
-    const block = identifyActiveBlock(entries, now_ms);
+    const block = if (resets_at_ms) |reset_ms| computeBlockFromWindow(
+        entries,
+        reset_ms - block_duration_ms,
+        reset_ms,
+        now_ms,
+    ) else identifyActiveBlock(entries, now_ms);
+
     return .{
         .today_cost = today_cost,
         .block = block,
@@ -862,7 +893,7 @@ fn writeCache(result: ScanResult, files: []const CachedFileEntry, now_s: i64, la
 // Scan Orchestration
 // ============================================================
 
-fn scanTranscripts(allocator: std.mem.Allocator, now_ms: i64) ?ScanResult {
+fn scanTranscripts(allocator: std.mem.Allocator, now_ms: i64, resets_at_ms: ?i64) ?ScanResult {
     const config_dir = getConfigDir(allocator) catch return null;
     const projects_path = std.fmt.allocPrint(allocator, "{s}/projects", .{config_dir}) catch return null;
     const now_s = @divFloor(now_ms, @as(i64, 1000));
@@ -875,18 +906,25 @@ fn scanTranscripts(allocator: std.mem.Allocator, now_ms: i64) ?ScanResult {
         }
         // TTL expired, but file list is still fresh — try stat-only diff
         if (now_s - cached.last_full_scan_s <= file_list_ttl_s and cached.files.len > 0) {
-            if (diffScan(allocator, cached, now_ms, now_s, day_start_ms)) |result| {
+            if (diffScan(allocator, cached, now_ms, now_s, day_start_ms, resets_at_ms)) |result| {
                 return result;
             }
         }
     }
 
-    return fullScan(allocator, projects_path, now_ms, now_s, day_start_ms);
+    return fullScan(allocator, projects_path, now_ms, now_s, day_start_ms, resets_at_ms);
 }
 
 /// Stat-only diff scan: check cached files for size changes, parse only new bytes.
 /// Returns null if any file shrank/disappeared (caller should fall back to full scan).
-fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_s: i64, day_start_ms: i64) ?ScanResult {
+fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_s: i64, day_start_ms: i64, resets_at_ms: ?i64) ?ScanResult {
+    // If resets_at changed since cache was written, the block window shifted — need full rescan
+    if (resets_at_ms) |reset_ms| {
+        if (cached.scan.block) |existing_block| {
+            if (existing_block.end_ms != reset_ms) return null;
+        }
+    }
+
     var changed: std.StringHashMapUnmanaged(CachedFileEntry) = .{};
     var any_shrunk = false;
 
@@ -985,7 +1023,7 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
     return result;
 }
 
-fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64, now_s: i64, day_start_ms: i64) ScanResult {
+fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64, now_s: i64, day_start_ms: i64, resets_at_ms: ?i64) ScanResult {
     const file_infos = collectTranscriptFiles(allocator, projects_path, now_ms);
     var all_entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
     var cache_files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
@@ -1030,7 +1068,7 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
         }) catch continue;
     }
 
-    const result = computeCosts(allocator, all_entries.items, now_ms);
+    const result = computeCosts(allocator, all_entries.items, now_ms, resets_at_ms);
     const cf = cache_files.toOwnedSlice(allocator) catch &.{};
     writeCache(result, cf, now_s, now_s, day_start_ms);
     return result;
@@ -1067,7 +1105,8 @@ fn mainImpl() !void {
     const now_ms = std.time.milliTimestamp();
 
     // Scan transcripts (or use cache)
-    const scan = scanTranscripts(allocator, now_ms);
+    const resets_at_ms: ?i64 = if (stdin_info.rate_limit_5h) |rl| rl.resets_at_ms else null;
+    const scan = scanTranscripts(allocator, now_ms, resets_at_ms);
 
     // Resolve git branch
     var branch_buf: [256]u8 = undefined;
@@ -1280,7 +1319,7 @@ test "computeCosts today entries only" {
     };
 
     var entries = [_]TranscriptEntry{ old_entry, today_entry };
-    const result = computeCosts(std.testing.allocator, &entries, now_ms);
+    const result = computeCosts(std.testing.allocator, &entries, now_ms, null);
     const pricing = findPricing("claude-sonnet-4-5-20250929").?;
     const expected_today = calculateEntryCost(pricing, today_entry.usage);
     try std.testing.expectApproxEqAbs(expected_today, result.today_cost, 1e-10);
@@ -1291,7 +1330,7 @@ test "computeCosts old entries excluded from today" {
     var entries = [_]TranscriptEntry{
         .{ .timestamp_ms = now_ms - 48 * 3600 * 1000, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 5000, .output_tokens = 2000 } },
     };
-    const result = computeCosts(std.testing.allocator, &entries, now_ms);
+    const result = computeCosts(std.testing.allocator, &entries, now_ms, null);
     try std.testing.expectApproxEqAbs(@as(f64, 0), result.today_cost, 1e-10);
 }
 
@@ -1543,6 +1582,66 @@ test "cache invalid magic" {
 test "cache too short" {
     const data = [_]u8{ 'C', 'C', 'S', 'L' };
     try std.testing.expectEqual(@as(?CacheResult, null), parseCacheBytes(std.testing.allocator, &data, 0));
+}
+
+test "computeBlockFromWindow entries within window" {
+    const window_start: i64 = 1700000000 * 1000;
+    const window_end: i64 = window_start + block_duration_ms;
+    const now_ms: i64 = window_start + 2 * 3600 * 1000; // 2h into window
+
+    const inside = TranscriptEntry{ .timestamp_ms = window_start + 60000, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 1000, .output_tokens = 500 } };
+    const outside = TranscriptEntry{ .timestamp_ms = window_start - 3600 * 1000, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 5000, .output_tokens = 2000 } };
+    var entries = [_]TranscriptEntry{ outside, inside };
+
+    const block = computeBlockFromWindow(&entries, window_start, window_end, now_ms);
+    try std.testing.expect(block != null);
+
+    const pricing = findPricing("claude-sonnet-4-5-20250929").?;
+    const expected_cost = calculateEntryCost(pricing, inside.usage);
+    try std.testing.expectApproxEqAbs(expected_cost, block.?.cost, 1e-10);
+    try std.testing.expectEqual(window_start, block.?.start_ms);
+    try std.testing.expectEqual(window_end, block.?.end_ms);
+    try std.testing.expect(block.?.burn_rate_per_hr > 0);
+}
+
+test "computeBlockFromWindow empty window" {
+    const window_start: i64 = 1700000000 * 1000;
+    const window_end: i64 = window_start + block_duration_ms;
+    const now_ms: i64 = window_start + 60000;
+
+    var entries = [_]TranscriptEntry{
+        .{ .timestamp_ms = window_start - 3600 * 1000, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 1000, .output_tokens = 500 } },
+    };
+    const block = computeBlockFromWindow(&entries, window_start, window_end, now_ms);
+    try std.testing.expectEqual(@as(?BlockInfo, null), block);
+}
+
+test "computeCosts with resets_at_ms uses window" {
+    const now_ms: i64 = (daysFromCivil(2025, 6, 15) * 86400 + 12 * 3600) * 1000;
+    const resets_at_ms: i64 = now_ms + 3 * 3600 * 1000; // resets 3h from now
+    const window_start = resets_at_ms - block_duration_ms; // started 2h ago
+
+    const in_window = TranscriptEntry{
+        .timestamp_ms = now_ms - 1 * 3600 * 1000, // 1h ago, within window
+        .model = "claude-sonnet-4-5-20250929",
+        .usage = .{ .input_tokens = 1000, .output_tokens = 500 },
+    };
+    const outside_window = TranscriptEntry{
+        .timestamp_ms = window_start - 1 * 3600 * 1000, // before window
+        .model = "claude-sonnet-4-5-20250929",
+        .usage = .{ .input_tokens = 5000, .output_tokens = 2000 },
+    };
+
+    var entries = [_]TranscriptEntry{ outside_window, in_window };
+    const result = computeCosts(std.testing.allocator, &entries, now_ms, resets_at_ms);
+
+    try std.testing.expect(result.block != null);
+    try std.testing.expectEqual(window_start, result.block.?.start_ms);
+    try std.testing.expectEqual(resets_at_ms, result.block.?.end_ms);
+
+    const pricing = findPricing("claude-sonnet-4-5-20250929").?;
+    const expected_cost = calculateEntryCost(pricing, in_window.usage);
+    try std.testing.expectApproxEqAbs(expected_cost, result.block.?.cost, 1e-10);
 }
 
 test {
