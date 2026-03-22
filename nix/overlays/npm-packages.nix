@@ -7,8 +7,8 @@ in {
   # Renovate: datasource=npm depName=secretlint
   secretlint = mkVendoredNpmPackage {
     pname = "secretlint";
-    version = "11.3.1";
-    npmDepsHash = "sha256-TtV+h0HTPBKSCVwoFqj+jZNdzucctdcBij3ccpZQP+0=";
+    version = "11.4.0";
+    npmDepsHash = "sha256-aSqP/9qHe++tqRjWeKv5jTy2hHMx96oHHXsJCn+t3/o=";
     meta = {
       description = "Pluggable linting tool to prevent commit secret/credential file";
       homepage = "https://github.com/secretlint/secretlint";
