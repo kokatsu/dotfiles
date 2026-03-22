@@ -39,7 +39,6 @@ return {
         'accept',
         function()
           if vim.lsp.inline_completion.get() then
-            vim.lsp.inline_completion.accept()
             return true
           end
         end,
