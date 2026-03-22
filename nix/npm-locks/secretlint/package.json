@@ -1,12 +1,12 @@
 {
   "name": "secretlint-with-preset",
-  "version": "11.3.1",
+  "version": "11.4.0",
   "private": true,
   "bin": {
-    "secretlint": "./node_modules/secretlint/bin/secretlint.js"
+    "secretlint": "11.4.0"
   },
   "dependencies": {
-    "secretlint": "11.3.1",
-    "@secretlint/secretlint-rule-preset-recommend": "11.3.1"
+    "secretlint": "11.4.0",
+    "@secretlint/secretlint-rule-preset-recommend": "11.4.0"
   }
 }
