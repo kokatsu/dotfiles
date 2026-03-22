@@ -7,3 +7,6 @@ extend-exclude = [
 extend-ignore-identifiers-re = [
   "iterm", # iTerm2 image protocol type in fastfetch config
 ]
+extend-ignore-re = [
+  "sha256-.+", # Nix SRI hashes
+]
