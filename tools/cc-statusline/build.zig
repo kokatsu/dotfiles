@@ -49,7 +49,7 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_strip_dwarf_tests.step);
 
     // Coverage step: zig build cover
-    const cover_step = b.step("cover", "Generate test coverage (requires gdb)");
+    const cover_step = b.step("cover", "Generate test coverage (Linux: gdb, macOS: lldb)");
     const run_cover = b.addSystemCommand(&.{
         "bash",
         "scripts/cover.sh",
