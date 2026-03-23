@@ -1,9 +1,7 @@
 _: {
   programs.starship = {
     enable = true;
-    enableZshIntegration = false; # 既存の.zshrcで管理
+    enableZshIntegration = false;
+    settings = builtins.fromTOML (builtins.readFile ../../../.config/starship.toml);
   };
-
-  # starship.toml を直接シンボリックリンク
-  xdg.configFile."starship.toml".source = ../../../.config/starship.toml;
 }

@@ -1,4 +1,6 @@
-{pkgs, ...}: {
+{config, ...}: let
+  p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+in {
   programs.tmux = {
     enable = true;
     terminal = "tmux-256color";
@@ -8,22 +10,7 @@
     escapeTime = 10;
     keyMode = "vi";
 
-    plugins = with pkgs.tmuxPlugins; [
-      {
-        plugin = catppuccin;
-        extraConfig = ''
-          # Catppuccin theme options (must be set before plugin loads)
-          set -g @catppuccin_flavor 'mocha'
-          set -g @catppuccin_window_status_style 'rounded'
-          set -g @catppuccin_window_number_color "#89b4fa"
-          set -g @catppuccin_window_current_number_color "#89b4fa"
-          set -g @catppuccin_pane_color "#89b4fa"
-          set -g @catppuccin_pane_border_style "fg=#89b4fa"
-          set -g @catppuccin_pane_active_border_style "fg=#89b4fa"
-          set -g @catppuccin_session_color "#89b4fa"
-        '';
-      }
-    ];
+    # catppuccin プラグインは catppuccin/nix が管理 (catppuccin.tmux)
 
     extraConfig = ''
       # ==============================================================================
@@ -265,29 +252,38 @@
       # Appearance Overrides (after catppuccin loads)
       # ------------------------------------------------------------------------------
 
-      # Override pane border colors (both blue)
-      set -g pane-border-style "fg=#89b4fa"
-      set -g pane-active-border-style "fg=#89b4fa"
+      set -g pane-border-style "fg=${p.blue.hex}"
+      set -g pane-active-border-style "fg=${p.blue.hex}"
 
-      # Override status line colors (all blue instead of green)
-      set -g status-style "bg=#1e1e2e,fg=#cdd6f4"
-      set -g status-left "#[fg=#1e1e2e,bg=#89b4fa,bold] #S #[fg=#89b4fa,bg=#1e1e2e]"
+      set -g status-style "bg=${p.base.hex},fg=${p.text.hex}"
+      set -g status-left "#[fg=${p.base.hex},bg=${p.blue.hex},bold] #S #[fg=${p.blue.hex},bg=${p.base.hex}]"
       set -g status-left-length 100
-      set -g status-right "#[fg=#89b4fa,bg=#1e1e2e]#[fg=#1e1e2e,bg=#89b4fa] %H:%M "
+      set -g status-right "#[fg=${p.blue.hex},bg=${p.base.hex}]#[fg=${p.base.hex},bg=${p.blue.hex}] %H:%M "
       set -g status-right-length 100
-      set -g window-status-format "#[fg=#cdd6f4,bg=#1e1e2e] #W "
-      set -g window-status-current-format "#[fg=#1e1e2e,bg=#89b4fa,bold] #W #[fg=#89b4fa,bg=#1e1e2e]"
+      set -g window-status-format "#[fg=${p.text.hex},bg=${p.base.hex}] #W "
+      set -g window-status-current-format "#[fg=${p.base.hex},bg=${p.blue.hex},bold] #W #[fg=${p.blue.hex},bg=${p.base.hex}]"
       set -g window-status-separator ""
     '';
   };
 
-  # Script for Claude Code prompt editing
+  catppuccin.tmux = {
+    enable = true;
+    extraConfig = ''
+      set -g @catppuccin_window_status_style 'rounded'
+      set -g @catppuccin_window_number_color "${p.blue.hex}"
+      set -g @catppuccin_window_current_number_color "${p.blue.hex}"
+      set -g @catppuccin_pane_color "${p.blue.hex}"
+      set -g @catppuccin_pane_border_style "fg=${p.blue.hex}"
+      set -g @catppuccin_pane_active_border_style "fg=${p.blue.hex}"
+      set -g @catppuccin_session_color "${p.blue.hex}"
+    '';
+  };
+
   home.file.".config/tmux/scripts/claude-prompt-edit.sh" = {
     source = ../../../.config/tmux/scripts/claude-prompt-edit.sh;
     executable = true;
   };
 
-  # Script for octorus rally history browser
   home.file.".config/tmux/scripts/octorus-history.sh" = {
     source = ../../../.config/tmux/scripts/octorus-history.sh;
     executable = true;

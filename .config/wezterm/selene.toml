@@ -1,1 +1,2 @@
 std = "wezterm"
+exclude = ["background.static.lua"]
