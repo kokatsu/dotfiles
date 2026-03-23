@@ -248,6 +248,10 @@ in {
         takt # AI Agent オーケストレーション (overlay)
         # https://github.com/textlint/textlint
         textlint # 日本語校正 (overlay)
+        # https://valgrind.org
+        valgrind # メモリデバッグ・プロファイリング・カバレッジ (callgrind)
+        # https://sourceware.org/gdb/
+        gdb # デバッガ・カバレッジ計測 (cc-statusline)
         # https://github.com/crate-ci/typos
         typos # タイポ検出
         # https://github.com/koalaman/shellcheck
