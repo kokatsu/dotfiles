@@ -41,22 +41,49 @@ pub const theme_catppuccin_mocha = Theme{
     .dim = "\x1b[38;2;108;112;134m", // Overlay0 (#6c7086)
 };
 
-pub fn initTheme() Theme {
-    var theme = if (std.posix.getenv("CC_STATUSLINE_THEME")) |name| blk: {
+pub const ThemeOverrides = struct {
+    model: ?[]const u8 = null,
+    green: ?[]const u8 = null,
+    yellow: ?[]const u8 = null,
+    red: ?[]const u8 = null,
+    dim: ?[]const u8 = null,
+    bar_filled: ?[]const u8 = null,
+    bar_transition: ?[]const u8 = null,
+    bar_empty: ?[]const u8 = null,
+};
+
+pub fn buildTheme(theme_name: ?[]const u8, overrides: ThemeOverrides) Theme {
+    var theme = if (theme_name) |name| blk: {
         if (mem.eql(u8, name, "catppuccin-mocha")) break :blk theme_catppuccin_mocha;
         break :blk theme_default;
     } else theme_default;
 
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_MODEL")) |v| theme.model = v;
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_GREEN")) |v| theme.green = v;
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_YELLOW")) |v| theme.yellow = v;
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_RED")) |v| theme.red = v;
-    if (std.posix.getenv("CC_STATUSLINE_COLOR_DIM")) |v| theme.dim = v;
-    if (std.posix.getenv("CC_STATUSLINE_BAR_FILLED")) |v| theme.bar_filled = v;
-    if (std.posix.getenv("CC_STATUSLINE_BAR_TRANSITION")) |v| theme.bar_transition = v;
-    if (std.posix.getenv("CC_STATUSLINE_BAR_EMPTY")) |v| theme.bar_empty = v;
+    if (overrides.model) |v| theme.model = v;
+    if (overrides.green) |v| theme.green = v;
+    if (overrides.yellow) |v| theme.yellow = v;
+    if (overrides.red) |v| theme.red = v;
+    if (overrides.dim) |v| theme.dim = v;
+    if (overrides.bar_filled) |v| theme.bar_filled = v;
+    if (overrides.bar_transition) |v| theme.bar_transition = v;
+    if (overrides.bar_empty) |v| theme.bar_empty = v;
 
     return theme;
+}
+
+pub fn initTheme() Theme {
+    return buildTheme(
+        std.posix.getenv("CC_STATUSLINE_THEME"),
+        .{
+            .model = std.posix.getenv("CC_STATUSLINE_COLOR_MODEL"),
+            .green = std.posix.getenv("CC_STATUSLINE_COLOR_GREEN"),
+            .yellow = std.posix.getenv("CC_STATUSLINE_COLOR_YELLOW"),
+            .red = std.posix.getenv("CC_STATUSLINE_COLOR_RED"),
+            .dim = std.posix.getenv("CC_STATUSLINE_COLOR_DIM"),
+            .bar_filled = std.posix.getenv("CC_STATUSLINE_BAR_FILLED"),
+            .bar_transition = std.posix.getenv("CC_STATUSLINE_BAR_TRANSITION"),
+            .bar_empty = std.posix.getenv("CC_STATUSLINE_BAR_EMPTY"),
+        },
+    );
 }
 
 // ============================================================
@@ -200,12 +227,15 @@ pub fn truncateBranch(buf: *[256]u8, branch: []const u8, max_len: usize) []const
     return buf[0 .. cut + 3];
 }
 
-pub fn getBranchMax() usize {
-    if (std.posix.getenv("CC_STATUSLINE_BRANCH_MAX")) |val| {
-        const v = std.fmt.parseInt(i64, val, 10) catch return default_branch_max;
-        if (v >= 4) return @intCast(v);
-    }
+pub fn parseBranchMax(val: ?[]const u8) usize {
+    const s = val orelse return default_branch_max;
+    const v = std.fmt.parseInt(i64, s, 10) catch return default_branch_max;
+    if (v >= 4) return @intCast(v);
     return default_branch_max;
+}
+
+pub fn getBranchMax() usize {
+    return parseBranchMax(std.posix.getenv("CC_STATUSLINE_BRANCH_MAX"));
 }
 
 // ============================================================
@@ -280,7 +310,7 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
             if (rl5.resets_at_ms) |reset_ms| {
                 var reset_buf: [64]u8 = undefined;
                 const remaining = reset_ms - now_ms;
-                try w.print(" {s}{s}{s}", .{ theme.dim, formatResetDuration(&reset_buf, remaining), theme.reset });
+                try w.print(" {s}{s}{s}", .{ color, formatResetDuration(&reset_buf, remaining), theme.reset });
             }
         }
 
@@ -302,7 +332,7 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
             if (rl7.resets_at_ms) |reset_ms| {
                 var reset_buf: [64]u8 = undefined;
                 const remaining = reset_ms - now_ms;
-                try w.print(" {s}{s}{s}", .{ theme.dim, formatResetDuration(&reset_buf, remaining), theme.reset });
+                try w.print(" {s}{s}{s}", .{ color, formatResetDuration(&reset_buf, remaining), theme.reset });
             }
         }
 
@@ -589,6 +619,41 @@ test "printOutput line3 rate limit reset time" {
     try std.testing.expect(contains(aw.writer.buffered(), "2h 30m"));
 }
 
+test "printOutput line3 5h reset time uses contextColor not dim" {
+    var aw: Writer.Allocating = .init(std.testing.allocator);
+    defer aw.deinit();
+    const theme = theme_catppuccin_mocha;
+    const now_ms: i64 = 1000 * 1000;
+    const info = StdinInfo{
+        .rate_limit_5h = .{
+            .used_percentage = 80.0, // >=75% = red
+            .resets_at_ms = now_ms + 45 * 60 * 1000, // +45m
+        },
+    };
+    try printOutput(&aw.writer, theme, info, null, now_ms, null);
+    const out = aw.writer.buffered();
+    // Reset duration should be colored with red (contextColor), not dim
+    try std.testing.expect(contains(out, theme.red ++ "45m"));
+    try std.testing.expect(!contains(out, theme.dim ++ "45m"));
+}
+
+test "printOutput line3 7d reset time uses contextColor not dim" {
+    var aw: Writer.Allocating = .init(std.testing.allocator);
+    defer aw.deinit();
+    const theme = theme_catppuccin_mocha;
+    const now_ms: i64 = 1000 * 1000;
+    const info = StdinInfo{
+        .rate_limit_7d = .{
+            .used_percentage = 60.0, // 50-75% = yellow
+            .resets_at_ms = now_ms + 3 * 24 * 3600 * 1000 + 4 * 3600 * 1000, // +3d 4h
+        },
+    };
+    try printOutput(&aw.writer, theme, info, null, now_ms, null);
+    const out = aw.writer.buffered();
+    try std.testing.expect(contains(out, theme.yellow ++ "3d 4h"));
+    try std.testing.expect(!contains(out, theme.dim ++ "3d 4h"));
+}
+
 test "printOutput no line3 without rate limits" {
     var aw: Writer.Allocating = .init(std.testing.allocator);
     defer aw.deinit();
@@ -622,4 +687,118 @@ test "printFallback output" {
     try std.testing.expect(contains(out, "N/A"));
     try std.testing.expect(contains(out, "N/A today"));
     try std.testing.expectEqual(@as(usize, 2), countNewlines(out));
+}
+
+// --- formatIntComma ---
+
+test "formatIntComma small values" {
+    var buf: [32]u8 = undefined;
+    try std.testing.expectEqualStrings("0", formatIntComma(&buf, 0));
+    try std.testing.expectEqualStrings("1", formatIntComma(&buf, 1));
+    try std.testing.expectEqualStrings("999", formatIntComma(&buf, 999));
+}
+
+test "formatIntComma thousands" {
+    var buf: [32]u8 = undefined;
+    try std.testing.expectEqualStrings("1,000", formatIntComma(&buf, 1000));
+    try std.testing.expectEqualStrings("9,999", formatIntComma(&buf, 9999));
+}
+
+test "formatIntComma millions" {
+    var buf: [32]u8 = undefined;
+    try std.testing.expectEqualStrings("1,234,567", formatIntComma(&buf, 1234567));
+}
+
+test "formatIntComma negative" {
+    var buf: [32]u8 = undefined;
+    try std.testing.expectEqualStrings("-1,234", formatIntComma(&buf, -1234));
+}
+
+test "formatIntComma buffer overflow" {
+    var buf: [3]u8 = undefined;
+    try std.testing.expectEqualStrings("?", formatIntComma(&buf, 1000));
+}
+
+// --- buildTheme ---
+
+test "buildTheme default" {
+    const theme = buildTheme(null, .{});
+    try std.testing.expectEqualStrings(theme_default.model, theme.model);
+    try std.testing.expectEqualStrings(theme_default.green, theme.green);
+}
+
+test "buildTheme catppuccin-mocha" {
+    const theme = buildTheme("catppuccin-mocha", .{});
+    try std.testing.expectEqualStrings(theme_catppuccin_mocha.model, theme.model);
+    try std.testing.expectEqualStrings(theme_catppuccin_mocha.red, theme.red);
+}
+
+test "buildTheme unknown falls back to default" {
+    const theme = buildTheme("nonexistent-theme", .{});
+    try std.testing.expectEqualStrings(theme_default.model, theme.model);
+}
+
+test "buildTheme with overrides" {
+    const custom = "\x1b[35m";
+    const theme = buildTheme(null, .{ .model = custom });
+    try std.testing.expectEqualStrings(custom, theme.model);
+    // Other fields remain default
+    try std.testing.expectEqualStrings(theme_default.green, theme.green);
+}
+
+// --- parseBranchMax ---
+
+test "parseBranchMax" {
+    try std.testing.expectEqual(default_branch_max, parseBranchMax(null));
+    try std.testing.expectEqual(@as(usize, 30), parseBranchMax("30"));
+    try std.testing.expectEqual(@as(usize, 4), parseBranchMax("4"));
+    try std.testing.expectEqual(default_branch_max, parseBranchMax("3"));
+    try std.testing.expectEqual(default_branch_max, parseBranchMax("abc"));
+    try std.testing.expectEqual(default_branch_max, parseBranchMax(""));
+}
+
+// --- getBranchMax ---
+
+test "getBranchMax default" {
+    try std.testing.expectEqual(default_branch_max, getBranchMax());
+}
+
+// --- formatResetDuration (edge cases) ---
+
+test "formatResetDuration sub-minute" {
+    var buf: [64]u8 = undefined;
+    try std.testing.expectEqualStrings("0m", formatResetDuration(&buf, 30000)); // 30s
+    try std.testing.expectEqualStrings("0m", formatResetDuration(&buf, 59999)); // 59.999s
+    try std.testing.expectEqualStrings("1m", formatResetDuration(&buf, 60000)); // exactly 1min
+}
+
+// --- formatCurrency edge cases ---
+
+test "formatCurrency exactly 0.01 boundary" {
+    var buf: [32]u8 = undefined;
+    const result = formatCurrency(&buf, 0.01);
+    try std.testing.expectEqualStrings("$0.01", result);
+}
+
+test "formatCurrency large value" {
+    var buf: [32]u8 = undefined;
+    const result = formatCurrency(&buf, 99999.99);
+    try std.testing.expect(result.len > 0);
+    try std.testing.expect(result[0] == '$');
+}
+
+// --- buildProgressBar edge cases ---
+
+test "buildProgressBar over 100 percent clamped" {
+    var buf1: [256]u8 = undefined;
+    const over = buildProgressBar(&buf1, 150.0, 10, "#", "=", "-");
+    var buf2: [256]u8 = undefined;
+    const full = buildProgressBar(&buf2, 100.0, 10, "#", "=", "-");
+    try std.testing.expectEqualStrings(full, over);
+}
+
+test "buildProgressBar width 1" {
+    var buf: [256]u8 = undefined;
+    const result = buildProgressBar(&buf, 50.0, 1, "#", "=", "-");
+    try std.testing.expect(result.len > 0);
 }
