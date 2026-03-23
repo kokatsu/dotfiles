@@ -258,10 +258,13 @@ jobs:
 
           # Update version in custom package.json (secretlint-with-preset)
           # This package.json bundles secretlint with rule preset
+          # Use jq to update only version and dependencies (not bin)
           cd "$LOCK_DIR"
-          sed -i "s|\"version\": \"[^\"]*\"|\"version\": \"${VERSION}\"|" package.json
-          sed -i "s|\"secretlint\": \"[^\"]*\"|\"secretlint\": \"${VERSION}\"|" package.json
-          sed -i "s|\"@secretlint/secretlint-rule-preset-recommend\": \"[^\"]*\"|\"@secretlint/secretlint-rule-preset-recommend\": \"${VERSION}\"|" package.json
+          jq --arg v "$VERSION" '
+            .version = $v |
+            .dependencies.secretlint = $v |
+            .dependencies["@secretlint/secretlint-rule-preset-recommend"] = $v
+          ' package.json > package.json.tmp && mv package.json.tmp package.json
 
           # Regenerate package-lock.json from custom package.json
           rm -f package-lock.json
@@ -281,17 +284,16 @@ jobs:
           LOCK_DIR="nix/npm-locks/textlint"
 
           # Update version in custom package.json (textlint-with-preset)
+          # Use jq to update only version and dependencies (not bin)
           cd "$LOCK_DIR"
-          sed -i "s|\"version\": \"[^\"]*\"|\"version\": \"${VERSION}\"|" package.json
-          sed -i "s|\"textlint\": \"[^\"]*\"|\"textlint\": \"${VERSION}\"|" package.json
-
-          # Update preset to latest compatible version
           PRESET_VERSION=$(npm view textlint-rule-preset-ja-technical-writing version)
-          sed -i "s|\"textlint-rule-preset-ja-technical-writing\": \"[^\"]*\"|\"textlint-rule-preset-ja-technical-writing\": \"${PRESET_VERSION}\"|" package.json
-
-          # Update terminology rule to latest compatible version
           TERMINOLOGY_VERSION=$(npm view textlint-rule-terminology version)
-          sed -i "s|\"textlint-rule-terminology\": \"[^\"]*\"|\"textlint-rule-terminology\": \"${TERMINOLOGY_VERSION}\"|" package.json
+          jq --arg v "$VERSION" --arg pv "$PRESET_VERSION" --arg tv "$TERMINOLOGY_VERSION" '
+            .version = $v |
+            .dependencies.textlint = $v |
+            .dependencies["textlint-rule-preset-ja-technical-writing"] = $pv |
+            .dependencies["textlint-rule-terminology"] = $tv
+          ' package.json > package.json.tmp && mv package.json.tmp package.json
 
           # Regenerate package-lock.json from custom package.json
           rm -f package-lock.json
@@ -313,8 +315,10 @@ jobs:
           # Update version in custom package.json (playwright-cli-wrapper)
           # This package.json bundles @playwright/cli
           cd "$LOCK_DIR"
-          sed -i "s|\"version\": \"[^\"]*\"|\"version\": \"${VERSION}\"|" package.json
-          sed -i "s|\"@playwright/cli\": \"[^\"]*\"|\"@playwright/cli\": \"${VERSION}\"|" package.json
+          jq --arg v "$VERSION" '
+            .version = $v |
+            .dependencies["@playwright/cli"] = $v
+          ' package.json > package.json.tmp && mv package.json.tmp package.json
 
           # Regenerate package-lock.json from custom package.json
           rm -f package-lock.json
