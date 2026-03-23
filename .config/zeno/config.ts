@@ -28,6 +28,12 @@ export default defineConfig(({ env }) => {
     },
     { name: "lazygit", keyword: "lg", snippet: "lazygit" },
     { name: "neovim", keyword: "vi", snippet: "nvim" },
+    {
+      name: "rg (exclude uuid)",
+      keyword: "rgu",
+      snippet:
+        "rg -P '^(?!.*[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}).*\\K{{pattern}}'",
+    },
     { name: "yazi", keyword: "y", snippet: "yazi" },
 
     // -------------------------------------------------------------------------
@@ -70,6 +76,13 @@ export default defineConfig(({ env }) => {
       name: "null",
       keyword: "N",
       snippet: ">/dev/null 2>&1",
+      context: { lbuffer: ".+\\s" },
+    },
+    {
+      name: "exclude uuid",
+      keyword: "nuid",
+      snippet:
+        "| rg -v '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'",
       context: { lbuffer: ".+\\s" },
     },
   ];
