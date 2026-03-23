@@ -168,6 +168,18 @@ pub fn contextColor(theme: Theme, pct: f64) []const u8 {
     return theme.red;
 }
 
+pub fn rateLimitUsageColor(theme: Theme, used_pct: f64) []const u8 {
+    if (used_pct < 50.0) return theme.green;
+    if (used_pct < 80.0) return theme.yellow;
+    return theme.red;
+}
+
+pub fn rateLimitTimeColor(theme: Theme, remaining_ms: i64) []const u8 {
+    if (remaining_ms < 30 * 60 * 1000) return theme.red;
+    if (remaining_ms < 60 * 60 * 1000) return theme.yellow;
+    return theme.green;
+}
+
 pub fn buildProgressBar(buf: []u8, pct: f64, width: u8, bar_filled: []const u8, bar_transition: []const u8, bar_empty: []const u8) []const u8 {
     const clamped = @max(@as(f64, 0), @min(@as(f64, 100), pct));
     const width_f: f64 = @floatFromInt(width);
@@ -325,19 +337,20 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
         try w.print("\xf0\x9f\x95\x94 ", .{}); // 🕔
 
         if (stdin_info.rate_limit_5h) |rl5| {
-            const color = contextColor(theme, rl5.used_percentage);
+            const usage_color = rateLimitUsageColor(theme, rl5.used_percentage);
             var bar_buf: [128]u8 = undefined;
             const bar = buildProgressBar(&bar_buf, rl5.used_percentage, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
             try w.print("{s}5h{s} {s}{s}{s} {s}{d:.0}%{s}", .{
                 theme.dim,           theme.reset,
-                color,               bar,
-                theme.reset,         color,
+                usage_color,         bar,
+                theme.reset,         usage_color,
                 rl5.used_percentage, theme.reset,
             });
             if (rl5.resets_at_ms) |reset_ms| {
-                var reset_buf: [64]u8 = undefined;
                 const remaining = reset_ms - now_ms;
-                try w.print(" {s}{s}{s}", .{ color, formatResetDuration(&reset_buf, remaining), theme.reset });
+                const time_color = rateLimitTimeColor(theme, remaining);
+                var reset_buf: [64]u8 = undefined;
+                try w.print(" {s}{s}{s}", .{ time_color, formatResetDuration(&reset_buf, remaining), theme.reset });
             }
         }
 
@@ -347,19 +360,20 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
 
         if (stdin_info.rate_limit_7d) |rl7| {
             try w.print("\xf0\x9f\x93\x85 ", .{}); // 📅
-            const color = contextColor(theme, rl7.used_percentage);
+            const usage_color = rateLimitUsageColor(theme, rl7.used_percentage);
             var bar_buf: [128]u8 = undefined;
             const bar = buildProgressBar(&bar_buf, rl7.used_percentage, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
             try w.print("{s}7d{s} {s}{s}{s} {s}{d:.0}%{s}", .{
                 theme.dim,           theme.reset,
-                color,               bar,
-                theme.reset,         color,
+                usage_color,         bar,
+                theme.reset,         usage_color,
                 rl7.used_percentage, theme.reset,
             });
             if (rl7.resets_at_ms) |reset_ms| {
-                var reset_buf: [64]u8 = undefined;
                 const remaining = reset_ms - now_ms;
-                try w.print(" {s}{s}{s}", .{ color, formatResetDuration(&reset_buf, remaining), theme.reset });
+                const time_color = rateLimitTimeColor(theme, remaining);
+                var reset_buf: [64]u8 = undefined;
+                try w.print(" {s}{s}{s}", .{ time_color, formatResetDuration(&reset_buf, remaining), theme.reset });
             }
         }
 
@@ -420,6 +434,30 @@ test "contextColor thresholds" {
     try std.testing.expectEqualStrings(theme.yellow, contextColor(theme, 74.9));
     try std.testing.expectEqualStrings(theme.red, contextColor(theme, 75.0));
     try std.testing.expectEqualStrings(theme.red, contextColor(theme, 100.0));
+}
+
+// --- rateLimitUsageColor ---
+
+test "rateLimitUsageColor thresholds" {
+    const theme = theme_default;
+    try std.testing.expectEqualStrings(theme.green, rateLimitUsageColor(theme, 0.0));
+    try std.testing.expectEqualStrings(theme.green, rateLimitUsageColor(theme, 49.9));
+    try std.testing.expectEqualStrings(theme.yellow, rateLimitUsageColor(theme, 50.0));
+    try std.testing.expectEqualStrings(theme.yellow, rateLimitUsageColor(theme, 79.9));
+    try std.testing.expectEqualStrings(theme.red, rateLimitUsageColor(theme, 80.0));
+    try std.testing.expectEqualStrings(theme.red, rateLimitUsageColor(theme, 100.0));
+}
+
+// --- rateLimitTimeColor ---
+
+test "rateLimitTimeColor thresholds" {
+    const theme = theme_default;
+    try std.testing.expectEqualStrings(theme.red, rateLimitTimeColor(theme, 0));
+    try std.testing.expectEqualStrings(theme.red, rateLimitTimeColor(theme, 29 * 60 * 1000));
+    try std.testing.expectEqualStrings(theme.yellow, rateLimitTimeColor(theme, 30 * 60 * 1000));
+    try std.testing.expectEqualStrings(theme.yellow, rateLimitTimeColor(theme, 59 * 60 * 1000));
+    try std.testing.expectEqualStrings(theme.green, rateLimitTimeColor(theme, 60 * 60 * 1000));
+    try std.testing.expectEqualStrings(theme.green, rateLimitTimeColor(theme, 3 * 3600 * 1000));
 }
 
 // --- buildProgressBar ---
@@ -614,7 +652,21 @@ test "printOutput line3 7d rate limit" {
     try std.testing.expect(contains(out, "\xf0\x9f\x93\x85")); // 📅
     try std.testing.expect(contains(out, "7d"));
     try std.testing.expect(contains(out, "86%"));
-    try std.testing.expect(contains(out, theme_default.red)); // 86% >= 75% = red
+    try std.testing.expect(contains(out, theme_default.red)); // 86% >= 80% = red
+}
+
+test "printOutput line3 75pct uses yellow not red" {
+    // 75-79% was red under contextColor but is yellow under rateLimitUsageColor
+    var aw: Writer.Allocating = .init(std.testing.allocator);
+    defer aw.deinit();
+    const theme = theme_catppuccin_mocha;
+    const info = StdinInfo{
+        .rate_limit_5h = .{ .used_percentage = 75.0 },
+    };
+    try printOutput(&aw.writer, theme, info, null, 0, null);
+    const out = aw.writer.buffered();
+    try std.testing.expect(contains(out, theme.yellow ++ "75%"));
+    try std.testing.expect(!contains(out, theme.red ++ "75%"));
 }
 
 test "printOutput line3 both rate limits with separator" {
@@ -646,39 +698,80 @@ test "printOutput line3 rate limit reset time" {
     try std.testing.expect(contains(aw.writer.buffered(), "2h 30m"));
 }
 
-test "printOutput line3 5h reset time uses contextColor not dim" {
+test "printOutput line3 5h usage and time colored independently" {
     var aw: Writer.Allocating = .init(std.testing.allocator);
     defer aw.deinit();
     const theme = theme_catppuccin_mocha;
     const now_ms: i64 = 1000 * 1000;
     const info = StdinInfo{
         .rate_limit_5h = .{
-            .used_percentage = 80.0, // >=75% = red
-            .resets_at_ms = now_ms + 45 * 60 * 1000, // +45m
+            .used_percentage = 30.0, // usage → green
+            .resets_at_ms = now_ms + 15 * 60 * 1000, // 15m < 30m → time red
         },
     };
     try printOutput(&aw.writer, theme, info, null, now_ms, null);
     const out = aw.writer.buffered();
-    // Reset duration should be colored with red (contextColor), not dim
-    try std.testing.expect(contains(out, theme.red ++ "45m"));
-    try std.testing.expect(!contains(out, theme.dim ++ "45m"));
+    // Usage (bar + percentage) should be green
+    try std.testing.expect(contains(out, theme.green ++ "30%"));
+    // Remaining time should be red (independent of usage)
+    try std.testing.expect(contains(out, theme.red ++ "15m"));
 }
 
-test "printOutput line3 7d reset time uses contextColor not dim" {
+test "printOutput line3 5h short remaining yellow, usage green" {
+    var aw: Writer.Allocating = .init(std.testing.allocator);
+    defer aw.deinit();
+    const theme = theme_catppuccin_mocha;
+    const now_ms: i64 = 1000 * 1000;
+    const info = StdinInfo{
+        .rate_limit_5h = .{
+            .used_percentage = 20.0, // usage → green
+            .resets_at_ms = now_ms + 50 * 60 * 1000, // 50m → time yellow
+        },
+    };
+    try printOutput(&aw.writer, theme, info, null, now_ms, null);
+    const out = aw.writer.buffered();
+    try std.testing.expect(contains(out, theme.green ++ "20%"));
+    try std.testing.expect(contains(out, theme.yellow ++ "50m"));
+}
+
+test "printOutput line3 7d time colored independently" {
     var aw: Writer.Allocating = .init(std.testing.allocator);
     defer aw.deinit();
     const theme = theme_catppuccin_mocha;
     const now_ms: i64 = 1000 * 1000;
     const info = StdinInfo{
         .rate_limit_7d = .{
-            .used_percentage = 60.0, // 50-75% = yellow
-            .resets_at_ms = now_ms + 3 * 24 * 3600 * 1000 + 4 * 3600 * 1000, // +3d 4h
+            .used_percentage = 60.0, // usage → yellow
+            .resets_at_ms = now_ms + 3 * 24 * 3600 * 1000 + 4 * 3600 * 1000, // +3d 4h → time green
         },
     };
     try printOutput(&aw.writer, theme, info, null, now_ms, null);
     const out = aw.writer.buffered();
-    try std.testing.expect(contains(out, theme.yellow ++ "3d 4h"));
-    try std.testing.expect(!contains(out, theme.dim ++ "3d 4h"));
+    try std.testing.expect(contains(out, theme.yellow ++ "60%"));
+    try std.testing.expect(contains(out, theme.green ++ "3d 4h"));
+}
+
+test "printOutput line3 regression: low usage with short remaining must not color bar red" {
+    // Bug: usage 29% + remaining 11m was displayed entirely in red
+    // because a single combined color was derived from both usage and time.
+    // Fix: usage and time are colored independently.
+    var aw: Writer.Allocating = .init(std.testing.allocator);
+    defer aw.deinit();
+    const theme = theme_catppuccin_mocha;
+    const now_ms: i64 = 1000 * 1000;
+    const info = StdinInfo{
+        .rate_limit_5h = .{
+            .used_percentage = 29.0,
+            .resets_at_ms = now_ms + 11 * 60 * 1000, // +11m
+        },
+    };
+    try printOutput(&aw.writer, theme, info, null, now_ms, null);
+    const out = aw.writer.buffered();
+    // Usage 29% must be green, NOT red
+    try std.testing.expect(contains(out, theme.green ++ "29%"));
+    try std.testing.expect(!contains(out, theme.red ++ "29%"));
+    // Remaining 11m must be red
+    try std.testing.expect(contains(out, theme.red ++ "11m"));
 }
 
 test "printOutput no line3 without rate limits" {
@@ -689,18 +782,18 @@ test "printOutput no line3 without rate limits" {
     try std.testing.expectEqual(@as(usize, 2), countNewlines(aw.writer.buffered()));
 }
 
-test "printOutput rate limit colors use contextColor" {
+test "printOutput rate limit usage colors" {
     var aw: Writer.Allocating = .init(std.testing.allocator);
     defer aw.deinit();
     const theme = theme_catppuccin_mocha;
     const info = StdinInfo{
-        .rate_limit_5h = .{ .used_percentage = 60.0 }, // 50-75 = yellow
-        .rate_limit_7d = .{ .used_percentage = 90.0 }, // >=75 = red
+        .rate_limit_5h = .{ .used_percentage = 60.0 }, // 50-79 = yellow
+        .rate_limit_7d = .{ .used_percentage = 90.0 }, // >=80 = red
     };
     try printOutput(&aw.writer, theme, info, null, 0, null);
     const out = aw.writer.buffered();
-    try std.testing.expect(contains(out, theme.yellow));
-    try std.testing.expect(contains(out, theme.red));
+    try std.testing.expect(contains(out, theme.yellow ++ "60%"));
+    try std.testing.expect(contains(out, theme.red ++ "90%"));
 }
 
 // --- printFallback ---
