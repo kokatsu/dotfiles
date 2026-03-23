@@ -31,6 +31,8 @@
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    catppuccin.url = "github:catppuccin/nix";
   };
 
   outputs = inputs @ {
@@ -39,6 +41,7 @@
     nixpkgs-stable,
     nix-darwin,
     home-manager,
+    catppuccin,
     ...
   }: let
     # 環境変数から読み込み (--impure フラグが必要)
@@ -125,7 +128,7 @@
               else []
             );
         };
-        modules = [./nix/home];
+        modules = [./nix/home catppuccin.homeModules.catppuccin];
         extraSpecialArgs = {
           inherit inputs self;
           username = "ci";
@@ -156,6 +159,7 @@
             useGlobalPkgs = true;
             useUserPackages = true;
             backupFileExtension = "backup";
+            sharedModules = [catppuccin.homeModules.catppuccin];
             users.${finalUsername} = import ./nix/home;
             extraSpecialArgs = {
               inherit inputs self dotfilesDir;
@@ -187,7 +191,7 @@
               else []
             );
         };
-        modules = [./nix/home];
+        modules = [./nix/home catppuccin.homeModules.catppuccin];
         extraSpecialArgs = {
           inherit inputs self dotfilesDir;
           username = finalUsername;

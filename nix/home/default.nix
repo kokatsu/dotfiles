@@ -43,6 +43,7 @@
     else dotfilesDir;
 in {
   imports = [
+    ./catppuccin-palette.nix
     ./programs/bat.nix
     ./programs/eza.nix
     ./programs/fzf.nix
@@ -55,13 +56,209 @@ in {
     ./programs/zsh.nix
   ];
 
+  catppuccin = {
+    enable = true;
+    flavor = "mocha";
+    accent = "blue";
+    # 既存 symlink と競合するため後の Phase で有効化
+    delta.enable = false;
+    # 手動管理 or カスタムテンプレートで管理
+    nvim.enable = false;
+    ghostty.enable = false;
+    helix.enable = false;
+    wezterm.enable = false;
+    yazi.enable = false;
+  };
+
+  programs = {
+    home-manager.enable = true;
+
+    btop = {
+      enable = true;
+      settings = {
+        # color_theme は catppuccin/nix で管理
+        theme_background = false;
+        truecolor = true;
+        force_tty = false;
+        presets = "cpu:1:default,proc:0:default cpu:0:default,mem:0:default,net:0:default cpu:0:block,net:0:tty";
+        vim_keys = false;
+        rounded_corners = true;
+        graph_symbol = "braille";
+        graph_symbol_cpu = "default";
+        graph_symbol_mem = "default";
+        graph_symbol_net = "default";
+        graph_symbol_proc = "default";
+        shown_boxes = "cpu mem net proc";
+        update_ms = 2000;
+        proc_sorting = "cpu lazy";
+        proc_reversed = false;
+        proc_tree = false;
+        proc_colors = true;
+        proc_gradient = true;
+        proc_per_core = false;
+        proc_mem_bytes = true;
+        proc_cpu_graphs = true;
+        proc_info_smaps = false;
+        proc_left = false;
+        proc_filter_kernel = false;
+        proc_aggregate = false;
+        cpu_graph_upper = "Auto";
+        cpu_graph_lower = "Auto";
+        cpu_invert_lower = true;
+        cpu_single_graph = false;
+        cpu_bottom = false;
+        show_uptime = true;
+        show_cpu_watts = true;
+        check_temp = true;
+        cpu_sensor = "Auto";
+        show_coretemp = true;
+        cpu_core_map = "";
+        temp_scale = "celsius";
+        base_10_sizes = false;
+        show_cpu_freq = true;
+        clock_format = "%X";
+        background_update = true;
+        custom_cpu_name = "";
+        disks_filter = "";
+        mem_graphs = true;
+        mem_below_net = false;
+        zfs_arc_cached = true;
+        show_swap = true;
+        swap_disk = true;
+        show_disks = true;
+        only_physical = true;
+        use_fstab = true;
+        zfs_hide_datasets = false;
+        disk_free_priv = false;
+        show_io_stat = true;
+        io_mode = false;
+        io_graph_combined = false;
+        io_graph_speeds = "";
+        net_download = 100;
+        net_upload = 100;
+        net_auto = true;
+        net_sync = true;
+        net_iface = "";
+        base_10_bitrate = "Auto";
+        show_battery = true;
+        selected_battery = "Auto";
+        show_battery_watts = true;
+        log_level = "WARNING";
+      };
+    };
+
+    lazygit = {
+      enable = true;
+      settings = {
+        gui = {
+          showRandomTip = false;
+          showBottomLine = false;
+          showCommandLog = false;
+          scrollHeight = 10;
+          scrollPastBottom = true;
+          sidePanelWidth = 0.3333;
+          expandFocusedSidePanel = true;
+          mainPanelSplitMode = "flexible";
+          showIcons = true;
+          nerdFontsVersion = "3";
+          # theme は catppuccin/nix で管理
+        };
+        git = {
+          autoFetch = true;
+          autoRefresh = true;
+          branchLogCmd = "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --";
+          pagers = [
+            {pager = "delta --dark --paging=never";}
+          ];
+        };
+        os = {
+          editPreset = "nvim-remote";
+        };
+        notARepository = "skip";
+        promptToReturnFromSubprocess = false;
+        customCommands = [
+          {
+            key = "R";
+            context = "commits";
+            command = "git rebase -i {{.SelectedLocalCommit.Hash}}~1";
+            description = "Interactive rebase from this commit";
+            output = "terminal";
+          }
+          {
+            key = "F";
+            context = "files";
+            command = "git commit --fixup={{.SelectedLocalCommit.Hash}}";
+            description = "Create fixup commit for selected commit";
+            loadingText = "Creating fixup commit...";
+          }
+          {
+            key = "S";
+            context = "commits";
+            command = "git rebase -i --autosquash {{.SelectedLocalCommit.Hash}}~1";
+            description = "Autosquash fixup commits";
+            output = "terminal";
+          }
+          {
+            key = "O";
+            context = "localBranches";
+            command = "gh pr checkout {{.SelectedLocalBranch.Name}}";
+            description = "Checkout GitHub PR";
+            loadingText = "Checking out PR...";
+          }
+          {
+            key = "V";
+            context = "localBranches";
+            command = "gh pr view --web {{.SelectedLocalBranch.Name}}";
+            description = "View PR in browser";
+          }
+          {
+            key = "Y";
+            context = "localBranches";
+            command = "echo -n {{.SelectedLocalBranch.Name}} | clip.exe";
+            description = "Copy branch name to clipboard";
+          }
+          {
+            key = "Y";
+            context = "commits";
+            command = "echo -n {{.SelectedLocalCommit.Hash}} | clip.exe";
+            description = "Copy commit hash to clipboard";
+          }
+          {
+            key = "P";
+            context = "localBranches";
+            command = "git push --force-with-lease origin {{.SelectedLocalBranch.Name}}";
+            description = "Force push with lease";
+            loadingText = "Force pushing...";
+          }
+          {
+            key = "f";
+            context = "remotes";
+            command = "git fetch --prune {{.SelectedRemote.Name}}";
+            description = "Fetch and prune remote";
+            loadingText = "Fetching...";
+          }
+        ];
+        keybinding = {
+          universal = {
+            "scrollUpMain-alt1" = "K";
+            "scrollDownMain-alt1" = "J";
+          };
+          commits = {
+            moveDownCommit = "<c-j>";
+            moveUpCommit = "<c-k>";
+          };
+        };
+      };
+    };
+  }; # programs
+
   home = {
     inherit username;
     homeDirectory = homeDir;
     stateVersion = "24.11";
 
     # 以下のパッケージは programs.* モジュールで管理:
-    # bat, delta, eza, fzf, gh, git, zoxide (nix/home/programs/)
+    # bat, btop, delta, eza, fzf, gh, git, lazygit, zoxide
     packages = with pkgs;
       [
         # https://github.com/anthropics/agent-browser
@@ -107,8 +304,6 @@ in {
         rclone # クラウドストレージ同期
         # https://github.com/github/copilot-cli
         github-copilot-cli # GitHub Copilot CLI
-        # https://github.com/aristocratos/btop
-        btop # リソースモニター
         # https://github.com/hpjansson/chafa
         chafa # 画像→テキスト
         # https://github.com/curl/curl
@@ -139,8 +334,6 @@ in {
         miller # CSV/JSON処理
         # https://github.com/jesseduffield/lazydocker
         lazydocker # Docker TUI
-        # https://github.com/jesseduffield/lazygit
-        lazygit # Git TUI
         # https://github.com/xwmx/nb
         nb # ノート管理
         # https://github.com/nmap/nmap
@@ -426,6 +619,8 @@ in {
         INPUTRC = "${config.xdg.configHome}/readline/inputrc";
         CODEX_HOME = "${config.xdg.configHome}/codex";
         TERMFRAME_CONFIG = "${config.xdg.configHome}/termframe/config.toml";
+        CATPPUCCIN_VIVID_THEME = "catppuccin-${config.catppuccin.flavor}";
+        CC_STATUSLINE_THEME = "catppuccin-${config.catppuccin.flavor}";
         # Playwright ブラウザパス (Nix管理)
         PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
@@ -448,11 +643,6 @@ in {
         # これによりlazy-lock.jsonへの書き込みがリポジトリに反映される
         ".config/nvim" = {
           source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/nvim";
-          force = true;
-        };
-        ".config/bat".source = ../../.config/bat;
-        ".config/btop" = {
-          source = ../../.config/btop;
           force = true;
         };
         ".config/claude/settings.json".source = ../../.config/claude/settings.json;
@@ -504,17 +694,275 @@ in {
         ".takt/pieces".source = ../../.config/takt/pieces;
         ".config/delta".source = ../../.config/delta;
         ".config/fastfetch".source = ../../.config/fastfetch;
-        ".config/fresh".source = ../../.config/fresh;
-        ".config/git-graph".source = ../../.config/git-graph;
-        ".config/gomi".source = ../../.config/gomi;
+        ".config/fresh/config.json".text = let
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+        in
+          builtins.toJSON {
+            version = 1;
+            theme = names.kebab;
+            check_for_updates = false;
+          };
+
+        ".config/fresh/themes/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).kebab}.json".text = let
+          p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+          rgb = c: [c.rgb.r c.rgb.g c.rgb.b];
+        in
+          builtins.toJSON {
+            name = names.kebab;
+            editor = {
+              bg = rgb p.base;
+              fg = rgb p.text;
+              cursor = rgb p.rosewater;
+              selection_bg = rgb p.surface1;
+              current_line_bg = rgb p.surface0;
+              line_number_fg = rgb p.surface1;
+              line_number_bg = rgb p.base;
+              whitespace_indicator_fg = rgb p.surface1;
+            };
+            ui = {
+              tab_active_fg = rgb p.mauve;
+              tab_active_bg = rgb p.base;
+              tab_inactive_fg = rgb p.subtext0;
+              tab_inactive_bg = rgb p.mantle;
+              tab_separator_bg = rgb p.crust;
+              tab_hover_bg = rgb p.surface0;
+              status_bar_fg = rgb p.subtext1;
+              status_bar_bg = rgb p.mantle;
+              prompt_fg = rgb p.base;
+              prompt_bg = rgb p.rosewater;
+              prompt_selection_fg = rgb p.text;
+              prompt_selection_bg = rgb p.surface1;
+              popup_border_fg = rgb p.blue;
+              popup_bg = rgb p.surface0;
+              popup_selection_bg = rgb p.surface1;
+              popup_text_fg = rgb p.text;
+              suggestion_bg = rgb p.surface0;
+              suggestion_selected_bg = rgb p.surface1;
+              menu_bg = rgb p.surface0;
+              menu_fg = rgb p.overlay2;
+              menu_active_bg = rgb p.surface1;
+              menu_active_fg = rgb p.text;
+              menu_dropdown_bg = rgb p.surface0;
+              menu_dropdown_fg = rgb p.text;
+              menu_highlight_bg = rgb p.mauve;
+              menu_highlight_fg = rgb p.base;
+              menu_border_fg = rgb p.blue;
+              menu_separator_fg = rgb p.surface1;
+              menu_hover_bg = rgb p.surface1;
+              menu_hover_fg = rgb p.text;
+              menu_disabled_fg = rgb p.overlay0;
+              menu_disabled_bg = rgb p.surface0;
+              help_bg = rgb p.surface0;
+              help_fg = rgb p.overlay2;
+              help_key_fg = rgb p.sky;
+              help_separator_fg = rgb p.surface1;
+              help_indicator_fg = rgb p.red;
+              help_indicator_bg = rgb p.surface0;
+              split_separator_fg = rgb p.crust;
+              scrollbar_track_fg = rgb p.surface1;
+              scrollbar_thumb_fg = rgb p.overlay0;
+              scrollbar_track_hover_fg = rgb p.surface2;
+              scrollbar_thumb_hover_fg = rgb p.blue;
+              settings_selected_bg = rgb p.surface1;
+              settings_selected_fg = rgb p.text;
+            };
+            search = {
+              match_bg = rgb p.yellow;
+              match_fg = rgb p.base;
+            };
+            diagnostic = {
+              error_fg = rgb p.red;
+              error_bg = rgb p.base;
+              warning_fg = rgb p.yellow;
+              warning_bg = rgb p.base;
+              info_fg = rgb p.sky;
+              info_bg = rgb p.base;
+              hint_fg = rgb p.teal;
+              hint_bg = rgb p.base;
+            };
+            syntax = {
+              keyword = rgb p.mauve;
+              string = rgb p.green;
+              comment = rgb p.overlay2;
+              function = rgb p.blue;
+              type = rgb p.yellow;
+              variable = rgb p.text;
+              constant = rgb p.peach;
+              operator = rgb p.sky;
+            };
+          };
+        ".config/git-graph/models/catppuccin-${config.catppuccin.flavor}.toml".text = let
+          p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+        in ''
+          # ${names.spaced} Theme for git-graph
+
+          persistence = [
+            "^(master|main|trunk)$",
+            "^(develop|dev)$",
+            "^release.*$",
+            "^hotfix.*$",
+            "^bugfix.*$",
+            "^feature.*$",
+          ]
+
+          order = ["^(master|main|trunk)$", "^(hotfix|release).*$", "^(develop|dev)$"]
+
+          [terminal_colors]
+          matches = [
+            ["^(master|main|trunk)$", ["bright_blue"]],
+            ["^(develop|dev)$", ["bright_yellow"]],
+            ["^(feature|fork/).*$", ["bright_magenta", "bright_cyan"]],
+            ["^release.*$", ["bright_green"]],
+            ["^(bugfix|hotfix).*$", ["bright_red"]],
+            ["^tags/.*$", ["cyan"]],
+          ]
+          unknown = ["yellow", "magenta", "bright_cyan", "cyan"]
+
+          [svg_colors]
+          matches = [
+            ["^(master|main|trunk)$", ["${p.blue.hex}"]],
+            ["^(develop|dev)$", ["${p.yellow.hex}"]],
+            ["^(feature|fork/).*$", ["${p.mauve.hex}", "${p.lavender.hex}"]],
+            ["^release.*$", ["${p.green.hex}"]],
+            ["^(bugfix|hotfix).*$", ["${p.red.hex}"]],
+            ["^tags/.*$", ["${p.teal.hex}"]],
+          ]
+          unknown = ["${p.peach.hex}", "${p.pink.hex}", "${p.sapphire.hex}", "${p.sky.hex}"]
+        '';
+        ".config/gomi/config.yaml".text = let
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+          p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+        in ''
+          core:
+            trash:
+              strategy: auto
+              home_fallback: true
+              forbidden_paths:
+                - /
+                - /etc
+                - /usr
+                - /bin
+                - /sbin
+                - /var
+                - /boot
+                - /proc
+                - /sys
+            restore:
+              confirm: false
+              verbose: true
+            permanent_delete:
+              enable: true
+
+          ui:
+            density: spacious
+            preview:
+              syntax_highlight: true
+              colorscheme: ${names.kebab}
+              directory_command: ls -F -A --color=always
+            style:
+              list_view:
+                cursor: "${p.mauve.hex}"
+                selected: "${p.green.hex}"
+                filter_match: "${p.peach.hex}"
+                filter_prompt: "${p.blue.hex}"
+                indent_on_select: false
+            exit_message: "bye!"
+            paginator_type: dots
+
+          history:
+            include:
+              within_days: 100
+            exclude:
+              files:
+                - .DS_Store
+              patterns:
+                - ^go\..*
+              globs:
+                - "*.jpg"
+              size:
+                min: 0KB
+                max: 10GB
+
+          logging:
+            enabled: false
+        '';
         ".config/moxide".source = ../../.config/moxide;
         ".config/ov".source = ../../.config/ov;
         ".config/pg".source = ../../.config/pg;
         ".config/.ripgreprc".source = ../../.config/.ripgreprc;
 
         # WezTerm: 個別ファイルをリンク
-        ".config/wezterm/background.lua".source = ../../.config/wezterm/background.lua;
-        ".config/wezterm/colors.lua".source = ../../.config/wezterm/colors.lua;
+        ".config/wezterm/background.lua".text = let
+          p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+          staticContent = builtins.readFile ../../.config/wezterm/background.static.lua;
+        in
+          builtins.replaceStrings
+          ["__CATPPUCCIN_BASE__" "__BASE_OPACITY__"]
+          [
+            p.base.hex
+            (
+              if isDarwin
+              then "0.85"
+              else "1.0"
+            )
+          ]
+          staticContent;
+        ".config/wezterm/colors.lua".text = let
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+          p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+        in ''
+          local M = {}
+
+          local color_scheme = '${names.spaced}'
+
+          local palette = {
+            rosewater = '${p.rosewater.hex}',
+            flamingo = '${p.flamingo.hex}',
+            pink = '${p.pink.hex}',
+            mauve = '${p.mauve.hex}',
+            red = '${p.red.hex}',
+            maroon = '${p.maroon.hex}',
+            peach = '${p.peach.hex}',
+            yellow = '${p.yellow.hex}',
+            green = '${p.green.hex}',
+            teal = '${p.teal.hex}',
+            sky = '${p.sky.hex}',
+            sapphire = '${p.sapphire.hex}',
+            blue = '${p.blue.hex}',
+            lavender = '${p.lavender.hex}',
+            text = '${p.text.hex}',
+            subtext1 = '${p.subtext1.hex}',
+            subtext0 = '${p.subtext0.hex}',
+            overlay2 = '${p.overlay2.hex}',
+            overlay1 = '${p.overlay1.hex}',
+            overlay0 = '${p.overlay0.hex}',
+            surface2 = '${p.surface2.hex}',
+            surface1 = '${p.surface1.hex}',
+            surface0 = '${p.surface0.hex}',
+            base = '${p.base.hex}',
+            mantle = '${p.mantle.hex}',
+            crust = '${p.crust.hex}',
+          }
+
+          M.palette = palette
+
+          M.apply_to_config = function(config)
+            config.color_scheme = color_scheme
+            config.colors = {
+              cursor_bg = palette.sapphire,
+              cursor_fg = palette.base,
+              cursor_border = palette.sapphire,
+              compose_cursor = palette.peach,
+              split = palette.blue,
+            }
+            config.command_palette_bg_color = palette.surface0
+            config.command_palette_fg_color = palette.text
+          end
+
+          return M
+        '';
         ".config/wezterm/format.lua".source = ../../.config/wezterm/format.lua;
         ".config/wezterm/keybinds.lua".source = ../../.config/wezterm/keybinds.lua;
         ".config/wezterm/mac.lua".source = ../../.config/wezterm/mac.lua;
@@ -525,7 +973,11 @@ in {
 
         # 新規追加
         # Ghostty: 個別ファイルをリンク
-        ".config/ghostty/config".source = ../../.config/ghostty/config;
+        ".config/ghostty/config".text = let
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+          staticConfig = builtins.readFile ../../.config/ghostty/config.static;
+        in
+          "# テーマ (catppuccin/nix パレットモジュール管理)\ntheme = ${names.kebab}\n" + staticConfig;
         ".config/ghostty/themes/catppuccin-mocha".source = ../../.config/ghostty/themes/catppuccin-mocha;
 
         # yazi: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
@@ -534,16 +986,89 @@ in {
           source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
           force = true;
         };
-        ".config/octorus".source = ../../.config/octorus;
-        ".config/helix".source = ../../.config/helix;
+        ".config/octorus/config.toml".text = let
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+        in ''
+          editor = "nvim"
+
+          [diff]
+          theme = "${names.spaced}"
+          tab_width = 4
+
+          [keybindings]
+          approve = "a"
+          request_changes = "r"
+          comment = "c"
+          suggestion = "s"
+
+          [ai]
+          reviewer = "claude"
+          reviewee = "claude"
+          max_iterations = 10
+          timeout_secs = 600
+        '';
+        ".config/helix/config.toml".text = let
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+          staticConfig = builtins.readFile ../../.config/helix/config.static.toml;
+        in
+          ''
+            [theme]
+            dark = "${names.snake}_transparent"
+            light = "catppuccin_latte"
+            fallback = "${names.snake}_transparent"
+
+          ''
+          + staticConfig;
+
+        ".config/helix/languages.toml".source = ../../.config/helix/languages.toml;
+
+        ".config/helix/themes/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).snake}_transparent.toml".text = let
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+        in ''
+          inherits = "${names.snake}"
+          "ui.background" = {}
+
+          "ui.statusline.normal" = { fg = "base", bg = "blue", modifiers = ["bold"] }
+          "ui.statusline.insert" = { fg = "base", bg = "green", modifiers = ["bold"] }
+          "ui.statusline.select" = { fg = "base", bg = "mauve", modifiers = ["bold"] }
+
+          "ui.bufferline" = { fg = "subtext0", bg = "mantle" }
+          "ui.bufferline.active" = { fg = "crust", bg = "mauve", modifiers = ["bold"] }
+          "ui.bufferline.background" = { bg = "crust" }
+
+          "ui.virtual.inlay-hint" = { fg = "sapphire", bg = "surface1" }
+          "ui.virtual.inlay-hint.parameter" = { fg = "lavender", bg = "surface1" }
+          "ui.virtual.inlay-hint.type" = { fg = "flamingo", bg = "surface1" }
+
+          "ui.cursor.primary.normal" = { bg = "blue" }
+
+          "ui.cursorline.primary" = { bg = "#343f5a" }
+
+          "diagnostic.error" = { underline = { color = "red", style = "line" } }
+          "diagnostic.warning" = { underline = { color = "yellow", style = "line" } }
+          "diagnostic.info" = { underline = { color = "sky", style = "line" } }
+          "diagnostic.hint" = { underline = { color = "teal", style = "line" } }
+          "diagnostic.unnecessary" = { modifiers = ["dim"] }
+        '';
         ".config/biome".source = ../../.config/biome;
         ".config/lazydocker".source = ../../.config/lazydocker;
-        ".config/lazygit".source = ../../.config/lazygit;
         ".config/readline".source = ../../.config/readline;
         ".config/taplo".source = ../../.config/taplo;
         ".config/termframe".source = ../../.config/termframe;
         # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
-        ".config/treemd".source = ../../.config/treemd; # XDG_CONFIG_HOME で解決
+        ".config/treemd/config.toml".text = let
+          names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+        in ''
+          [ui]
+          theme = "${names.pascal}"
+          outline_width = 30
+
+          [terminal]
+          color_mode = "auto"
+
+          [image]
+          renderer = "kitty"
+        '';
 
         # bin: ユーザースクリプト (Deno/Bun/Shell)
         # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
@@ -556,6 +1081,8 @@ in {
       // lib.optionalAttrs (!isDarwin) {
         ".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
         ".docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
+        # lazygit WSL 固有設定 (クリップボード連携)
+        ".config/lazygit/config.wsl.yml".source = ../../.config/lazygit/config.wsl.yml;
       }
       # macOS: Biome グローバル設定 (~/Library/Application Support/biome/)
       // lib.optionalAttrs isDarwin {
@@ -572,17 +1099,8 @@ in {
     options = "--delete-older-than 7d";
   };
 
-  programs.home-manager.enable = true;
-
   # Home Manager 適用後に実行されるスクリプト
   home.activation = {
-    # リンク作成前に衝突するディレクトリを削除
-    removeConflictingDirs = lib.hm.dag.entryBefore ["checkLinkTargets"] ''
-      # btop ディレクトリが実ディレクトリの場合は削除
-      if [ -d "$HOME/.config/btop" ] && [ ! -L "$HOME/.config/btop" ]; then
-        $DRY_RUN_CMD rm -rf "$HOME/.config/btop"
-      fi
-    '';
     # win32yank.exe を ~/bin/ にコピー (WSL クリップボード連携)
     copyWin32yank = lib.mkIf (!isDarwin) (lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD mkdir -p "$HOME/bin"
@@ -642,17 +1160,6 @@ in {
       done
     '';
 
-    # btop ディレクトリを書き込み可能にする (btopが設定を書き込むため)
-    fixBtopConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      if [ -L "$HOME/.config/btop" ]; then
-        BTOP_TARGET=$(readlink "$HOME/.config/btop")
-        $DRY_RUN_CMD rm "$HOME/.config/btop"
-        $DRY_RUN_CMD mkdir -p "$HOME/.config/btop"
-        $DRY_RUN_CMD cp -r "$BTOP_TARGET/"* "$HOME/.config/btop/"
-        $DRY_RUN_CMD chmod -R u+w "$HOME/.config/btop"
-      fi
-    '';
-
     # codex: git管理の設定 (tui等) とローカルの [projects] をマージ
     mergeCodexConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
       CODEX_DIR="$HOME/.config/codex"
@@ -670,6 +1177,18 @@ in {
         $DRY_RUN_CMD cp "$BASE" "$TARGET"
       fi
     '';
+
+    # WezTerm: WSL → Windows 側に設定ファイルをコピー (home-manager switch で自動反映)
+    copyWezTermConfig = lib.mkIf (!isDarwin) (lib.hm.dag.entryAfter ["linkGeneration"] ''
+      WINUSER=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r')
+      WEZTERM_DIR="/mnt/c/Users/$WINUSER/.config/wezterm"
+      if [ -d "/mnt/c/Users/$WINUSER" ]; then
+        $DRY_RUN_CMD mkdir -p "$WEZTERM_DIR"
+        for f in "$HOME/.config/wezterm/"*.lua; do
+          [ -f "$f" ] && $DRY_RUN_CMD cp -f "$f" "$WEZTERM_DIR/"
+        done
+      fi
+    '');
 
     # WezTerm.app を /Applications にリンク (Dock対応)
     linkWezTermApp = lib.mkIf (isDarwin && !isCI) (lib.hm.dag.entryAfter ["linkGeneration"] ''

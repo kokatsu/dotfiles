@@ -221,21 +221,17 @@ zsh-defer -a +1 +2 -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || 
 # fzf (https://github.com/junegunn/fzf)
 # ------------------------------------------------------------------------------
 
-# https://github.com/catppuccin/fzf
-export FZF_DEFAULT_OPTS=" \
---color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
---color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
---color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8 \
---color=selected-bg:#45475a \
---color=border:#6c7086,label:#cdd6f4"
+# fzf colors は catppuccin/nix (programs.fzf.colors) で管理
+# FZF_DEFAULT_OPTS は home.sessionVariables 経由で設定される
 
 # ------------------------------------------------------------------------------
 # Lazygit (https://github.com/jesseduffield/lazygit)
 # ------------------------------------------------------------------------------
 
-LG_CONFIG_FILE=$XDG_CONFIG_HOME/lazygit/config.yml,$XDG_CONFIG_HOME/lazygit/catppuccin-mocha-blue.yml
+# lazygit の設定とテーマは catppuccin/nix + programs.lazygit で管理
+# LG_CONFIG_FILE は home.sessionVariables 経由で設定される
 if (( _IS_WSL )); then
-  LG_CONFIG_FILE="$LG_CONFIG_FILE,$XDG_CONFIG_HOME/lazygit/config.wsl.yml"
+  LG_CONFIG_FILE="${LG_CONFIG_FILE:+$LG_CONFIG_FILE,}$XDG_CONFIG_HOME/lazygit/config.wsl.yml"
 fi
 export LG_CONFIG_FILE
 
@@ -246,7 +242,7 @@ export LG_CONFIG_FILE
 # https://github.com/catppuccin/catppuccin/discussions/2220
 # https://github.com/catppuccin/catppuccin/discussions/2220#discussioncomment-9476399
 if [[ ! -f "$ZSH_EVALCACHE_DIR/ls_colors_cache" ]]; then
-  vivid generate catppuccin-mocha > "$ZSH_EVALCACHE_DIR/ls_colors_cache"
+  vivid generate ${CATPPUCCIN_VIVID_THEME:-catppuccin-mocha} > "$ZSH_EVALCACHE_DIR/ls_colors_cache"
 fi
 export LS_COLORS="$(< $ZSH_EVALCACHE_DIR/ls_colors_cache)"
 

@@ -41,6 +41,30 @@ pub const theme_catppuccin_mocha = Theme{
     .dim = "\x1b[38;2;108;112;134m", // Overlay0 (#6c7086)
 };
 
+pub const theme_catppuccin_latte = Theme{
+    .model = "\x1b[38;2;30;102;245m",
+    .green = "\x1b[38;2;64;160;43m",
+    .yellow = "\x1b[38;2;223;142;29m",
+    .red = "\x1b[38;2;210;15;57m",
+    .dim = "\x1b[38;2;156;160;176m",
+};
+
+pub const theme_catppuccin_frappe = Theme{
+    .model = "\x1b[38;2;140;170;238m",
+    .green = "\x1b[38;2;166;209;137m",
+    .yellow = "\x1b[38;2;229;200;144m",
+    .red = "\x1b[38;2;231;130;132m",
+    .dim = "\x1b[38;2;115;121;148m",
+};
+
+pub const theme_catppuccin_macchiato = Theme{
+    .model = "\x1b[38;2;138;173;244m",
+    .green = "\x1b[38;2;166;218;149m",
+    .yellow = "\x1b[38;2;238;212;159m",
+    .red = "\x1b[38;2;237;135;150m",
+    .dim = "\x1b[38;2;110;115;141m",
+};
+
 pub const ThemeOverrides = struct {
     model: ?[]const u8 = null,
     green: ?[]const u8 = null,
@@ -55,6 +79,9 @@ pub const ThemeOverrides = struct {
 pub fn buildTheme(theme_name: ?[]const u8, overrides: ThemeOverrides) Theme {
     var theme = if (theme_name) |name| blk: {
         if (mem.eql(u8, name, "catppuccin-mocha")) break :blk theme_catppuccin_mocha;
+        if (mem.eql(u8, name, "catppuccin-latte")) break :blk theme_catppuccin_latte;
+        if (mem.eql(u8, name, "catppuccin-frappe")) break :blk theme_catppuccin_frappe;
+        if (mem.eql(u8, name, "catppuccin-macchiato")) break :blk theme_catppuccin_macchiato;
         break :blk theme_default;
     } else theme_default;
 
