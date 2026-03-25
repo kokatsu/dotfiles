@@ -105,7 +105,7 @@ in {
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=takt
   takt = _final: prev: let
-    version = "0.33.0";
+    version = "0.33.1";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
       hash = "sha256-iZkX9pXfdRuxfCNbxL+/IKow3pd1lYrKQddcknS2sSg=";
