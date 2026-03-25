@@ -348,6 +348,8 @@ in {
         termshot # ターミナルスクリーンショット (PNG)
         # https://github.com/jonas/tig
         tig # Git TUI
+        # https://github.com/xampprocky/tokei
+        tokei # コード統計ツール (行数カウント)
         # https://github.com/Epistates/treemd
         treemd # Markdown navigator TUI
         # https://github.com/Gaurav-Gosain/tuios
