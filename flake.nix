@@ -140,6 +140,7 @@
 
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
+      customOverlays.direnv-darwin-fix
       customOverlays.nodejs-22-fix
 
       customOverlays.cava-darwin-fix
