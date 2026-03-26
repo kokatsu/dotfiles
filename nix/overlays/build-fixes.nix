@@ -98,6 +98,17 @@
     });
   };
 
+  # Fix direnv build on darwin: CGO_ENABLED=0 conflicts with -linkmode=external
+  direnv-darwin-fix = _final: prev: {
+    direnv = prev.direnv.overrideAttrs (old: {
+      postPatch =
+        (old.postPatch or "")
+        + ''
+          substituteInPlace GNUmakefile --replace-fail " -linkmode=external" ""
+        '';
+    });
+  };
+
   # Fix nodejs 22.x build failure (clang crash during V8 compilation on macOS)
   # Alias nodejs_22 to nodejs_24 so all dependent packages (vtsls, etc.) build
   nodejs-22-fix = _final: prev: {
