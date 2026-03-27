@@ -1,5 +1,6 @@
 ---@diagnostic disable-next-line: assign-type-mismatch
 local wezterm = require('wezterm') ---@type Wezterm
+package.path = wezterm.config_dir .. '/?.lua;' .. package.path
 local platform = require('platform')
 
 local is_windows = platform.is_windows
