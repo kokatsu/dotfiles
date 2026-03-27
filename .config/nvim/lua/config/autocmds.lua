@@ -101,9 +101,13 @@ do
           local last = last_loaded[name]
           if not last then
             -- 新規追加プラグインには猶予期間を設ける
-            -- plugin._.installed はインストール時のタイムスタンプ（秒）
-            local installed_at = plugin._ and plugin._.installed
-            if not installed_at or (os.time() - installed_at) >= unused_days_threshold * seconds_per_day then
+            -- プラグインディレクトリの変更日時をインストール日の代替とする
+            local dir_mtime = plugin.dir and vim.fn.getftime(plugin.dir)
+            if
+              not dir_mtime
+              or dir_mtime <= 0
+              or (os.time() - dir_mtime) >= unused_days_threshold * seconds_per_day
+            then
               table.insert(unused, name .. ' (ログに記録なし)')
             end
           elseif last < threshold_date then
