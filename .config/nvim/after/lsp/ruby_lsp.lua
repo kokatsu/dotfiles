@@ -57,15 +57,7 @@ local ruby_lsp_config = {
   on_attach = function(client, bufnr)
     -- CodeLens自動更新
     if client:supports_method('textDocument/codeLens', bufnr) then
-      vim.api.nvim_create_autocmd({ 'BufEnter', 'InsertLeave', 'BufWritePost' }, {
-        buffer = bufnr,
-        callback = function()
-          vim.lsp.codelens.refresh({ bufnr = bufnr })
-        end,
-        desc = 'Ruby LSP: Refresh CodeLens',
-      })
-      -- 初回リフレッシュ
-      vim.lsp.codelens.refresh({ bufnr = bufnr })
+      vim.lsp.codelens.enable(true, { bufnr = bufnr })
     end
   end,
 }
