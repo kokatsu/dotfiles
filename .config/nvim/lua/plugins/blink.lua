@@ -38,7 +38,22 @@ return {
       ['<Tab>'] = {
         'accept',
         function()
-          if vim.lsp.inline_completion.get() then
+          if
+            vim.lsp.inline_completion.get({
+              on_accept = function(item)
+                -- Clamp end_col to actual line length (Neovim bug workaround)
+                -- https://github.com/neovim/neovim/issues/35971
+                if item.range then
+                  local end_row = item.range.end_.row
+                  local line = vim.api.nvim_buf_get_lines(0, end_row, end_row + 1, false)[1]
+                  if line and item.range.end_.col > #line then
+                    item.range.end_.col = #line
+                  end
+                end
+                return item
+              end,
+            })
+          then
             return true
           end
         end,

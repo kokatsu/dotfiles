@@ -40,14 +40,16 @@ return {
     {
       ']d',
       function()
-        require('trouble').next({ skip_groups = true, jump = true })
+        ---@diagnostic disable-next-line: missing-fields, missing-parameter
+        require('trouble').next({ jump = true })
       end,
       desc = 'Next diagnostic (Trouble)',
     },
     {
       '[d',
       function()
-        require('trouble').prev({ skip_groups = true, jump = true })
+        ---@diagnostic disable-next-line: missing-fields, missing-parameter
+        require('trouble').prev({ jump = true })
       end,
       desc = 'Previous diagnostic (Trouble)',
     },
