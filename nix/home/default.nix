@@ -487,6 +487,8 @@ in {
         taplo # TOML LSP
         # https://github.com/hrsh7th/vscode-langservers-extracted
         vscode-langservers-extracted # HTML/CSS/JSON/ESLint LSP
+        # https://github.com/microsoft/typescript-go
+        typescript-go # TypeScript Go コンパイラ (tsgo)
         # https://github.com/yioneko/vtsls
         vtsls # TypeScript LSP
         # https://github.com/vuejs/language-tools
