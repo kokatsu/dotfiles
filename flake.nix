@@ -91,7 +91,6 @@
       inputs.neovim-nightly-overlay.overlays.default
       customOverlays.agent-browser
       customOverlays.cc-statusline
-      customOverlays.ccusage
       customOverlays.daily
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
