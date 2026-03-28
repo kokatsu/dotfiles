@@ -56,13 +56,6 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }deck $VERSION"
           fi
 
-          if echo "$DIFF" | grep -q 'ccusage'; then
-            echo "has_ccusage=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*ccusage" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            echo "version_ccusage=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }ccusage $VERSION"
-          fi
-
           if echo "$DIFF" | grep -q 'agent-browser'; then
             echo "has_agent_browser=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*agent-browser" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -206,18 +199,6 @@ jobs:
             HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
             sed -i "/deck = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
-
-      - name: Update ccusage hash
-        if: steps.detect.outputs.has_ccusage == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_ccusage }}
-        run: |
-          OVERLAY="nix/overlays/source-builds.nix"
-
-          URL="https://registry.npmjs.org/ccusage/-/ccusage-${VERSION}.tgz"
-          HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-          # Update the hash in ccusage section
-          sed -i "/ccusage = _final: prev: {/,/^  };/{s|hash = \"sha256-[^\"]*\"|hash = \"${HASH}\"|}" "$OVERLAY"
 
       - name: Update agent-browser hashes
         if: steps.detect.outputs.has_agent_browser == 'true'

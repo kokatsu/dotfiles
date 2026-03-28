@@ -1,44 +1,4 @@
 {
-  # ccusage - Claude API usage viewer
-  # Uses pre-built package from npm (bundled, no runtime dependencies)
-  # Renovate: datasource=npm depName=ccusage
-  ccusage = _final: prev: {
-    ccusage = prev.stdenvNoCC.mkDerivation rec {
-      pname = "ccusage";
-      version = "18.0.10";
-
-      src = prev.fetchurl {
-        url = "https://registry.npmjs.org/${pname}/-/${pname}-${version}.tgz";
-        hash = "sha256-YMJ8K2LmS0v0HeoRskfULZ7P7rVBpgYJRlDmZjndRiw=";
-      };
-
-      nativeBuildInputs = [prev.makeWrapper];
-
-      unpackPhase = ''
-        runHook preUnpack
-        mkdir -p source
-        tar -xzf $src -C source --strip-components=1
-        runHook postUnpack
-      '';
-
-      installPhase = ''
-        runHook preInstall
-        mkdir -p $out/{bin,lib/ccusage}
-        cp -r source/{dist,package.json,config-schema.json} $out/lib/ccusage/
-        makeWrapper ${prev.bun}/bin/bun $out/bin/ccusage \
-          --add-flags "$out/lib/ccusage/dist/index.js"
-        runHook postInstall
-      '';
-
-      meta = with prev.lib; {
-        description = "Claude API usage viewer";
-        homepage = "https://github.com/ryoppippi/ccusage";
-        license = licenses.mit;
-        mainProgram = "ccusage";
-      };
-    };
-  };
-
   # cssmodules-language-server - CSS Modules LSP
   # Uses buildNpmPackage from GitHub source
   # Renovate: datasource=npm depName=cssmodules-language-server
