@@ -90,9 +90,7 @@ fn getGitBranch(buf: *[256]u8, cwd: []const u8) ?[]const u8 {
         // Move to parent directory
         if (mem.lastIndexOfScalar(u8, dir, '/')) |sep| {
             if (sep == 0) {
-                // Check root
-                const root_path = std.fmt.bufPrint(&path_buf, "/.git/HEAD", .{}) catch return null;
-                return readGitHead(buf, root_path);
+                return readGitHead(buf, "/.git/HEAD");
             }
             dir = dir[0..sep];
         } else {
