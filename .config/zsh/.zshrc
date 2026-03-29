@@ -152,15 +152,7 @@ setopt no_beep
 # GEM_HOME (hm-session-vars.sh の PATH 設定が WezTerm WSL ドメインで反映されない問題の回避)
 [[ -d "$HOME/.gem/bin" ]] && [[ ":$PATH:" != *":$HOME/.gem/bin:"* ]] && export PATH="$HOME/.gem/bin:$PATH"
 
-# Editor
-export EDITOR="nvim"
-# export EDITOR="hx"
-
-# ------------------------------------------------------------------------------
-# bat (https://github.com/sharkdp/bat)
-# ------------------------------------------------------------------------------
-
-export BAT_CONFIG_DIR="${XDG_CONFIG_HOME}/bat"
+# EDITOR, BAT_CONFIG_DIR は home.sessionVariables で管理
 
 # ------------------------------------------------------------------------------
 # Cargo (https://github.com/rust-lang/cargo)
@@ -172,7 +164,7 @@ export BAT_CONFIG_DIR="${XDG_CONFIG_HOME}/bat"
 # Claude Code (https://docs.anthropic.com/ja/docs/claude-code/overview)
 # ------------------------------------------------------------------------------
 
-export CLAUDE_CONFIG_DIR="$XDG_CONFIG_HOME/claude"
+# CLAUDE_CONFIG_DIR は home.sessionVariables で管理
 export CLAUDE_CODE_TERMINAL=0
 
 # ------------------------------------------------------------------------------
@@ -203,19 +195,7 @@ zsh-defer -a +1 +2 -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || 
   ln -s "$XDG_CONFIG_HOME/duckdb/duckdbrc" "$HOME/.duckdbrc"
 }
 
-# ------------------------------------------------------------------------------
-# fastfetch (https://github.com/fastfetch-cli/fastfetch)
-# ------------------------------------------------------------------------------
-
-[ -e "$HOME/.config/fastfetch/config.jsonc" ] || {
-  mkdir -p "$HOME/.config/fastfetch"
-  ln -s "$XDG_CONFIG_HOME/fastfetch/config.jsonc" "$HOME/.config/fastfetch/config.jsonc"
-}
-
-# Cursor環境の場合はスキップ
-# if [[ "$TERM_PROGRAM" != "vscode" ]] && [[ "$CURSOR_TERMINAL" == "0" ]]; then
-#   fastfetch
-# fi
+# fastfetch は home.file で管理
 
 # ------------------------------------------------------------------------------
 # fzf (https://github.com/junegunn/fzf)
@@ -246,23 +226,7 @@ if [[ ! -f "$ZSH_EVALCACHE_DIR/ls_colors_cache" ]]; then
 fi
 export LS_COLORS="$(< $ZSH_EVALCACHE_DIR/ls_colors_cache)"
 
-# ------------------------------------------------------------------------------
-# psql (https://www.postgresql.org/docs/current/app-psql.html)
-# ------------------------------------------------------------------------------
-
-export PSQLRC=${XDG_CONFIG_HOME}/pg/.psqlrc
-
-# ------------------------------------------------------------------------------
-# ripgrep (https://github.com/BurntSushi/ripgrep)
-# ------------------------------------------------------------------------------
-
-export RIPGREP_CONFIG_PATH=$XDG_CONFIG_HOME/.ripgreprc
-
-# ------------------------------------------------------------------------------
-# taplo (https://github.com/tamasfe/taplo)
-# ------------------------------------------------------------------------------
-
-export TAPLO_CONFIG=$XDG_CONFIG_HOME/taplo/taplo.toml
+# PSQLRC, RIPGREP_CONFIG_PATH, TAPLO_CONFIG は home.sessionVariables で管理
 
 # ------------------------------------------------------------------------------
 # Starship (https://github.com/starship/starship)
