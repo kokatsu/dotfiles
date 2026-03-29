@@ -139,6 +139,43 @@ vim.keymap.set('n', '[f', goto_textobject('function.outer', 'prev'), { desc = 'P
 vim.keymap.set('n', ']c', goto_textobject('class.outer', 'next'), { desc = 'Next class' })
 vim.keymap.set('n', '[c', goto_textobject('class.outer', 'prev'), { desc = 'Previous class' })
 
+-- カーソル下の単語を一括置換
+vim.keymap.set('n', '#', function()
+  local current_word = vim.fn.expand('<cword>')
+  vim.api.nvim_feedkeys(':%s/' .. current_word .. '//g', 'n', false)
+  local ll = vim.api.nvim_replace_termcodes('<Left><Left>', true, true, true)
+  vim.api.nvim_feedkeys(ll, 'n', false)
+  vim.opt.hlsearch = true
+end, { desc = 'Substitute word under cursor' })
+
+-- zz → z → z でスクロール位置をサイクル（center → top → bottom）
+local zz_state = { pos = 0, last_time = 0 }
+
+vim.keymap.set('n', 'zz', function()
+  zz_state.pos = 1
+  zz_state.last_time = vim.loop.now()
+  vim.cmd('normal! zz')
+end, { desc = 'Scroll center (then z to cycle)' })
+
+vim.keymap.set('n', 'z', function()
+  local now = vim.loop.now()
+  if zz_state.pos > 0 and (now - zz_state.last_time) < 1000 then
+    zz_state.last_time = now
+    zz_state.pos = (zz_state.pos % 3) + 1
+    if zz_state.pos == 1 then
+      vim.cmd('normal! zz')
+    elseif zz_state.pos == 2 then
+      vim.cmd('normal! zt')
+    else
+      vim.cmd('normal! zb')
+    end
+  else
+    zz_state.pos = 0
+    local char = vim.fn.getcharstr()
+    vim.cmd('normal! z' .. char)
+  end
+end, { desc = 'Cycle scroll after zz / normal z commands' })
+
 vim.keymap.set('n', '<leader>yp', function()
   local absolute_path = vim.fn.expand('%:p')
 

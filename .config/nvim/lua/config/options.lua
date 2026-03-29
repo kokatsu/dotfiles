@@ -11,8 +11,8 @@ vim.o.winbar = '%=%m %f' -- ウィンドウバーの表示設定
 
 -- マウスを有効
 vim.opt.mouse = 'a'
--- クリップボードを共有
-vim.opt.clipboard = 'unnamed,unnamedplus'
+-- クリップボードはyank時のみ同期（autocmds.luaで制御）
+vim.opt.clipboard = ''
 
 -- WSL2環境でwin32yankを使用（wl-copyのprimary selection問題を回避）
 if os_utils.detect_os() == 'wsl' and vim.fn.executable('win32yank.exe') == 1 then
