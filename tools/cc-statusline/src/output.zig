@@ -23,6 +23,7 @@ pub const Theme = struct {
     bar_filled: []const u8 = "\xe2\x96\x88", // █ U+2588
     bar_transition: []const u8 = "\xe2\x96\x93", // ▓ U+2593
     bar_empty: []const u8 = "\xe2\x96\x91", // ░ U+2591
+    branch_max: usize = default_branch_max,
 };
 
 pub const theme_default = Theme{
@@ -74,6 +75,7 @@ pub const ThemeOverrides = struct {
     bar_filled: ?[]const u8 = null,
     bar_transition: ?[]const u8 = null,
     bar_empty: ?[]const u8 = null,
+    branch_max: ?[]const u8 = null,
 };
 
 pub fn buildTheme(theme_name: ?[]const u8, overrides: ThemeOverrides) Theme {
@@ -93,6 +95,7 @@ pub fn buildTheme(theme_name: ?[]const u8, overrides: ThemeOverrides) Theme {
     if (overrides.bar_filled) |v| theme.bar_filled = v;
     if (overrides.bar_transition) |v| theme.bar_transition = v;
     if (overrides.bar_empty) |v| theme.bar_empty = v;
+    theme.branch_max = parseBranchMax(overrides.branch_max);
 
     return theme;
 }
@@ -109,6 +112,7 @@ pub fn initTheme() Theme {
             .bar_filled = std.posix.getenv("CC_STATUSLINE_BAR_FILLED"),
             .bar_transition = std.posix.getenv("CC_STATUSLINE_BAR_TRANSITION"),
             .bar_empty = std.posix.getenv("CC_STATUSLINE_BAR_EMPTY"),
+            .branch_max = std.posix.getenv("CC_STATUSLINE_BRANCH_MAX"),
         },
     );
 }
@@ -216,7 +220,11 @@ pub fn formatIntComma(buf: []u8, value: i64) []const u8 {
     var tmp: [32]u8 = undefined;
     const digits = std.fmt.bufPrint(&tmp, "{d}", .{value}) catch return "?";
     const len = digits.len;
-    if (len <= 3) return std.fmt.bufPrint(buf, "{s}", .{digits}) catch "?";
+    if (len <= 3) {
+        if (buf.len < len) return "?";
+        @memcpy(buf[0..len], digits);
+        return buf[0..len];
+    }
 
     var pos: usize = 0;
     const first_group = len % 3;
@@ -275,10 +283,6 @@ pub fn parseBranchMax(val: ?[]const u8) usize {
     return default_branch_max;
 }
 
-pub fn getBranchMax() usize {
-    return parseBranchMax(std.posix.getenv("CC_STATUSLINE_BRANCH_MAX"));
-}
-
 // ============================================================
 // Output
 // ============================================================
@@ -310,7 +314,7 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
     // Git branch
     if (git_branch) |branch| {
         var trunc_buf: [256]u8 = undefined;
-        const display_branch = truncateBranch(&trunc_buf, branch, getBranchMax());
+        const display_branch = truncateBranch(&trunc_buf, branch, theme.branch_max);
         try w.print(" {s}|{s} \xf0\x9f\x8c\xbf {s}{s}{s}", .{ theme.dim, theme.reset, theme.green, display_branch, theme.reset });
     }
 
@@ -835,6 +839,7 @@ test "buildTheme default" {
     const theme = buildTheme(null, .{});
     try std.testing.expectEqualStrings(theme_default.model, theme.model);
     try std.testing.expectEqualStrings(theme_default.green, theme.green);
+    try std.testing.expectEqual(default_branch_max, theme.branch_max);
 }
 
 test "buildTheme catppuccin-mocha" {
@@ -856,6 +861,11 @@ test "buildTheme with overrides" {
     try std.testing.expectEqualStrings(theme_default.green, theme.green);
 }
 
+test "buildTheme with branch_max" {
+    const theme = buildTheme(null, .{ .branch_max = "30" });
+    try std.testing.expectEqual(@as(usize, 30), theme.branch_max);
+}
+
 // --- parseBranchMax ---
 
 test "parseBranchMax" {
@@ -865,12 +875,6 @@ test "parseBranchMax" {
     try std.testing.expectEqual(default_branch_max, parseBranchMax("3"));
     try std.testing.expectEqual(default_branch_max, parseBranchMax("abc"));
     try std.testing.expectEqual(default_branch_max, parseBranchMax(""));
-}
-
-// --- getBranchMax ---
-
-test "getBranchMax default" {
-    try std.testing.expectEqual(default_branch_max, getBranchMax());
 }
 
 // --- formatResetDuration (edge cases) ---
