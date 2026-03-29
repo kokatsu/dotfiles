@@ -10,9 +10,11 @@ const StdinInfo = output.StdinInfo;
 const RateLimitWindow = output.RateLimitWindow;
 
 const getObj = scan.getObj;
+const getObjField = scan.getObjField;
 const getStr = scan.getStr;
 const getF64 = scan.getF64;
 const getI64 = scan.getI64;
+const getI64Field = scan.getI64Field;
 
 // ============================================================
 // Stdin Parsing
@@ -39,33 +41,24 @@ fn parseStdin(allocator: std.mem.Allocator, data: []const u8) StdinInfo {
     const parsed = json.parseFromSlice(json.Value, allocator, data, .{}) catch return info;
     const root = getObj(parsed.value) orelse return info;
 
-    if (root.get("model")) |v| {
-        if (getObj(v)) |model| {
-            if (model.get("id")) |id| info.model_id = getStr(id);
-            if (model.get("display_name")) |name| info.model_name = getStr(name);
+    if (getObjField(root, "model")) |model| {
+        if (model.get("id")) |id| info.model_id = getStr(id);
+        if (model.get("display_name")) |name| info.model_name = getStr(name);
+    }
+    if (getObjField(root, "cost")) |cost| {
+        if (cost.get("total_cost_usd")) |usd| info.session_cost = getF64(usd);
+        if (cost.get("total_lines_added")) |la| info.lines_added = getI64(la);
+        if (cost.get("total_lines_removed")) |lr| info.lines_removed = getI64(lr);
+        if (cost.get("total_duration_ms")) |dur| {
+            if (getF64(dur)) |d| info.session_duration_ms = @as(i64, @intFromFloat(d));
         }
     }
-    if (root.get("cost")) |v| {
-        if (getObj(v)) |cost| {
-            if (cost.get("total_cost_usd")) |usd| info.session_cost = getF64(usd);
-            if (cost.get("total_lines_added")) |la| info.lines_added = getI64(la);
-            if (cost.get("total_lines_removed")) |lr| info.lines_removed = getI64(lr);
-            if (cost.get("total_duration_ms")) |dur| {
-                if (getF64(dur)) |d| info.session_duration_ms = @as(i64, @intFromFloat(d));
-            }
-        }
-    }
-    if (root.get("context_window")) |v| {
-        if (getObj(v)) |ctx| {
-            if (ctx.get("used_percentage")) |pct| info.context_pct = getF64(pct);
-            if (ctx.get("current_usage")) |cu| {
-                if (getObj(cu)) |usage| {
-                    const input = if (usage.get("input_tokens")) |t| getI64(t) orelse 0 else 0;
-                    const cache_create = if (usage.get("cache_creation_input_tokens")) |t| getI64(t) orelse 0 else 0;
-                    const cache_read = if (usage.get("cache_read_input_tokens")) |t| getI64(t) orelse 0 else 0;
-                    info.context_tokens = input + cache_create + cache_read;
-                }
-            }
+    if (getObjField(root, "context_window")) |ctx| {
+        if (ctx.get("used_percentage")) |pct| info.context_pct = getF64(pct);
+        if (getObjField(ctx, "current_usage")) |usage| {
+            info.context_tokens = getI64Field(usage, "input_tokens") +
+                getI64Field(usage, "cache_creation_input_tokens") +
+                getI64Field(usage, "cache_read_input_tokens");
         }
     }
     if (root.get("session_id")) |v| info.session_id = getStr(v);
@@ -73,19 +66,9 @@ fn parseStdin(allocator: std.mem.Allocator, data: []const u8) StdinInfo {
     if (root.get("cwd")) |v| info.cwd = getStr(v);
 
     // Parse rate_limits (added in Claude Code v2.1.80)
-    if (root.get("rate_limits")) |rl_val| {
-        if (getObj(rl_val)) |rl| {
-            if (rl.get("five_hour")) |fh_val| {
-                if (getObj(fh_val)) |fh| {
-                    info.rate_limit_5h = parseRateLimitWindow(fh);
-                }
-            }
-            if (rl.get("seven_day")) |sd_val| {
-                if (getObj(sd_val)) |sd| {
-                    info.rate_limit_7d = parseRateLimitWindow(sd);
-                }
-            }
-        }
+    if (getObjField(root, "rate_limits")) |rl| {
+        if (getObjField(rl, "five_hour")) |fh| info.rate_limit_5h = parseRateLimitWindow(fh);
+        if (getObjField(rl, "seven_day")) |sd| info.rate_limit_7d = parseRateLimitWindow(sd);
     }
 
     return info;
