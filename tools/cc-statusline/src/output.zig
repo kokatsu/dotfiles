@@ -195,8 +195,7 @@ pub fn buildProgressBar(buf: []u8, pct: f64, width: u8, bar_filled: []const u8, 
     const has_transition = frac > 0 and filled < width;
     const empty = width - filled - if (has_transition) @as(u8, 1) else @as(u8, 0);
     var pos: usize = 0;
-    var i: u8 = 0;
-    while (i < filled) : (i += 1) {
+    for (0..filled) |_| {
         if (pos + bar_filled.len > buf.len) break;
         @memcpy(buf[pos..][0..bar_filled.len], bar_filled);
         pos += bar_filled.len;
@@ -207,47 +206,10 @@ pub fn buildProgressBar(buf: []u8, pct: f64, width: u8, bar_filled: []const u8, 
             pos += bar_transition.len;
         }
     }
-    i = 0;
-    while (i < empty) : (i += 1) {
+    for (0..empty) |_| {
         if (pos + bar_empty.len > buf.len) break;
         @memcpy(buf[pos..][0..bar_empty.len], bar_empty);
         pos += bar_empty.len;
-    }
-    return buf[0..pos];
-}
-
-pub fn formatIntComma(buf: []u8, value: i64) []const u8 {
-    var tmp: [32]u8 = undefined;
-    const digits = std.fmt.bufPrint(&tmp, "{d}", .{value}) catch return "?";
-    const len = digits.len;
-    if (len <= 3) {
-        if (buf.len < len) return "?";
-        @memcpy(buf[0..len], digits);
-        return buf[0..len];
-    }
-
-    var pos: usize = 0;
-    const first_group = len % 3;
-    if (first_group > 0) {
-        for (digits[0..first_group]) |ch| {
-            if (pos >= buf.len) return "?";
-            buf[pos] = ch;
-            pos += 1;
-        }
-    }
-    var j: usize = first_group;
-    while (j < len) {
-        if (pos > 0) {
-            if (pos >= buf.len) return "?";
-            buf[pos] = ',';
-            pos += 1;
-        }
-        for (digits[j..][0..3]) |ch| {
-            if (pos >= buf.len) return "?";
-            buf[pos] = ch;
-            pos += 1;
-        }
-        j += 3;
     }
     return buf[0..pos];
 }
@@ -801,36 +763,6 @@ test "printFallback output" {
     try std.testing.expect(contains(out, "N/A"));
     try std.testing.expect(contains(out, "N/A today"));
     try std.testing.expectEqual(@as(usize, 2), countNewlines(out));
-}
-
-// --- formatIntComma ---
-
-test "formatIntComma small values" {
-    var buf: [32]u8 = undefined;
-    try std.testing.expectEqualStrings("0", formatIntComma(&buf, 0));
-    try std.testing.expectEqualStrings("1", formatIntComma(&buf, 1));
-    try std.testing.expectEqualStrings("999", formatIntComma(&buf, 999));
-}
-
-test "formatIntComma thousands" {
-    var buf: [32]u8 = undefined;
-    try std.testing.expectEqualStrings("1,000", formatIntComma(&buf, 1000));
-    try std.testing.expectEqualStrings("9,999", formatIntComma(&buf, 9999));
-}
-
-test "formatIntComma millions" {
-    var buf: [32]u8 = undefined;
-    try std.testing.expectEqualStrings("1,234,567", formatIntComma(&buf, 1234567));
-}
-
-test "formatIntComma negative" {
-    var buf: [32]u8 = undefined;
-    try std.testing.expectEqualStrings("-1,234", formatIntComma(&buf, -1234));
-}
-
-test "formatIntComma buffer overflow" {
-    var buf: [3]u8 = undefined;
-    try std.testing.expectEqualStrings("?", formatIntComma(&buf, 1000));
 }
 
 // --- buildTheme ---

@@ -303,16 +303,9 @@ fn computeCosts(entries: []TranscriptEntry, now_ms: i64, day_start_ms: i64, rese
 
 const cache_header_size: usize = 4 + 4 + 8 + 8 + 8 + 1 + 8 + 8 + 8 + 8 + 8 + 4; // 77 bytes
 
-fn readI64(data: []const u8, pos: usize) i64 {
-    return @bitCast(mem.readInt(u64, data[pos..][0..8], .little));
-}
-
-fn readF64(data: []const u8, pos: usize) f64 {
-    return @bitCast(mem.readInt(u64, data[pos..][0..8], .little));
-}
-
-fn readU32(data: []const u8, pos: usize) u32 {
-    return mem.readInt(u32, data[pos..][0..4], .little);
+fn readVal(comptime T: type, data: []const u8, pos: usize) T {
+    const Int = std.meta.Int(.unsigned, @bitSizeOf(T));
+    return @bitCast(mem.readInt(Int, data[pos..][0..@sizeOf(T)], .little));
 }
 
 fn parseCacheBytes(allocator: std.mem.Allocator, content: []const u8, day_start_ms: i64) ?CacheResult {
@@ -320,19 +313,19 @@ fn parseCacheBytes(allocator: std.mem.Allocator, content: []const u8, day_start_
 
     // Deserialize header fields manually
     if (!mem.eql(u8, content[0..4], &cache_magic)) return null;
-    const version = readU32(content, 4);
+    const version = readVal(u32, content, 4);
     if (version != cache_ver) return null;
 
-    const write_time_s = readI64(content, 8);
-    const last_full_scan_s = readI64(content, 16);
-    const today_cost = readF64(content, 24);
+    const write_time_s = readVal(i64, content, 8);
+    const last_full_scan_s = readVal(i64, content, 16);
+    const today_cost = readVal(f64, content, 24);
     const has_block = content[32];
-    const block_start_ms = readI64(content, 33);
-    const block_end_ms = readI64(content, 41);
-    const block_cost = readF64(content, 49);
-    const block_burn_rate = readF64(content, 57);
-    const hdr_day_start_ms = readI64(content, 65);
-    const file_count = readU32(content, 73);
+    const block_start_ms = readVal(i64, content, 33);
+    const block_end_ms = readVal(i64, content, 41);
+    const block_cost = readVal(f64, content, 49);
+    const block_burn_rate = readVal(f64, content, 57);
+    const hdr_day_start_ms = readVal(i64, content, 65);
+    const file_count = readVal(u32, content, 73);
 
     // Invalidate on day boundary change
     if (hdr_day_start_ms != day_start_ms) return null;
@@ -362,11 +355,11 @@ fn parseCacheBytes(allocator: std.mem.Allocator, content: []const u8, day_start_
         const path = allocator.dupe(u8, content[pos..][0..path_len]) catch break;
         pos += path_len;
         if (pos + 24 > content.len) break;
-        const file_size = @as(i64, @bitCast(mem.readInt(u64, content[pos..][0..8], .little)));
+        const file_size = readVal(i64, content, pos);
         pos += 8;
-        const per_file_cost: f64 = @bitCast(mem.readInt(u64, content[pos..][0..8], .little));
+        const per_file_cost = readVal(f64, content, pos);
         pos += 8;
-        const parsed_size = @as(i64, @bitCast(mem.readInt(u64, content[pos..][0..8], .little)));
+        const parsed_size = readVal(i64, content, pos);
         pos += 8;
         files.append(allocator, .{
             .path = path,
@@ -392,46 +385,36 @@ fn readCache(allocator: std.mem.Allocator, day_start_ms: i64) ?CacheResult {
     return parseCacheBytes(allocator, content, day_start_ms);
 }
 
-fn writeI64(w: anytype, value: i64) !void {
-    var buf: [8]u8 = undefined;
-    mem.writeInt(u64, &buf, @bitCast(value), .little);
-    try w.writeAll(&buf);
-}
-
-fn writeF64(w: anytype, value: f64) !void {
-    var buf: [8]u8 = undefined;
-    mem.writeInt(u64, &buf, @bitCast(value), .little);
-    try w.writeAll(&buf);
-}
-
-fn writeU32(w: anytype, value: u32) !void {
-    var buf: [4]u8 = undefined;
-    mem.writeInt(u32, &buf, value, .little);
+fn writeVal(w: anytype, value: anytype) !void {
+    const T = @TypeOf(value);
+    const Int = std.meta.Int(.unsigned, @bitSizeOf(T));
+    var buf: [@sizeOf(T)]u8 = undefined;
+    mem.writeInt(Int, &buf, @bitCast(value), .little);
     try w.writeAll(&buf);
 }
 
 fn serializeCacheBytes(w: anytype, result: ScanResult, files: []const CachedFileEntry, now_s: i64, last_full_scan_s: i64, day_start_ms: i64) !void {
     try w.writeAll(&cache_magic);
-    try writeU32(w, cache_ver);
-    try writeI64(w, now_s);
-    try writeI64(w, last_full_scan_s);
-    try writeF64(w, result.today_cost);
+    try writeVal(w, cache_ver);
+    try writeVal(w, now_s);
+    try writeVal(w, last_full_scan_s);
+    try writeVal(w, result.today_cost);
     try w.writeAll(&[_]u8{if (result.block != null) 1 else 0});
-    try writeI64(w, if (result.block) |b| b.start_ms else 0);
-    try writeI64(w, if (result.block) |b| b.end_ms else 0);
-    try writeF64(w, if (result.block) |b| b.cost else 0);
-    try writeF64(w, if (result.block) |b| b.burn_rate_per_hr else 0);
-    try writeI64(w, day_start_ms);
-    try writeU32(w, @intCast(files.len));
+    try writeVal(w, if (result.block) |b| b.start_ms else @as(i64, 0));
+    try writeVal(w, if (result.block) |b| b.end_ms else @as(i64, 0));
+    try writeVal(w, if (result.block) |b| b.cost else @as(f64, 0));
+    try writeVal(w, if (result.block) |b| b.burn_rate_per_hr else @as(f64, 0));
+    try writeVal(w, day_start_ms);
+    try writeVal(w, @as(u32, @intCast(files.len)));
 
     for (files) |entry| {
         var len_buf: [2]u8 = undefined;
         mem.writeInt(u16, &len_buf, @intCast(entry.path.len), .little);
         try w.writeAll(&len_buf);
         try w.writeAll(entry.path);
-        try writeI64(w, entry.file_size);
-        try writeF64(w, entry.per_file_cost);
-        try writeI64(w, entry.parsed_size);
+        try writeVal(w, entry.file_size);
+        try writeVal(w, entry.per_file_cost);
+        try writeVal(w, entry.parsed_size);
     }
 }
 
