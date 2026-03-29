@@ -59,6 +59,10 @@ pub fn getObj(val: json.Value) ?json.ObjectMap {
     };
 }
 
+pub fn getObjField(obj: json.ObjectMap, key: []const u8) ?json.ObjectMap {
+    return if (obj.get(key)) |v| getObj(v) else null;
+}
+
 pub fn getStr(val: json.Value) ?[]const u8 {
     return switch (val) {
         .string => |s| s,
@@ -80,6 +84,10 @@ pub fn getI64(val: json.Value) ?i64 {
         .float => |f| @as(i64, @intFromFloat(f)),
         else => null,
     };
+}
+
+pub fn getI64Field(obj: json.ObjectMap, key: []const u8) i64 {
+    return if (obj.get(key)) |v| getI64(v) orelse 0 else 0;
 }
 
 // ============================================================
@@ -153,10 +161,10 @@ fn parseJsonlContent(allocator: std.mem.Allocator, dedup_alloc: std.mem.Allocato
         const root = getObj(parsed.value) orelse continue;
 
         // Deduplication by messageId:requestId
-        const msg_id = if (root.get("message")) |mv| blk: {
-            const mo = getObj(mv) orelse break :blk @as(?[]const u8, null);
-            break :blk if (mo.get("id")) |id| getStr(id) else null;
-        } else null;
+        const msg_id = if (getObjField(root, "message")) |mo|
+            (if (mo.get("id")) |id| getStr(id) else null)
+        else
+            null;
         const req_id = if (root.get("requestId")) |v| getStr(v) else null;
         if (msg_id != null and req_id != null) {
             const dedup_key = std.fmt.allocPrint(dedup_alloc, "{s}:{s}", .{ msg_id.?, req_id.? }) catch continue;
@@ -170,14 +178,8 @@ fn parseJsonlContent(allocator: std.mem.Allocator, dedup_alloc: std.mem.Allocato
         };
         const timestamp_ms = time.parseIso8601ToMs(timestamp_str) orelse continue;
 
-        const msg = blk: {
-            const v = root.get("message") orelse continue;
-            break :blk getObj(v) orelse continue;
-        };
-        const uobj = blk: {
-            const v = msg.get("usage") orelse continue;
-            break :blk getObj(v) orelse continue;
-        };
+        const msg = getObjField(root, "message") orelse continue;
+        const uobj = getObjField(msg, "usage") orelse continue;
         const model_str = if (msg.get("model")) |v| (getStr(v) orelse "unknown") else "unknown";
 
         const is_fast = if (uobj.get("speed")) |sv| blk: {
@@ -186,10 +188,10 @@ fn parseJsonlContent(allocator: std.mem.Allocator, dedup_alloc: std.mem.Allocato
         } else false;
 
         const usage = TokenUsage{
-            .input_tokens = if (uobj.get("input_tokens")) |v| getI64(v) orelse 0 else 0,
-            .output_tokens = if (uobj.get("output_tokens")) |v| getI64(v) orelse 0 else 0,
-            .cache_creation_input_tokens = if (uobj.get("cache_creation_input_tokens")) |v| getI64(v) orelse 0 else 0,
-            .cache_read_input_tokens = if (uobj.get("cache_read_input_tokens")) |v| getI64(v) orelse 0 else 0,
+            .input_tokens = getI64Field(uobj, "input_tokens"),
+            .output_tokens = getI64Field(uobj, "output_tokens"),
+            .cache_creation_input_tokens = getI64Field(uobj, "cache_creation_input_tokens"),
+            .cache_read_input_tokens = getI64Field(uobj, "cache_read_input_tokens"),
             .is_fast = is_fast,
         };
 
@@ -204,6 +206,17 @@ fn parseJsonlContent(allocator: std.mem.Allocator, dedup_alloc: std.mem.Allocato
 // ============================================================
 // Block Detection & Cost Calculation
 // ============================================================
+
+fn entryCost(entry: TranscriptEntry) f64 {
+    const p = pricing.findPricing(entry.model) orelse return 0;
+    return pricing.calculateEntryCost(p, entry.usage);
+}
+
+fn computeBurnRate(cost: f64, start_ms: i64, now_ms: i64) f64 {
+    const elapsed_ms: i64 = @max(now_ms - start_ms, 60000);
+    const duration_min: f64 = @as(f64, @floatFromInt(elapsed_ms)) / 60000.0;
+    return cost / duration_min * 60.0;
+}
 
 fn identifyActiveBlock(entries: []TranscriptEntry, now_ms: i64) ?BlockInfo {
     if (entries.len == 0) return null;
@@ -230,21 +243,15 @@ fn identifyActiveBlock(entries: []TranscriptEntry, now_ms: i64) ?BlockInfo {
 
     var block_cost: f64 = 0;
     for (entries[block_entry_start..]) |entry| {
-        if (pricing.findPricing(entry.model)) |p| {
-            block_cost += pricing.calculateEntryCost(p, entry.usage);
-        }
+        block_cost += entryCost(entry);
     }
 
     const block_end_ms = block_start_ms + block_duration_ms;
-    const elapsed_ms: i64 = @max(now_ms - block_start_ms, 60000);
-    const duration_min: f64 = @as(f64, @floatFromInt(elapsed_ms)) / 60000.0;
-    const burn_rate = block_cost / duration_min * 60.0;
-
     return .{
         .start_ms = block_start_ms,
         .end_ms = block_end_ms,
         .cost = block_cost,
-        .burn_rate_per_hr = burn_rate,
+        .burn_rate_per_hr = computeBurnRate(block_cost, block_start_ms, now_ms),
     };
 }
 
@@ -253,23 +260,17 @@ fn computeBlockFromWindow(entries: []const TranscriptEntry, window_start_ms: i64
     var count: usize = 0;
     for (entries) |entry| {
         if (entry.timestamp_ms >= window_start_ms and entry.timestamp_ms <= window_end_ms) {
-            if (pricing.findPricing(entry.model)) |p| {
-                block_cost += pricing.calculateEntryCost(p, entry.usage);
-            }
+            block_cost += entryCost(entry);
             count += 1;
         }
     }
     if (count == 0) return null;
 
-    const elapsed_ms: i64 = @max(now_ms - window_start_ms, 60000);
-    const duration_min: f64 = @as(f64, @floatFromInt(elapsed_ms)) / 60000.0;
-    const burn_rate = block_cost / duration_min * 60.0;
-
     return .{
         .start_ms = window_start_ms,
         .end_ms = window_end_ms,
         .cost = block_cost,
-        .burn_rate_per_hr = burn_rate,
+        .burn_rate_per_hr = computeBurnRate(block_cost, window_start_ms, now_ms),
     };
 }
 
@@ -278,9 +279,7 @@ fn computeCosts(allocator: std.mem.Allocator, entries: []TranscriptEntry, now_ms
     var today_cost: f64 = 0;
     for (entries) |entry| {
         if (entry.timestamp_ms >= today_start_ms) {
-            if (pricing.findPricing(entry.model)) |p| {
-                today_cost += pricing.calculateEntryCost(p, entry.usage);
-            }
+            today_cost += entryCost(entry);
         }
     }
 
@@ -533,9 +532,7 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
 
             var file_diff_cost: f64 = 0;
             for (entries.items) |e| {
-                if (pricing.findPricing(e.model)) |p| {
-                    file_diff_cost += pricing.calculateEntryCost(p, e.usage);
-                }
+                file_diff_cost += entryCost(e);
             }
 
             total_diff_cost += file_diff_cost;
@@ -559,13 +556,11 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
         if (total_diff_cost == 0) break :blk cached.scan.block;
         if (cached.scan.block) |existing_block| {
             const new_block_cost = existing_block.cost + total_diff_cost;
-            const elapsed_ms: i64 = @max(now_ms - existing_block.start_ms, 60000);
-            const duration_min: f64 = @as(f64, @floatFromInt(elapsed_ms)) / 60000.0;
             break :blk BlockInfo{
                 .start_ms = existing_block.start_ms,
                 .end_ms = existing_block.end_ms,
                 .cost = new_block_cost,
-                .burn_rate_per_hr = new_block_cost / duration_min * 60.0,
+                .burn_rate_per_hr = computeBurnRate(new_block_cost, existing_block.start_ms, now_ms),
             };
         }
         break :blk @as(?BlockInfo, null);
@@ -612,9 +607,7 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
         var per_cost: f64 = 0;
         for (new_items) |entry| {
             if (entry.timestamp_ms >= day_start_ms) {
-                if (pricing.findPricing(entry.model)) |p| {
-                    per_cost += pricing.calculateEntryCost(p, entry.usage);
-                }
+                per_cost += entryCost(entry);
             }
         }
         cache_files.append(allocator, .{

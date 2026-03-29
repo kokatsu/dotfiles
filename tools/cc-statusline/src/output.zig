@@ -162,16 +162,18 @@ pub fn formatCurrency(buf: []u8, value: f64) []const u8 {
     return std.fmt.bufPrint(buf, "${d:.2}", .{value}) catch "$?.??";
 }
 
-pub fn contextColor(theme: Theme, pct: f64) []const u8 {
-    if (pct < 50.0) return theme.green;
-    if (pct < 75.0) return theme.yellow;
+fn thresholdColor(theme: Theme, value: f64, yellow: f64, red: f64) []const u8 {
+    if (value < yellow) return theme.green;
+    if (value < red) return theme.yellow;
     return theme.red;
 }
 
+pub fn contextColor(theme: Theme, pct: f64) []const u8 {
+    return thresholdColor(theme, pct, 50.0, 75.0);
+}
+
 pub fn rateLimitUsageColor(theme: Theme, used_pct: f64) []const u8 {
-    if (used_pct < 50.0) return theme.green;
-    if (used_pct < 80.0) return theme.yellow;
-    return theme.red;
+    return thresholdColor(theme, used_pct, 50.0, 80.0);
 }
 
 pub fn rateLimitTimeColor(theme: Theme, remaining_ms: i64) []const u8 {
@@ -281,6 +283,25 @@ pub fn getBranchMax() usize {
 // Output
 // ============================================================
 
+fn writeRateLimitWindow(w: *Writer, theme: Theme, label: []const u8, rl: RateLimitWindow, now_ms: i64) !void {
+    const usage_color = rateLimitUsageColor(theme, rl.used_percentage);
+    var bar_buf: [128]u8 = undefined;
+    const bar = buildProgressBar(&bar_buf, rl.used_percentage, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
+    try w.print("{s}{s}{s} {s}{s}{s} {s}{d:.0}%{s}", .{
+        theme.dim,   label,
+        theme.reset, usage_color,
+        bar,         theme.reset,
+        usage_color, rl.used_percentage,
+        theme.reset,
+    });
+    if (rl.resets_at_ms) |reset_ms| {
+        const remaining = reset_ms - now_ms;
+        const time_color = rateLimitTimeColor(theme, remaining);
+        var reset_buf: [64]u8 = undefined;
+        try w.print(" {s}{s}{s}", .{ time_color, formatResetDuration(&reset_buf, remaining), theme.reset });
+    }
+}
+
 pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanResult, now_ms: i64, git_branch: ?[]const u8) !void {
     // === Line 1: Model + Branch + Context ===
     const model_name = stdin_info.model_name orelse "Unknown";
@@ -306,14 +327,9 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
     try w.writeAll("\n");
 
     // === Line 2: Cost + Block ===
-    var today_buf: [32]u8 = undefined;
     if (scan) |s| {
+        var today_buf: [32]u8 = undefined;
         try w.print("\xf0\x9f\x92\xb0 {s}{s}{s} today", .{ theme.yellow, formatCurrency(&today_buf, s.today_cost), theme.reset });
-    } else {
-        try w.writeAll("\xf0\x9f\x92\xb0 N/A today");
-    }
-
-    if (scan) |s| {
         if (s.block) |block| {
             var block_buf: [32]u8 = undefined;
             try w.print(" {s}|{s} \xf0\x9f\x93\x8a {s}{s}{s} block", .{
@@ -326,6 +342,8 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
             var rate_buf: [32]u8 = undefined;
             try w.print(" \xf0\x9f\x94\xa5 {s}{s}{s} {s}/h{s}", .{ theme.yellow, formatCurrency(&rate_buf, block.burn_rate_per_hr), theme.reset, theme.dim, theme.reset });
         }
+    } else {
+        try w.writeAll("\xf0\x9f\x92\xb0 N/A today");
     }
 
     try w.writeAll("\n");
@@ -337,21 +355,7 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
         try w.print("\xf0\x9f\x95\x94 ", .{}); // 🕔
 
         if (stdin_info.rate_limit_5h) |rl5| {
-            const usage_color = rateLimitUsageColor(theme, rl5.used_percentage);
-            var bar_buf: [128]u8 = undefined;
-            const bar = buildProgressBar(&bar_buf, rl5.used_percentage, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
-            try w.print("{s}5h{s} {s}{s}{s} {s}{d:.0}%{s}", .{
-                theme.dim,           theme.reset,
-                usage_color,         bar,
-                theme.reset,         usage_color,
-                rl5.used_percentage, theme.reset,
-            });
-            if (rl5.resets_at_ms) |reset_ms| {
-                const remaining = reset_ms - now_ms;
-                const time_color = rateLimitTimeColor(theme, remaining);
-                var reset_buf: [64]u8 = undefined;
-                try w.print(" {s}{s}{s}", .{ time_color, formatResetDuration(&reset_buf, remaining), theme.reset });
-            }
+            try writeRateLimitWindow(w, theme, "5h", rl5, now_ms);
         }
 
         if (stdin_info.rate_limit_5h != null and stdin_info.rate_limit_7d != null) {
@@ -360,21 +364,7 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
 
         if (stdin_info.rate_limit_7d) |rl7| {
             try w.print("\xf0\x9f\x93\x85 ", .{}); // 📅
-            const usage_color = rateLimitUsageColor(theme, rl7.used_percentage);
-            var bar_buf: [128]u8 = undefined;
-            const bar = buildProgressBar(&bar_buf, rl7.used_percentage, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
-            try w.print("{s}7d{s} {s}{s}{s} {s}{d:.0}%{s}", .{
-                theme.dim,           theme.reset,
-                usage_color,         bar,
-                theme.reset,         usage_color,
-                rl7.used_percentage, theme.reset,
-            });
-            if (rl7.resets_at_ms) |reset_ms| {
-                const remaining = reset_ms - now_ms;
-                const time_color = rateLimitTimeColor(theme, remaining);
-                var reset_buf: [64]u8 = undefined;
-                try w.print(" {s}{s}{s}", .{ time_color, formatResetDuration(&reset_buf, remaining), theme.reset });
-            }
+            try writeRateLimitWindow(w, theme, "7d", rl7, now_ms);
         }
 
         try w.writeAll("\n");
