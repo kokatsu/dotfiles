@@ -19,12 +19,6 @@ const debug_line_name = ".debug_line";
 const DW_LNCT_LLVM_SOURCE: [3]u8 = .{ 0x81, 0x40, 0x1f };
 const DW_LNCT_TIMESTAMP: [3]u8 = .{ 0x83, 0x00, 0x1f };
 
-fn getWriter(handle: std.posix.fd_t) fs.File.Writer {
-    const file = fs.File{ .handle = handle };
-    var buf: [4096]u8 = undefined;
-    return file.writer(&buf);
-}
-
 pub fn main() !void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();

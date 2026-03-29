@@ -274,25 +274,26 @@ fn computeBlockFromWindow(entries: []const TranscriptEntry, window_start_ms: i64
     };
 }
 
-fn computeCosts(allocator: std.mem.Allocator, entries: []TranscriptEntry, now_ms: i64, resets_at_ms: ?i64) ScanResult {
-    const today_start_ms = time.getLocalDayStartMs(allocator, now_ms);
-    var today_cost: f64 = 0;
-    for (entries) |entry| {
-        if (entry.timestamp_ms >= today_start_ms) {
-            today_cost += entryCost(entry);
-        }
-    }
-
-    const block = if (resets_at_ms) |reset_ms| computeBlockFromWindow(
+fn computeBlock(entries: []TranscriptEntry, now_ms: i64, resets_at_ms: ?i64) ?BlockInfo {
+    return if (resets_at_ms) |reset_ms| computeBlockFromWindow(
         entries,
         reset_ms - block_duration_ms,
         reset_ms,
         now_ms,
     ) else identifyActiveBlock(entries, now_ms);
+}
+
+fn computeCosts(entries: []TranscriptEntry, now_ms: i64, day_start_ms: i64, resets_at_ms: ?i64) ScanResult {
+    var today_cost: f64 = 0;
+    for (entries) |entry| {
+        if (entry.timestamp_ms >= day_start_ms) {
+            today_cost += entryCost(entry);
+        }
+    }
 
     return .{
         .today_cost = today_cost,
-        .block = block,
+        .block = computeBlock(entries, now_ms, resets_at_ms),
     };
 }
 
@@ -531,15 +532,20 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
             }
 
             var file_diff_cost: f64 = 0;
+            var today_file_diff_cost: f64 = 0;
             for (entries.items) |e| {
-                file_diff_cost += entryCost(e);
+                const cost = entryCost(e);
+                file_diff_cost += cost;
+                if (e.timestamp_ms >= day_start_ms) {
+                    today_file_diff_cost += cost;
+                }
             }
 
             total_diff_cost += file_diff_cost;
             new_files.append(allocator, .{
                 .path = ch.path,
                 .file_size = ch.file_size,
-                .per_file_cost = entry.per_file_cost + file_diff_cost,
+                .per_file_cost = entry.per_file_cost + today_file_diff_cost,
                 .parsed_size = ch.file_size,
             }) catch continue;
         } else {
@@ -579,6 +585,7 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
     const file_infos = collectTranscriptFiles(allocator, projects_path, now_ms);
     var all_entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
     var cache_files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
+    var total_today_cost: f64 = 0;
 
     var tmp_arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer tmp_arena.deinit();
@@ -595,6 +602,7 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
         var file_entries: std.ArrayListUnmanaged(TranscriptEntry) = .{};
         parseJsonlContent(tmp, allocator, content, &file_entries, &global_seen);
 
+        const start_idx = all_entries.items.len;
         for (file_entries.items) |entry| {
             all_entries.append(allocator, .{
                 .timestamp_ms = entry.timestamp_ms,
@@ -603,13 +611,14 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
             }) catch continue;
         }
 
-        const new_items = all_entries.items[all_entries.items.len - file_entries.items.len ..];
+        const new_items = all_entries.items[start_idx..];
         var per_cost: f64 = 0;
         for (new_items) |entry| {
             if (entry.timestamp_ms >= day_start_ms) {
                 per_cost += entryCost(entry);
             }
         }
+        total_today_cost += per_cost;
         cache_files.append(allocator, .{
             .path = fi.path,
             .file_size = fi.size,
@@ -618,7 +627,10 @@ fn fullScan(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64
         }) catch continue;
     }
 
-    const result = computeCosts(allocator, all_entries.items, now_ms, resets_at_ms);
+    const result = ScanResult{
+        .today_cost = total_today_cost,
+        .block = computeBlock(all_entries.items, now_ms, resets_at_ms),
+    };
     const cf = cache_files.toOwnedSlice(allocator) catch &.{};
     writeCache(result, cf, now_s, now_s, day_start_ms);
     return result;
@@ -671,7 +683,8 @@ test "computeCosts today entries only" {
     };
 
     var entries = [_]TranscriptEntry{ old_entry, today_entry };
-    const result = computeCosts(std.testing.allocator, &entries, now_ms, null);
+    const day_start_ms = time.getLocalDayStartMs(std.testing.allocator, now_ms);
+    const result = computeCosts(&entries, now_ms, day_start_ms, null);
     const p = pricing.findPricing("claude-sonnet-4-5-20250929").?;
     const expected_today = pricing.calculateEntryCost(p, today_entry.usage);
     try std.testing.expectApproxEqAbs(expected_today, result.today_cost, 1e-10);
@@ -682,7 +695,8 @@ test "computeCosts old entries excluded from today" {
     var entries = [_]TranscriptEntry{
         .{ .timestamp_ms = now_ms - 48 * 3600 * 1000, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 5000, .output_tokens = 2000 } },
     };
-    const result = computeCosts(std.testing.allocator, &entries, now_ms, null);
+    const day_start_ms = time.getLocalDayStartMs(std.testing.allocator, now_ms);
+    const result = computeCosts(&entries, now_ms, day_start_ms, null);
     try std.testing.expectApproxEqAbs(@as(f64, 0), result.today_cost, 1e-10);
 }
 
@@ -895,7 +909,8 @@ test "computeCosts with resets_at_ms uses window" {
     };
 
     var entries = [_]TranscriptEntry{ outside_window, in_window };
-    const result = computeCosts(std.testing.allocator, &entries, now_ms, resets_at_ms);
+    const day_start_ms = time.getLocalDayStartMs(std.testing.allocator, now_ms);
+    const result = computeCosts(&entries, now_ms, day_start_ms, resets_at_ms);
 
     try std.testing.expect(result.block != null);
     try std.testing.expectEqual(window_start, result.block.?.start_ms);
@@ -1402,27 +1417,29 @@ test "computeCosts entry exactly at today_start_ms" {
     var entries = [_]TranscriptEntry{
         .{ .timestamp_ms = today_start, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 1000, .output_tokens = 500 } },
     };
-    const result = computeCosts(std.testing.allocator, &entries, now_ms, null);
+    const result = computeCosts(&entries, now_ms, today_start, null);
     try std.testing.expect(result.today_cost > 0);
 }
 
 test "computeCosts unknown model contributes zero cost" {
     const now_ms: i64 = (time.daysFromCivil(2025, 6, 15) * 86400 + 12 * 3600) * 1000;
+    const day_start_ms = time.getLocalDayStartMs(std.testing.allocator, now_ms);
     var entries = [_]TranscriptEntry{
         .{ .timestamp_ms = now_ms - 1000, .model = "unknown-xyz", .usage = .{ .input_tokens = 1000, .output_tokens = 500 } },
     };
-    const result = computeCosts(std.testing.allocator, &entries, now_ms, null);
+    const result = computeCosts(&entries, now_ms, day_start_ms, null);
     try std.testing.expectApproxEqAbs(@as(f64, 0), result.today_cost, 1e-10);
 }
 
 test "computeCosts resets_at_ms with no entries in window" {
     const now_ms: i64 = (time.daysFromCivil(2025, 6, 15) * 86400 + 12 * 3600) * 1000;
+    const day_start_ms = time.getLocalDayStartMs(std.testing.allocator, now_ms);
     const resets_at_ms: i64 = now_ms + 3 * 3600 * 1000;
     // Entry is far before the window
     var entries = [_]TranscriptEntry{
         .{ .timestamp_ms = resets_at_ms - 2 * block_duration_ms, .model = "claude-sonnet-4-5-20250929", .usage = .{ .input_tokens = 1000, .output_tokens = 500 } },
     };
-    const result = computeCosts(std.testing.allocator, &entries, now_ms, resets_at_ms);
+    const result = computeCosts(&entries, now_ms, day_start_ms, resets_at_ms);
     try std.testing.expectEqual(@as(?BlockInfo, null), result.block);
 }
 
