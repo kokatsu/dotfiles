@@ -130,10 +130,29 @@ do
   })
 end
 
--- ヤンク時にハイライト表示
+-- スマートクリップボード: yank操作のみシステムクリップボードに同期
+-- d/c/x等ではクリップボードを上書きしない
+local _last_vim_yank = ''
 vim.api.nvim_create_autocmd('TextYankPost', {
+  group = vim.api.nvim_create_augroup('yank_to_clipboard', { clear = true }),
   callback = function()
     vim.hl.on_yank({ timeout = 200 })
+    if vim.v.event.operator == 'y' then
+      local text = vim.fn.getreg('"')
+      vim.fn.setreg('+', text)
+      _last_vim_yank = text
+    end
+  end,
+})
+
+-- FocusGained時に外部クリップボードを取り込む
+vim.api.nvim_create_autocmd('FocusGained', {
+  group = vim.api.nvim_create_augroup('clipboard_to_unnamed', { clear = true }),
+  callback = function()
+    local clip = vim.fn.getreg('+')
+    if clip ~= '' and clip ~= _last_vim_yank then
+      vim.fn.setreg('"', clip)
+    end
   end,
 })
 
