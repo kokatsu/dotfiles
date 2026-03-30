@@ -27,6 +27,7 @@ in {
     ./programs/tmux.nix
     ./programs/zoxide.nix
     ./programs/zsh.nix
+    ./services/feed-watch.nix
   ];
 
   catppuccin = {

@@ -60,6 +60,75 @@ local process_icons = {
 
 local default_icon = { icon = nf.md_folder_marker, color = colors.palette.text }
 
+-- feed-watch: GitHub フィード未読表示
+local feed_status_cache = nil
+local feed_status_last_check = 0
+local FEED_STATUS_CHECK_INTERVAL = 30 -- seconds
+
+local function read_feed_status()
+  local now = os.time()
+  if feed_status_cache ~= nil and (now - feed_status_last_check) < FEED_STATUS_CHECK_INTERVAL then
+    return feed_status_cache
+  end
+  feed_status_last_check = now
+
+  local userprofile = os.getenv('USERPROFILE')
+  if not userprofile then
+    feed_status_cache = false
+    return false
+  end
+
+  local path = userprofile .. '\\.cache\\feed-watch\\status.json'
+  local file = io.open(path, 'r')
+  if not file then
+    feed_status_cache = false
+    return false
+  end
+
+  local content = file:read('*a')
+  file:close()
+
+  local ok, data = pcall(wezterm.json_parse, content)
+  if not ok or not data or not data.feeds then
+    feed_status_cache = false
+    return false
+  end
+
+  feed_status_cache = data
+  return data
+end
+
+local function format_feed_status()
+  local data = read_feed_status()
+  if not data or not data.feeds then
+    return {}
+  end
+
+  local elements = {}
+  -- ソートされた順序で表示
+  local names = {}
+  for name, _ in pairs(data.feeds) do
+    table.insert(names, name)
+  end
+  table.sort(names)
+
+  for _, name in ipairs(names) do
+    local info = data.feeds[name]
+    if info.unread_count and info.unread_count > 0 then
+      if #elements > 0 then
+        table.insert(elements, { Text = '  ' })
+      end
+      local icon = info.type == 'github' and nf.dev_github_badge or nf.md_rss
+      table.insert(elements, { Foreground = { Color = colors.palette.overlay1 } })
+      table.insert(elements, { Text = icon .. ' ' })
+      table.insert(elements, { Foreground = { Color = colors.palette.text } })
+      table.insert(elements, { Text = name .. ' (' .. tostring(info.unread_count) .. ') ' })
+    end
+  end
+
+  return elements
+end
+
 --- WSLを考慮して実際のプロセス名を取得する
 --- WSL上のプロセスはwslhost.exeとして見えるため、WEZTERM_PROGユーザー変数を使用
 ---@param pane any
@@ -240,7 +309,8 @@ M.apply = function()
         }))
       end
     else
-      window:set_right_status(wezterm.format({}))
+      local feed_elements = format_feed_status()
+      window:set_right_status(wezterm.format(feed_elements))
     end
   end)
 
