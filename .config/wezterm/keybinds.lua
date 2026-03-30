@@ -96,16 +96,31 @@ end
 
 -- 共通キーバインド（プラットフォーム非依存）
 local common_keys = {
-  -- `Alt + o` で前回の出力をクリップボードにコピー
+  -- `Alt + o` で前回の出力（実行コマンド付き）をクリップボードにコピー
   {
     key = 'o',
     mods = 'ALT',
     action = wezterm.action_callback(function(window, pane)
-      local zones = pane:get_semantic_zones('Output')
-      if #zones > 0 then
-        local txt = pane:get_text_from_semantic_zone(zones[#zones])
-        window:copy_to_clipboard(txt)
+      local output_zones = pane:get_semantic_zones('Output')
+      if #output_zones == 0 then
+        return
       end
+
+      local output_zone = output_zones[#output_zones]
+      local output_txt = pane:get_text_from_semantic_zone(output_zone)
+
+      -- 出力ゾーンの直前にある入力（コマンド）ゾーンを探す
+      local input_zones = pane:get_semantic_zones('Input')
+      local cmd = nil
+      for i = #input_zones, 1, -1 do
+        if input_zones[i].start_y <= output_zone.start_y then
+          cmd = pane:get_text_from_semantic_zone(input_zones[i]):gsub('%s+$', '')
+          break
+        end
+      end
+
+      local txt = cmd and ('$ ' .. cmd .. '\n' .. output_txt) or output_txt
+      window:copy_to_clipboard(txt)
     end),
   },
   -- `Alt + e` でプロンプトエディタを開く（tmux display-popup使用）
@@ -134,6 +149,7 @@ local common_keys = {
   {
     key = '\\',
     mods = 'ALT',
+    ---@diagnostic disable-next-line: missing-fields
     action = act.InputSelector({
       title = 'Select Layout',
       choices = {
