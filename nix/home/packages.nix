@@ -19,6 +19,10 @@
     exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${CLAUDE_CONFIG_DIR:-''${HOME}/.config/claude},''${HOME}/.claude,''${HOME}/.config/claude" --allow-env=HOME,CLAUDE_CONFIG_DIR "''${HOME}/.config/claude/scripts/cc-metrics.ts" "$@"
   '';
 
+  feed-watch = pkgs.writeShellScriptBin "feed-watch" ''
+    exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/feed-watch" "$@"
+  '';
+
   # WSL: Claude Code は clip.exe をハードコードで使用するが UTF-8 を正しく扱えない
   # xsel (X11) + win32yank (Windows/Win+V履歴) の両方に書き込む
   clip-exe-wrapper = pkgs.writeShellScriptBin "clip.exe" ''
@@ -283,6 +287,7 @@ in {
       daily # 日記メモツール (Zig)
 
       #--- ユーザースクリプト ラッパー ---#
+      feed-watch # GitHub フィード監視 (bin/feed-watch)
       mmd # Mermaid図レンダラー (bin/mermaid-render.ts)
       cc-metrics # スキル・インストラクション統合メトリクス表示
 

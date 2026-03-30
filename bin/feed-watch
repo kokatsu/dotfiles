@@ -1,0 +1,161 @@
+#!/bin/bash
+set -euo pipefail
+
+# feed-watch: GitHub リポジトリ / Atom フィードの更新を監視し、WezTerm ステータスバーに表示する
+#
+# Usage:
+#   feed-watch check          - 全フィードをチェックし status.json を更新
+#   feed-watch read [<name>]  - 指定フィード (または全フィード) を既読にする
+
+# --- 監視対象 ---
+GITHUB_FEEDS=(
+  "xdevplatform/docs"
+)
+
+# 形式: "表示名|URL"
+ATOM_FEEDS=(
+  "Meta Developer Blog|https://developers.facebook.com/blog/feed/"
+)
+
+# --- Windows 側の出力先を決定 ---
+get_status_dir() {
+  local winuser
+  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
+  if [[ -z "$winuser" || ! -d "/mnt/c/Users/$winuser" ]]; then
+    return 1
+  fi
+  echo "/mnt/c/Users/$winuser/.cache/feed-watch"
+}
+
+STATUS_DIR=$(get_status_dir) || { echo "Windows mount not available, skipping." >&2; exit 0; }
+STATUS_FILE="$STATUS_DIR/status.json"
+
+ensure_status_file() {
+  mkdir -p "$STATUS_DIR"
+  if [[ ! -f "$STATUS_FILE" ]]; then
+    echo '{"feeds":{}}' > "$STATUS_FILE"
+  fi
+}
+
+# --- 共通: 新規エントリを数えて status を更新 ---
+# $1: status JSON, $2: フィード名, $3: IDs (改行区切り), $4: type (github|atom)
+update_feed_status() {
+  local status="$1" name="$2" ids="$3" type="$4"
+
+  if [[ -z "$ids" ]]; then
+    echo "$status"
+    return
+  fi
+
+  local latest_id
+  latest_id=$(echo "$ids" | head -n1)
+
+  local prev_id
+  prev_id=$(echo "$status" | jq -r --arg name "$name" '.feeds[$name].last_seen_id // ""')
+
+  local prev_unread
+  prev_unread=$(echo "$status" | jq -r --arg name "$name" '.feeds[$name].unread_count // 0')
+
+  if [[ -z "$prev_id" ]]; then
+    # 初回: 未読 0 で最新 ID を記録
+    echo "$status" | jq \
+      --arg name "$name" --arg id "$latest_id" --arg type "$type" \
+      '.feeds[$name] = {"last_seen_id": $id, "unread_count": 0, "type": $type}'
+  elif [[ "$prev_id" == "$latest_id" ]]; then
+    # 変更なし
+    echo "$status"
+  else
+    # 新規エントリを数える
+    local new_count=0
+    while IFS= read -r id; do
+      if [[ "$id" == "$prev_id" ]]; then
+        break
+      fi
+      ((new_count++))
+    done <<< "$ids"
+
+    local total_unread=$(( prev_unread + new_count ))
+
+    echo "$status" | jq \
+      --arg name "$name" --arg id "$latest_id" --arg type "$type" \
+      --argjson count "$total_unread" \
+      '.feeds[$name] = {"last_seen_id": $id, "unread_count": $count, "type": $type}'
+  fi
+}
+
+# --- Atom フィードからエントリ ID を取得 ---
+fetch_atom_ids() {
+  local url="$1"
+  curl -sfL "$url" | grep -o '<id>[^<]*</id>' | sed 's/<id>\(.*\)<\/id>/\1/' | tail -n +2
+}
+
+# --- check サブコマンド ---
+cmd_check() {
+  ensure_status_file
+
+  local status
+  status=$(cat "$STATUS_FILE")
+
+  # GitHub フィード
+  for repo in "${GITHUB_FEEDS[@]}"; do
+    local ids
+    ids=$(gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
+      echo "Failed to fetch commits for $repo" >&2
+      continue
+    }
+    status=$(update_feed_status "$status" "$repo" "$ids" "github")
+  done
+
+  # Atom フィード
+  for entry in "${ATOM_FEEDS[@]}"; do
+    local name="${entry%%|*}"
+    local url="${entry#*|}"
+    local ids
+    ids=$(fetch_atom_ids "$url" 2>/dev/null) || {
+      echo "Failed to fetch atom feed: $name" >&2
+      continue
+    }
+    status=$(update_feed_status "$status" "$name" "$ids" "atom")
+  done
+
+  echo "$status" | jq . > "$STATUS_FILE"
+}
+
+# --- read サブコマンド ---
+cmd_read() {
+  ensure_status_file
+
+  local target="${1:-}"
+  local status
+  status=$(cat "$STATUS_FILE")
+
+  if [[ -z "$target" ]]; then
+    # 全フィード既読
+    status=$(echo "$status" | jq '.feeds |= with_entries(.value.unread_count = 0)')
+  else
+    # 部分一致で検索
+    local matched
+    matched=$(echo "$status" | jq -r --arg t "$target" \
+      '[.feeds | keys[] | select(contains($t))] | .[0] // ""')
+
+    if [[ -z "$matched" ]]; then
+      echo "No feed matching '$target'" >&2
+      exit 1
+    fi
+
+    status=$(echo "$status" | jq --arg name "$matched" \
+      '.feeds[$name].unread_count = 0')
+  fi
+
+  echo "$status" | jq . > "$STATUS_FILE"
+}
+
+# --- メイン ---
+case "${1:-}" in
+  check) cmd_check ;;
+  read)  cmd_read "${2:-}" ;;
+  *)
+    echo "Usage: feed-watch {check|read [<name>]}" >&2
+    exit 1
+    ;;
+esac
