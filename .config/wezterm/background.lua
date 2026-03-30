@@ -2,8 +2,11 @@
 local wezterm = require('wezterm') ---@type Wezterm
 
 ---@class BackgroundConfig
+---@diagnostic disable-next-line: duplicate-doc-field
 ---@field file string ファイル名（拡張子なしの場合は .jpg, .png, .jpeg, .webp, .gif を自動判定）
+---@diagnostic disable-next-line: duplicate-doc-field
 ---@field opacity? number デフォルトの透過度（0.0〜1.0、省略時は0.3）
+---@diagnostic disable-next-line: duplicate-doc-field
 ---@field label? string InputSelectorで表示するラベル（省略時はファイル名）
 
 -- backgrounds.lua が存在しない場合は空のテーブルを使用
@@ -186,6 +189,7 @@ M.apply_to_keys = function(keys, background_modifier, opacity_modifier)
   table.insert(keys, {
     key = 'b',
     mods = background_modifier,
+    ---@diagnostic disable-next-line: missing-fields
     action = wezterm.action.InputSelector({
       title = '背景画像を選択',
       choices = selector_choices, -- 事前生成済みの choices を使用
