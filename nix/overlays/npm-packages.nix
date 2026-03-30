@@ -8,7 +8,7 @@ in {
   secretlint = mkVendoredNpmPackage {
     pname = "secretlint";
     version = "11.4.1";
-    npmDepsHash = "sha256-aSqP/9qHe++tqRjWeKv5jTy2hHMx96oHHXsJCn+t3/o=";
+    npmDepsHash = "sha256-BI5bmzBns1OZWzgCF0f5WOTCyyhrUNl/mjFxx+NOiCM=";
     meta = {
       description = "Pluggable linting tool to prevent commit secret/credential file";
       homepage = "https://github.com/secretlint/secretlint";
