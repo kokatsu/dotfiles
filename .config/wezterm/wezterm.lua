@@ -84,6 +84,7 @@ wezterm.on('open-uri', function(window, pane, uri)
     local nvim_args = line and ('+' .. line .. ' "' .. file .. '"') or ('"' .. file .. '"')
 
     window:perform_action(
+      ---@diagnostic disable-next-line: missing-fields
       wezterm.action.InputSelector({
         title = 'Open in nvim?',
         choices = {
