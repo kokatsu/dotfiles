@@ -44,10 +44,10 @@ return {
                 -- Clamp end_col to actual line length (Neovim bug workaround)
                 -- https://github.com/neovim/neovim/issues/35971
                 if item.range then
-                  local end_row = item.range.end_.row
+                  local end_row = item.range.end_row
                   local line = vim.api.nvim_buf_get_lines(0, end_row, end_row + 1, false)[1]
-                  if line and item.range.end_.col > #line then
-                    item.range.end_.col = #line
+                  if line and item.range.end_col > #line then
+                    item.range[4] = #line
                   end
                 end
                 return item
