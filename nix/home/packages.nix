@@ -353,6 +353,8 @@ in {
     ]
     ++ lib.optionals (!isDarwin) [
       # Linux/WSL専用
+      # https://github.com/containers/bubblewrap
+      bubblewrap # サンドボックスツール (Codex CLI 用)
       clip-exe-wrapper # Claude Code WSL文字化け対策 (clip.exe → xsel)
       # https://valgrind.org
       valgrind # メモリデバッグ・プロファイリング
