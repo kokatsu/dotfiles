@@ -36,6 +36,12 @@
   ],
   packageRules: [
     {
+      matchDatasources: [
+        'npm',
+      ],
+      minimumReleaseAge: '7 days',
+    },
+    {
       matchFileNames: [
         'nix/overlays/*.nix',
       ],
