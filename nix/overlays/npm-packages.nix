@@ -21,7 +21,7 @@ in {
   textlint = mkVendoredNpmPackage {
     pname = "textlint";
     version = "15.5.2";
-    npmDepsHash = "sha256-2yEMpMJbTe8tHm9bPFTyaWD4mIiJDRlBJBYAgslC6cg=";
+    npmDepsHash = "sha256-4WtuxhOyEZ1JnIga75k2kVrO1CRjMy6/eAapNswJceM=";
     meta = {
       description = "Pluggable linting tool for text and markdown";
       homepage = "https://github.com/textlint/textlint";
