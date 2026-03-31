@@ -173,6 +173,69 @@ local common_keys = {
       end),
     }),
   },
+  -- `Alt + r` で未読フィードをブラウザで開く
+  {
+    key = 'r',
+    mods = 'ALT',
+    action = wezterm.action_callback(function(window, pane)
+      local userprofile = os.getenv('USERPROFILE')
+      if not userprofile then
+        return
+      end
+
+      local path = userprofile .. '\\.cache\\feed-watch\\status.json'
+      local file = io.open(path, 'r')
+      if not file then
+        return
+      end
+
+      local content = file:read('*a')
+      file:close()
+
+      local ok, data = pcall(wezterm.json_parse, content)
+      if not ok or not data or not data.feeds then
+        return
+      end
+
+      local nf = wezterm.nerdfonts --[[@as table]]
+      local choices = {}
+      local names = {}
+      for name, _ in pairs(data.feeds) do
+        table.insert(names, name)
+      end
+      table.sort(names)
+
+      for _, name in ipairs(names) do
+        local info = data.feeds[name]
+        if info.unread_count and info.unread_count > 0 and info.url then
+          local icon = info.type == 'github' and nf.dev_github_badge or nf.md_rss
+          table.insert(choices, {
+            label = icon .. ' ' .. name .. ' (' .. tostring(info.unread_count) .. ')',
+            id = info.url,
+          })
+        end
+      end
+
+      if #choices == 0 then
+        window:toast_notification('feed-watch', '未読フィードはありません', nil, 3000)
+        return
+      end
+
+      window:perform_action(
+        ---@diagnostic disable-next-line: missing-fields
+        act.InputSelector({
+          title = 'Open Feed',
+          choices = choices,
+          action = wezterm.action_callback(function(_, _, id)
+            if id then
+              wezterm.open_with(id)
+            end
+          end),
+        }),
+        pane
+      )
+    end),
+  },
   -- `Ctrl + q` で終了（2度押しで確認）
   {
     key = 'q',

@@ -12,9 +12,9 @@ GITHUB_FEEDS=(
   "xdevplatform/docs"
 )
 
-# 形式: "表示名|URL"
+# 形式: "表示名|フィードURL|ページURL"
 ATOM_FEEDS=(
-  "Meta Developer Blog|https://developers.facebook.com/blog/feed/"
+  "Meta Developer Blog|https://developers.facebook.com/blog/feed/|https://developers.facebook.com/blog/"
 )
 
 # --- Windows 側の出力先を決定 ---
@@ -38,9 +38,9 @@ ensure_status_file() {
 }
 
 # --- 共通: 新規エントリを数えて status を更新 ---
-# $1: status JSON, $2: フィード名, $3: IDs (改行区切り), $4: type (github|atom)
+# $1: status JSON, $2: フィード名, $3: IDs (改行区切り), $4: type (github|atom), $5: url
 update_feed_status() {
-  local status="$1" name="$2" ids="$3" type="$4"
+  local status="$1" name="$2" ids="$3" type="$4" url="$5"
 
   if [[ -z "$ids" ]]; then
     echo "$status"
@@ -59,11 +59,13 @@ update_feed_status() {
   if [[ -z "$prev_id" ]]; then
     # 初回: 未読 0 で最新 ID を記録
     echo "$status" | jq \
-      --arg name "$name" --arg id "$latest_id" --arg type "$type" \
-      '.feeds[$name] = {"last_seen_id": $id, "unread_count": 0, "type": $type}'
+      --arg name "$name" --arg id "$latest_id" --arg type "$type" --arg url "$url" \
+      '.feeds[$name] = {"last_seen_id": $id, "unread_count": 0, "type": $type, "url": $url}'
   elif [[ "$prev_id" == "$latest_id" ]]; then
-    # 変更なし
-    echo "$status"
+    # 変更なし (url は常に最新化)
+    echo "$status" | jq \
+      --arg name "$name" --arg url "$url" \
+      '.feeds[$name].url = $url'
   else
     # 新規エントリを数える
     local new_count=0
@@ -77,9 +79,9 @@ update_feed_status() {
     local total_unread=$(( prev_unread + new_count ))
 
     echo "$status" | jq \
-      --arg name "$name" --arg id "$latest_id" --arg type "$type" \
+      --arg name "$name" --arg id "$latest_id" --arg type "$type" --arg url "$url" \
       --argjson count "$total_unread" \
-      '.feeds[$name] = {"last_seen_id": $id, "unread_count": $count, "type": $type}'
+      '.feeds[$name] = {"last_seen_id": $id, "unread_count": $count, "type": $type, "url": $url}'
   fi
 }
 
@@ -103,19 +105,22 @@ cmd_check() {
       echo "Failed to fetch commits for $repo" >&2
       continue
     }
-    status=$(update_feed_status "$status" "$repo" "$ids" "github")
+    local page_url="https://github.com/$repo/commits"
+    status=$(update_feed_status "$status" "$repo" "$ids" "github" "$page_url")
   done
 
   # Atom フィード
   for entry in "${ATOM_FEEDS[@]}"; do
     local name="${entry%%|*}"
-    local url="${entry#*|}"
+    local rest="${entry#*|}"
+    local feed_url="${rest%%|*}"
+    local page_url="${rest#*|}"
     local ids
-    ids=$(fetch_atom_ids "$url" 2>/dev/null) || {
+    ids=$(fetch_atom_ids "$feed_url" 2>/dev/null) || {
       echo "Failed to fetch atom feed: $name" >&2
       continue
     }
-    status=$(update_feed_status "$status" "$name" "$ids" "atom")
+    status=$(update_feed_status "$status" "$name" "$ids" "atom" "$page_url")
   done
 
   echo "$status" | jq . > "$STATUS_FILE"
