@@ -46,6 +46,25 @@ jobs:
       - name: Verify Renovate regex patterns match overlay files
         run: deno run --allow-read scripts/test-renovate-patterns.ts
 
+  npm-audit:
+    name: npm audit
+    if: github.actor != 'renovate[bot]' || github.event_name == 'workflow_call'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Audit npm lockfiles
+        run: |
+          failed=0
+          for dir in nix/npm-locks/*/; do
+            if [ -f "$dir/package-lock.json" ]; then
+              echo "::group::Auditing $dir"
+              (cd "$dir" && npm audit --audit-level=high) || failed=1
+              echo "::endgroup::"
+            fi
+          done
+          exit $failed
+
   build-linux:
     name: Build (Linux)
     if: github.actor != 'renovate[bot]' || github.event_name == 'workflow_call'
