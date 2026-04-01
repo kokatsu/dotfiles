@@ -35,8 +35,8 @@ in {
   # bat, btop, delta, eza, fzf, gh, git, lazygit, zoxide
   home.packages = with pkgs;
     [
-      # https://github.com/anthropics/agent-browser
-      agent-browser # ブラウザ自動化エージェント (overlay)
+      # https://github.com/vercel-labs/agent-browser
+      agent-browser # ブラウザ自動化エージェント
 
       #####################################
       # ランタイム (グローバルデフォルト)
@@ -216,7 +216,21 @@ in {
       # https://github.com/nrslib/takt
       takt # AI Agent オーケストレーション (overlay)
       # https://github.com/textlint/textlint
-      textlint # 日本語校正 (overlay)
+      (pkgs.symlinkJoin {
+        name = "textlint-with-rules";
+        paths = [
+          pkgs.textlint
+          pkgs.textlint-rule-preset-ja-technical-writing
+          pkgs.textlint-rule-terminology
+        ];
+        nativeBuildInputs = [pkgs.makeWrapper];
+        postBuild = ''
+          wrapProgram $out/bin/textlint \
+            --set NODE_PATH "$out/lib/node_modules"
+        '';
+      }) # 日本語校正 (nixpkgs)
+      # https://github.com/Redocly/redocly-cli
+      redocly # OpenAPI プレビュー / lint
       # https://github.com/crate-ci/typos
       typos # タイポ検出
       # https://github.com/koalaman/shellcheck
@@ -279,8 +293,6 @@ in {
       commitlint # コミットメッセージ lint
       # https://github.com/evilmartians/lefthook
       lefthook # Git hooks マネージャ
-      # https://github.com/secretlint/secretlint
-      secretlint # シークレット検出 (overlay)
 
       #--- CLI ツール (overlay) ---#
       cc-statusline # 高速 Claude Code statusline (Zig)

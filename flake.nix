@@ -89,7 +89,6 @@
     commonOverlays = [
       inputs.helix.overlays.default
       inputs.neovim-nightly-overlay.overlays.default
-      customOverlays.agent-browser
       customOverlays.cc-statusline
       customOverlays.daily
       customOverlays.claude-code
@@ -98,13 +97,11 @@
       customOverlays.git-graph-fork
       customOverlays.kakehashi
       customOverlays.octorus
+      customOverlays.deno-test-fix
       customOverlays.plotly-test-fix
-      customOverlays.playwright-browsers-fix
       customOverlays.playwright-cli
-      customOverlays.secretlint
       customOverlays.takt
       customOverlays.termframe
-      customOverlays.textlint
       customOverlays.unocss-language-server
       customOverlays.vue-language-server-pin
       customOverlays.win32yank

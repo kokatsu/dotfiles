@@ -116,69 +116,10 @@
     nodejs-slim_22 = prev.nodejs-slim_24;
   };
 
-  # Fix playwright-driver.browsers to include chromium revision 1208
-  # Required for agent-browser 0.8.x which uses Playwright 1.58+
-  # nixpkgs has playwright-driver 1.57+ but browsers.json still uses revision 1200
-  playwright-browsers-fix = _final: prev: let
-    inherit (prev.stdenv.hostPlatform) system;
-
-    chromiumVersion = "145.0.7632.6";
-    revision = "1208";
-
-    platformConfig = {
-      "x86_64-linux" = {
-        suffix = "linux64";
-        chromiumHash = "sha256-akvAXdfBKdjDQBnWTDX0WbmP+niXthXlyB9feeq8kyw=";
-        headlessShellHash = "sha256-/xskLzTc9tTZmu1lwkMpjV3QV7XjP92D/7zRcFuVWT8=";
-      };
-      "aarch64-linux" = {
-        suffix = "linux-arm64";
-        chromiumHash = "";
-        headlessShellHash = "";
-      };
-      "x86_64-darwin" = {
-        suffix = "mac-x64";
-        chromiumHash = "sha256-+jpk7PuOK4bEurrGt3Z60uY50k4YgtlL2DxTwp/wbbg=";
-        headlessShellHash = "sha256-qXeSBKiJDlmTur6oFc+bIxJEiI1ajUh5F8K7EmZcDK0=";
-      };
-      "aarch64-darwin" = {
-        suffix = "mac-arm64";
-        chromiumHash = "sha256-qXdgHeBS5IFIa4hZVmjq0+31v/uDPXHyc4aH7Wn2E7E=";
-        headlessShellHash = "sha256-45DjMIu0t7IEYdXOmIqpV/1/MKdEfx/8T7DWagh6Zhc=";
-      };
+  # Fix deno 2.7.4 build failure (trybuild compile tests fail in nixpkgs-unstable)
+  deno-test-fix = _final: prev: {
+    deno = prev.deno.overrideAttrs {
+      doCheck = false;
     };
-
-    config = platformConfig.${system} or (throw "Unsupported system: ${system}");
-
-    chromium-1208 = prev.fetchzip {
-      url = "https://storage.googleapis.com/chrome-for-testing-public/${chromiumVersion}/${config.suffix}/chrome-${config.suffix}.zip";
-      hash = config.chromiumHash;
-      stripRoot = false;
-    };
-
-    chromium-headless-shell-1208 = prev.fetchzip {
-      url = "https://storage.googleapis.com/chrome-for-testing-public/${chromiumVersion}/${config.suffix}/chrome-headless-shell-${config.suffix}.zip";
-      hash = config.headlessShellHash;
-      stripRoot = false;
-    };
-
-    originalBrowsers = prev.playwright-driver.browsers;
-  in {
-    playwright-driver =
-      prev.playwright-driver
-      // {
-        browsers = prev.linkFarm "playwright-browsers" (
-          (builtins.listToAttrs (
-            map (name: {
-              inherit name;
-              value = "${originalBrowsers}/${name}";
-            }) (builtins.attrNames (builtins.readDir originalBrowsers))
-          ))
-          // (prev.lib.optionalAttrs (config.chromiumHash != "") {
-            "chromium-${revision}" = chromium-1208;
-            "chromium_headless_shell-${revision}" = chromium-headless-shell-1208;
-          })
-        );
-      };
   };
 }
