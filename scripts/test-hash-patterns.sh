@@ -38,9 +38,6 @@ PACKAGES=(
   'deck|standalone.nix|deck = _final: prev:|# Renovate:.*depName=.*deck|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'octorus|binary-releases.nix|octorus = mkBinaryRelease|# Renovate:.*depName=.*octorus|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'kakehashi|binary-releases.nix|kakehashi = mkBinaryRelease|# Renovate:.*depName=.*kakehashi|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'agent-browser|standalone.nix|agent-browser = _\?final: prev: let|# Renovate:.*depName=.*agent-browser|both|'
-  'secretlint|npm-packages.nix|secretlint = mkVendoredNpmPackage|# Renovate:.*depName=.*secretlint|npm|'
-  'textlint|npm-packages.nix|textlint = mkVendoredNpmPackage|# Renovate:.*depName=textlint|npm|'
   'playwright-cli|npm-packages.nix|playwright-cli = _final: prev: let|# Renovate:.*depName=@playwright/cli|npm|'
   'unocss-language-server|npm-packages.nix|unocss-language-server = _final: prev: let|# Renovate:.*depName=.*unocss-language-server|both|'
   'takt|npm-packages.nix|takt = _final: prev: let|# Renovate:.*depName=takt|both|'
@@ -76,7 +73,7 @@ for entry in "${PACKAGES[@]}"; do
   fi
 
   # Test 3: Renovate コメントからバージョン抽出
-  version=$(grep -A 20 "$renovate_pattern" "$filepath" 2>/dev/null | grep -oP 'version = "\K[^"]+' | head -1 || echo "")
+  version=$(grep -A 20 "$renovate_pattern" "$filepath" 2>/dev/null | sed -n 's/.*version = "\([^"]*\)".*/\1/p' | head -1 || echo "")
   if [ -n "$version" ]; then
     pass "version extracted: $version"
   else
@@ -144,10 +141,16 @@ DRY_RUN_PACKAGES=(
   'deck|standalone.nix|deck = _final: prev:|aarch64-darwin'
   'octorus|binary-releases.nix|octorus = mkBinaryRelease|aarch64-darwin'
   'kakehashi|binary-releases.nix|kakehashi = mkBinaryRelease|aarch64-darwin'
-  'secretlint|npm-packages.nix|secretlint = mkVendoredNpmPackage|NPM'
-  'textlint|npm-packages.nix|textlint = mkVendoredNpmPackage|NPM'
-  'agent-browser|standalone.nix|agent-browser = _\?final: prev: let|SINGLE'
 )
+
+# macOS (BSD sed) と Linux (GNU sed) の -i 互換ヘルパー
+sedi() {
+  if sed --version 2>/dev/null | grep -q GNU; then
+    sed -i "$@"
+  else
+    sed -i '' "$@"
+  fi
+}
 
 TMPFILE=$(mktemp)
 
@@ -159,13 +162,13 @@ for entry in "${DRY_RUN_PACKAGES[@]}"; do
 
   case "$target" in
   SINGLE)
-    sed -i "/$sed_pattern/,/^  };/{s|hash = \"sha256-[^\"]*\"|hash = \"${DUMMY_HASH}\"|}" "$TMPFILE"
+    sedi "/$sed_pattern/,/^  };/{s|hash = \"sha256-[^\"]*\"|hash = \"${DUMMY_HASH}\"|;}" "$TMPFILE"
     ;;
   NPM)
-    sed -i "/$sed_pattern/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${DUMMY_HASH}\"|}" "$TMPFILE"
+    sedi "/$sed_pattern/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${DUMMY_HASH}\"|;}" "$TMPFILE"
     ;;
   *)
-    sed -i "/$sed_pattern/,/^  };/{s|\"${target}\" = \"sha256-[^\"]*\"|\"${target}\" = \"${DUMMY_HASH}\"|}" "$TMPFILE"
+    sedi "/$sed_pattern/,/^  };/{s|\"${target}\" = \"sha256-[^\"]*\"|\"${target}\" = \"${DUMMY_HASH}\"|;}" "$TMPFILE"
     ;;
   esac
 
@@ -178,7 +181,7 @@ done
 
 # claude-code は特別なパターン（コメントでセクション検出）
 cp "$OVERLAY_DIR/binary-releases.nix" "$TMPFILE"
-sed -i '/# Claude Code - agentic coding tool/,/^  };/{
+sedi '/# Claude Code - agentic coding tool/,/^  };/{
   s|"aarch64-darwin" = "sha256-[^"]*"|"aarch64-darwin" = "'"${DUMMY_HASH}"'"|
 }' "$TMPFILE"
 if grep -q "$DUMMY_HASH" "$TMPFILE"; then

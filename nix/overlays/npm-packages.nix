@@ -1,33 +1,4 @@
-let
-  lib = import ./lib.nix;
-  inherit (lib) mkVendoredNpmPackage;
-in {
-  # secretlint - Secret linting tool
-  # Uses custom package.json to bundle secretlint with rule preset
-  # Renovate: datasource=npm depName=secretlint
-  secretlint = mkVendoredNpmPackage {
-    pname = "secretlint";
-    version = "11.4.1";
-    npmDepsHash = "sha256-BI5bmzBns1OZWzgCF0f5WOTCyyhrUNl/mjFxx+NOiCM=";
-    meta = {
-      description = "Pluggable linting tool to prevent commit secret/credential file";
-      homepage = "https://github.com/secretlint/secretlint";
-    };
-  };
-
-  # textlint - Pluggable linting tool for text and markdown
-  # Uses custom package.json to bundle textlint with Japanese writing preset
-  # Renovate: datasource=npm depName=textlint
-  textlint = mkVendoredNpmPackage {
-    pname = "textlint";
-    version = "15.5.2";
-    npmDepsHash = "sha256-4WtuxhOyEZ1JnIga75k2kVrO1CRjMy6/eAapNswJceM=";
-    meta = {
-      description = "Pluggable linting tool for text and markdown";
-      homepage = "https://github.com/textlint/textlint";
-    };
-  };
-
+{
   # playwright-cli - Playwright CLI for coding agents
   # Uses custom package.json to bundle @playwright/cli
   # Renovate: datasource=npm depName=@playwright/cli

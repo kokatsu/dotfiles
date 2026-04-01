@@ -93,6 +93,8 @@ ui = auto
 verbose = true
 
 [core]
+# gitの操作で使用するエディタをNeovimに設定する
+editor = nvim
 # 日本語ファイル名をエスケープせずそのまま表示する
 quotepath = false
 # 未追跡ファイルのキャッシュを有効にする

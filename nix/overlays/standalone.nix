@@ -32,66 +32,6 @@
     };
   };
 
-  # agent-browser - Browser automation agent
-  # Uses pre-built native binaries from npm package
-  # Renovate: datasource=npm depName=agent-browser
-  agent-browser = final: prev: let
-    version = "0.23.0";
-    platformMap = {
-      "aarch64-darwin" = "darwin-arm64";
-      "x86_64-darwin" = "darwin-x64";
-      "aarch64-linux" = "linux-arm64";
-      "x86_64-linux" = "linux-x64";
-    };
-    inherit (prev.stdenv.hostPlatform) system;
-    platform = platformMap.${system} or (throw "Unsupported system: ${system}");
-    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/agent-browser/package-lock.json);
-  in {
-    agent-browser = prev.buildNpmPackage {
-      pname = "agent-browser";
-      inherit version;
-
-      src = prev.fetchurl {
-        url = "https://registry.npmjs.org/agent-browser/-/agent-browser-${version}.tgz";
-        hash = "sha256-m+WLGqGj02GyA0voUpqfTg9eie8Yb57B5JRPukYzN9s=";
-      };
-
-      npmDepsHash = "sha256-BmMMQLqYxunVL0iXZwZ4+4qvKKDCXCaBADhM9qohTAM=";
-      dontNpmBuild = true;
-      npmPackFlags = ["--ignore-scripts"];
-      npmFlags = ["--ignore-scripts" "--legacy-peer-deps"];
-
-      PLAYWRIGHT_BROWSERS_PATH = final.playwright-driver.browsers;
-
-      nativeBuildInputs = [prev.makeWrapper];
-
-      postPatch = ''
-        cp ${packageLock} package-lock.json
-      '';
-
-      postInstall = ''
-        rm -f $out/bin/agent-browser
-        mkdir -p $out/lib/agent-browser
-        cp $out/lib/node_modules/agent-browser/bin/agent-browser-${platform} $out/lib/agent-browser/agent-browser
-        chmod +x $out/lib/agent-browser/agent-browser
-
-        makeWrapper $out/lib/agent-browser/agent-browser $out/bin/agent-browser \
-          --set AGENT_BROWSER_HOME $out/lib/node_modules/agent-browser \
-          --unset PLAYWRIGHT_BROWSERS_PATH \
-          --set-default PLAYWRIGHT_BROWSERS_PATH ${final.playwright-driver.browsers} \
-          --prefix PATH : ${prev.lib.makeBinPath [prev.nodejs]}
-      '';
-
-      meta = with prev.lib; {
-        description = "Browser automation agent";
-        homepage = "https://github.com/anthropics/agent-browser";
-        license = licenses.mit;
-        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
-        mainProgram = "agent-browser";
-      };
-    };
-  };
-
   # k1LoW/deck - Markdown to Google Slides
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=k1LoW/deck
