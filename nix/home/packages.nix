@@ -197,8 +197,6 @@ in {
       codex # OpenAI Codex CLI
       # https://github.com/gitleaks/gitleaks
       gitleaks # シークレット検出
-      # https://github.com/denoland/deno
-      deno # JavaScript/TypeScript ランタイム
       # https://github.com/pypa/pipx
       pipx # Python CLI管理
       # https://github.com/kamadorueda/alejandra
@@ -300,8 +298,6 @@ in {
 
       #--- ユーザースクリプト ラッパー ---#
       feed-watch # GitHub フィード監視 (bin/feed-watch)
-      mmd # Mermaid図レンダラー (bin/mermaid-render.ts)
-      cc-metrics # スキル・インストラクション統合メトリクス表示
 
       #--- Language Servers (overlay) ---#
       # https://github.com/antonk52/cssmodules-language-server
@@ -315,6 +311,11 @@ in {
     ]
     ++ lib.optionals (!isCI) [
       # CI ではスキップ (ビルド時間短縮)
+
+      # https://github.com/denoland/deno
+      deno # JavaScript/TypeScript ランタイム (trybuild tests fail on aarch64-darwin)
+      mmd # Mermaid図レンダラー (bin/mermaid-render.ts) — depends on deno
+      cc-metrics # スキル・インストラクション統合メトリクス表示 — depends on deno
 
       #--- D言語ツール ---#
       # https://github.com/ldc-developers/ldc

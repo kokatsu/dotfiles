@@ -136,7 +136,6 @@
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
       customOverlays.nodejs-22-fix
-      customOverlays.deno-darwin-fix
 
       customOverlays.cava-darwin-fix
       customOverlays.jp2a-darwin-fix
