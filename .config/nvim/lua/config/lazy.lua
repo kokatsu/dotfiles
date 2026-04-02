@@ -34,6 +34,7 @@ require('lazy').setup({
     require('plugins.flash'),
     require('plugins.git-blame'),
     require('plugins.gitsigns'),
+    require('plugins.img-clip'),
     require('plugins.lazydev'),
     require('plugins.lualine'),
     require('plugins.mini'),
