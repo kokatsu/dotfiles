@@ -16,9 +16,9 @@ permissions:
 jobs:
   update-hashes:
     name: Update hashes for Renovate PR
-    # Only run for Renovate PRs from this repo (not forks)
+    # Only run for Renovate PRs from this repo (not forks) with expected branch naming
     if: >-
-      github.actor == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository
+      github.actor == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -440,7 +440,7 @@ jobs:
     name: Run Check workflow
     needs: update-hashes
     if: >-
-      github.actor == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository
+      github.actor == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/')
     uses: ./.github/workflows/check.yml
     secrets:
       CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
