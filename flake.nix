@@ -97,7 +97,6 @@
       customOverlays.git-graph-fork
       customOverlays.kakehashi
       customOverlays.octorus
-      customOverlays.deno-test-fix
       customOverlays.plotly-test-fix
       customOverlays.playwright-cli
       customOverlays.takt
