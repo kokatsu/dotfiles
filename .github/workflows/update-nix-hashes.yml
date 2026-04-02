@@ -249,6 +249,8 @@ jobs:
           mkdir -p /tmp/takt-pkg
           curl -fsSL "$URL" | tar -xzf - -C /tmp/takt-pkg --strip-components=1
           cd /tmp/takt-pkg
+          # esbuild CORS脆弱性対策: devDep経由の古いesbuildを>=0.25.0に強制更新
+          jq '.overrides.esbuild = ">=0.25.0"' package.json > package.json.tmp && mv package.json.tmp package.json
           npm install --package-lock-only --ignore-scripts
           cp package-lock.json "$GITHUB_WORKSPACE/$LOCK_DIR/"
           cd "$GITHUB_WORKSPACE"
