@@ -115,11 +115,4 @@
     nodejs_22 = prev.nodejs_24;
     nodejs-slim_22 = prev.nodejs-slim_24;
   };
-
-  # Fix deno 2.7.4 build failure (trybuild compile tests fail in nixpkgs-unstable)
-  deno-test-fix = _final: prev: {
-    deno = prev.deno.overrideAttrs {
-      doCheck = false;
-    };
-  };
 }
