@@ -91,9 +91,12 @@
         mkdir -p $out
         tar -xzf ${tarball} -C $out --strip-components=1
         cp ${packageLock} $out/package-lock.json
+        # esbuild CORS脆弱性対策: devDep経由の古いesbuildを>=0.25.0に強制更新
+        ${prev.jq}/bin/jq '.overrides.esbuild = ">=0.25.0"' $out/package.json > $out/package.json.tmp
+        mv $out/package.json.tmp $out/package.json
       '';
 
-      npmDepsHash = "sha256-JTDK8bUaUEVoBtwJXUWhrn5KEoYZwh0ldTL7E7ibtdg=";
+      npmDepsHash = "sha256-p0lwEhTt5wgPHpsmEEBatiEVVq1HpYNmE/6fIsZXIW8=";
 
       dontNpmBuild = true;
 
