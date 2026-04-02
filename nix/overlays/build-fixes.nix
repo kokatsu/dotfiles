@@ -115,11 +115,4 @@
     nodejs_22 = prev.nodejs_24;
     nodejs-slim_22 = prev.nodejs-slim_24;
   };
-
-  # Fix deno 2.7.4 trybuild compile tests failing on aarch64-darwin
-  deno-darwin-fix = _final: prev: {
-    deno = prev.deno.overrideAttrs {
-      doCheck = false;
-    };
-  };
 }
