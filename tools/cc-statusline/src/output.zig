@@ -1,6 +1,13 @@
 const std = @import("std");
 const mem = std.mem;
 const Writer = std.io.Writer;
+const types = @import("types.zig");
+
+const RateLimitWindow = types.RateLimitWindow;
+const BlockInfo = types.BlockInfo;
+const ScanResult = types.ScanResult;
+const StdinInfo = types.StdinInfo;
+const ms_per_min = types.ms_per_min;
 
 // ============================================================
 // Constants
@@ -117,42 +124,7 @@ pub fn initTheme() Theme {
     );
 }
 
-// ============================================================
-// Types
-// ============================================================
-
-pub const RateLimitWindow = struct {
-    used_percentage: f64,
-    resets_at_ms: ?i64 = null,
-};
-
-pub const BlockInfo = struct {
-    start_ms: i64,
-    end_ms: i64,
-    cost: f64,
-    burn_rate_per_hr: f64,
-};
-
-pub const ScanResult = struct {
-    today_cost: f64 = 0,
-    block: ?BlockInfo = null,
-};
-
-pub const StdinInfo = struct {
-    model_id: ?[]const u8 = null,
-    model_name: ?[]const u8 = null,
-    session_cost: ?f64 = null,
-    session_duration_ms: ?i64 = null,
-    context_pct: ?f64 = null,
-    context_tokens: ?i64 = null,
-    lines_added: ?i64 = null,
-    lines_removed: ?i64 = null,
-    session_id: ?[]const u8 = null,
-    transcript_path: ?[]const u8 = null,
-    cwd: ?[]const u8 = null,
-    rate_limit_5h: ?RateLimitWindow = null,
-    rate_limit_7d: ?RateLimitWindow = null,
-};
+// (Types moved to types.zig)
 
 // ============================================================
 // Formatting Functions
@@ -216,7 +188,7 @@ pub fn buildProgressBar(buf: []u8, pct: f64, width: u8, bar_filled: []const u8, 
 
 pub fn formatResetDuration(buf: []u8, remaining_ms: i64) []const u8 {
     if (remaining_ms <= 0) return "now";
-    const total_min = @divFloor(remaining_ms, @as(i64, 60000));
+    const total_min = @divFloor(remaining_ms, @as(i64, ms_per_min));
     const total_hours = @divFloor(total_min, @as(i64, 60));
     const mins = total_min - total_hours * 60;
     if (total_hours >= 24) {
@@ -232,7 +204,11 @@ pub fn formatResetDuration(buf: []u8, remaining_ms: i64) []const u8 {
 
 pub fn truncateBranch(buf: *[256]u8, branch: []const u8, max_len: usize) []const u8 {
     if (max_len < 4 or branch.len <= max_len) return branch;
-    const cut = max_len - 1;
+    var cut = max_len - 1;
+    // Avoid cutting in the middle of a multi-byte UTF-8 sequence
+    while (cut > 0 and (branch[cut] & 0xC0) == 0x80) {
+        cut -= 1;
+    }
     @memcpy(buf[0..cut], branch[0..cut]);
     @memcpy(buf[cut..][0..3], "\xe2\x80\xa6"); // U+2026 …
     return buf[0 .. cut + 3];
@@ -492,6 +468,15 @@ test "truncateBranch min max_len" {
     var buf: [256]u8 = undefined;
     const result = truncateBranch(&buf, "feature/something", 3);
     try std.testing.expectEqualStrings("feature/something", result);
+}
+
+test "truncateBranch UTF-8 boundary" {
+    var buf: [256]u8 = undefined;
+    // "ab" + 日 (3 bytes: \xe6\x97\xa5) + "cd" = 7 bytes
+    // max_len=4: cut=3 lands inside 日, should walk back to byte 2
+    const result = truncateBranch(&buf, "ab\xe6\x97\xa5cd", 4);
+    try std.testing.expectEqual(@as(usize, 5), result.len);
+    try std.testing.expectEqualStrings("ab\xe2\x80\xa6", result);
 }
 
 // --- printOutput: Line 1 ---
