@@ -87,3 +87,7 @@ vim.opt.sidescrolloff = 8
 -- CursorHold等のイベント発火までの待機時間（デフォルト4000ms）
 -- 外部ツールによるファイル変更の検知を速くするため短く設定
 vim.opt.updatetime = 300
+
+-- Treesitter非同期パースのタイムアウト（デフォルト2000ms）
+-- Markdownなどインジェクションが多いファイルでハイライトが途切れるのを防ぐ
+vim.o.redrawtime = 10000

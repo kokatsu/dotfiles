@@ -68,6 +68,14 @@ vim.keymap.set('n', '<leader>th', function()
   vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
 end, { desc = 'Toggle Inlay Hints' })
 
+-- Treesitterハイライトをリセット（タイムアウトで壊れた時の復旧用）
+vim.keymap.set('n', '<leader>tS', function()
+  vim.treesitter.stop()
+  vim.defer_fn(function()
+    pcall(vim.treesitter.start)
+  end, 100)
+end, { desc = 'Reset Treesitter Highlight' })
+
 -- Treesitterベースの移動（関数/クラス間）
 local function goto_textobject(query, direction)
   return function()
