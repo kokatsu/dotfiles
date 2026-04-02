@@ -5,16 +5,18 @@ const fs = std.fs;
 const output = @import("output.zig");
 const scan = @import("scan.zig");
 const time = @import("time.zig");
+const types = @import("types.zig");
+const ju = @import("json_util.zig");
 
-const StdinInfo = output.StdinInfo;
-const RateLimitWindow = output.RateLimitWindow;
+const StdinInfo = types.StdinInfo;
+const RateLimitWindow = types.RateLimitWindow;
 
-const getObj = scan.getObj;
-const getObjField = scan.getObjField;
-const getStr = scan.getStr;
-const getF64 = scan.getF64;
-const getI64 = scan.getI64;
-const getI64Field = scan.getI64Field;
+const getObj = ju.getObj;
+const getObjField = ju.getObjField;
+const getStr = ju.getStr;
+const getF64 = ju.getF64;
+const getI64 = ju.getI64;
+const getI64Field = ju.getI64Field;
 
 // ============================================================
 // Stdin Parsing
@@ -414,4 +416,5 @@ test {
     _ = scan;
     _ = time;
     _ = @import("pricing.zig");
+    _ = @import("json_util.zig");
 }

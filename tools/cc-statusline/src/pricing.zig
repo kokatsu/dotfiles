@@ -100,10 +100,10 @@ pub fn calculateEntryCost(pricing: ModelPricing, usage: TokenUsage) f64 {
     const cc_rate = if (use_premium) (pricing.cache_creation_above_200k orelse pricing.cache_creation) else pricing.cache_creation;
     const cr_rate = if (use_premium) (pricing.cache_read_above_200k orelse pricing.cache_read) else pricing.cache_read;
 
-    const base = (if (usage.input_tokens > 0) @as(f64, @floatFromInt(usage.input_tokens)) * input_rate else 0) +
-        (if (usage.output_tokens > 0) @as(f64, @floatFromInt(usage.output_tokens)) * output_rate else 0) +
-        (if (usage.cache_creation_input_tokens > 0) @as(f64, @floatFromInt(usage.cache_creation_input_tokens)) * cc_rate else 0) +
-        (if (usage.cache_read_input_tokens > 0) @as(f64, @floatFromInt(usage.cache_read_input_tokens)) * cr_rate else 0);
+    const base = @as(f64, @floatFromInt(usage.input_tokens)) * input_rate +
+        @as(f64, @floatFromInt(usage.output_tokens)) * output_rate +
+        @as(f64, @floatFromInt(usage.cache_creation_input_tokens)) * cc_rate +
+        @as(f64, @floatFromInt(usage.cache_read_input_tokens)) * cr_rate;
 
     return if (usage.is_fast) base * fast_multiplier else base;
 }

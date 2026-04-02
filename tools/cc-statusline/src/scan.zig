@@ -4,11 +4,18 @@ const mem = std.mem;
 const fs = std.fs;
 const pricing = @import("pricing.zig");
 const time = @import("time.zig");
-const output = @import("output.zig");
+const types = @import("types.zig");
+const ju = @import("json_util.zig");
 
-const ScanResult = output.ScanResult;
-const BlockInfo = output.BlockInfo;
+const ScanResult = types.ScanResult;
+const BlockInfo = types.BlockInfo;
+const ms_per_min = types.ms_per_min;
 const TokenUsage = pricing.TokenUsage;
+
+const getObj = ju.getObj;
+const getObjField = ju.getObjField;
+const getStr = ju.getStr;
+const getI64Field = ju.getI64Field;
 
 // ============================================================
 // Constants
@@ -42,53 +49,11 @@ const CachedFileEntry = struct {
 
 const CacheResult = struct {
     scan: ScanResult,
-    files: []CachedFileEntry,
+    files: []const CachedFileEntry,
     write_time_s: i64,
     last_full_scan_s: i64,
     day_start_ms: i64,
 };
-
-// ============================================================
-// JSON Helpers
-// ============================================================
-
-pub fn getObj(val: json.Value) ?json.ObjectMap {
-    return switch (val) {
-        .object => |o| o,
-        else => null,
-    };
-}
-
-pub fn getObjField(obj: json.ObjectMap, key: []const u8) ?json.ObjectMap {
-    return if (obj.get(key)) |v| getObj(v) else null;
-}
-
-pub fn getStr(val: json.Value) ?[]const u8 {
-    return switch (val) {
-        .string => |s| s,
-        else => null,
-    };
-}
-
-pub fn getF64(val: json.Value) ?f64 {
-    return switch (val) {
-        .integer => |i| @as(f64, @floatFromInt(i)),
-        .float => |f| f,
-        else => null,
-    };
-}
-
-pub fn getI64(val: json.Value) ?i64 {
-    return switch (val) {
-        .integer => |i| i,
-        .float => |f| @as(i64, @intFromFloat(f)),
-        else => null,
-    };
-}
-
-pub fn getI64Field(obj: json.ObjectMap, key: []const u8) i64 {
-    return if (obj.get(key)) |v| getI64(v) orelse 0 else 0;
-}
 
 // ============================================================
 // Transcript Scanning
@@ -213,8 +178,8 @@ fn entryCost(entry: TranscriptEntry) f64 {
 }
 
 fn computeBurnRate(cost: f64, start_ms: i64, now_ms: i64) f64 {
-    const elapsed_ms: i64 = @max(now_ms - start_ms, 60000);
-    const duration_min: f64 = @as(f64, @floatFromInt(elapsed_ms)) / 60000.0;
+    const elapsed_ms: i64 = @max(now_ms - start_ms, ms_per_min);
+    const duration_min: f64 = @as(f64, @floatFromInt(elapsed_ms)) / @as(f64, @floatFromInt(ms_per_min));
     return cost / duration_min * 60.0;
 }
 
@@ -301,33 +266,46 @@ fn computeCosts(entries: []TranscriptEntry, now_ms: i64, day_start_ms: i64, rese
 // Cache
 // ============================================================
 
-const cache_header_size: usize = 4 + 4 + 8 + 8 + 8 + 1 + 8 + 8 + 8 + 8 + 8 + 4; // 77 bytes
+const cache_header_size: usize =
+    4 + // magic
+    @sizeOf(u32) + // version
+    @sizeOf(i64) + // write_time_s
+    @sizeOf(i64) + // last_full_scan_s
+    @sizeOf(f64) + // today_cost
+    1 + // has_block
+    @sizeOf(i64) + // block_start_ms
+    @sizeOf(i64) + // block_end_ms
+    @sizeOf(f64) + // block_cost
+    @sizeOf(f64) + // block_burn_rate
+    @sizeOf(i64) + // day_start_ms
+    @sizeOf(u32); // file_count
 
-fn readVal(comptime T: type, data: []const u8, pos: usize) T {
+fn readVal(comptime T: type, data: []const u8, pos: *usize) T {
     const Int = std.meta.Int(.unsigned, @bitSizeOf(T));
-    return @bitCast(mem.readInt(Int, data[pos..][0..@sizeOf(T)], .little));
+    const result: T = @bitCast(mem.readInt(Int, data[pos.*..][0..@sizeOf(T)], .little));
+    pos.* += @sizeOf(T);
+    return result;
 }
 
 fn parseCacheBytes(allocator: std.mem.Allocator, content: []const u8, day_start_ms: i64) ?CacheResult {
     if (content.len < cache_header_size) return null;
 
-    // Deserialize header fields manually
     if (!mem.eql(u8, content[0..4], &cache_magic)) return null;
-    const version = readVal(u32, content, 4);
-    if (version != cache_ver) return null;
+    var pos: usize = 4;
+    if (readVal(u32, content, &pos) != cache_ver) return null;
 
-    const write_time_s = readVal(i64, content, 8);
-    const last_full_scan_s = readVal(i64, content, 16);
-    const today_cost = readVal(f64, content, 24);
-    const has_block = content[32];
-    const block_start_ms = readVal(i64, content, 33);
-    const block_end_ms = readVal(i64, content, 41);
-    const block_cost = readVal(f64, content, 49);
-    const block_burn_rate = readVal(f64, content, 57);
-    const hdr_day_start_ms = readVal(i64, content, 65);
-    const file_count = readVal(u32, content, 73);
+    const write_time_s = readVal(i64, content, &pos);
+    const last_full_scan_s = readVal(i64, content, &pos);
+    const today_cost = readVal(f64, content, &pos);
+    const has_block = content[pos];
+    pos += 1;
+    const block_start_ms = readVal(i64, content, &pos);
+    const block_end_ms = readVal(i64, content, &pos);
+    const block_cost = readVal(f64, content, &pos);
+    const block_burn_rate = readVal(f64, content, &pos);
+    const hdr_day_start_ms = readVal(i64, content, &pos);
+    const file_count = readVal(u32, content, &pos);
 
-    // Invalidate on day boundary change
     if (hdr_day_start_ms != day_start_ms) return null;
 
     var scan = ScanResult{
@@ -345,22 +323,17 @@ fn parseCacheBytes(allocator: std.mem.Allocator, content: []const u8, day_start_
 
     // Read file entries
     var files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
-    var pos: usize = cache_header_size;
     var i: u32 = 0;
     while (i < file_count) : (i += 1) {
         if (pos + 2 > content.len) break;
-        const path_len = mem.readInt(u16, content[pos..][0..2], .little);
-        pos += 2;
+        const path_len = readVal(u16, content, &pos);
         if (pos + path_len > content.len) break;
         const path = allocator.dupe(u8, content[pos..][0..path_len]) catch break;
         pos += path_len;
         if (pos + 24 > content.len) break;
-        const file_size = readVal(i64, content, pos);
-        pos += 8;
-        const per_file_cost = readVal(f64, content, pos);
-        pos += 8;
-        const parsed_size = readVal(i64, content, pos);
-        pos += 8;
+        const file_size = readVal(i64, content, &pos);
+        const per_file_cost = readVal(f64, content, &pos);
+        const parsed_size = readVal(i64, content, &pos);
         files.append(allocator, .{
             .path = path,
             .file_size = file_size,
@@ -494,7 +467,7 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
         return cached.scan;
     }
 
-    var total_diff_cost: f64 = 0;
+    var block_diff_cost: f64 = 0;
     var new_files: std.ArrayListUnmanaged(CachedFileEntry) = .{};
     var global_seen = std.StringHashMapUnmanaged(void){};
 
@@ -514,17 +487,19 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
                 }
             }
 
-            var file_diff_cost: f64 = 0;
             var today_file_diff_cost: f64 = 0;
             for (entries.items) |e| {
                 const cost = entryCost(e);
-                file_diff_cost += cost;
                 if (e.timestamp_ms >= day_start_ms) {
                     today_file_diff_cost += cost;
                 }
+                if (cached.scan.block) |existing_block| {
+                    if (e.timestamp_ms >= existing_block.start_ms and e.timestamp_ms <= existing_block.end_ms) {
+                        block_diff_cost += cost;
+                    }
+                }
             }
 
-            total_diff_cost += file_diff_cost;
             new_files.append(allocator, .{
                 .path = ch.path,
                 .file_size = ch.file_size,
@@ -542,9 +517,9 @@ fn diffScan(allocator: std.mem.Allocator, cached: CacheResult, now_ms: i64, now_
     }
 
     const block = blk: {
-        if (total_diff_cost == 0) break :blk cached.scan.block;
+        if (block_diff_cost == 0) break :blk cached.scan.block;
         if (cached.scan.block) |existing_block| {
-            const new_block_cost = existing_block.cost + total_diff_cost;
+            const new_block_cost = existing_block.cost + block_diff_cost;
             break :blk BlockInfo{
                 .start_ms = existing_block.start_ms,
                 .end_ms = existing_block.end_ms,
@@ -1017,9 +992,9 @@ test "diffScan no files changed returns cached result" {
 
     const cached = CacheResult{
         .scan = .{ .today_cost = 5.0, .block = null },
-        .files = @constCast(&[_]CachedFileEntry{
+        .files = &[_]CachedFileEntry{
             .{ .path = path, .file_size = file_size, .per_file_cost = 5.0, .parsed_size = file_size },
-        }),
+        },
         .write_time_s = now_s - 10,
         .last_full_scan_s = now_s - 100,
         .day_start_ms = day_start_ms,
@@ -1045,9 +1020,9 @@ test "diffScan file shrank returns null" {
 
     const cached = CacheResult{
         .scan = .{ .today_cost = 5.0 },
-        .files = @constCast(&[_]CachedFileEntry{
+        .files = &[_]CachedFileEntry{
             .{ .path = path, .file_size = 99999, .per_file_cost = 5.0, .parsed_size = 99999 },
-        }),
+        },
         .write_time_s = now_s - 10,
         .last_full_scan_s = now_s - 100,
         .day_start_ms = day_start_ms,
@@ -1067,9 +1042,9 @@ test "diffScan file disappeared returns null" {
 
     const cached = CacheResult{
         .scan = .{ .today_cost = 5.0 },
-        .files = @constCast(&[_]CachedFileEntry{
+        .files = &[_]CachedFileEntry{
             .{ .path = "/tmp/cc-test-diffscan-nonexistent-xyz.jsonl", .file_size = 100, .per_file_cost = 5.0, .parsed_size = 100 },
-        }),
+        },
         .write_time_s = now_s - 10,
         .last_full_scan_s = now_s - 100,
         .day_start_ms = day_start_ms,
@@ -1097,9 +1072,9 @@ test "diffScan resets_at changed returns null" {
             .today_cost = 5.0,
             .block = .{ .start_ms = 0, .end_ms = resets_at_ms + 1000, .cost = 1.0, .burn_rate_per_hr = 0.5 },
         },
-        .files = @constCast(&[_]CachedFileEntry{
+        .files = &[_]CachedFileEntry{
             .{ .path = path, .file_size = 4, .per_file_cost = 5.0, .parsed_size = 4 },
-        }),
+        },
         .write_time_s = now_s - 10,
         .last_full_scan_s = now_s - 100,
         .day_start_ms = day_start_ms,
@@ -1130,9 +1105,9 @@ test "diffScan file grew recalculates cost" {
 
     const cached = CacheResult{
         .scan = .{ .today_cost = 1.0 },
-        .files = @constCast(&[_]CachedFileEntry{
+        .files = &[_]CachedFileEntry{
             .{ .path = path, .file_size = old_size, .per_file_cost = 1.0, .parsed_size = old_size },
-        }),
+        },
         .write_time_s = now_s - 10,
         .last_full_scan_s = now_s - 100,
         .day_start_ms = day_start_ms,
@@ -1162,9 +1137,9 @@ test "diffScan total_diff_cost zero preserves cached block" {
     const cached_block = BlockInfo{ .start_ms = now_ms - 3600 * 1000, .end_ms = now_ms + 4 * 3600 * 1000, .cost = 2.5, .burn_rate_per_hr = 1.0 };
     const cached = CacheResult{
         .scan = .{ .today_cost = 3.0, .block = cached_block },
-        .files = @constCast(&[_]CachedFileEntry{
+        .files = &[_]CachedFileEntry{
             .{ .path = path, .file_size = old_size, .per_file_cost = 3.0, .parsed_size = old_size },
-        }),
+        },
         .write_time_s = now_s - 10,
         .last_full_scan_s = now_s - 100,
         .day_start_ms = day_start_ms,
@@ -1223,57 +1198,6 @@ test "parseJsonlContent no speed field is false" {
     try std.testing.expect(!entries.items[0].usage.is_fast);
 }
 
-// --- JSON helpers ---
-
-test "getObj returns object" {
-    const parsed = try json.parseFromSlice(json.Value, std.testing.allocator, "{\"a\":1}", .{});
-    defer parsed.deinit();
-    try std.testing.expect(getObj(parsed.value) != null);
-}
-
-test "getObj returns null for non-object" {
-    try std.testing.expect(getObj(.null) == null);
-    try std.testing.expect(getObj(.{ .integer = 42 }) == null);
-    try std.testing.expect(getObj(.{ .bool = true }) == null);
-}
-
-test "getStr returns string" {
-    try std.testing.expectEqualStrings("hello", getStr(.{ .string = "hello" }).?);
-}
-
-test "getStr returns null for non-string" {
-    try std.testing.expect(getStr(.null) == null);
-    try std.testing.expect(getStr(.{ .integer = 42 }) == null);
-    try std.testing.expect(getStr(.{ .bool = true }) == null);
-}
-
-test "getF64 returns float from float" {
-    try std.testing.expectApproxEqAbs(@as(f64, 3.14), getF64(.{ .float = 3.14 }).?, 1e-10);
-}
-
-test "getF64 returns float from integer" {
-    try std.testing.expectApproxEqAbs(@as(f64, 42.0), getF64(.{ .integer = 42 }).?, 1e-10);
-}
-
-test "getF64 returns null for non-numeric" {
-    try std.testing.expect(getF64(.null) == null);
-    try std.testing.expect(getF64(.{ .string = "3.14" }) == null);
-    try std.testing.expect(getF64(.{ .bool = true }) == null);
-}
-
-test "getI64 returns integer from integer" {
-    try std.testing.expectEqual(@as(i64, 42), getI64(.{ .integer = 42 }).?);
-}
-
-test "getI64 returns integer from float truncated" {
-    try std.testing.expectEqual(@as(i64, 42), getI64(.{ .float = 42.7 }).?);
-}
-
-test "getI64 returns null for non-numeric" {
-    try std.testing.expect(getI64(.null) == null);
-    try std.testing.expect(getI64(.{ .string = "42" }) == null);
-    try std.testing.expect(getI64(.{ .bool = true }) == null);
-}
 
 // --- identifyActiveBlock boundary conditions ---
 
