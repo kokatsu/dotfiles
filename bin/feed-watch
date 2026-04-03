@@ -15,6 +15,12 @@ GITHUB_FEEDS=(
 # 形式: "表示名|フィードURL|ページURL"
 ATOM_FEEDS=(
   "Meta Developer Blog|https://developers.facebook.com/blog/feed/|https://developers.facebook.com/blog/"
+  "Claude Status|https://status.anthropic.com/history.atom|https://status.anthropic.com/"
+  "GitHub Status|https://www.githubstatus.com/history.atom|https://www.githubstatus.com/"
+)
+
+RSS_FEEDS=(
+  "Meta Graph API Status|https://metastatus.com/outage-events-feed-graph-api.rss|https://metastatus.com/"
 )
 
 # --- Windows 側の出力先を決定 ---
@@ -91,6 +97,12 @@ fetch_atom_ids() {
   curl -sfL "$url" | grep -o '<id>[^<]*</id>' | sed 's/<id>\(.*\)<\/id>/\1/' | tail -n +2
 }
 
+# --- RSS フィードからエントリ GUID を取得 ---
+fetch_rss_ids() {
+  local url="$1"
+  curl -sfL "$url" | grep -oP '<guid[^>]*>\K[^<]+' || true
+}
+
 # --- check サブコマンド ---
 cmd_check() {
   ensure_status_file
@@ -121,6 +133,20 @@ cmd_check() {
       continue
     }
     status=$(update_feed_status "$status" "$name" "$ids" "atom" "$page_url")
+  done
+
+  # RSS フィード
+  for entry in "${RSS_FEEDS[@]}"; do
+    local name="${entry%%|*}"
+    local rest="${entry#*|}"
+    local feed_url="${rest%%|*}"
+    local page_url="${rest#*|}"
+    local ids
+    ids=$(fetch_rss_ids "$feed_url" 2>/dev/null) || {
+      echo "Failed to fetch rss feed: $name" >&2
+      continue
+    }
+    status=$(update_feed_status "$status" "$name" "$ids" "rss" "$page_url")
   done
 
   echo "$status" | jq . > "$STATUS_FILE"
