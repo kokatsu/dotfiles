@@ -8,4 +8,9 @@
         "build.zig.zon",
         "src",
     },
+    .dependencies = .{
+        .zig_time = .{
+            .path = "../zig-time",
+        },
+    },
 }

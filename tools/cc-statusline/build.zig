@@ -4,6 +4,8 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const zig_time = b.dependency("zig_time", .{}).module("zig_time");
+
     const exe = b.addExecutable(.{
         .name = "cc-statusline",
         .root_module = b.createModule(.{
@@ -11,6 +13,9 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = false,
+            .imports = &.{
+                .{ .name = "zig_time", .module = zig_time },
+            },
         }),
     });
 
