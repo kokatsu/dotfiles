@@ -64,6 +64,7 @@
       buildPhase = ''
         export HOME=$TMPDIR
         export XDG_CACHE_HOME=$TMPDIR/.cache
+        ln -s ${../../tools/zig-time} ../zig-time
         zig build -Doptimize=ReleaseFast --prefix $out
       '';
       installPhase = ''
@@ -84,6 +85,7 @@
       buildPhase = ''
         export HOME=$TMPDIR
         export XDG_CACHE_HOME=$TMPDIR/.cache
+        ln -s ${../../tools/zig-time} ../zig-time
         zig build -Doptimize=ReleaseFast --prefix $out
       '';
     };

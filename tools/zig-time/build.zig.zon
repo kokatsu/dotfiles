@@ -1,0 +1,11 @@
+.{
+    .name = .zig_time,
+    .version = "0.1.0",
+    .fingerprint = 0xa7fe7ba663e8eeca,
+    .minimum_zig_version = "0.15.0",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
