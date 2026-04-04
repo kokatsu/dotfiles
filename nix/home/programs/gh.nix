@@ -5,7 +5,7 @@
   ...
 }: let
   inherit (pkgs.stdenv) isLinux;
-  # WSL detection: Linux and kernel contains "microsoft" or "WSL"
+  # WSL detection (requires --impure; /proc/version is read at Nix eval time)
   # In pure evaluation mode (CI), /proc/version access is forbidden, so skip WSL detection
   isWSL =
     if isCI

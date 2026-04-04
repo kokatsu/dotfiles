@@ -6,7 +6,7 @@ _: {
 
   programs.delta = {
     enable = true;
-    enableGitIntegration = true;
+    enableGitIntegration = false; # .config/git/config で手動管理
   };
 
   # 既存の git/config, git/ignore を使用
