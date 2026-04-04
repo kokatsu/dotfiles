@@ -433,7 +433,6 @@ in {
       '';
       ".config/biome".source = ../../.config/biome;
       ".config/lazydocker".source = ../../.config/lazydocker;
-      ".config/readline".source = ../../.config/readline;
       ".config/taplo".source = ../../.config/taplo;
       ".config/termframe".source = ../../.config/termframe;
       # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
