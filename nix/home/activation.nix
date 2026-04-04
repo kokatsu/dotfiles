@@ -84,6 +84,7 @@ in {
       $DRY_RUN_CMD mkdir -p "$CODEX_DIR"
       if [ -f "$TARGET" ]; then
         # 既存の [projects] セクションを抽出
+        # 前提: [projects.*] セクションがファイル末尾にあること (後続セクションも含まれる)
         PROJECTS=$(${pkgs.gnused}/bin/sed -n '/^\[projects[."\[]/,$ p' "$TARGET")
         $DRY_RUN_CMD cp "$BASE" "$TARGET"
         if [ -n "$PROJECTS" ]; then

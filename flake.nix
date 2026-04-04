@@ -97,7 +97,6 @@
       customOverlays.git-graph-fork
       customOverlays.kakehashi
       customOverlays.octorus
-      customOverlays.plotly-test-fix
       customOverlays.playwright-cli
       customOverlays.takt
       customOverlays.termframe
@@ -135,7 +134,6 @@
 
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
-      customOverlays.nodejs-22-fix
       customOverlays.deno-darwin-fix
 
       customOverlays.cava-darwin-fix
