@@ -1,0 +1,152 @@
+#!/bin/bash
+set -euo pipefail
+
+# feed-summarize: feed-watch が検出した新規 GitHub コミットを Claude で詳細要約する
+#
+# feed-watch の status.json を参照し、type=github のフィードについて
+# last_summarized_id 以降のコミットを claude -p で要約して Markdown に出力する。
+#
+# Usage:
+#   feed-summarize            - 新規コミットを要約
+
+# --- Windows 側の出力先を決定 ---
+get_status_dir() {
+  local winuser
+  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
+  if [[ -z "$winuser" || ! -d "/mnt/c/Users/$winuser" ]]; then
+    return 1
+  fi
+  echo "/mnt/c/Users/$winuser/.cache/feed-watch"
+}
+
+STATUS_DIR=$(get_status_dir) || { echo "Windows mount not available, skipping." >&2; exit 0; }
+STATUS_FILE="$STATUS_DIR/status.json"
+SUMMARIES_DIR="$STATUS_DIR/summaries"
+
+if [[ ! -f "$STATUS_FILE" ]]; then
+  echo "status.json not found. Run feed-watch check first." >&2
+  exit 1
+fi
+
+SUMMARIZE_PROMPT='以下の JSON は GitHub リポジトリのコミット情報（差分・関連PR含む）です。
+このコミットの内容を日本語で詳細に分析し、以下の構造でまとめてください。
+
+### 概要
+コミットの目的と背景を1-2文で説明。
+
+### 変更内容
+- 変更されたファイルごとに、何がどう変わったかを具体的に記述
+- コードや設定の変更は技術的な詳細を含める
+- ドキュメントの変更は内容の要点を記述
+
+### 影響・注意点
+- この変更による影響（API変更、破壊的変更、新機能など）
+- 開発者が注意すべき点があれば記述
+- 該当なければこのセクションは省略
+
+マークダウンの h1 (# ) と h2 (## ) は使わないでください（h3 ### 以下のみ）。'
+
+# --- コミット情報を収集 (API) ---
+fetch_commit_context() {
+  local repo="$1" sha="$2"
+
+  local commit_json
+  commit_json=$(gh api "repos/$repo/commits/$sha" --jq '{
+    sha: .sha[0:7],
+    message: .commit.message,
+    author: .commit.author.name,
+    date: .commit.author.date,
+    files: [.files[:20][] | {filename, status, additions, deletions, patch: (.patch // "" | if length > 3000 then .[0:3000] + "\n… (truncated)" else . end)}],
+    stats: {additions: .stats.additions, deletions: .stats.deletions, total: .stats.total}
+  }' 2>/dev/null) || return 1
+
+  # 関連 PR を取得
+  local pr_json
+  pr_json=$(gh api "repos/$repo/commits/$sha/pulls" --jq '[.[:1][] | {
+    number: .number,
+    title: .title,
+    body: (.body // "" | if length > 2000 then .[0:2000] + "\n… (truncated)" else . end),
+    labels: [.labels[].name]
+  }]' 2>/dev/null) || pr_json="[]"
+
+  jq -n --argjson commit "$commit_json" --argjson prs "$pr_json" \
+    '{commit: $commit, pull_requests: $prs}'
+}
+
+# --- メイン ---
+mkdir -p "$SUMMARIES_DIR"
+
+status=$(cat "$STATUS_FILE")
+
+# status.json から type=github のフィードを動的に取得
+repos=$(echo "$status" | jq -r '.feeds | to_entries[] | select(.value.type == "github") | .key')
+
+for repo in $repos; do
+  last_seen_id=$(echo "$status" | jq -r --arg name "$repo" '.feeds[$name].last_seen_id // ""')
+  last_summarized_id=$(echo "$status" | jq -r --arg name "$repo" '.feeds[$name].last_summarized_id // ""')
+
+  # check が未実行
+  if [[ -z "$last_seen_id" ]]; then
+    continue
+  fi
+
+  # 初回: 現在位置を記録して終了（過去コミットは要約しない）
+  if [[ -z "$last_summarized_id" ]]; then
+    status=$(echo "$status" | jq --arg name "$repo" --arg id "$last_seen_id" \
+      '.feeds[$name].last_summarized_id = $id')
+    echo "$status" | jq . > "$STATUS_FILE"
+    continue
+  fi
+
+  # 新規コミットなし
+  if [[ "$last_summarized_id" == "$last_seen_id" ]]; then
+    continue
+  fi
+
+  # last_summarized_id 以降のコミット SHA を収集
+  commits=$(gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
+    echo "Failed to fetch commits for $repo" >&2
+    continue
+  }
+
+  new_shas=()
+  while IFS= read -r sha; do
+    if [[ "$sha" == "$last_summarized_id" ]]; then
+      break
+    fi
+    new_shas+=("$sha")
+  done <<< "$commits"
+
+  if [[ ${#new_shas[@]} -eq 0 ]]; then
+    continue
+  fi
+
+  summary_file="$SUMMARIES_DIR/${repo//\//-}.md"
+
+  # 古い順に処理
+  for ((i=${#new_shas[@]}-1; i>=0; i--)); do
+    sha="${new_shas[$i]}"
+
+    context=$(fetch_commit_context "$repo" "$sha") || {
+      echo "Failed to fetch commit $sha for $repo" >&2
+      continue
+    }
+
+    summary=$(echo "$context" | claude -p "$SUMMARIZE_PROMPT" 2>/dev/null) || {
+      echo "Failed to summarize commit $sha for $repo" >&2
+      continue
+    }
+
+    short_sha=$(echo "$context" | jq -r '.commit.sha')
+    commit_date=$(echo "$context" | jq -r '.commit.date' | cut -dT -f1)
+    commit_url="https://github.com/$repo/commit/$sha"
+
+    printf '\n## [%s %s](%s)\n\n%s\n\n---\n' \
+      "$commit_date" "$short_sha" "$commit_url" "$summary" >> "$summary_file"
+
+    # 要約済み位置を更新（中断に対応）
+    status=$(echo "$status" | jq --arg name "$repo" --arg id "$sha" \
+      '.feeds[$name].last_summarized_id = $id')
+    echo "$status" | jq . > "$STATUS_FILE"
+  done
+done

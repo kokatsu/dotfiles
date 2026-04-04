@@ -23,6 +23,10 @@
     exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/feed-watch" "$@"
   '';
 
+  feed-summarize = pkgs.writeShellScriptBin "feed-summarize" ''
+    exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/feed-summarize" "$@"
+  '';
+
   # WSL: Claude Code は clip.exe をハードコードで使用するが UTF-8 を正しく扱えない
   # xsel (X11) + win32yank (Windows/Win+V履歴) の両方に書き込む
   clip-exe-wrapper = pkgs.writeShellScriptBin "clip.exe" ''
@@ -298,6 +302,7 @@ in {
 
       #--- ユーザースクリプト ラッパー ---#
       feed-watch # GitHub フィード監視 (bin/feed-watch)
+      feed-summarize # GitHub コミット要約 (bin/feed-summarize)
 
       #--- Language Servers (overlay) ---#
       # https://github.com/antonk52/cssmodules-language-server
