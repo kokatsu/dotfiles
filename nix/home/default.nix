@@ -23,6 +23,7 @@ in {
     ./programs/gh.nix
     ./programs/git.nix
     ./programs/lazygit.nix
+    ./programs/readline.nix
     ./programs/starship.nix
     ./programs/tmux.nix
     ./programs/zoxide.nix
@@ -68,7 +69,6 @@ in {
         CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
         PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
         RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
-        INPUTRC = "${config.xdg.configHome}/readline/inputrc";
         CODEX_HOME = "${config.xdg.configHome}/codex";
         TERMFRAME_CONFIG = "${config.xdg.configHome}/termframe/config.toml";
         TAPLO_CONFIG = "${config.xdg.configHome}/taplo/taplo.toml";

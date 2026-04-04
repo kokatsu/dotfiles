@@ -85,10 +85,6 @@
 !pg/
 !pg/**
 
-# readline (https://tiswww.case.edu/php/chet/readline/rltop.html)
-!readline/
-!readline/**
-
 # takt (https://github.com/nrslib/takt)
 !takt/
 !takt/**
