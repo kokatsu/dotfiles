@@ -1,27 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
-# feed-watch: GitHub リポジトリ / Atom フィードの更新を監視し、WezTerm ステータスバーに表示する
+# feed-watch: フィードの更新を監視し、WezTerm ステータスバーに表示する
+# フィードリストは bulletty の OPML ファイルから読み込む
 #
 # Usage:
 #   feed-watch check          - 全フィードをチェックし status.json を更新
 #   feed-watch read [<name>]  - 指定フィード (または全フィード) を既読にする
 
-# --- 監視対象 ---
-GITHUB_FEEDS=(
-  "xdevplatform/docs"
-)
-
-# 形式: "表示名|フィードURL|ページURL"
-ATOM_FEEDS=(
-  "Meta Developer Blog|https://developers.facebook.com/blog/feed/|https://developers.facebook.com/blog/"
-  "Claude Status|https://status.anthropic.com/history.atom|https://status.anthropic.com/"
-  "GitHub Status|https://www.githubstatus.com/history.atom|https://www.githubstatus.com/"
-)
-
-RSS_FEEDS=(
-  "Meta Graph API Status|https://metastatus.com/outage-events-feed-graph-api.rss|https://metastatus.com/"
-)
+OPML_FILE="$HOME/.config/bulletty/feeds.opml"
 
 # --- Windows 側の出力先を決定 ---
 get_status_dir() {
@@ -91,63 +78,66 @@ update_feed_status() {
   fi
 }
 
-# --- Atom フィードからエントリ ID を取得 ---
-fetch_atom_ids() {
+# --- フィードからエントリ ID を取得 (Atom/RSS 自動判別) ---
+fetch_feed_ids() {
   local url="$1"
-  curl -sfL "$url" | grep -o '<id>[^<]*</id>' | sed 's/<id>\(.*\)<\/id>/\1/' | tail -n +2
+  local content
+  content=$(curl -sfL "$url") || return 1
+
+  # Atom: <id> タグ (先頭のフィード自体の id はスキップ)
+  local atom_ids
+  atom_ids=$(echo "$content" | grep -o '<id>[^<]*</id>' | sed 's/<id>\(.*\)<\/id>/\1/' | tail -n +2)
+  if [[ -n "$atom_ids" ]]; then
+    echo "$atom_ids"
+    return
+  fi
+
+  # RSS: <guid> タグ
+  echo "$content" | grep -oP '<guid[^>]*>\K[^<]+' || true
 }
 
-# --- RSS フィードからエントリ GUID を取得 ---
-fetch_rss_ids() {
-  local url="$1"
-  curl -sfL "$url" | grep -oP '<guid[^>]*>\K[^<]+' || true
+# --- OPML パース: "name|xmlUrl|htmlUrl" 行を出力 ---
+parse_opml() {
+  grep 'xmlUrl=' "$OPML_FILE" | while IFS= read -r line; do
+    local name xml_url html_url
+    name=$(echo "$line" | grep -oP 'text="\K[^"]+')
+    xml_url=$(echo "$line" | grep -oP 'xmlUrl="\K[^"]+')
+    html_url=$(echo "$line" | grep -oP 'htmlUrl="\K[^"]+' || echo "$xml_url")
+    echo "${name}|${xml_url}|${html_url}"
+  done
 }
 
 # --- check サブコマンド ---
 cmd_check() {
   ensure_status_file
 
+  if [[ ! -f "$OPML_FILE" ]]; then
+    echo "OPML file not found: $OPML_FILE" >&2
+    exit 1
+  fi
+
   local status
   status=$(cat "$STATUS_FILE")
 
-  # GitHub フィード
-  for repo in "${GITHUB_FEEDS[@]}"; do
+  while IFS='|' read -r name xml_url html_url; do
     local ids
-    ids=$(gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
-      echo "Failed to fetch commits for $repo" >&2
-      continue
-    }
-    local page_url="https://github.com/$repo/commits"
-    status=$(update_feed_status "$status" "$repo" "$ids" "github" "$page_url")
-  done
 
-  # Atom フィード
-  for entry in "${ATOM_FEEDS[@]}"; do
-    local name="${entry%%|*}"
-    local rest="${entry#*|}"
-    local feed_url="${rest%%|*}"
-    local page_url="${rest#*|}"
-    local ids
-    ids=$(fetch_atom_ids "$feed_url" 2>/dev/null) || {
-      echo "Failed to fetch atom feed: $name" >&2
-      continue
-    }
-    status=$(update_feed_status "$status" "$name" "$ids" "atom" "$page_url")
-  done
-
-  # RSS フィード
-  for entry in "${RSS_FEEDS[@]}"; do
-    local name="${entry%%|*}"
-    local rest="${entry#*|}"
-    local feed_url="${rest%%|*}"
-    local page_url="${rest#*|}"
-    local ids
-    ids=$(fetch_rss_ids "$feed_url" 2>/dev/null) || {
-      echo "Failed to fetch rss feed: $name" >&2
-      continue
-    }
-    status=$(update_feed_status "$status" "$name" "$ids" "rss" "$page_url")
-  done
+    # GitHub フィード: gh api でコミットSHA を取得
+    if [[ "$xml_url" =~ ^https://github\.com/([^/]+/[^/]+)/commits\.atom$ ]]; then
+      local repo="${BASH_REMATCH[1]}"
+      ids=$(gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
+        echo "Failed to fetch commits for $repo" >&2
+        continue
+      }
+      status=$(update_feed_status "$status" "$name" "$ids" "github" "$html_url")
+    else
+      ids=$(fetch_feed_ids "$xml_url" 2>/dev/null) || {
+        echo "Failed to fetch feed: $name" >&2
+        continue
+      }
+      status=$(update_feed_status "$status" "$name" "$ids" "feed" "$html_url")
+    fi
+  done < <(parse_opml)
 
   echo "$status" | jq . > "$STATUS_FILE"
 }
