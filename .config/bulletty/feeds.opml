@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<opml version="1.0">
+    <head>
+        <title>Generated from bulletty</title>
+        <url>https://github.com/CrociDB/bulletty</url>
+    </head>
+    <body>
+        <outline text="Blog" title="Blog">
+            <outline text="Facebook Developers" title="Facebook Developers" description="The latest news and announcements from Facebook Platform including APIs, SDKs, social plugins and Parse." xmlUrl="https://developers.facebook.com/blog/feed/" htmlUrl="https://developers.facebook.com/blog/" type="rss" />
+        </outline>
+        <outline text="GitHub" title="GitHub">
+            <outline text="Recent Commits to docs:main" title="Recent Commits to docs:main" description="Recent Commits to docs:main" xmlUrl="https://github.com/xdevplatform/docs/commits.atom" htmlUrl="https://github.com/xdevplatform/docs/commits" type="rss" />
+        </outline>
+        <outline text="Status" title="Status">
+            <outline text="Graph API Status" title="Graph API Status" description="Status updates for Graph API" xmlUrl="https://metastatus.com/outage-events-feed-graph-api.rss" htmlUrl="https://metastatus.com/" type="rss" />
+            <outline text="Claude Status - Incident History" title="Claude Status - Incident History" description="Claude Status - Incident History" xmlUrl="https://status.anthropic.com/history.atom" htmlUrl="https://status.anthropic.com/" type="rss" />
+            <outline text="GitHub Status - Incident History" title="GitHub Status - Incident History" description="GitHub Status - Incident History" xmlUrl="https://www.githubstatus.com/history.atom" htmlUrl="https://www.githubstatus.com/" type="rss" />
+        </outline>
+    </body>
+</opml>

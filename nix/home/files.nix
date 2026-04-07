@@ -388,6 +388,7 @@ in {
         max_iterations = 10
         timeout_secs = 600
       '';
+      ".config/bulletty/feeds.opml".source = ../../.config/bulletty/feeds.opml;
       ".config/biome".source = ../../.config/biome;
       ".config/lazydocker".source = ../../.config/lazydocker;
       ".config/taplo".source = ../../.config/taplo;

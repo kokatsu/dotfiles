@@ -82,6 +82,8 @@ in {
       rclone # クラウドストレージ同期
       # https://github.com/github/copilot-cli
       github-copilot-cli # GitHub Copilot CLI
+      # https://github.com/crocidb/bulletty
+      bulletty # TUI RSS/Atom フィードリーダー
       # https://github.com/hpjansson/chafa
       chafa # 画像→テキスト
       # https://github.com/curl/curl
