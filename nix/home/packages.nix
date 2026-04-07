@@ -88,6 +88,11 @@ in {
       chafa # 画像→テキスト
       # https://github.com/curl/curl
       curl # データ転送ツール
+      # https://github.com/eradman/entr
+      entr # ファイル変更監視 → コマンド実行
+      # https://github.com/inotify-tools/inotify-tools (Linux)
+      # https://man.openbsd.org/kqueue (macOS)
+      keychain # SSH/GPG エージェント管理
       # https://github.com/duckdb/duckdb
       duckdb # OLAP DB
       # https://github.com/bootandy/dust
@@ -116,6 +121,10 @@ in {
       lazydocker # Docker TUI
       # https://github.com/xwmx/nb
       nb # ノート管理
+      # https://github.com/rofl0r/ncdu
+      ncdu # ディスク使用量 TUI (du alternative)
+      # https://github.com/nurse/nkf
+      nkf # 文字コード変換
       # https://github.com/nmap/nmap
       nmap # ネットワークスキャナ
       # https://github.com/noborus/ov
@@ -124,6 +133,8 @@ in {
       ripgrep # 高速テキスト検索 (grep alternative)
       # https://github.com/boyter/scc
       scc # コード統計
+      # http://www.dest-unreach.org/socat/
+      socat # 多機能ソケットリレー
       # https://github.com/homeport/termshot
       termshot # ターミナルスクリーンショット (PNG)
       # https://github.com/jonas/tig
@@ -134,10 +145,14 @@ in {
       treemd # Markdown navigator TUI
       # https://github.com/Gaurav-Gosain/tuios
       tuios # ターミナルベースウィンドウマネージャ
+      # https://gitlab.com/OldManProgrammer/unix-tree
+      tree # ディレクトリツリー表示
       # https://github.com/tree-sitter/tree-sitter
       tree-sitter # Treesitter CLI (nvim-treesitter パーサービルド用)
       # https://github.com/sharkdp/vivid
       vivid # LS_COLORS ジェネレーター
+      # https://infozip.sourceforge.net/UnZip.html
+      unzip # ZIP アーカイブ展開
       # https://www.gnu.org/software/wget/
       wget # ファイルダウンローダー
       # https://github.com/bgreenwell/xleak
@@ -152,6 +167,8 @@ in {
       #####################################
       # https://github.com/nicholasHuang/bento4
       bento4 # MP4 解析/操作ツールキット (mp4dump, mp4info 等)
+      # https://github.com/FFmpeg/FFmpeg
+      ffmpeg # メディア処理ツールキット
       # https://github.com/dirkvdb/ffmpegthumbnailer
       ffmpegthumbnailer # 動画サムネイル (yazi プレビュー用)
       # https://github.com/karlstav/cava
@@ -287,6 +304,10 @@ in {
       vue-language-server # Vue LSP (overlay でピン留め)
       # https://github.com/redhat-developer/yaml-language-server
       yaml-language-server # YAML LSP
+      # https://github.com/ziglang/zls
+      zls # Zig Language Server
+      # https://github.com/tekumara/typos-lsp
+      typos-lsp # タイポ検出 LSP
 
       #####################################
       # Git hooks/lint ツール
@@ -297,6 +318,12 @@ in {
       commitlint # コミットメッセージ lint
       # https://github.com/evilmartians/lefthook
       lefthook # Git hooks マネージャ
+
+      #--- AWS ---#
+      # https://github.com/aws/aws-cli
+      awscli2 # AWS CLI v2
+      # https://github.com/aws/session-manager-plugin
+      ssm-session-manager-plugin # AWS SSM セッションマネージャ
 
       #--- CLI ツール (overlay) ---#
       cc-statusline # 高速 Claude Code statusline (Zig)
@@ -375,6 +402,10 @@ in {
       # Linux/WSL専用
       # https://github.com/containers/bubblewrap
       bubblewrap # サンドボックスツール (Codex CLI 用)
+      # https://github.com/inotify-tools/inotify-tools
+      inotify-tools # ファイルシステムイベント監視
+      # https://github.com/strace/strace
+      strace # システムコールトレーサ
       clip-exe-wrapper # Claude Code WSL文字化け対策 (clip.exe → xsel)
       # https://valgrind.org
       valgrind # メモリデバッグ・プロファイリング
