@@ -15,11 +15,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    neovim-nightly-overlay = {
-      url = "github:nix-community/neovim-nightly-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # Fork: unfocused split pane の opacity/fill 設定を追加
     # https://github.com/kokatsu/wezterm/tree/feat/unfocused-split-opacity
     wezterm = {
@@ -82,7 +77,6 @@
 
     # 共通オーバーレイ (全プラットフォーム)
     commonOverlays = [
-      inputs.neovim-nightly-overlay.overlays.default
       customOverlays.cc-statusline
       customOverlays.daily
       customOverlays.claude-code
