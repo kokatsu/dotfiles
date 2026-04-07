@@ -90,4 +90,5 @@ vim.opt.updatetime = 300
 
 -- Treesitter非同期パースのタイムアウト（デフォルト2000ms）
 -- Markdownなどインジェクションが多いファイルでハイライトが途切れるのを防ぐ
-vim.o.redrawtime = 10000
+-- 大きすぎるとUI全体がブロックされるため控えめに設定（復旧は<leader>tS）
+vim.o.redrawtime = 3000

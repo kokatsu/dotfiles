@@ -16,33 +16,39 @@ return {
 
     require('nvim-treesitter').setup({})
 
-    -- パーサーのインストール
-    require('nvim-treesitter').install({
-      'bash',
-      'css',
-      'html',
-      'javascript',
-      'json',
-      'lua',
-      'markdown',
-      'markdown_inline',
-      'mermaid',
-      'ruby',
-      'rust',
-      'scss',
-      'sql',
-      'svelte',
-      'tsx',
-      'typescript',
-      'vim',
-      'vue',
-      'yaml',
-    })
-
     -- Treesitterハイライトを全ファイルタイプで有効化
     vim.api.nvim_create_autocmd('FileType', {
       callback = function(args)
         pcall(vim.treesitter.start, args.buf)
+      end,
+    })
+
+    -- パーサーのインストール（VeryLazy で遅延実行し起動時のイベントループ占有を回避）
+    vim.api.nvim_create_autocmd('User', {
+      pattern = 'VeryLazy',
+      once = true,
+      callback = function()
+        require('nvim-treesitter').install({
+          'bash',
+          'css',
+          'html',
+          'javascript',
+          'json',
+          'lua',
+          'markdown',
+          'markdown_inline',
+          'mermaid',
+          'ruby',
+          'rust',
+          'scss',
+          'sql',
+          'svelte',
+          'tsx',
+          'typescript',
+          'vim',
+          'vue',
+          'yaml',
+        })
       end,
     })
   end,
