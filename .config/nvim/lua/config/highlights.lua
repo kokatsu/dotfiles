@@ -10,6 +10,9 @@ vim.api.nvim_set_hl(0, 'SnacksPickerInputBorder', { bg = 'NONE' })
 vim.api.nvim_set_hl(0, 'VertSplit', { fg = '#6c7086', bg = 'NONE' })
 vim.api.nvim_set_hl(0, 'WinSeparator', { fg = '#6c7086', bg = 'NONE' })
 
+-- コードブロック内テキストの前景色をクリア（injection ハイライトを優先）
+vim.api.nvim_set_hl(0, '@markup.raw.block', { fg = 'NONE' })
+
 -- 非アクティブWindowの背景色をカスタマイズ
 vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE' }) -- 非アクティブWindowの背景色を透明に
 vim.api.nvim_set_hl(0, 'LineNr', { fg = '#6c7086', bg = 'NONE' }) -- 行番号の色

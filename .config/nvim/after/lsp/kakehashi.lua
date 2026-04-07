@@ -56,9 +56,4 @@ return {
       },
     },
   },
-  on_attach = function(_, bufnr)
-    -- kakehashiがアタッチされたバッファでTree-sitterハイライトを無効化
-    -- (LSP semantic tokensと競合するため)
-    vim.treesitter.stop(bufnr)
-  end,
 }
