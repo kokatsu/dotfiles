@@ -40,7 +40,6 @@ in {
     # 手動管理 or カスタムテンプレートで管理
     nvim.enable = false;
     ghostty.enable = false;
-    helix.enable = false;
     wezterm.enable = false;
     yazi.enable = false;
   };

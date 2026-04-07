@@ -53,10 +53,6 @@
 !gomi/
 !gomi/**
 
-# helix (https://github.com/helix-editor/helix)
-!helix/
-!helix/**
-
 # lazydocker (https://github.com/jesseduffield/lazydocker)
 !lazydocker/
 !lazydocker/**

@@ -350,9 +350,7 @@ in {
       # https://github.com/pamburus/termframe
       termframe # ターミナルスクリーンショット (SVG, Nerd Font対応, overlay)
 
-      #--- エディタ nightly (ソースビルド) ---#
-      # https://github.com/helix-editor/helix
-      helix
+      #--- エディタ ---#
       # https://github.com/neovim/neovim
       neovim
 

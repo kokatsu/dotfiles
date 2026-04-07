@@ -27,11 +27,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    helix = {
-      url = "github:helix-editor/helix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     catppuccin.url = "github:catppuccin/nix";
   };
 
@@ -87,7 +82,6 @@
 
     # 共通オーバーレイ (全プラットフォーム)
     commonOverlays = [
-      inputs.helix.overlays.default
       inputs.neovim-nightly-overlay.overlays.default
       customOverlays.cc-statusline
       customOverlays.daily

@@ -388,49 +388,6 @@ in {
         max_iterations = 10
         timeout_secs = 600
       '';
-      ".config/helix/config.toml".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-        staticConfig = builtins.readFile ../../.config/helix/config.static.toml;
-      in
-        ''
-          [theme]
-          dark = "${names.snake}_transparent"
-          light = "catppuccin_latte"
-          fallback = "${names.snake}_transparent"
-
-        ''
-        + staticConfig;
-
-      ".config/helix/languages.toml".source = ../../.config/helix/languages.toml;
-
-      ".config/helix/themes/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).snake}_transparent.toml".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-      in ''
-        inherits = "${names.snake}"
-        "ui.background" = {}
-
-        "ui.statusline.normal" = { fg = "base", bg = "blue", modifiers = ["bold"] }
-        "ui.statusline.insert" = { fg = "base", bg = "green", modifiers = ["bold"] }
-        "ui.statusline.select" = { fg = "base", bg = "mauve", modifiers = ["bold"] }
-
-        "ui.bufferline" = { fg = "subtext0", bg = "mantle" }
-        "ui.bufferline.active" = { fg = "crust", bg = "mauve", modifiers = ["bold"] }
-        "ui.bufferline.background" = { bg = "crust" }
-
-        "ui.virtual.inlay-hint" = { fg = "sapphire", bg = "surface1" }
-        "ui.virtual.inlay-hint.parameter" = { fg = "lavender", bg = "surface1" }
-        "ui.virtual.inlay-hint.type" = { fg = "flamingo", bg = "surface1" }
-
-        "ui.cursor.primary.normal" = { bg = "blue" }
-
-        "ui.cursorline.primary" = { bg = "#343f5a" }
-
-        "diagnostic.error" = { underline = { color = "red", style = "line" } }
-        "diagnostic.warning" = { underline = { color = "yellow", style = "line" } }
-        "diagnostic.info" = { underline = { color = "sky", style = "line" } }
-        "diagnostic.hint" = { underline = { color = "teal", style = "line" } }
-        "diagnostic.unnecessary" = { modifiers = ["dim"] }
-      '';
       ".config/biome".source = ../../.config/biome;
       ".config/lazydocker".source = ../../.config/lazydocker;
       ".config/taplo".source = ../../.config/taplo;
