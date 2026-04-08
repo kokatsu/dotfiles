@@ -444,5 +444,7 @@ jobs:
     if: >-
       github.actor == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/')
     uses: ./.github/workflows/check.yml
+    with:
+      ref: ${{ github.head_ref }}
     secrets:
       CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
