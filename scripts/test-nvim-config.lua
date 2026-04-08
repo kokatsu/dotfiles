@@ -69,6 +69,10 @@ end)
 
 test("Trailspace match is added in normal buffers", function()
   vim.cmd("doautocmd BufWinEnter")
+  -- matchadd is deferred via vim.schedule; flush the event loop
+  vim.wait(10, function()
+    return false
+  end)
   local found = false
   for _, match in ipairs(vim.fn.getmatches()) do
     if match.group == "Trailspace" then
