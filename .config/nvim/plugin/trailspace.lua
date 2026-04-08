@@ -43,18 +43,28 @@ vim.api.nvim_create_autocmd('BufLeave', {
   end,
 })
 
--- Add trailing whitespace match to windows with normal buffers
+-- Manage trailing whitespace matches per window
+local function clear_matches()
+  for _, match in ipairs(vim.fn.getmatches()) do
+    if match.group == 'Trailspace' then
+      vim.fn.matchdelete(match.id)
+    end
+  end
+end
+
+local function add_match()
+  clear_matches()
+  if vim.bo.buftype == '' then
+    -- \%#\@<! excludes cursor position so insert-mode typing is not highlighted
+    vim.fn.matchadd('Trailspace', [[\s\+\%#\@<!$]])
+  end
+end
+
 vim.api.nvim_create_autocmd({ 'BufWinEnter', 'BufEnter', 'FileType' }, {
   group = group,
   callback = function()
-    for _, match in ipairs(vim.fn.getmatches()) do
-      if match.group == 'Trailspace' then
-        vim.fn.matchdelete(match.id)
-      end
-    end
-    if vim.bo.buftype == '' then
-      vim.fn.matchadd('Trailspace', [[\s\+$]])
-    end
+    -- Defer so that buftype/filetype are fully set before checking
+    vim.schedule(add_match)
   end,
 })
 
