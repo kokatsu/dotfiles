@@ -15,9 +15,9 @@ const terminalApps = ifApp([
   "^com\\.googlecode\\.iterm2$",
 ]);
 
-// Terminal apps that handle Cmd+V → Ctrl+V internally (via app-level keybinds)
-// cmux relies on system Cmd+V for paste (no rebindable paste action)
-const terminalAppsWithOwnPaste = ifApp([
+// Terminal apps that handle Cmd+C/V → Ctrl+C/V internally (via app-level keybinds)
+// cmux relies on system Cmd+C/V for copy/paste (no rebindable clipboard action)
+const terminalAppsWithOwnClipboard = ifApp([
   "^com\\.github\\.wez\\.wezterm$",
   "^com\\.mitchellh\\.ghostty$",
   "^com\\.apple\\.Terminal$",
@@ -34,7 +34,7 @@ const keyList = [
   // Alphabet keys
   "a",
   "b",
-  "c",
+  // "c" is excluded — handled separately per app (cmux needs system Cmd+C for copy)
   "d",
   "e",
   "f",
@@ -108,10 +108,15 @@ writeToProfile(
         ),
       ]),
 
-    // Terminal apps (except cmux): Convert Command+V to Control+V
-    // cmux is excluded because it relies on system Cmd+V for paste
-    rule("Terminal (non-cmux): Cmd+V to Ctrl+V", terminalAppsWithOwnPaste)
+    // Terminal apps (except cmux): Convert Command+C/V to Control+C/V
+    // cmux is excluded because it relies on system Cmd+C/V for copy/paste
+    rule(
+      "Terminal (non-cmux): Cmd+C/V to Ctrl+C/V",
+      terminalAppsWithOwnClipboard,
+    )
       .manipulators([
+        map("c", "command").to("c", "control"),
+        map("c", ["command", "shift"]).to("c", ["control", "shift"]),
         map("v", "command").to("v", "control"),
         map("v", ["command", "shift"]).to("v", ["control", "shift"]),
       ]),
