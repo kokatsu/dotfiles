@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmux claude-hook stop 2>/dev/null; [ \"$(uname)\" = \"Darwin\" ] && terminal-notifier -title 'Claude Code' -message 'タスクが完了しました' -sound Glass -activate com.cmuxterm.app || true"
+            "command": "if [ -n \"$CMUX_SURFACE_ID\" ]; then cmux claude-hook stop 2>/dev/null || true; elif [ \"$(uname)\" = \"Darwin\" ]; then terminal-notifier -title 'Claude Code' -message 'タスクが完了しました' -sound Glass || true; fi"
           },
           {
             "type": "command",
@@ -60,6 +60,10 @@
     "UserPromptSubmit": [
       {
         "hooks": [
+          {
+            "type": "command",
+            "command": "cmux claude-hook prompt-submit 2>/dev/null || true"
+          },
           {
             "type": "command",
             "command": "~/.config/claude/hooks/run-deno-hook.sh ~/.config/claude/hooks/skill-tracker.ts",
@@ -131,7 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmux claude-hook notification 2>/dev/null; [ \"$(uname)\" = \"Darwin\" ] && terminal-notifier -title 'Claude Code' -message '権限の承認が必要です' -sound Glass -activate com.cmuxterm.app || true"
+            "command": "if [ -n \"$CMUX_SURFACE_ID\" ]; then cmux claude-hook notification 2>/dev/null || true; elif [ \"$(uname)\" = \"Darwin\" ]; then terminal-notifier -title 'Claude Code' -message '権限の承認が必要です' -sound Glass || true; fi"
           }
         ]
       }
