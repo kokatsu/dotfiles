@@ -191,6 +191,7 @@
     devShells = forAllSystems (system: {
       default = (pkgsFor system).mkShell {
         packages = with (pkgsFor system); [
+          neovim # Plugin smoke tests
           nil # Nix LSP
           nixd # Alternative Nix LSP
           alejandra # Nix formatter
