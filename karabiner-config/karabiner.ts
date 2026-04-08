@@ -10,6 +10,16 @@ import { ifApp, map, rule, writeToProfile } from "karabiner.ts";
 const terminalApps = ifApp([
   "^com\\.github\\.wez\\.wezterm$",
   "^com\\.mitchellh\\.ghostty$",
+  "^com\\.cmuxterm\\.app",
+  "^com\\.apple\\.Terminal$",
+  "^com\\.googlecode\\.iterm2$",
+]);
+
+// Terminal apps that handle Cmd+V → Ctrl+V internally (via app-level keybinds)
+// cmux relies on system Cmd+V for paste (no rebindable paste action)
+const terminalAppsWithOwnPaste = ifApp([
+  "^com\\.github\\.wez\\.wezterm$",
+  "^com\\.mitchellh\\.ghostty$",
   "^com\\.apple\\.Terminal$",
   "^com\\.googlecode\\.iterm2$",
 ]);
@@ -43,7 +53,7 @@ const keyList = [
   "s",
   "t",
   "u",
-  "v",
+  // "v" is excluded — handled separately per app (cmux needs system Cmd+V for paste)
   "w",
   "x",
   "y",
@@ -96,6 +106,14 @@ writeToProfile(
         ...keyList.map((key) =>
           map(key, ["command", "shift"]).to(key, ["control", "shift"])
         ),
+      ]),
+
+    // Terminal apps (except cmux): Convert Command+V to Control+V
+    // cmux is excluded because it relies on system Cmd+V for paste
+    rule("Terminal (non-cmux): Cmd+V to Ctrl+V", terminalAppsWithOwnPaste)
+      .manipulators([
+        map("v", "command").to("v", "control"),
+        map("v", ["command", "shift"]).to("v", ["control", "shift"]),
       ]),
 
     // Chrome: Command+Tab to Control+Tab (tab switching)

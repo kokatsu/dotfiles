@@ -28,10 +28,13 @@
       cleanup = "zap";
       upgrade = true;
     };
-    taps = [];
+    taps = [
+      "manaflow-ai/cmux"
+    ];
     brews = [];
     casks = [
       "clipy"
+      "cmux"
       "orbstack"
       "ghostty"
       "google-chrome"

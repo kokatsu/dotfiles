@@ -1,0 +1,66 @@
+{
+  "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux-settings.schema.json",
+  "schemaVersion": 1,
+
+  "automation": {
+    "claudeCodeIntegration": true
+  },
+
+  // Karabiner: 物理Ctrl↔Cmd入替 + ターミナルでCommand→Control
+  // 結果: ターミナルアプリでは cmd+ が到達不能 → ctrl+/opt+ にリマップ
+  // WezTerm互換: PRIMARY=CTRL, SECONDARY=ALT
+
+  "shortcuts": {
+    "bindings": {
+      // App
+      "openSettings": "ctrl+,",
+      "reloadConfiguration": "ctrl+shift+,",
+      "commandPalette": "ctrl+shift+p",
+      "newWindow": "ctrl+shift+n",
+      "quit": "ctrl+q",
+
+      // Workspaces
+      "toggleSidebar": "ctrl+b",
+      "newTab": "ctrl+n",
+      "openFolder": "ctrl+o",
+      "closeWorkspace": "ctrl+shift+w",
+      "renameWorkspace": "ctrl+shift+r",
+      "selectWorkspaceByNumber": "opt+1",
+      "goToWorkspace": "ctrl+p",
+      "nextSidebarTab": "ctrl+opt+]",
+      "prevSidebarTab": "ctrl+opt+[",
+
+      // Surfaces (tabs) — 前後移動は Ghostty keybind (ctrl+tab/ctrl+shift+tab) で動作
+      "newSurface": "ctrl+t",
+      "closeTab": "opt+w",
+      "renameTab": "ctrl+r",
+
+      // Split Panes
+      "splitRight": "ctrl+s",
+      "splitDown": "ctrl+shift+s",
+      "focusLeft": "opt+\u2190",
+      "focusRight": "opt+\u2192",
+      "focusUp": "opt+\u2191",
+      "focusDown": "opt+\u2193",
+      "toggleSplitZoom": "ctrl+z",
+
+      // Browser
+      "openBrowser": "ctrl+shift+l",
+      "focusBrowserAddressBar": "ctrl+l",
+
+      // Find
+      "find": "ctrl+f",
+      "findNext": "ctrl+g",
+      "hideFind": "ctrl+shift+f",
+      "useSelectionForFind": "ctrl+e",
+
+      // Notifications
+      "showNotifications": "ctrl+i",
+      "jumpToUnread": "ctrl+shift+u",
+
+      // Misc
+      "toggleFullScreen": "opt+f",
+      "toggleTerminalCopyMode": "ctrl+shift+x"
+    }
+  }
+}

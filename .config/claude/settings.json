@@ -32,13 +32,23 @@
     "padding": 0
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmux claude-hook session-start 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "[ \"$(uname)\" = \"Darwin\" ] && terminal-notifier -title 'Claude Code' -message 'タスクが完了しました' -sound Glass -activate com.github.wez.wezterm || true"
+            "command": "cmux claude-hook stop 2>/dev/null; [ \"$(uname)\" = \"Darwin\" ] && terminal-notifier -title 'Claude Code' -message 'タスクが完了しました' -sound Glass -activate com.cmuxterm.app || true"
           },
           {
             "type": "command",
@@ -121,7 +131,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ \"$(uname)\" = \"Darwin\" ] && terminal-notifier -title 'Claude Code' -message '権限の承認が必要です' -sound Glass -activate com.github.wez.wezterm || true"
+            "command": "cmux claude-hook notification 2>/dev/null; [ \"$(uname)\" = \"Darwin\" ] && terminal-notifier -title 'Claude Code' -message '権限の承認が必要です' -sound Glass -activate com.cmuxterm.app || true"
           }
         ]
       }
