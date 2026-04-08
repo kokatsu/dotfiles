@@ -24,6 +24,10 @@ bindkey '^W' backward-kill-word
 # ------------------------------------------------------------------------------
 
 if [[ -n "$GHOSTTY_RESOURCES_DIR" ]]; then
-  source "$GHOSTTY_RESOURCES_DIR/shell-integration/zsh/ghostty-integration"
+  local _gi="$GHOSTTY_RESOURCES_DIR/shell-integration/zsh/ghostty-integration"
+  # cmux はパス構造が異なる
+  [[ -f "$_gi" ]] || _gi="${GHOSTTY_RESOURCES_DIR:h}/shell-integration/ghostty-integration.zsh"
+  [[ -f "$_gi" ]] && source "$_gi"
+  unset _gi
 fi
 

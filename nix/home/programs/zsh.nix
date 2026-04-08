@@ -66,6 +66,8 @@
         unset __HM_SESS_VARS_SOURCED
         if [ -e "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
           . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+        elif [ -e "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh" ]; then
+          . "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
         fi
 
         # XDG

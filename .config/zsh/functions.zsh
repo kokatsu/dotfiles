@@ -14,14 +14,15 @@ function _wezterm_set_user_var() {
 
 # Claude Codeをtmux内で起動
 # 引数がある場合: 直接実行（--version等のオプション用）
-# tmux外で引数なしの場合: tmuxセッションを作成してclaude起動
+# tmux/cmux内の場合: 直接実行（多重化不要）
+# それ以外: tmuxセッションを作成してclaude起動
 #   - WEZTERM_PANE がある場合: ペインごとに独立したセッション
 #   - それ以外: 共有セッション 'claude'
 # IS_CLAUDE user varでWezTermのマウス動作を切り替え
 function claude() {
   if [[ $# -gt 0 ]]; then
     command claude "$@"
-  elif [[ -n "$TMUX" ]]; then
+  elif [[ -n "$TMUX" ]] || [[ -n "$CMUX_SURFACE_ID" ]]; then
     _wezterm_set_user_var IS_CLAUDE 1
     command claude
     _wezterm_set_user_var IS_CLAUDE 0

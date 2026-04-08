@@ -74,6 +74,7 @@ in {
       # takt (XDG未対応のため ~/.takt/ にシンボリンク)
       ".takt/config.yaml".source = ../../.config/takt/config.yaml;
       ".takt/pieces".source = ../../.config/takt/pieces;
+      ".config/cmux/settings.json".source = ../../.config/cmux/settings.json;
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch".source = ../../.config/fastfetch;
       ".config/fresh/config.json".text = let
