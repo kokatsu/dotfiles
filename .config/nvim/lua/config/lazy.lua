@@ -32,7 +32,6 @@ require('lazy').setup({
     require('plugins.colorizer'),
     require('plugins.diffview'),
     require('plugins.flash'),
-    require('plugins.git-blame'),
     require('plugins.gitsigns'),
     require('plugins.img-clip'),
     require('plugins.lazydev'),
