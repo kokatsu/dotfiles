@@ -125,6 +125,10 @@ typos:
 typos-fix:
     typos -w
 
+# Test Neovim custom plugins (smoke test)
+nvim-test:
+    nvim --headless --clean -l scripts/test-nvim-config.lua
+
 # Build Zig projects
 zig-build:
     @for dir in {{ zig_dirs }}; do \
