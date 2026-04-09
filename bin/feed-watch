@@ -13,11 +13,25 @@ OPML_FILE="$HOME/.config/bulletty/feeds.opml"
 # --- Windows 側の出力先を決定 ---
 get_status_dir() {
   local winuser
+  # cmd.exe は systemd サービス内では WSL interop が無効で使えない
   winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
-  if [[ -z "$winuser" || ! -d "/mnt/c/Users/$winuser" ]]; then
-    return 1
+  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
+    echo "/mnt/c/Users/$winuser/.cache/feed-watch"
+    return
   fi
-  echo "/mnt/c/Users/$winuser/.cache/feed-watch"
+
+  # Fallback: /mnt/c/Users からシステム以外のディレクトリを探す
+  local d base
+  for d in /mnt/c/Users/*/; do
+    base=$(basename "$d")
+    case "$base" in
+      Public|Default|"Default User"|"All Users") continue ;;
+    esac
+    echo "${d}.cache/feed-watch"
+    return
+  done
+
+  return 1
 }
 
 STATUS_DIR=$(get_status_dir) || { echo "Windows mount not available, skipping." >&2; exit 0; }
