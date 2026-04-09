@@ -126,6 +126,15 @@ local function format_feed_status()
     end
   end
 
+  -- 末尾に最終チェック時刻を表示
+  if data.last_updated then
+    if #elements > 0 then
+      table.insert(elements, { Text = '  ' })
+    end
+    table.insert(elements, { Foreground = { Color = colors.palette.overlay1 } })
+    table.insert(elements, { Text = nf.md_clock_outline .. ' ' .. os.date('%H:%M', data.last_updated) .. ' ' })
+  end
+
   return elements
 end
 
