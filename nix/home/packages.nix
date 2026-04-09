@@ -294,6 +294,8 @@ in {
       tailwindcss-language-server # Tailwind CSS LSP
       # https://github.com/apple/pkl
       pkl # Pkl CLI (configuration as code language)
+      # https://github.com/apple/pkl-lsp
+      pkl-lsp # Pkl LSP
       # https://github.com/tamasfe/taplo
       taplo # TOML LSP
       # https://github.com/hrsh7th/vscode-langservers-extracted
@@ -338,8 +340,6 @@ in {
       #--- Language Servers (overlay) ---#
       # https://github.com/antonk52/cssmodules-language-server
       cssmodules-language-server # CSS Modules LSP
-      # https://github.com/apple/pkl-lsp
-      pkl-lsp # Pkl LSP (overlay, jar wrapper with jdk23)
       # https://github.com/xna00/unocss-language-server
       unocss-language-server # UnoCSS LSP
 
