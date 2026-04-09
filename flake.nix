@@ -81,6 +81,7 @@
       customOverlays.daily
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
+      customOverlays.dcd
       customOverlays.deck
       customOverlays.git-graph-fork
       customOverlays.kakehashi
