@@ -29,28 +29,43 @@ agent-browser close
 
 Ignore errors if no session exists.
 
-### 1. Open the page and get structure
-
-Use command chaining (`&&`) to combine related commands in a single bash call:
+### 1. Open the page
 
 ```bash
-agent-browser open "<URL>" && agent-browser wait --load networkidle && agent-browser snapshot -c
+agent-browser open "<URL>" && agent-browser wait --load networkidle --timeout 15000
 ```
 
 If `open` fails: verify the URL is well-formed, retry once. If it fails again, report the error to the user and stop.
 
-### 2. Get detailed content if needed
+If `wait` times out: proceed anyway — the page may still be usable.
+
+**Next, choose the extraction method based on your purpose:**
+
+| Purpose | Command | When to use |
+|---------|---------|-------------|
+| Read article/docs text | `agent-browser eval "document.body.innerText"` | Blog posts, documentation, text-heavy pages. Most token-efficient |
+| Understand page structure | `agent-browser snapshot -c` | Need to see layout, navigation, or element refs for interaction |
+| Find interactive elements | `agent-browser snapshot -i -c` | Need to click links, buttons, or fill forms |
+
+For a typical single-article research, `eval "document.body.innerText"` is often sufficient. Use `snapshot` only when you need structure or element refs.
+
+**If a cookie consent banner or overlay blocks content**, dismiss it first:
+
+```bash
+agent-browser snapshot -i -c   # find the accept/close button ref
+agent-browser click "@ref"     # dismiss the banner
+```
+
+Then proceed with the chosen extraction method.
+
+**Stop here if you have enough information.** Steps 2–6 below are only needed for deeper investigation.
+
+### 2. Get detailed content (if needed)
 
 Get text from specific element:
 
 ```bash
 agent-browser get text "@ref"
-```
-
-Get full page text:
-
-```bash
-agent-browser eval "document.body.innerText"
 ```
 
 Get page metadata:
@@ -85,7 +100,7 @@ agent-browser scrollintoview "@ref" && agent-browser snapshot -c
 Click a link:
 
 ```bash
-agent-browser click "@ref" && agent-browser wait --load networkidle && agent-browser snapshot -c
+agent-browser click "@ref" && agent-browser wait --load networkidle --timeout 15000 && agent-browser snapshot -c
 ```
 
 Go back:
@@ -99,7 +114,7 @@ agent-browser back && agent-browser snapshot -c
 Use tabs to research multiple pages without losing previous context:
 
 ```bash
-agent-browser tab new && agent-browser open "<next-URL>" && agent-browser wait --load networkidle && agent-browser snapshot -c
+agent-browser tab new && agent-browser open "<next-URL>" && agent-browser wait --load networkidle --timeout 15000 && agent-browser snapshot -c
 ```
 
 Switch between tabs or close current tab:
@@ -131,10 +146,11 @@ agent-browser close
 - **No guessing** — do not fabricate or assume page content; only report what `snapshot`/`get`/`eval` return.
 - **Authentication pages** — if a page requires login, report it immediately and stop. Do not attempt to authenticate.
 - **Prefer command chaining** — use `&&` to combine related commands in a single bash call for efficiency.
+- **Minimize tokens** — prefer `eval "document.body.innerText"` over `snapshot` when you only need text content.
 
 ## Output Format
 
-Always respond in Japanese. Summarize findings in the following format:
+Summarize findings in the following format:
 
 1. **概要 (Overview)**: Main topic and purpose of the page
 2. **主要ポイント (Key Points)**: Important information as bullet points
