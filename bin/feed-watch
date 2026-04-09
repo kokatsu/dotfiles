@@ -153,7 +153,7 @@ cmd_check() {
     fi
   done < <(parse_opml)
 
-  echo "$status" | jq . > "$STATUS_FILE"
+  echo "$status" | jq --argjson ts "$(date +%s)" '.last_updated = $ts' > "$STATUS_FILE"
 }
 
 # --- read サブコマンド ---
