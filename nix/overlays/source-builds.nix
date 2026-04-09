@@ -90,21 +90,4 @@
       '';
     };
   };
-
-  # apple/pkl-lsp - Language server for Pkl
-  # Distributed only as a jar; requires Java 22+.
-  # Use jdk23 — jdk22/24 have been removed from nixpkgs.
-  # Renovate: datasource=github-releases depName=apple/pkl-lsp
-  pkl-lsp = _final: prev: {
-    pkl-lsp = let
-      version = "0.6.0";
-      jar = prev.fetchurl {
-        url = "https://github.com/apple/pkl-lsp/releases/download/${version}/pkl-lsp-${version}.jar";
-        hash = "sha256-mCs3j2/E33WQYuOdaJXtnkYznohNB3yqFS745WwXJw8=";
-      };
-    in
-      prev.writeShellScriptBin "pkl-lsp" ''
-        exec ${prev.jdk23}/bin/java -jar ${jar} "$@"
-      '';
-  };
 }
