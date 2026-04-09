@@ -94,6 +94,7 @@ return {
       'markdown_oxide',
       'nixd',
       'postgres_lsp',
+      'serve_d',
       'svelte',
       'tailwindcss',
       'taplo',

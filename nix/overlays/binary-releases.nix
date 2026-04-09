@@ -82,6 +82,45 @@ in {
     };
   };
 
+  # DCD - D Completion Daemon (serve-d の補完バックエンド)
+  # dcd-server / dcd-client の2バイナリを同梱。serve-d は dcd-server と直接通信するため
+  # どちらも $out/bin に配置する必要がある。
+  # Renovate: datasource=github-releases depName=dlang-community/DCD
+  dcd = mkBinaryRelease rec {
+    pname = "dcd";
+    version = "0.16.2";
+    hashes = {
+      "aarch64-darwin" = "sha256-WvO183eZWB5oRZbRpny3wdzMe+WhJD6eA4f7FoHbFxU=";
+      "x86_64-darwin" = "sha256-FUtV75znNLsdObbqSS9rixxy8flRRXNQTUMN7f6m77k=";
+      "aarch64-linux" = "sha256-ZTXSUNDNo4g7zqWUacu5NvzPMdq9ijuaM9/hldRhTKo=";
+      "x86_64-linux" = "sha256-QGrA29Hadd2asAgLaF0XD0xY/l3FeAfQMctBDu3aj+I=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "osx-aarch64";
+      "x86_64-darwin" = "osx-x86_64";
+      "aarch64-linux" = "linux-aarch64";
+      "x86_64-linux" = "linux-x86_64";
+    };
+    url = platform: "https://github.com/dlang-community/DCD/releases/download/v${version}/dcd-v${version}-${platform}.tar.gz";
+    format = "tar";
+    # mkBinaryRelease は単一バイナリ前提なので installPhase を上書きして 2 バイナリ配置する
+    extraAttrs = {
+      sourceRoot = ".";
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/bin
+        cp dcd-server dcd-client $out/bin/
+        chmod +x $out/bin/dcd-server $out/bin/dcd-client
+        runHook postInstall
+      '';
+    };
+    meta = {
+      description = "D Completion Daemon - autocompletion for the D programming language";
+      homepage = "https://github.com/dlang-community/DCD";
+      mainProgram = "dcd-server";
+    };
+  };
+
   # octorus - TUI tool for GitHub PR review
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=ushironoko/octorus

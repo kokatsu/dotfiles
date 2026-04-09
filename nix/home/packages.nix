@@ -360,6 +360,10 @@ in {
       dformat # D言語 formatter
       # https://github.com/dlang/tools
       dtools # D言語ツール (rdmd, dustmite 等)
+      # https://github.com/Pure-D/serve-d
+      serve-d # D言語 LSP サーバー
+      # https://github.com/dlang-community/DCD
+      dcd # D 補完デーモン (serve-d の補完/定義ジャンプバックエンド)
 
       # https://github.com/Feel-ix-343/markdown-oxide
       markdown-oxide # Markdown PKM LSP (Obsidian互換、バックリンク/デイリーノート)
