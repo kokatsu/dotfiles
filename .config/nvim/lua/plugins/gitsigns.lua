@@ -1,7 +1,9 @@
--- https://github.com/lewis6991/gitsigns.nvim
+-- Forked from https://github.com/lewis6991/gitsigns.nvim
+-- Using fork branch with a fix for the blame-nil-repo race condition.
 
 return {
-  'lewis6991/gitsigns.nvim',
+  'kokatsu/gitsigns.nvim',
+  branch = 'fix/blame-nil-repo-race',
   config = function()
     require('gitsigns').setup({
       signs = {
