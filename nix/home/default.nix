@@ -54,11 +54,13 @@ in {
     # PATH に追加 (ユーザースクリプト)
     sessionPath = [
       "${config.home.homeDirectory}/.local/bin/scripts"
+      "${config.home.homeDirectory}/.local/share/pnpm" # pnpm グローバルバイナリ
       "${config.home.homeDirectory}/.gem/bin" # ruby-lsp 等の gem 実行ファイル
     ];
 
     sessionVariables =
       {
+        PNPM_HOME = "${config.home.homeDirectory}/.local/share/pnpm";
         EDITOR = "nvim";
         VISUAL = "nvim";
         GEM_HOME = "${config.home.homeDirectory}/.gem"; # gem インストール先 (バージョン非依存)
