@@ -1,5 +1,7 @@
 # Logging Guidelines
 
+> Code examples below use Python for illustration. Adapt patterns to the project's actual language and logging library.
+
 ## 1. What to Include: 5W1H
 
 Every meaningful log entry should answer the relevant subset of these questions:
@@ -151,6 +153,8 @@ logger.error(f"Failed for {card_number}") # Leaks sensitive data
 
 - **Catch-and-log at multiple layers** — Log at the boundary once; duplicate entries across layers create noise
 - **Logging inside tight loops without rate limiting** — Causes performance degradation and log flooding
+- **Dumping huge objects** — `logger.info(f"Processing {json.dumps(huge_object)}")` bloats logs and hurts performance; log only the relevant fields
+- **Silent exception swallowing** — `except Exception: pass` hides failures entirely; at minimum log the error at WARN/ERROR level before deciding how to handle it
 
 ## 6. Production Practices
 
