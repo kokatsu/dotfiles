@@ -83,12 +83,4 @@
         '';
     });
   };
-
-  # Fix deno 2.7.4 trybuild compile tests failing on aarch64-darwin
-  # TODO: deno 2.7.9 で修正済み。nix flake update 後にこのオーバーレイと flake.nix の参照を削除
-  deno-darwin-fix = _final: prev: {
-    deno = prev.deno.overrideAttrs {
-      doCheck = false;
-    };
-  };
 }

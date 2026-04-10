@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.05"; # Ruby 3.1用
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05"; # Ruby 3.1用 (nixos-25.11 で ruby_3_1 が削除されたため最終サポート版)
 
     nix-darwin = {
       url = "github:LnL7/nix-darwin";
@@ -123,8 +123,6 @@
 
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
-      customOverlays.deno-darwin-fix
-
       customOverlays.cava-darwin-fix
       customOverlays.jp2a-darwin-fix
       customOverlays.ldc-darwin-fix
