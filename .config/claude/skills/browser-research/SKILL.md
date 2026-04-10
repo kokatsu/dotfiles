@@ -1,6 +1,6 @@
 ---
 name: browser-research
-description: Research web pages using agent-browser and summarize documentation or articles. Use when investigating URLs, checking page content, or summarizing documents.
+description: Research web pages using agent-browser — a headless browser CLI that renders JavaScript and handles dynamic content. Use this skill as a fallback when WebSearch or WebFetch fails, returns insufficient results, or when the target page requires JS rendering (SPAs, dynamic docs). Also use when the user provides a specific URL to investigate, when you need to navigate multi-page documentation, or when summarizing web content that WebFetch cannot parse properly.
 allowed-tools:
   - Bash(agent-browser:*)
   - Read
@@ -19,15 +19,13 @@ Research web pages using agent-browser CLI and summarize content.
 
 ## Workflow
 
-### 0. Clean up existing session
+### 0. Clean up existing session (if needed)
 
-Always close any lingering session before starting:
+A previous session may still be open. Close it before starting to avoid conflicts:
 
 ```bash
-agent-browser close
+agent-browser close 2>/dev/null || true
 ```
-
-Ignore errors if no session exists.
 
 ### 1. Open the page
 
@@ -48,6 +46,12 @@ If `wait` times out: proceed anyway — the page may still be usable.
 | Find interactive elements | `agent-browser snapshot -i -c` | Need to click links, buttons, or fill forms |
 
 For a typical single-article research, `eval "document.body.innerText"` is often sufficient. Use `snapshot` only when you need structure or element refs.
+
+**For large pages**, append `--max-output 10000` to prevent token explosion:
+
+```bash
+agent-browser eval "document.body.innerText" --max-output 10000
+```
 
 **If a cookie consent banner or overlay blocks content**, dismiss it first:
 
@@ -142,20 +146,20 @@ agent-browser close
 ## Critical Rules
 
 - **Always close the session** — every `open` must have a matching `close`.
-- **Read-only** — never submit forms, click buttons that trigger writes, or enter data.
+- **Read-only by default** — never submit forms or enter data. Clicking is allowed only for passive navigation: dismissing cookie/consent banners, following links, expanding collapsed sections, or switching tabs. Do not click buttons that trigger writes, purchases, or state changes.
 - **No guessing** — do not fabricate or assume page content; only report what `snapshot`/`get`/`eval` return.
 - **Authentication pages** — if a page requires login, report it immediately and stop. Do not attempt to authenticate.
 - **Prefer command chaining** — use `&&` to combine related commands in a single bash call for efficiency.
-- **Minimize tokens** — prefer `eval "document.body.innerText"` over `snapshot` when you only need text content.
+- **Minimize tokens** — prefer `eval "document.body.innerText"` over `snapshot` when you only need text content. Use `--max-output` for large pages.
 
 ## Output Format
 
-Summarize findings in the following format:
+Respond in the same language the user used. Summarize findings in this structure:
 
-1. **概要 (Overview)**: Main topic and purpose of the page
-2. **主要ポイント (Key Points)**: Important information as bullet points
-3. **詳細 (Details)**: Detailed explanations as needed
-4. **関連リンク (Related Links)**: Additional resources to reference
+1. **Overview**: Main topic and purpose of the page
+2. **Key Points**: Important information as bullet points
+3. **Details**: Detailed explanations as needed
+4. **Related Links**: Additional resources to reference
 
 When researching multiple URLs or when the user requests it, save results to a file using the Write tool. For a single-URL quick lookup, respond directly in chat.
 
