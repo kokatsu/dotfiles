@@ -287,27 +287,13 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
   end,
 })
 
--- Daily note コマンド (markdown-oxide LSP / フォールバック: 直接ファイルを開く)
+-- Daily note コマンド (直接ファイルを開く)
 do
-  local lsp_commands = { today = true, tomorrow = true, yesterday = true }
-
   local function daily(input)
     if not input or input == '' then
       input = 'today'
     end
 
-    -- markdown-oxide の jump コマンドは today/tomorrow/yesterday のみ対応
-    local clients = vim.lsp.get_clients({ name = 'markdown_oxide' })
-    if #clients > 0 and lsp_commands[input] then
-      clients[1]:exec_cmd({
-        title = ('Markdown-Oxide-%s'):format(input),
-        command = 'jump',
-        arguments = { input },
-      }, { bufnr = vim.api.nvim_get_current_buf() })
-      return
-    end
-
-    -- LSP未起動時 or 数値オフセット: パスを直接計算して開く
     local time = os.time()
     if input == 'tomorrow' then
       time = time + 86400
