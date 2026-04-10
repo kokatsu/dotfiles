@@ -14,6 +14,7 @@ M.config = {
   ignored = true,
   exclude = common_exclude,
   layout = {
+    cycle = true,
     { preview = true },
     layout = {
       box = 'horizontal',
