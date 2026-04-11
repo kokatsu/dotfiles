@@ -116,6 +116,21 @@ in {
       fi
     '');
 
+    # cmux: Ghostty設定の上書き (実ファイルとしてコピー)
+    # cmuxのreadConfigFileはシンボリンクを拒否するためhome.fileでは不可
+    # 読み込み順: ~/.config/ghostty/config → com.cmuxterm.app/config (後勝ち)
+    copyCmuxGhosttyConfig = lib.mkIf isDarwin (lib.hm.dag.entryAfter ["linkGeneration"] ''
+            CMUX_DIR="$HOME/Library/Application Support/com.cmuxterm.app"
+            $DRY_RUN_CMD mkdir -p "$CMUX_DIR"
+            $DRY_RUN_CMD cat > "$CMUX_DIR/config" << 'CMUX_EOF'
+      window-padding-x = 20
+      window-padding-y = 5
+      window-padding-balance = true
+      window-theme = ghostty
+      background-opacity = 0.65
+      CMUX_EOF
+    '');
+
     # Karabiner-Elements: 設定ディレクトリを作成 (macOS only)
     # karabiner.json は karabiner.ts (TypeScript) で生成
     ensureKarabinerDir = lib.mkIf isDarwin (
