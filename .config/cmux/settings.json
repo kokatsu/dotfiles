@@ -24,7 +24,7 @@
       "newTab": "ctrl+n",
       "openFolder": "ctrl+o",
       "closeWorkspace": "ctrl+shift+w",
-      "renameWorkspace": "ctrl+shift+r",
+      "renameWorkspace": "opt+r",
       "selectWorkspaceByNumber": "opt+1",
       "goToWorkspace": "ctrl+p",
       "nextSidebarTab": "ctrl+opt+]",
@@ -33,7 +33,7 @@
       // Surfaces (tabs) — 前後移動は Ghostty keybind (ctrl+tab/ctrl+shift+tab) で動作
       "newSurface": "ctrl+t",
       "closeTab": "opt+w",
-      "renameTab": "ctrl+r",
+      "renameTab": "ctrl+shift+r",
 
       // Split Panes
       "splitRight": "ctrl+s",

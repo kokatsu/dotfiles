@@ -91,10 +91,14 @@ export ZENO_GIT_TREE="eza --tree"
   fi
 }
 
+# fzf key bindings (Ctrl+T, Alt+C) — zeno より先に読み込み、Tab/Ctrl+R は zeno が上書き
+zsh-defer -a +1 +2 -c 'source <(fzf --zsh)'
+
 zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zeno.zsh/zeno.zsh
 zsh-defer -a +1 +2 -c 'bindkey " " zeno-auto-snippet'
 zsh-defer -a +1 +2 -c 'bindkey "^m" zeno-auto-snippet-and-accept-line'
 zsh-defer -a +1 +2 -c 'bindkey "^i" zeno-completion'
+zsh-defer -a +1 +2 -c 'bindkey "^r" zeno-smart-history-selection'
 zsh-defer -a +1 +2 -c 'bindkey "^x " zeno-insert-space'
 zsh-defer -a +1 +2 -c 'bindkey "^x^m" accept-line'
 
@@ -203,6 +207,7 @@ zsh-defer -a +1 +2 -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || 
 
 # fzf colors は catppuccin/nix (programs.fzf.colors) で管理
 # FZF_DEFAULT_OPTS は home.sessionVariables 経由で設定される
+# fzf key bindings は zeno.zsh セクションで読み込み（Tab の優先順位制御のため）
 
 # ------------------------------------------------------------------------------
 # Lazygit (https://github.com/jesseduffield/lazygit)
