@@ -2,6 +2,7 @@ editor = "nvim"
 
 [diff]
 theme = "Catppuccin Mocha"
+bg_color = true
 tab_width = 4
 
 [keybindings]
@@ -15,3 +16,7 @@ reviewer = "claude"
 reviewee = "claude"
 max_iterations = 10
 timeout_secs = 600
+reviewee_additional_tools = ["Skill"]
+
+[shell]
+timeout_secs = 60
