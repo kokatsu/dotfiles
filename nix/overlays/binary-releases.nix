@@ -147,4 +147,31 @@ in {
       homepage = "https://github.com/ushironoko/octorus";
     };
   };
+
+  # rgx - Terminal regex tester (regex101 for the terminal)
+  # Uses pre-built binaries from GitHub releases
+  # Renovate: datasource=github-releases depName=brevity1swos/rgx
+  rgx-cli = mkBinaryRelease rec {
+    pname = "rgx-cli";
+    version = "0.10.2";
+    hashes = {
+      "aarch64-darwin" = "sha256-svj9fPg99jO036JD8tRWFSvEm0fVdFJWHtnWCPqxWTk=";
+      "x86_64-darwin" = "sha256-yDD2RgV21fjIgf92LR38YaqR6lnQGEbNnv5CvewyoQ8=";
+      "aarch64-linux" = "sha256-CczwC0MDiiya6TmvY7+vVYi07Bu6HbyyzHIgHT76Oxc=";
+      "x86_64-linux" = "sha256-pbsmwYWaIonP3urHl2DPkkhjH2RxEgdpZ2E6Fvn69Z8=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "aarch64-apple-darwin";
+      "x86_64-darwin" = "x86_64-apple-darwin";
+      "aarch64-linux" = "aarch64-unknown-linux-gnu";
+      "x86_64-linux" = "x86_64-unknown-linux-gnu";
+    };
+    url = platform: "https://github.com/brevity1swos/rgx/releases/download/v${version}/rgx-cli-${platform}.tar.xz";
+    format = "tar";
+    binName = "rgx";
+    meta = {
+      description = "Terminal regex tester with real-time matching and multi-engine support";
+      homepage = "https://github.com/brevity1swos/rgx";
+    };
+  };
 }

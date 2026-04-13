@@ -384,6 +384,8 @@ in {
       git-graph # Git コミットグラフ可視化 (fork: kokatsu/git-graph)
       # https://github.com/ushironoko/octorus
       octorus # GitHub PR レビュー TUI (overlay)
+      # https://github.com/brevity1swos/rgx
+      rgx-cli # ターミナル正規表現テスター (regex101 の TUI 版, overlay)
       # https://github.com/pamburus/termframe
       termframe # ターミナルスクリーンショット (SVG, Nerd Font対応, overlay)
 
