@@ -74,6 +74,23 @@
     };
   };
 
+  # cc-filter - Claude Code Bash output compressor (Zig)
+  cc-filter = _final: prev: {
+    cc-filter = prev.stdenvNoCC.mkDerivation {
+      pname = "cc-filter";
+      version = "0.1.0";
+      src = ../../tools/cc-filter;
+      nativeBuildInputs = [prev.zig];
+      dontConfigure = true;
+      dontFixup = true;
+      buildPhase = ''
+        export HOME=$TMPDIR
+        export XDG_CACHE_HOME=$TMPDIR/.cache
+        zig build -Doptimize=ReleaseSafe --prefix $out
+      '';
+    };
+  };
+
   daily = _final: prev: {
     daily = prev.stdenvNoCC.mkDerivation {
       pname = "daily";

@@ -78,6 +78,7 @@
     # 共通オーバーレイ (全プラットフォーム)
     commonOverlays = [
       customOverlays.cc-statusline
+      customOverlays.cc-filter
       customOverlays.daily
       customOverlays.claude-code
       customOverlays.cssmodules-language-server

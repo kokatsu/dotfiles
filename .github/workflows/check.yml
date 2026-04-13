@@ -76,6 +76,29 @@ jobs:
           done
           exit $failed
 
+  cc-filter-test:
+    name: cc-filter tests
+    if: github.actor != 'renovate[bot]' || inputs.ref != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+      - uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
+        with:
+          name: kokatsu
+      - name: Dangerous pattern scan
+        run: |
+          if grep -rnE 'std\.net|std\.process\.Child' tools/cc-filter/src/; then
+            echo "::error::cc-filter must not use std.net or std.process.Child"
+            exit 1
+          fi
+          echo "OK: no forbidden patterns"
+      - name: Run zig build test
+        run: nix shell nixpkgs#zig --command bash -c 'cd tools/cc-filter && zig build test --summary all'
+
   build-linux:
     name: Build (Linux)
     if: github.actor != 'renovate[bot]' || inputs.ref != ''
