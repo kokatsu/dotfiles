@@ -87,6 +87,7 @@
       customOverlays.kakehashi
       customOverlays.octorus
       customOverlays.playwright-cli
+      customOverlays.rgx-cli
       customOverlays.takt
       customOverlays.termframe
       customOverlays.unocss-language-server
