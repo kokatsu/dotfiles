@@ -8,7 +8,8 @@ const fs = std.fs;
 
 /// Resolve the current UTC offset in seconds for the given epoch timestamp.
 /// Reads the TZ environment variable and parses TZif binary data.
-/// Falls back to /etc/localtime, then UTC (0) if nothing works.
+/// Falls back to POSIX fixed-offset TZ strings (e.g. "JST-9"), then
+/// /etc/localtime, then UTC (0) if nothing works.
 pub fn getUtcOffsetSeconds(allocator: std.mem.Allocator, now_s: i64) i32 {
     if (std.posix.getenv("TZ")) |tz_raw| {
         const tz = if (tz_raw.len > 0 and tz_raw[0] == ':') tz_raw[1..] else tz_raw;
@@ -23,10 +24,63 @@ pub fn getUtcOffsetSeconds(allocator: std.mem.Allocator, now_s: i64) i32 {
         if (path) |p| {
             if (readTzifOffset(allocator, p, now_s)) |off| return off;
         }
+
+        if (parsePosixTzFixed(tz)) |off| return off;
     }
 
     if (readTzifOffset(allocator, "/etc/localtime", now_s)) |off| return off;
     return 0;
+}
+
+/// Parse a POSIX TZ string with a fixed offset (e.g. "JST-9", "EST5", "<+0530>-5:30").
+/// Returns the UTC offset in seconds (local − UTC), or null if parsing fails or
+/// the string includes DST rules (not supported).
+fn parsePosixTzFixed(tz: []const u8) ?i32 {
+    if (tz.len == 0) return null;
+    var i: usize = 0;
+
+    if (tz[0] == '<') {
+        const end = mem.indexOfScalarPos(u8, tz, 1, '>') orelse return null;
+        i = end + 1;
+    } else {
+        while (i < tz.len and std.ascii.isAlphabetic(tz[i])) : (i += 1) {}
+        if (i < 3) return null;
+    }
+    if (i >= tz.len) return null;
+
+    var sign: i32 = 1;
+    if (tz[i] == '+') {
+        i += 1;
+    } else if (tz[i] == '-') {
+        sign = -1;
+        i += 1;
+    }
+
+    const hours = readUint(tz, &i) orelse return null;
+    var total: i32 = hours * 3600;
+    if (i < tz.len and tz[i] == ':') {
+        i += 1;
+        const mins = readUint(tz, &i) orelse return null;
+        total += mins * 60;
+        if (i < tz.len and tz[i] == ':') {
+            i += 1;
+            const secs = readUint(tz, &i) orelse return null;
+            total += secs;
+        }
+    }
+
+    if (i < tz.len) return null;
+
+    // POSIX TZ stores "time to add to local to get UTC" (positive = west of UTC),
+    // so "JST-9" means UTC = local - (-9h), i.e. local is UTC+9. Negate to return local-UTC.
+    return -sign * total;
+}
+
+fn readUint(s: []const u8, pos: *usize) ?i32 {
+    const start = pos.*;
+    while (pos.* < s.len and s[pos.*] >= '0' and s[pos.*] <= '9') : (pos.* += 1) {}
+    if (pos.* == start) return null;
+    return std.fmt.parseInt(i32, s[start..pos.*], 10) catch null;
 }
 
 fn readTzifOffset(allocator: std.mem.Allocator, path: []const u8, now_s: i64) ?i32 {
@@ -122,12 +176,73 @@ fn readTransitionTime(data: []const u8, idx: u32, is_64bit: bool) i64 {
 }
 
 fn findFirstNonDstType(types_data: []const u8, typecnt: u32) u8 {
-    var i: u8 = 0;
-    while (i < typecnt) : (i += 1) {
-        const off = @as(u32, i) * 6;
-        if (off + 5 <= types_data.len and types_data[off + 4] == 0) return i;
+    // TZif transition indices are u8, so types beyond 256 are unreachable.
+    const limit = @min(typecnt, 256);
+    var i: u32 = 0;
+    while (i < limit) : (i += 1) {
+        const off = i * 6;
+        if (off + 5 <= types_data.len and types_data[off + 4] == 0) return @intCast(i);
     }
     return 0;
+}
+
+// ============================================================
+// Civil date ↔ epoch (Howard Hinnant's algorithm)
+// ============================================================
+
+pub const CivilDate = struct {
+    year: i32,
+    month: u8,
+    day: u8,
+    hour: u8,
+    minute: u8,
+    second: u8,
+};
+
+/// Days since 1970-01-01 for a proleptic Gregorian civil date.
+pub fn daysFromCivil(year: i32, month: u8, day: u8) i64 {
+    var y: i64 = @intCast(year);
+    const m: i64 = @intCast(month);
+    const d: i64 = @intCast(day);
+    if (m <= 2) y -= 1;
+    const era = @divFloor(if (y >= 0) y else y - 399, 400);
+    const yoe = y - era * 400;
+    const doy = @divFloor(153 * (if (m > 2) m - 3 else m + 9) + 2, 5) + d - 1;
+    const doe = yoe * 365 + @divFloor(yoe, 4) - @divFloor(yoe, 100) + doy;
+    return era * 146097 + doe - 719468;
+}
+
+/// Inverse of daysFromCivil combined with intra-day time breakdown.
+/// Caller is responsible for timezone adjustment (pass `epoch_s + offset`
+/// for local time; pass raw epoch seconds for UTC).
+pub fn epochToCivil(epoch_s: i64) CivilDate {
+    const days_raw: i64 = @divFloor(epoch_s, 86400);
+    var rem: i64 = @mod(epoch_s, 86400);
+
+    const hour: u8 = @intCast(@divFloor(rem, 3600));
+    rem = @mod(rem, 3600);
+    const minute: u8 = @intCast(@divFloor(rem, 60));
+    const second: u8 = @intCast(@mod(rem, 60));
+
+    const days = days_raw + 719468;
+    const era: i64 = @divFloor(if (days >= 0) days else days - 146096, 146097);
+    const doe: i64 = days - era * 146097;
+    const yoe: i64 = @divFloor(doe - @divFloor(doe, 1460) + @divFloor(doe, 36524) - @divFloor(doe, 146096), 365);
+    const y: i64 = yoe + era * 400;
+    const doy: i64 = doe - (365 * yoe + @divFloor(yoe, 4) - @divFloor(yoe, 100));
+    const mp: i64 = @divFloor(5 * doy + 2, 153);
+    const d: u8 = @intCast(doy - @divFloor(153 * mp + 2, 5) + 1);
+    const m: u8 = @intCast(if (mp < 10) mp + 3 else mp - 9);
+    const year_adj: i64 = if (m <= 2) y + 1 else y;
+
+    return .{
+        .year = @intCast(year_adj),
+        .month = m,
+        .day = d,
+        .hour = hour,
+        .minute = minute,
+        .second = second,
+    };
 }
 
 // ============================================================
@@ -240,4 +355,136 @@ test "findFirstNonDstType all DST returns 0" {
 test "findFirstNonDstType third type is first non-DST" {
     const types = [_]u8{ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
     try std.testing.expectEqual(@as(u8, 2), findFirstNonDstType(&types, 3));
+}
+
+test "findFirstNonDstType large typecnt does not overflow" {
+    const types = [_]u8{ 0, 0, 0, 0, 0, 0 };
+    try std.testing.expectEqual(@as(u8, 0), findFirstNonDstType(&types, 1_000_000));
+}
+
+// --- POSIX TZ fixed-offset parser ---
+
+test "parsePosixTzFixed JST-9 returns +32400" {
+    try std.testing.expectEqual(@as(?i32, 32400), parsePosixTzFixed("JST-9"));
+}
+
+test "parsePosixTzFixed EST5 returns -18000" {
+    try std.testing.expectEqual(@as(?i32, -18000), parsePosixTzFixed("EST5"));
+}
+
+test "parsePosixTzFixed EST+5 returns -18000" {
+    try std.testing.expectEqual(@as(?i32, -18000), parsePosixTzFixed("EST+5"));
+}
+
+test "parsePosixTzFixed with minutes NST3:30" {
+    try std.testing.expectEqual(@as(?i32, -(3 * 3600 + 30 * 60)), parsePosixTzFixed("NST3:30"));
+}
+
+test "parsePosixTzFixed with seconds CUSTOM1:02:03" {
+    try std.testing.expectEqual(@as(?i32, -(1 * 3600 + 2 * 60 + 3)), parsePosixTzFixed("CUSTOM1:02:03"));
+}
+
+test "parsePosixTzFixed quoted name <+0530>-5:30" {
+    try std.testing.expectEqual(@as(?i32, 5 * 3600 + 30 * 60), parsePosixTzFixed("<+0530>-5:30"));
+}
+
+test "parsePosixTzFixed rejects DST form EST5EDT,M3.2.0,M11.1.0" {
+    try std.testing.expectEqual(@as(?i32, null), parsePosixTzFixed("EST5EDT,M3.2.0,M11.1.0"));
+}
+
+test "parsePosixTzFixed rejects zone-path Asia/Tokyo" {
+    try std.testing.expectEqual(@as(?i32, null), parsePosixTzFixed("Asia/Tokyo"));
+}
+
+test "parsePosixTzFixed rejects name-only UTC" {
+    try std.testing.expectEqual(@as(?i32, null), parsePosixTzFixed("UTC"));
+}
+
+test "parsePosixTzFixed rejects empty string" {
+    try std.testing.expectEqual(@as(?i32, null), parsePosixTzFixed(""));
+}
+
+test "parsePosixTzFixed rejects short name AB5" {
+    try std.testing.expectEqual(@as(?i32, null), parsePosixTzFixed("AB5"));
+}
+
+// --- daysFromCivil / epochToCivil ---
+
+test "daysFromCivil epoch and Y2000" {
+    try std.testing.expectEqual(@as(i64, 0), daysFromCivil(1970, 1, 1));
+    try std.testing.expectEqual(@as(i64, 10957), daysFromCivil(2000, 1, 1));
+}
+
+test "daysFromCivil leap year" {
+    const feb28 = daysFromCivil(2024, 2, 28);
+    const feb29 = daysFromCivil(2024, 2, 29);
+    const mar1 = daysFromCivil(2024, 3, 1);
+    try std.testing.expectEqual(feb28 + 1, feb29);
+    try std.testing.expectEqual(feb29 + 1, mar1);
+}
+
+test "daysFromCivil year boundary Dec 31 to Jan 1" {
+    const dec31 = daysFromCivil(2024, 12, 31);
+    const jan1 = daysFromCivil(2025, 1, 1);
+    try std.testing.expectEqual(dec31 + 1, jan1);
+}
+
+test "daysFromCivil pre-epoch" {
+    try std.testing.expectEqual(@as(i64, -1), daysFromCivil(1969, 12, 31));
+}
+
+test "epochToCivil Unix epoch" {
+    const c = epochToCivil(0);
+    try std.testing.expectEqual(@as(i32, 1970), c.year);
+    try std.testing.expectEqual(@as(u8, 1), c.month);
+    try std.testing.expectEqual(@as(u8, 1), c.day);
+    try std.testing.expectEqual(@as(u8, 0), c.hour);
+    try std.testing.expectEqual(@as(u8, 0), c.minute);
+    try std.testing.expectEqual(@as(u8, 0), c.second);
+}
+
+test "epochToCivil known date 2025-06-15T12:30:45Z" {
+    const days = daysFromCivil(2025, 6, 15);
+    const seconds = days * 86400 + 12 * 3600 + 30 * 60 + 45;
+    const c = epochToCivil(seconds);
+    try std.testing.expectEqual(@as(i32, 2025), c.year);
+    try std.testing.expectEqual(@as(u8, 6), c.month);
+    try std.testing.expectEqual(@as(u8, 15), c.day);
+    try std.testing.expectEqual(@as(u8, 12), c.hour);
+    try std.testing.expectEqual(@as(u8, 30), c.minute);
+    try std.testing.expectEqual(@as(u8, 45), c.second);
+}
+
+test "epochToCivil leap year Feb 29 2024" {
+    const days = daysFromCivil(2024, 2, 29);
+    const c = epochToCivil(days * 86400);
+    try std.testing.expectEqual(@as(i32, 2024), c.year);
+    try std.testing.expectEqual(@as(u8, 2), c.month);
+    try std.testing.expectEqual(@as(u8, 29), c.day);
+}
+
+test "epochToCivil year 2000 boundary" {
+    const days = daysFromCivil(2000, 1, 1);
+    const c = epochToCivil(days * 86400);
+    try std.testing.expectEqual(@as(i32, 2000), c.year);
+    try std.testing.expectEqual(@as(u8, 1), c.month);
+    try std.testing.expectEqual(@as(u8, 1), c.day);
+}
+
+test "epochToCivil roundtrip via daysFromCivil for many dates" {
+    const samples = [_]struct { y: i32, m: u8, d: u8 }{
+        .{ .y = 1970, .m = 1, .d = 1 },
+        .{ .y = 1999, .m = 12, .d = 31 },
+        .{ .y = 2000, .m = 2, .d = 29 },
+        .{ .y = 2100, .m = 3, .d = 1 },
+        .{ .y = 2400, .m = 2, .d = 29 },
+        .{ .y = 1969, .m = 12, .d = 31 },
+    };
+    for (samples) |s| {
+        const days = daysFromCivil(s.y, s.m, s.d);
+        const c = epochToCivil(days * 86400);
+        try std.testing.expectEqual(s.y, c.year);
+        try std.testing.expectEqual(s.m, c.month);
+        try std.testing.expectEqual(s.d, c.day);
+    }
 }
