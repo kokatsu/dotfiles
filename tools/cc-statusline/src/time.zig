@@ -1,6 +1,8 @@
 const std = @import("std");
 const zig_time = @import("zig_time");
 
+pub const daysFromCivil = zig_time.daysFromCivil;
+
 // ============================================================
 // ISO 8601 Parser
 // ============================================================
@@ -39,19 +41,6 @@ fn parseDecimal(s: []const u8) ?i64 {
         result = std.math.add(i64, result, @as(i64, c - '0')) catch return null;
     }
     return result;
-}
-
-/// Howard Hinnant's civil_from_days algorithm
-pub fn daysFromCivil(year_in: i32, month_in: u8, day_in: u8) i64 {
-    var y: i64 = @intCast(year_in);
-    const m: i64 = @intCast(month_in);
-    const d: i64 = @intCast(day_in);
-    if (m <= 2) y -= 1;
-    const era = @divFloor(if (y >= 0) y else y - 399, 400);
-    const yoe = y - era * 400;
-    const doy = @divFloor(153 * (if (m > 2) m - 3 else m + 9) + 2, 5) + d - 1;
-    const doe = yoe * 365 + @divFloor(yoe, 4) - @divFloor(yoe, 100) + doy;
-    return era * 146097 + doe - 719468;
 }
 
 pub fn computeLocalDayStartMs(now_ms: i64, utc_offset_s: i32) i64 {
@@ -98,9 +87,9 @@ test "parseDecimal overflow" {
     try std.testing.expectEqual(@as(?i64, 0), parseDecimal(""));
 }
 
-test "daysFromCivil" {
+test "daysFromCivil re-export smoke test" {
+    // Full coverage lives in zig-time; this just guards the re-export.
     try std.testing.expectEqual(@as(i64, 0), daysFromCivil(1970, 1, 1));
-    try std.testing.expectEqual(@as(i64, 10957), daysFromCivil(2000, 1, 1));
 }
 
 test "floorToHourMs" {
@@ -175,33 +164,6 @@ test "parseIso8601ToMs leap year Feb 29" {
     const ts = parseIso8601ToMs("2024-02-29T00:00:00Z").?;
     const expected: i64 = daysFromCivil(2024, 2, 29) * 86400 * 1000;
     try std.testing.expectEqual(expected, ts);
-}
-
-// --- daysFromCivil edge cases ---
-
-test "daysFromCivil leap year" {
-    const feb28 = daysFromCivil(2024, 2, 28);
-    const feb29 = daysFromCivil(2024, 2, 29);
-    const mar1 = daysFromCivil(2024, 3, 1);
-    try std.testing.expectEqual(feb28 + 1, feb29);
-    try std.testing.expectEqual(feb29 + 1, mar1);
-}
-
-test "daysFromCivil non-leap year Feb 28 to Mar 1" {
-    const feb28 = daysFromCivil(2025, 2, 28);
-    const mar1 = daysFromCivil(2025, 3, 1);
-    try std.testing.expectEqual(feb28 + 1, mar1);
-}
-
-test "daysFromCivil pre-epoch" {
-    const day = daysFromCivil(1969, 12, 31);
-    try std.testing.expectEqual(@as(i64, -1), day);
-}
-
-test "daysFromCivil year boundary Dec 31 to Jan 1" {
-    const dec31 = daysFromCivil(2024, 12, 31);
-    const jan1 = daysFromCivil(2025, 1, 1);
-    try std.testing.expectEqual(dec31 + 1, jan1);
 }
 
 // --- floorToHourMs edge cases ---

@@ -29,6 +29,8 @@ const scan_window_ms: i64 = 25 * 60 * 60 * 1000; // 25h: 24h + 1h margin for tim
 const cache_magic = [4]u8{ 'C', 'C', 'S', 'L' };
 const cache_ver: u32 = 5;
 const file_list_ttl_s: i64 = 300;
+// Actual caches are ~tens of KB; cap at 1 MiB to fail fast on corruption.
+const cache_max_bytes: usize = 1 * 1024 * 1024;
 
 // ============================================================
 // Types
@@ -76,12 +78,25 @@ const FileInfo = struct {
     size: i64,
 };
 
+fn logOpendirError(path: []const u8, err: anyerror) void {
+    // FileNotFound is expected on fresh installs or removed subdirs — stay silent.
+    // Permission / I/O errors are not, so surface them for debugging.
+    if (err == error.FileNotFound) return;
+    var buf: [512]u8 = undefined;
+    if (std.fmt.bufPrint(&buf, "cc-statusline: opendir {s} failed: {s}\n", .{ path, @errorName(err) })) |msg| {
+        const f = fs.File{ .handle = std.posix.STDERR_FILENO };
+        f.writeAll(msg) catch {};
+    } else |_| {}
+}
+
 fn collectTranscriptFiles(allocator: std.mem.Allocator, projects_path: []const u8, now_ms: i64) []FileInfo {
     var files: std.ArrayListUnmanaged(FileInfo) = .{};
     const cutoff_ms = now_ms - scan_window_ms;
 
-    var projects_dir = fs.openDirAbsolute(projects_path, .{ .iterate = true }) catch
+    var projects_dir = fs.openDirAbsolute(projects_path, .{ .iterate = true }) catch |err| {
+        logOpendirError(projects_path, err);
         return files.toOwnedSlice(allocator) catch &.{};
+    };
     defer projects_dir.close();
 
     var proj_it = projects_dir.iterate();
@@ -96,7 +111,10 @@ fn collectTranscriptFiles(allocator: std.mem.Allocator, projects_path: []const u
 
 fn scanDirRecursive(allocator: std.mem.Allocator, base_path: []const u8, rel_path: []const u8, files: *std.ArrayListUnmanaged(FileInfo), cutoff_ms: i64) void {
     const full_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ base_path, rel_path }) catch return;
-    var dir = fs.openDirAbsolute(full_path, .{ .iterate = true }) catch return;
+    var dir = fs.openDirAbsolute(full_path, .{ .iterate = true }) catch |err| {
+        logOpendirError(full_path, err);
+        return;
+    };
     defer dir.close();
 
     var it = dir.iterate();
@@ -354,7 +372,7 @@ fn parseCacheBytes(allocator: std.mem.Allocator, content: []const u8, day_start_
 fn readCache(allocator: std.mem.Allocator, day_start_ms: i64) ?CacheResult {
     var f = fs.openFileAbsolute(cache_path, .{}) catch return null;
     defer f.close();
-    const content = f.readToEndAlloc(allocator, 64 * 1024 * 1024) catch return null;
+    const content = f.readToEndAlloc(allocator, cache_max_bytes) catch return null;
     return parseCacheBytes(allocator, content, day_start_ms);
 }
 
