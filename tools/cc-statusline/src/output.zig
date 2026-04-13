@@ -16,6 +16,14 @@ const ms_per_min = types.ms_per_min;
 pub const bar_width: u8 = 10;
 pub const default_branch_max: usize = 24;
 
+/// Upper bound enforced by `parseBranchMax` so `truncateBranch` can always
+/// append its 3-byte ellipsis without overflowing its output buffer.
+pub const branch_max_upper: usize = 254;
+
+/// Buffer size for progress bars. `bar_width` (10 codepoints) × an extended
+/// grapheme cluster of up to ~25 bytes keeps output inside a single memcpy.
+const progress_bar_buf_size: usize = 256;
+
 // ============================================================
 // Theme
 // ============================================================
@@ -217,8 +225,8 @@ pub fn truncateBranch(buf: *[256]u8, branch: []const u8, max_len: usize) []const
 pub fn parseBranchMax(val: ?[]const u8) usize {
     const s = val orelse return default_branch_max;
     const v = std.fmt.parseInt(i64, s, 10) catch return default_branch_max;
-    if (v >= 4) return @intCast(v);
-    return default_branch_max;
+    if (v < 4) return default_branch_max;
+    return @intCast(@min(v, @as(i64, branch_max_upper)));
 }
 
 // ============================================================
@@ -227,7 +235,7 @@ pub fn parseBranchMax(val: ?[]const u8) usize {
 
 fn writeRateLimitWindow(w: *Writer, theme: Theme, label: []const u8, rl: RateLimitWindow, now_ms: i64) !void {
     const usage_color = rateLimitUsageColor(theme, rl.used_percentage);
-    var bar_buf: [128]u8 = undefined;
+    var bar_buf: [progress_bar_buf_size]u8 = undefined;
     const bar = buildProgressBar(&bar_buf, rl.used_percentage, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
     try w.print("{s}{s}{s} {s}{s}{s} {s}{d:.0}%{s}", .{
         theme.dim,   label,
@@ -259,7 +267,7 @@ pub fn printOutput(w: *Writer, theme: Theme, stdin_info: StdinInfo, scan: ?ScanR
     // Context
     if (stdin_info.context_pct) |pct| {
         const color = contextColor(theme, pct);
-        var bar_buf: [128]u8 = undefined;
+        var bar_buf: [progress_bar_buf_size]u8 = undefined;
         const bar = buildProgressBar(&bar_buf, pct, bar_width, theme.bar_filled, theme.bar_transition, theme.bar_empty);
         try w.print(" {s}|{s} \xf0\x9f\xa7\xa0 {s}{s}{s} {s}{d:.0}%{s}", .{ theme.dim, theme.reset, color, bar, theme.reset, color, pct, theme.reset });
     } else {
@@ -477,6 +485,15 @@ test "truncateBranch UTF-8 boundary" {
     const result = truncateBranch(&buf, "ab\xe6\x97\xa5cd", 4);
     try std.testing.expectEqual(@as(usize, 5), result.len);
     try std.testing.expectEqualStrings("ab\xe2\x80\xa6", result);
+}
+
+test "truncateBranch at branch_max_upper does not overflow buf" {
+    var buf: [256]u8 = undefined;
+    var branch: [300]u8 = undefined;
+    for (&branch) |*b| b.* = 'a';
+    const result = truncateBranch(&buf, &branch, branch_max_upper);
+    try std.testing.expectEqual(@as(usize, branch_max_upper + 2), result.len);
+    try std.testing.expectEqualStrings("\xe2\x80\xa6", result[result.len - 3 ..]);
 }
 
 // --- printOutput: Line 1 ---
@@ -792,6 +809,9 @@ test "parseBranchMax" {
     try std.testing.expectEqual(default_branch_max, parseBranchMax("3"));
     try std.testing.expectEqual(default_branch_max, parseBranchMax("abc"));
     try std.testing.expectEqual(default_branch_max, parseBranchMax(""));
+    try std.testing.expectEqual(branch_max_upper, parseBranchMax("254"));
+    try std.testing.expectEqual(branch_max_upper, parseBranchMax("255"));
+    try std.testing.expectEqual(branch_max_upper, parseBranchMax("10000"));
 }
 
 // --- formatResetDuration (edge cases) ---

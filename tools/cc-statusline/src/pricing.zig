@@ -325,6 +325,32 @@ test "findPricing prefix ordering opus-4-6 before opus-4" {
     try std.testing.expectEqualStrings("claude-sonnet-4-6", p2.prefix);
 }
 
+test "findPricing prefix ordering specific sonnet-4 variants before generic sonnet-4" {
+    // If the generic claude-sonnet-4 entry is reordered before a more specific
+    // variant, these models would incorrectly match the generic entry.
+    try std.testing.expectEqualStrings("claude-sonnet-4-6", findPricing("claude-sonnet-4-6-20251212").?.prefix);
+    try std.testing.expectEqualStrings("claude-sonnet-4-5", findPricing("claude-sonnet-4-5-20250929").?.prefix);
+    try std.testing.expectEqualStrings("claude-sonnet-4-2", findPricing("claude-sonnet-4-2-20250929").?.prefix);
+    try std.testing.expectEqualStrings("claude-sonnet-4", findPricing("claude-sonnet-4-3-20250929").?.prefix);
+}
+
+test "findPricing prefix ordering specific opus-4 variants before generic opus-4" {
+    try std.testing.expectEqualStrings("claude-opus-4-6", findPricing("claude-opus-4-6-20251212").?.prefix);
+    try std.testing.expectEqualStrings("claude-opus-4-5", findPricing("claude-opus-4-5-20250929").?.prefix);
+    try std.testing.expectEqualStrings("claude-opus-4-1", findPricing("claude-opus-4-1-20250929").?.prefix);
+    try std.testing.expectEqualStrings("claude-opus-4", findPricing("claude-opus-4-20250929").?.prefix);
+}
+
+test "findPricing haiku variants resolve to correct prefix" {
+    try std.testing.expectEqualStrings("claude-haiku-4-5", findPricing("claude-haiku-4-5-20251001").?.prefix);
+    try std.testing.expectEqualStrings("claude-3-5-haiku", findPricing("claude-3-5-haiku-20241022").?.prefix);
+}
+
+test "findPricing 3-7-sonnet and 3-5-sonnet do not collide" {
+    try std.testing.expectEqualStrings("claude-3-7-sonnet", findPricing("claude-3-7-sonnet-20250219").?.prefix);
+    try std.testing.expectEqualStrings("claude-3-5-sonnet", findPricing("claude-3-5-sonnet-20241022").?.prefix);
+}
+
 test "findPricing empty string returns null" {
     try std.testing.expect(findPricing("") == null);
 }
