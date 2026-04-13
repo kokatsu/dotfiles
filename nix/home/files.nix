@@ -368,27 +368,8 @@ in {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
         force = true;
       };
-      ".config/octorus/config.toml".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-      in ''
-        editor = "nvim"
-
-        [diff]
-        theme = "${names.spaced}"
-        tab_width = 4
-
-        [keybindings]
-        approve = "a"
-        request_changes = "r"
-        comment = "c"
-        suggestion = "s"
-
-        [ai]
-        reviewer = "claude"
-        reviewee = "claude"
-        max_iterations = 10
-        timeout_secs = 600
-      '';
+      ".config/octorus/config.toml".source = ../../.config/octorus/config.toml;
+      ".config/octorus/themes/Catppuccin Mocha.tmTheme".source = ../../.config/bat/themes + "/Catppuccin Mocha.tmTheme";
       ".config/bulletty/feeds.opml".source = ../../.config/bulletty/feeds.opml;
       ".config/biome".source = ../../.config/biome;
       ".config/lazydocker".source = ../../.config/lazydocker;
