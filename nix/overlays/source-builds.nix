@@ -1,4 +1,32 @@
-{
+let
+  mkZigTool = prev: {
+    pname,
+    src,
+    optimize ? "ReleaseFast",
+    extraNativeBuildInputs ? [],
+    extraBuildPhase ? "",
+    extraAttrs ? {},
+  }:
+    prev.stdenvNoCC.mkDerivation ({
+        inherit pname src;
+        version = "0.1.0";
+        nativeBuildInputs = [prev.zig] ++ extraNativeBuildInputs;
+        dontConfigure = true;
+        dontFixup = true;
+        buildPhase = ''
+          export HOME=$TMPDIR
+          export XDG_CACHE_HOME=$TMPDIR/.cache
+          ${extraBuildPhase}
+          zig build -Doptimize=${optimize} --prefix $out
+        '';
+      }
+      // extraAttrs);
+
+  # Sibling symlink so `path = "../zig-util"` in build.zig.zon resolves.
+  zigUtilSymlink = ''
+    ln -s ${../../tools/zig-util} ../zig-util
+  '';
+in {
   # cssmodules-language-server - CSS Modules LSP
   # Uses buildNpmPackage from GitHub source
   # Renovate: datasource=npm depName=cssmodules-language-server
@@ -54,20 +82,12 @@
 
   # cc-statusline - Fast Claude Code statusline tool (Zig)
   cc-statusline = _final: prev: {
-    cc-statusline = prev.stdenvNoCC.mkDerivation {
+    cc-statusline = mkZigTool prev {
       pname = "cc-statusline";
-      version = "0.1.0";
       src = ../../tools/cc-statusline;
-      nativeBuildInputs = [prev.zig prev.makeWrapper];
-      dontConfigure = true;
-      dontFixup = true;
-      buildPhase = ''
-        export HOME=$TMPDIR
-        export XDG_CACHE_HOME=$TMPDIR/.cache
-        ln -s ${../../tools/zig-time} ../zig-time
-        zig build -Doptimize=ReleaseFast --prefix $out
-      '';
-      installPhase = ''
+      extraNativeBuildInputs = [prev.makeWrapper];
+      extraBuildPhase = zigUtilSymlink;
+      extraAttrs.installPhase = ''
         wrapProgram $out/bin/cc-statusline \
           --set-default CC_STATUSLINE_THEME catppuccin-mocha
       '';
@@ -76,35 +96,19 @@
 
   # cc-filter - Claude Code Bash output compressor (Zig)
   cc-filter = _final: prev: {
-    cc-filter = prev.stdenvNoCC.mkDerivation {
+    cc-filter = mkZigTool prev {
       pname = "cc-filter";
-      version = "0.1.0";
       src = ../../tools/cc-filter;
-      nativeBuildInputs = [prev.zig];
-      dontConfigure = true;
-      dontFixup = true;
-      buildPhase = ''
-        export HOME=$TMPDIR
-        export XDG_CACHE_HOME=$TMPDIR/.cache
-        zig build -Doptimize=ReleaseSafe --prefix $out
-      '';
+      optimize = "ReleaseSafe";
+      extraBuildPhase = zigUtilSymlink;
     };
   };
 
   daily = _final: prev: {
-    daily = prev.stdenvNoCC.mkDerivation {
+    daily = mkZigTool prev {
       pname = "daily";
-      version = "0.1.0";
       src = ../../tools/daily;
-      nativeBuildInputs = [prev.zig];
-      dontConfigure = true;
-      dontFixup = true;
-      buildPhase = ''
-        export HOME=$TMPDIR
-        export XDG_CACHE_HOME=$TMPDIR/.cache
-        ln -s ${../../tools/zig-time} ../zig-time
-        zig build -Doptimize=ReleaseFast --prefix $out
-      '';
+      extraBuildPhase = zigUtilSymlink;
     };
   };
 }
