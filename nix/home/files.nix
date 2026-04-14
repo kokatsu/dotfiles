@@ -384,66 +384,12 @@ in {
       ".config/wezterm/wezterm.lua".source = ../../.config/wezterm/wezterm.lua;
       ".config/wezterm/windows.lua".source = ../../.config/wezterm/windows.lua;
 
-      # Ghostty: OS appearance に応じて latte/mocha を自動切替
+      # Ghostty: catppuccin/nix 管理 (ビルトインテーマを利用)
       ".config/ghostty/config".text = let
+        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
         staticConfig = builtins.readFile ../../.config/ghostty/config.static;
       in
-        "# テーマ (light/dark で OS appearance 自動追従)\ntheme = light:catppuccin-latte,dark:catppuccin-${config.catppuccin.flavor}\n" + staticConfig;
-      # Ghostty 用 Catppuccin テーマファイル (mocha + latte) を catppuccinLib から生成
-      ".config/ghostty/themes/catppuccin-mocha".text = let
-        p = config.catppuccinLib.palettes.mocha;
-        hex = c: builtins.substring 1 6 c.hex;
-      in ''
-        palette = 0=${p.surface1.hex}
-        palette = 1=${p.red.hex}
-        palette = 2=${p.green.hex}
-        palette = 3=${p.yellow.hex}
-        palette = 4=${p.blue.hex}
-        palette = 5=${p.pink.hex}
-        palette = 6=${p.teal.hex}
-        palette = 7=${p.subtext0.hex}
-        palette = 8=${p.surface2.hex}
-        palette = 9=${p.red.hex}
-        palette = 10=${p.green.hex}
-        palette = 11=${p.yellow.hex}
-        palette = 12=${p.blue.hex}
-        palette = 13=${p.pink.hex}
-        palette = 14=${p.teal.hex}
-        palette = 15=${p.subtext1.hex}
-        background = ${hex p.base}
-        foreground = ${hex p.text}
-        cursor-color = ${hex p.sapphire}
-        cursor-text = ${hex p.base}
-        selection-background = ${hex p.surface0}
-        selection-foreground = ${hex p.text}
-      '';
-      ".config/ghostty/themes/catppuccin-latte".text = let
-        p = config.catppuccinLib.palettes.latte;
-        hex = c: builtins.substring 1 6 c.hex;
-      in ''
-        palette = 0=${p.surface1.hex}
-        palette = 1=${p.red.hex}
-        palette = 2=${p.green.hex}
-        palette = 3=${p.yellow.hex}
-        palette = 4=${p.blue.hex}
-        palette = 5=${p.pink.hex}
-        palette = 6=${p.teal.hex}
-        palette = 7=${p.subtext0.hex}
-        palette = 8=${p.surface2.hex}
-        palette = 9=${p.red.hex}
-        palette = 10=${p.green.hex}
-        palette = 11=${p.yellow.hex}
-        palette = 12=${p.blue.hex}
-        palette = 13=${p.pink.hex}
-        palette = 14=${p.teal.hex}
-        palette = 15=${p.subtext1.hex}
-        background = ${hex p.base}
-        foreground = ${hex p.text}
-        cursor-color = ${hex p.sapphire}
-        cursor-text = ${hex p.base}
-        selection-background = ${hex p.surface0}
-        selection-foreground = ${hex p.text}
-      '';
+        "# テーマ (catppuccin.flavor から導出、ビルトインテーマを利用)\ntheme = ${names.kebab}\n" + staticConfig;
 
       # yazi: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
       # これにより ya pkg コマンドで package.toml への書き込みが可能

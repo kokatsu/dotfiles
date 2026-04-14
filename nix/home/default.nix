@@ -77,6 +77,11 @@ in {
         CC_STATUSLINE_THEME = "catppuccin-${config.catppuccin.flavor}";
         CATPPUCCIN_NVIM_FLAVOR = config.catppuccin.flavor;
         CATPPUCCIN_NVIM_LIGHT_FLAVOR = "latte";
+        # Catppuccin flavor から appearance を導出 (latte だけ light、それ以外は dark)
+        APPEARANCE =
+          if config.catppuccin.flavor == "latte"
+          then "light"
+          else "dark";
         # Playwright ブラウザパス (Nix管理)
         PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
