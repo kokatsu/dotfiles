@@ -30,8 +30,9 @@ in {
       # Shift+クリックでtmuxのマウスモードをバイパスしてWezTermの直接選択も可能
       set -s set-clipboard on
 
-      # True color support
-      set -ga terminal-overrides ",xterm-256color:Tc"
+      # True color support (tmux 3.2+ syntax)
+      set -ga terminal-overrides ",xterm-256color:RGB"
+      set -ag terminal-features "xterm-256color:RGB"
 
       # Start panes at 1, not 0 (windows handled by baseIndex)
       setw -g pane-base-index 1

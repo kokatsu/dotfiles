@@ -29,7 +29,9 @@ function claude() {
   else
     local session_name="claude${WEZTERM_PANE:+-$WEZTERM_PANE}"
     _wezterm_set_user_var IS_CLAUDE 1
-    tmux new-session -A -s "$session_name" "command claude"
+    # TMUX を空にして CC の tmux 検出を回避（薄palette回避）
+    tmux new-session -A -s "$session_name" \
+      "TMUX= command claude"
     _wezterm_set_user_var IS_CLAUDE 0
   fi
 }
