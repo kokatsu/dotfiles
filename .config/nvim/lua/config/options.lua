@@ -54,8 +54,8 @@ vim.opt.termguicolors = true
 vim.opt.wildoptions = 'pum'
 -- フローティングウィンドウの境界線の透明度
 vim.opt.pumblend = 30
--- 背景色
-vim.opt.background = 'dark'
+-- 背景色 (APPEARANCE 環境変数で dark/light を切替; シェルが OS 設定から検出)
+vim.opt.background = vim.env.APPEARANCE == 'light' and 'light' or 'dark'
 
 -- 行番号の表示
 vim.opt.number = true

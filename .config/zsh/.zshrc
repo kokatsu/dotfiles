@@ -5,6 +5,39 @@
 # zmodload zsh/zprof && zprof
 
 # ------------------------------------------------------------------------------
+# OS Appearance (exports APPEARANCE=dark|light; consumed by nvim/WezTerm)
+# ------------------------------------------------------------------------------
+
+if [[ -z "$APPEARANCE" ]]; then
+  if [[ "$OSTYPE" == darwin* ]]; then
+    if defaults read -g AppleInterfaceStyle 2>/dev/null | grep -q Dark; then
+      export APPEARANCE=dark
+    else
+      export APPEARANCE=light
+    fi
+  elif [[ -n "$WSL_DISTRO_NAME" ]]; then
+    # WSL: Windows レジストリから取得 (AppsUseLightTheme: 0x1=light, 0x0=dark)
+    local _apps_light
+    _apps_light=$(/mnt/c/Windows/System32/reg.exe query \
+      'HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' \
+      /v AppsUseLightTheme 2>/dev/null | grep -oE '0x[01]' | head -1)
+    if [[ "$_apps_light" == "0x1" ]]; then
+      export APPEARANCE=light
+    else
+      export APPEARANCE=dark
+    fi
+    unset _apps_light
+  elif command -v gsettings &>/dev/null; then
+    if gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null | grep -q dark; then
+      export APPEARANCE=dark
+    else
+      export APPEARANCE=light
+    fi
+  fi
+  : ${APPEARANCE:=dark}
+fi
+
+# ------------------------------------------------------------------------------
 # Zim (https://github.com/zimfw/zimfw)
 # ------------------------------------------------------------------------------
 
