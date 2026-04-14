@@ -26,6 +26,11 @@ return {
         FloatBorder = { fg = colors.surface2 },
         Pmenu = { bg = colors.mantle },
         PmenuSel = { bg = colors.surface0 },
+        -- Window 分割の境界線 / 行番号 (flavor に追従)
+        VertSplit = { fg = colors.overlay0, bg = 'NONE' },
+        WinSeparator = { fg = colors.overlay0, bg = 'NONE' },
+        LineNr = { fg = colors.overlay0, bg = 'NONE' },
+        LineNrNC = { fg = colors.surface1, bg = 'NONE' },
       }
     end,
     auto_integrations = true,

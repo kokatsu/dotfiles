@@ -1,5 +1,17 @@
--- Lazygit設定
+-- Lazygit設定 (palette は catppuccin の flavor に追従)
 local M = {}
+
+local ok, palettes = pcall(require, 'catppuccin.palettes')
+local p = ok and palettes.get_palette()
+  or {
+    blue = '#89b4fa',
+    subtext0 = '#a6adc8',
+    surface0 = '#313244',
+    surface1 = '#45475a',
+    red = '#f38ba8',
+    text = '#cdd6f4',
+    yellow = '#f9e2af',
+  }
 
 M.opts = {
   configure = true,
@@ -8,34 +20,15 @@ M.opts = {
     gui = {
       nerdFontsVersion = '3',
       theme = {
-        activeBorderColor = {
-          '#89b4fa',
-          'bold',
-        },
-        inactiveBorderColor = {
-          '#a6adc8',
-        },
-        optionsTextColor = {
-          '#89b4fa',
-        },
-        selectedLineBgColor = {
-          '#313244',
-        },
-        cherryPickedCommitBgColor = {
-          '#45475a',
-        },
-        cherryPickedCommitFgColor = {
-          '#89b4fa',
-        },
-        unstagedChangesColor = {
-          '#f38ba8',
-        },
-        defaultFgColor = {
-          '#cdd6f4',
-        },
-        searchingActiveBorderColor = {
-          '#f9e2af',
-        },
+        activeBorderColor = { p.blue, 'bold' },
+        inactiveBorderColor = { p.subtext0 },
+        optionsTextColor = { p.blue },
+        selectedLineBgColor = { p.surface0 },
+        cherryPickedCommitBgColor = { p.surface1 },
+        cherryPickedCommitFgColor = { p.blue },
+        unstagedChangesColor = { p.red },
+        defaultFgColor = { p.text },
+        searchingActiveBorderColor = { p.yellow },
       },
     },
   },

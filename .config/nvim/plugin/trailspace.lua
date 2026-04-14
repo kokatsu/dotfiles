@@ -3,7 +3,10 @@
 local group = vim.api.nvim_create_augroup('Trailspace', { clear = true })
 
 local function set_hl(visible)
-  vim.api.nvim_set_hl(0, 'Trailspace', { bg = visible and '#f38ba8' or 'NONE' })
+  -- catppuccin palette の red を使用 (flavor 追従)
+  local ok, palettes = pcall(require, 'catppuccin.palettes')
+  local red = ok and palettes.get_palette().red or '#f38ba8'
+  vim.api.nvim_set_hl(0, 'Trailspace', { bg = visible and red or 'NONE' })
 end
 
 -- Start hidden (dashboard may be showing at startup)
