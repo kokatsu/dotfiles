@@ -5,7 +5,7 @@ const fs = std.fs;
 const pricing = @import("pricing.zig");
 const time = @import("time.zig");
 const types = @import("types.zig");
-const ju = @import("json_util.zig");
+const ju = @import("zig_util").json;
 
 const ScanResult = types.ScanResult;
 const BlockInfo = types.BlockInfo;

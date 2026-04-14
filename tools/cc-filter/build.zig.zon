@@ -9,5 +9,9 @@
         "src",
         "tests",
     },
-    .dependencies = .{},
+    .dependencies = .{
+        .zig_util = .{
+            .path = "../zig-util",
+        },
+    },
 }

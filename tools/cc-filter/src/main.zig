@@ -58,7 +58,6 @@ test {
     _ = @import("hook.zig");
     _ = @import("stream.zig");
     _ = @import("rewrite.zig");
-    _ = @import("json_util.zig");
     _ = @import("line_filter.zig");
     _ = @import("filters/cargo_test.zig");
     _ = @import("filters/rspec.zig");

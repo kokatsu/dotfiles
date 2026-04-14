@@ -1,6 +1,6 @@
 const std = @import("std");
 const rewrite = @import("rewrite.zig");
-const ju = @import("json_util.zig");
+const ju = @import("zig_util").json;
 
 const MAX_INPUT: usize = 1024 * 1024;
 

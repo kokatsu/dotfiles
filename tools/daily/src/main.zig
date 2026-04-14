@@ -2,7 +2,7 @@ const std = @import("std");
 const mem = std.mem;
 const fs = std.fs;
 const posix = std.posix;
-const zig_time = @import("zig_time");
+const zig_time = @import("zig_util").time;
 
 // ============================================================
 // Constants
@@ -170,8 +170,9 @@ fn showHelp() void {
 // Local time
 // ============================================================
 
+// Zig の {d:0>4} は i32 正値に '+' を prefix するため u32 にキャストして吸収する
 const LocalTime = struct {
-    year: u16,
+    year: u32,
     month: u8,
     day: u8,
     hour: u8,
@@ -183,38 +184,14 @@ fn getLocalTime(allocator: std.mem.Allocator) LocalTime {
     const now_s = std.time.timestamp();
     const offset = zig_time.getUtcOffsetSeconds(allocator, now_s);
     const local_s = now_s + @as(i64, offset);
-    return epochToLocal(local_s);
-}
-
-fn epochToLocal(epoch_s: i64) LocalTime {
-    var days = @divFloor(epoch_s, 86400);
-    var rem = @mod(epoch_s, 86400);
-
-    const hour: u8 = @intCast(@divFloor(rem, 3600));
-    rem = @mod(rem, 3600);
-    const minute: u8 = @intCast(@divFloor(rem, 60));
-    const second: u8 = @intCast(@mod(rem, 60));
-
-    // Civil date from days since 1970-01-01 (Howard Hinnant algorithm)
-    days += 719468;
-    const era: i64 = @divFloor(if (days >= 0) days else days - 146096, 146097);
-    const doe: u32 = @intCast(days - era * 146097);
-    const yoe: u32 = @intCast(@divFloor(doe -| @as(u32, @intCast(@divFloor(doe, 1460))) +| @as(u32, @intCast(@divFloor(doe, 36524))) -| @as(u32, @intCast(@divFloor(doe, 146096))), 365));
-    const y: i64 = @as(i64, yoe) + era * 400;
-    const doy: u32 = doe - (365 * yoe + yoe / 4 - yoe / 100);
-    const mp: u32 = (5 * doy + 2) / 153;
-    const d: u8 = @intCast(doy - (153 * mp + 2) / 5 + 1);
-    const m_raw: u32 = if (mp < 10) mp + 3 else mp - 9;
-    const m: u8 = @intCast(m_raw);
-    const year_adj: i64 = if (m <= 2) y + 1 else y;
-
+    const civil = zig_time.epochToCivil(local_s);
     return .{
-        .year = @intCast(year_adj),
-        .month = m,
-        .day = d,
-        .hour = hour,
-        .minute = minute,
-        .second = second,
+        .year = @intCast(civil.year),
+        .month = civil.month,
+        .day = civil.day,
+        .hour = civil.hour,
+        .minute = civil.minute,
+        .second = civil.second,
     };
 }
 
@@ -510,46 +487,6 @@ fn mainImpl() !void {
 // ============================================================
 // Tests
 // ============================================================
-
-test "epochToLocal: Unix epoch" {
-    const lt = epochToLocal(0);
-    try std.testing.expectEqual(@as(u16, 1970), lt.year);
-    try std.testing.expectEqual(@as(u8, 1), lt.month);
-    try std.testing.expectEqual(@as(u8, 1), lt.day);
-    try std.testing.expectEqual(@as(u8, 0), lt.hour);
-    try std.testing.expectEqual(@as(u8, 0), lt.minute);
-    try std.testing.expectEqual(@as(u8, 0), lt.second);
-}
-
-test "epochToLocal: known date 2025-06-15T12:30:45Z" {
-    // 2025-06-15T12:30:45Z
-    const days = 20254; // days from 1970-01-01 to 2025-06-15
-    const seconds = days * 86400 + 12 * 3600 + 30 * 60 + 45;
-    const lt = epochToLocal(seconds);
-    try std.testing.expectEqual(@as(u16, 2025), lt.year);
-    try std.testing.expectEqual(@as(u8, 6), lt.month);
-    try std.testing.expectEqual(@as(u8, 15), lt.day);
-    try std.testing.expectEqual(@as(u8, 12), lt.hour);
-    try std.testing.expectEqual(@as(u8, 30), lt.minute);
-    try std.testing.expectEqual(@as(u8, 45), lt.second);
-}
-
-test "epochToLocal: leap year Feb 29" {
-    // 2024-02-29T00:00:00Z
-    const days = 19782; // days from 1970-01-01 to 2024-02-29
-    const lt = epochToLocal(days * 86400);
-    try std.testing.expectEqual(@as(u16, 2024), lt.year);
-    try std.testing.expectEqual(@as(u8, 2), lt.month);
-    try std.testing.expectEqual(@as(u8, 29), lt.day);
-}
-
-test "epochToLocal: year 2000 boundary" {
-    // 2000-01-01T00:00:00Z = 10957 days after epoch
-    const lt = epochToLocal(10957 * 86400);
-    try std.testing.expectEqual(@as(u16, 2000), lt.year);
-    try std.testing.expectEqual(@as(u8, 1), lt.month);
-    try std.testing.expectEqual(@as(u8, 1), lt.day);
-}
 
 test "parseArgs: no args → open_editor" {
     const alloc = std.testing.allocator;
