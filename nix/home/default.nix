@@ -75,6 +75,8 @@ in {
         TAPLO_CONFIG = "${config.xdg.configHome}/taplo/taplo.toml";
         CATPPUCCIN_VIVID_THEME = "catppuccin-${config.catppuccin.flavor}";
         CC_STATUSLINE_THEME = "catppuccin-${config.catppuccin.flavor}";
+        CATPPUCCIN_NVIM_FLAVOR = config.catppuccin.flavor;
+        CATPPUCCIN_NVIM_LIGHT_FLAVOR = "latte";
         # Playwright ブラウザパス (Nix管理)
         PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";

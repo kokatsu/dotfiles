@@ -8,14 +8,14 @@ gui:
   wrapMainPanel: true
   theme:
     activeBorderColor:
-      - blue
+      - "__ACTIVE_BORDER__"
       - bold
     inactiveBorderColor:
-      - white
+      - "__INACTIVE_BORDER__"
     selectedLineBgColor:
-      - blue
+      - "__SELECTED_BG__"
     optionsTextColor:
-      - blue
+      - "__OPTIONS_TEXT__"
 
 logs:
   timestamps: true

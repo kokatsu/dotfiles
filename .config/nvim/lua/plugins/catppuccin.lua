@@ -1,12 +1,15 @@
 -- https://github.com/catppuccin/nvim
 
+local flavour = vim.env.CATPPUCCIN_NVIM_FLAVOR or 'mocha'
+local light_flavour = vim.env.CATPPUCCIN_NVIM_LIGHT_FLAVOR or 'latte'
+
 return {
   'catppuccin/nvim',
   name = 'catppuccin',
   priority = 1000,
   opts = {
-    flavour = 'mocha',
-    background = { light = 'latte', dark = 'mocha' },
+    flavour = flavour,
+    background = { light = light_flavour, dark = flavour },
     transparent_background = true,
     float = { transparent = true, solid = false },
     dim_inactive = {

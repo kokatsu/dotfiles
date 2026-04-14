@@ -260,16 +260,10 @@ zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-wezterm-*.sh(Nom[1]
 # zoxide (https://github.com/ajeetdsouza/zoxide)
 # ------------------------------------------------------------------------------
 
-export _ZO_FZF_OPTS='
---no-sort --height 75% --reverse --margin=0,1 --exit-0 --select-1
---prompt="❯ "
---color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8
---color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc
---color=marker:#b4befe,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8
---color=selected-bg:#45475a
---color=border:#6c7086,label:#cdd6f4
---preview "([[ -e '{2..}/README.md' ]] && bat --color=always --style=numbers --line-range=:50 '{2..}/README.md') || eza --color=always --group-directories-first --oneline {2..}"
-'
+# Catppuccin パレット由来の色は Nix 生成ファイル側で管理 ($ZDOTDIR/catppuccin-colors.zsh)
+[[ -f "$ZDOTDIR/catppuccin-colors.zsh" ]] && source "$ZDOTDIR/catppuccin-colors.zsh"
+
+export _ZO_FZF_OPTS="--no-sort --height 75% --reverse --margin=0,1 --exit-0 --select-1 --prompt=\"❯ \" ${FZF_CATPPUCCIN_COLORS} --preview \"([[ -e '{2..}/README.md' ]] && bat --color=always --style=numbers --line-range=:50 '{2..}/README.md') || eza --color=always --group-directories-first --oneline {2..}\""
 zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-zoxide-*.sh(Nom[1])); [[ -n $f ]] && source $f || _evalcache zoxide init zsh; }'
 
 # 全遅延タスク完了後に1回だけpromptを再描画

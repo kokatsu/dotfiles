@@ -76,7 +76,37 @@ in {
       ".takt/pieces".source = ../../.config/takt/pieces;
       ".config/cmux/settings.json".source = ../../.config/cmux/settings.json;
       ".config/delta".source = ../../.config/delta;
-      ".config/fastfetch".source = ../../.config/fastfetch;
+      ".config/fastfetch/config.jsonc".text = let
+        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+        rgb = c: "${toString c.rgb.r};${toString c.rgb.g};${toString c.rgb.b}";
+        staticContent = builtins.readFile ../../.config/fastfetch/config.static.jsonc;
+      in
+        builtins.replaceStrings
+        [
+          "__RED_RGB__"
+          "__BLUE_RGB__"
+          "__YELLOW_RGB__"
+          "__MAUVE_RGB__"
+          "__GREEN_RGB__"
+          "__PINK_RGB__"
+          "__SKY_RGB__"
+          "__PEACH_RGB__"
+          "__LAVENDER_RGB__"
+          "__TEAL_RGB__"
+        ]
+        [
+          (rgb p.red)
+          (rgb p.blue)
+          (rgb p.yellow)
+          (rgb p.mauve)
+          (rgb p.green)
+          (rgb p.pink)
+          (rgb p.sky)
+          (rgb p.peach)
+          (rgb p.lavender)
+          (rgb p.teal)
+        ]
+        staticContent;
       ".config/fresh/config.json".text = let
         names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
       in
@@ -368,11 +398,33 @@ in {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
         force = true;
       };
-      ".config/octorus/config.toml".source = ../../.config/octorus/config.toml;
-      ".config/octorus/themes/Catppuccin Mocha.tmTheme".source = ../../.config/bat/themes + "/Catppuccin Mocha.tmTheme";
+      ".config/octorus/config.toml".text = let
+        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+        staticContent = builtins.readFile ../../.config/octorus/config.static.toml;
+      in
+        builtins.replaceStrings ["__CATPPUCCIN_THEME__"] [names.spaced] staticContent;
+      ".config/octorus/themes/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).spaced}.tmTheme".source =
+        ../../.config/bat/themes + "/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).spaced}.tmTheme";
       ".config/bulletty/feeds.opml".source = ../../.config/bulletty/feeds.opml;
       ".config/biome".source = ../../.config/biome;
-      ".config/lazydocker".source = ../../.config/lazydocker;
+      ".config/lazydocker/config.yml".text = let
+        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+        staticContent = builtins.readFile ../../.config/lazydocker/config.static.yml;
+      in
+        builtins.replaceStrings
+        [
+          "__ACTIVE_BORDER__"
+          "__INACTIVE_BORDER__"
+          "__SELECTED_BG__"
+          "__OPTIONS_TEXT__"
+        ]
+        [
+          p.blue.hex
+          p.overlay0.hex
+          p.surface0.hex
+          p.blue.hex
+        ]
+        staticContent;
       ".config/taplo".source = ../../.config/taplo;
       ".config/termframe".source = ../../.config/termframe;
       # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
