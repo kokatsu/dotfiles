@@ -4,7 +4,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const zig_time = b.dependency("zig_time", .{}).module("zig_time");
+    const zig_util = b.dependency("zig_util", .{}).module("zig_util");
 
     const exe = b.addExecutable(.{
         .name = "daily",
@@ -14,7 +14,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
             .link_libc = false,
             .imports = &.{
-                .{ .name = "zig_time", .module = zig_time },
+                .{ .name = "zig_util", .module = zig_util },
             },
         }),
     });

@@ -1,5 +1,5 @@
 const std = @import("std");
-const zig_time = @import("zig_time");
+const zig_time = @import("zig_util").time;
 
 pub const daysFromCivil = zig_time.daysFromCivil;
 
@@ -88,7 +88,7 @@ test "parseDecimal overflow" {
 }
 
 test "daysFromCivil re-export smoke test" {
-    // Full coverage lives in zig-time; this just guards the re-export.
+    // Full coverage lives in zig-util.time; this just guards the re-export.
     try std.testing.expectEqual(@as(i64, 0), daysFromCivil(1970, 1, 1));
 }
 

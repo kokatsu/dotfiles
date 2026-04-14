@@ -6,7 +6,7 @@ const output = @import("output.zig");
 const scan = @import("scan.zig");
 const time = @import("time.zig");
 const types = @import("types.zig");
-const ju = @import("json_util.zig");
+const ju = @import("zig_util").json;
 
 const StdinInfo = types.StdinInfo;
 const RateLimitWindow = types.RateLimitWindow;
@@ -416,5 +416,4 @@ test {
     _ = scan;
     _ = time;
     _ = @import("pricing.zig");
-    _ = @import("json_util.zig");
 }

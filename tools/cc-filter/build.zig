@@ -4,6 +4,8 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const zig_util = b.dependency("zig_util", .{}).module("zig_util");
+
     const exe = b.addExecutable(.{
         .name = "cc-filter",
         .root_module = b.createModule(.{
@@ -11,6 +13,9 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .link_libc = false,
+            .imports = &.{
+                .{ .name = "zig_util", .module = zig_util },
+            },
         }),
     });
 

@@ -9,8 +9,8 @@
         "src",
     },
     .dependencies = .{
-        .zig_time = .{
-            .path = "../zig-time",
+        .zig_util = .{
+            .path = "../zig-util",
         },
     },
 }
