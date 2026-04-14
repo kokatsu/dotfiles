@@ -1,7 +1,7 @@
 editor = "nvim"
 
 [diff]
-theme = "Catppuccin Mocha"
+theme = "__CATPPUCCIN_THEME__"
 bg_color = true
 tab_width = 4
 

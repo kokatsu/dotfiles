@@ -37,6 +37,14 @@
     file = {
       "${config.xdg.configHome}/zsh/.zshrc".source = ../../../.config/zsh/.zshrc;
       "${config.xdg.configHome}/zsh/.zimrc".source = ../../../.config/zsh/.zimrc;
+
+      # Catppuccin palette 由来の色変数 (fzf / zoxide 等で利用)
+      "${config.xdg.configHome}/zsh/catppuccin-colors.zsh".text = let
+        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+      in ''
+        # Generated from catppuccin.flavor = ${config.catppuccin.flavor}
+        export FZF_CATPPUCCIN_COLORS="--color=bg+:${p.surface0.hex},bg:${p.base.hex},spinner:${p.rosewater.hex},hl:${p.red.hex} --color=fg:${p.text.hex},header:${p.red.hex},info:${p.mauve.hex},pointer:${p.rosewater.hex} --color=marker:${p.lavender.hex},fg+:${p.text.hex},prompt:${p.mauve.hex},hl+:${p.red.hex} --color=selected-bg:${p.surface1.hex} --color=border:${p.overlay0.hex},label:${p.text.hex}"
+      '';
       "${config.xdg.configHome}/zsh/functions.zsh".source = ../../../.config/zsh/functions.zsh;
       "${config.xdg.configHome}/zeno/config.ts".source = ../../../.config/zeno/config.ts;
       "${config.xdg.configHome}/zsh/darwin.zsh".source = ../../../.config/zsh/darwin.zsh;
