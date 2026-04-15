@@ -17,6 +17,7 @@ in {
     ./files.nix
     ./activation.nix
     ./programs/bat.nix
+    ./programs/broot.nix
     ./programs/btop.nix
     ./programs/eza.nix
     ./programs/fzf.nix

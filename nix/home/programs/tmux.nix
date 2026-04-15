@@ -244,6 +244,16 @@ in {
       bind -n M-v display-popup -E -w 80% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-prompt-edit.sh"
 
       # ------------------------------------------------------------------------------
+      # Claude Code: Path Picker (Alt+c: fzf / Alt+g: broot)
+      # 選択したパスを @path 形式で Claude Code に送信する
+      # - fzf: ファジー検索、Tab で複数選択
+      # - broot: ツリー + あいまい絞込、Ctrl+p で選択確定
+      # ------------------------------------------------------------------------------
+
+      bind -n M-c display-popup -E -d "#{pane_current_path}" -w 80% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-path-pick-fzf.sh"
+      bind -n M-g display-popup -E -d "#{pane_current_path}" -w 90% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-path-pick-broot.sh"
+
+      # ------------------------------------------------------------------------------
       # Octorus: Rally History Browser (Alt+h)
       # ------------------------------------------------------------------------------
 
@@ -280,13 +290,25 @@ in {
     '';
   };
 
-  home.file.".config/tmux/scripts/claude-prompt-edit.sh" = {
-    source = ../../../.config/tmux/scripts/claude-prompt-edit.sh;
-    executable = true;
-  };
+  home.file = {
+    ".config/tmux/scripts/claude-prompt-edit.sh" = {
+      source = ../../../.config/tmux/scripts/claude-prompt-edit.sh;
+      executable = true;
+    };
 
-  home.file.".config/tmux/scripts/octorus-history.sh" = {
-    source = ../../../.config/tmux/scripts/octorus-history.sh;
-    executable = true;
+    ".config/tmux/scripts/octorus-history.sh" = {
+      source = ../../../.config/tmux/scripts/octorus-history.sh;
+      executable = true;
+    };
+
+    ".config/tmux/scripts/claude-path-pick-fzf.sh" = {
+      source = ../../../.config/tmux/scripts/claude-path-pick-fzf.sh;
+      executable = true;
+    };
+
+    ".config/tmux/scripts/claude-path-pick-broot.sh" = {
+      source = ../../../.config/tmux/scripts/claude-path-pick-broot.sh;
+      executable = true;
+    };
   };
 }
