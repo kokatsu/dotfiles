@@ -52,7 +52,9 @@ in {
       # https://github.com/pnpm/pnpm
       pnpm # 高速 Node.js パッケージマネージャ
       # https://github.com/python/cpython
-      (python3.withPackages (ps:
+      # nixpkgs-unstable の ibis-framework 12.0.0 がビルド失敗するため stable から取得
+      # (optuna → plotly → narwhals → ibis-framework の依存チェーン)
+      (stablePkgs.python3.withPackages (ps:
         with ps; [
           # https://github.com/optuna/optuna
           optuna # ハイパーパラメータ最適化フレームワーク
