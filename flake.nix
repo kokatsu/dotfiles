@@ -80,6 +80,7 @@
       customOverlays.cc-statusline
       customOverlays.cc-filter
       customOverlays.daily
+      customOverlays.memo
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
       customOverlays.dcd
