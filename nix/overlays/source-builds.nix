@@ -111,4 +111,12 @@ in {
       extraBuildPhase = zigUtilSymlink;
     };
   };
+
+  memo = _final: prev: {
+    memo = mkZigTool prev {
+      pname = "memo";
+      src = ../../tools/memo;
+      extraBuildPhase = zigUtilSymlink;
+    };
+  };
 }
