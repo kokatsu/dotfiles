@@ -30,7 +30,7 @@ config.use_dead_keys = false
 config.use_fancy_tab_bar = false
 config.use_ime = true
 config.window_decorations = 'RESIZE'
-config.hide_tab_bar_if_only_one_tab = true
+config.hide_tab_bar_if_only_one_tab = false
 
 -- https://stackoverflow.com/questions/78738575/how-to-maximize-wezterm-on-startup
 wezterm.on('gui-startup', function(cmd)
