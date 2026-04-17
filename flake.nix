@@ -23,6 +23,11 @@
     };
 
     catppuccin.url = "github:catppuccin/nix";
+
+    cli-tools = {
+      url = "github:kokatsu/cli-tools";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -73,14 +78,11 @@
     stablePkgsFor = system: nixpkgs-stable.legacyPackages.${system};
 
     # カスタムオーバーレイ
-    customOverlays = import ./nix/overlays;
+    customOverlays = import ./nix/overlays {inherit inputs;};
 
     # 共通オーバーレイ (全プラットフォーム)
     commonOverlays = [
-      customOverlays.cc-statusline
-      customOverlays.cc-filter
-      customOverlays.daily
-      customOverlays.memo
+      customOverlays.cli-tools
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
       customOverlays.dcd

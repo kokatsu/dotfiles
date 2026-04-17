@@ -26,7 +26,6 @@ Files vendored from or embedding hex values derived from
 | `.config/delta/catppuccin.gitconfig` | [catppuccin/delta](https://github.com/catppuccin/delta) |
 | `.config/lazygit/catppuccin-mocha-blue.yml` | [catppuccin/lazygit](https://github.com/catppuccin/lazygit) |
 | `nix/home/catppuccin-palette.nix` | [catppuccin/palette](https://github.com/catppuccin/palette) |
-| `tools/cc-statusline/src/output.zig` (color values in `theme_catppuccin_*`) | [catppuccin/palette](https://github.com/catppuccin/palette) |
 
 ```text
 MIT License
