@@ -4,7 +4,6 @@ lua_dirs := ".config/nvim .config/wezterm"
 sh_files := ".config/claude/file-suggestion.sh .config/claude/hooks/run-deno-hook.sh .config/tmux/scripts/*.sh scripts/test-hash-patterns.sh"
 deno_dirs := "karabiner-config scripts .config/claude/hooks"
 deno_files := "bin/mermaid-render.ts .config/zeno/config.ts .config/claude/scripts/cc-metrics.ts"
-zig_dirs := "tools/cc-statusline tools/cc-filter tools/daily tools/zig-util tools/memo"
 
 # List available recipes
 default:
@@ -128,24 +127,3 @@ typos-fix:
 # Test Neovim custom plugins (smoke test)
 nvim-test:
     nvim --headless --clean -l scripts/test-nvim-config.lua
-
-# Build Zig projects
-zig-build:
-    @for dir in {{ zig_dirs }}; do \
-      echo "zig build: $dir"; \
-      (cd "$dir" && zig build); \
-    done
-
-# Check Zig projects (build without emitting binaries)
-zig-check:
-    @for dir in {{ zig_dirs }}; do \
-      echo "zig check: $dir"; \
-      (cd "$dir" && zig build -Doptimize=Debug 2>&1); \
-    done
-
-# Test Zig projects
-zig-test:
-    @for dir in {{ zig_dirs }}; do \
-      echo "zig build test: $dir"; \
-      (cd "$dir" && zig build test); \
-    done
