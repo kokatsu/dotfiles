@@ -170,10 +170,23 @@ fn parseJsonlContent(allocator: std.mem.Allocator, dedup_alloc: std.mem.Allocato
             break :blk mem.eql(u8, s, "fast");
         } else false;
 
+        // Prefer nested `cache_creation` object when present (splits 5m vs 1h writes).
+        // Fallback to the aggregate `cache_creation_input_tokens` (treated as 5m) for
+        // older transcripts that predate the nested breakdown.
+        var cc_5m: i64 = 0;
+        var cc_1h: i64 = 0;
+        if (getObjField(uobj, "cache_creation")) |cc| {
+            cc_5m = getI64Field(cc, "ephemeral_5m_input_tokens");
+            cc_1h = getI64Field(cc, "ephemeral_1h_input_tokens");
+        } else {
+            cc_5m = getI64Field(uobj, "cache_creation_input_tokens");
+        }
+
         const usage = TokenUsage{
             .input_tokens = getI64Field(uobj, "input_tokens"),
             .output_tokens = getI64Field(uobj, "output_tokens"),
-            .cache_creation_input_tokens = getI64Field(uobj, "cache_creation_input_tokens"),
+            .cache_creation_5m_input_tokens = cc_5m,
+            .cache_creation_1h_input_tokens = cc_1h,
             .cache_read_input_tokens = getI64Field(uobj, "cache_read_input_tokens"),
             .is_fast = is_fast,
         };
