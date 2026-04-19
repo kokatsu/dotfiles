@@ -26,18 +26,14 @@
         };
       }
       // (
+        # "binary": single prebuilt binary, no unpack
+        # "tar":    tar archive (.tar.gz / .tar.xz) unpacked by stdenv default;
+        #           caller sets sourceRoot / extraAttrs as needed
         if format == "binary"
         then {dontUnpack = true;}
-        else if format == "tgz"
-        then {
-          unpackPhase = ''
-            runHook preUnpack
-            mkdir -p source
-            tar -xzf $src -C source --strip-components=1
-            runHook postUnpack
-          '';
-        }
-        else {}
+        else if format == "tar"
+        then {}
+        else throw "mkBinaryRelease: unknown format \"${format}\" (expected \"binary\" or \"tar\")"
       )
       // {
         installPhase = ''
