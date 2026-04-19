@@ -1,43 +1,4 @@
 {
-  # playwright-cli - Playwright CLI for coding agents
-  # Uses custom package.json to bundle @playwright/cli
-  # Renovate: datasource=npm depName=@playwright/cli
-  playwright-cli = _final: prev: let
-    version = "0.1.2";
-    packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/playwright-cli/package.json);
-    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/playwright-cli/package-lock.json);
-  in {
-    playwright-cli = prev.buildNpmPackage {
-      pname = "playwright-cli";
-      inherit version;
-
-      src = prev.runCommand "playwright-cli-src" {} ''
-        mkdir -p $out
-        cp ${packageJson} $out/package.json
-        cp ${packageLock} $out/package-lock.json
-      '';
-
-      npmDepsHash = "sha256-AdLk5KzZygwnf4KgdAvbn513C91zizVdfoBx4XgTj54=";
-
-      dontNpmBuild = true;
-
-      nativeBuildInputs = [prev.makeWrapper];
-
-      postInstall = ''
-        mkdir -p $out/bin
-        makeWrapper ${prev.nodejs}/bin/node $out/bin/playwright-cli \
-          --add-flags "$out/lib/node_modules/playwright-cli-wrapper/node_modules/@playwright/cli/playwright-cli.js"
-      '';
-
-      meta = with prev.lib; {
-        description = "Playwright CLI for coding agents";
-        homepage = "https://github.com/microsoft/playwright-cli";
-        license = licenses.asl20;
-        mainProgram = "playwright-cli";
-      };
-    };
-  };
-
   # unocss-language-server - UnoCSS LSP
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=unocss-language-server
@@ -68,43 +29,6 @@
         homepage = "https://github.com/xna00/unocss-language-server";
         license = licenses.mit;
         mainProgram = "unocss-language-server";
-      };
-    };
-  };
-
-  # takt - AI Agent orchestration framework
-  # Uses pre-built package from npm with vendored package-lock.json
-  # Renovate: datasource=npm depName=takt
-  takt = _final: prev: let
-    version = "0.33.2";
-    tarball = prev.fetchurl {
-      url = "https://registry.npmjs.org/takt/-/takt-${version}.tgz";
-      hash = "sha256-/Kpi9VMLVu/I2rs2SVgE/aeKdj88Fd+kYXfIAGQq3+8=";
-    };
-    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/takt/package-lock.json);
-  in {
-    takt = prev.buildNpmPackage {
-      pname = "takt";
-      inherit version;
-
-      src = prev.runCommand "takt-src" {} ''
-        mkdir -p $out
-        tar -xzf ${tarball} -C $out --strip-components=1
-        cp ${packageLock} $out/package-lock.json
-        # esbuild CORS脆弱性対策: devDep経由の古いesbuildを>=0.25.0に強制更新
-        ${prev.jq}/bin/jq '.overrides.esbuild = ">=0.25.0"' $out/package.json > $out/package.json.tmp
-        mv $out/package.json.tmp $out/package.json
-      '';
-
-      npmDepsHash = "sha256-p0lwEhTt5wgPHpsmEEBatiEVVq1HpYNmE/6fIsZXIW8=";
-
-      dontNpmBuild = true;
-
-      meta = with prev.lib; {
-        description = "AI Agent orchestration framework";
-        homepage = "https://github.com/nrslib/takt";
-        license = licenses.mit;
-        mainProgram = "takt";
       };
     };
   };

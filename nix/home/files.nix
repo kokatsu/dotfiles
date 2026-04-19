@@ -71,9 +71,6 @@ in {
       # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
       ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
 
-      # takt (XDG未対応のため ~/.takt/ にシンボリンク)
-      ".takt/config.yaml".source = ../../.config/takt/config.yaml;
-      ".takt/pieces".source = ../../.config/takt/pieces;
       ".config/cmux/settings.json".source = ../../.config/cmux/settings.json;
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch/config.jsonc".text = let

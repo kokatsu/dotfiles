@@ -66,8 +66,7 @@ in {
 
       #--- Playwright (ブラウザ自動化) ---#
       # https://github.com/microsoft/playwright
-      playwright-cli # coding agents 用 CLI (overlay)
-      playwright-driver # Nix 管理のブラウザバイナリ
+      playwright-driver # Nix 管理のブラウザバイナリ (agent-browser 用)
 
       #####################################
       # CLIツール
@@ -236,8 +235,6 @@ in {
       selene # Lua linter
       # https://github.com/lunarmodules/luacheck
       luaPackages.luacheck # Lua linter (.luacheckrc 用)
-      # https://github.com/nrslib/takt
-      takt # AI Agent オーケストレーション (overlay)
       # https://github.com/textlint/textlint
       (pkgs.symlinkJoin {
         name = "textlint-with-rules";

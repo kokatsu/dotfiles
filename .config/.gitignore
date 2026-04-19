@@ -89,10 +89,6 @@
 !pg/
 !pg/**
 
-# takt (https://github.com/nrslib/takt)
-!takt/
-!takt/**
-
 # taplo (https://github.com/tamasfe/taplo)
 !taplo/
 !taplo/**
