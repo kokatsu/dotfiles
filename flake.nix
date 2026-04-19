@@ -94,7 +94,6 @@
       customOverlays.termframe
       customOverlays.unocss-language-server
       customOverlays.vue-language-server-pin
-      customOverlays.win32yank
       customOverlays.x-api-playground
     ];
 
@@ -111,7 +110,7 @@
             ++ (
               if isDarwin
               then darwinOnlyOverlays
-              else []
+              else linuxOnlyOverlays
             );
         };
         modules = [./nix/home catppuccin.homeModules.catppuccin];
@@ -129,6 +128,11 @@
       customOverlays.cava-darwin-fix
       customOverlays.jp2a-darwin-fix
       customOverlays.ldc-darwin-fix
+    ];
+
+    # Linux専用オーバーレイ (WSL等)
+    linuxOnlyOverlays = [
+      customOverlays.win32yank
     ];
   in {
     # macOS (nix-darwin + home-manager)
@@ -172,7 +176,7 @@
             ++ (
               if isCurrentDarwin
               then darwinOnlyOverlays
-              else []
+              else linuxOnlyOverlays
             );
         };
         modules = [./nix/home catppuccin.homeModules.catppuccin];
