@@ -85,6 +85,27 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }octorus $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q '\bdcd\b\|DCD'; then
+            echo "has_dcd=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*DCD" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_dcd=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }dcd $VERSION"
+          fi
+
+          if echo "$DIFF" | grep -q 'rgx'; then
+            echo "has_rgx_cli=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*rgx" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_rgx_cli=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }rgx-cli $VERSION"
+          fi
+
+          if echo "$DIFF" | grep -q 'win32yank'; then
+            echo "has_win32yank=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=.*win32yank" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            echo "version_win32yank=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }win32yank $VERSION"
+          fi
+
           if echo "$DIFF" | grep -q 'x-api-playground'; then
             echo "has_x_api_playground=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*playground" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -251,6 +272,51 @@ jobs:
             sed -i "/octorus = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
+      - name: Update dcd hashes
+        if: steps.detect.outputs.has_dcd == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_dcd }}
+        run: |
+          OVERLAY="nix/overlays/binary-releases.nix"
+
+          # Compute hashes for each platform
+          for platform in "osx-aarch64:aarch64-darwin" "osx-x86_64:x86_64-darwin" \
+                          "linux-aarch64:aarch64-linux" "linux-x86_64:x86_64-linux"; do
+            PLAT_NAME="${platform%%:*}"
+            NIX_SYSTEM="${platform##*:}"
+            URL="https://github.com/dlang-community/DCD/releases/download/v${VERSION}/dcd-v${VERSION}-${PLAT_NAME}.tar.gz"
+            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            sed -i "/dcd = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+          done
+
+      - name: Update rgx-cli hashes
+        if: steps.detect.outputs.has_rgx_cli == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_rgx_cli }}
+        run: |
+          OVERLAY="nix/overlays/binary-releases.nix"
+
+          # Compute hashes for each platform
+          for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
+                          "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
+            PLAT_NAME="${platform%%:*}"
+            NIX_SYSTEM="${platform##*:}"
+            URL="https://github.com/brevity1swos/rgx/releases/download/v${VERSION}/rgx-cli-${PLAT_NAME}.tar.xz"
+            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            sed -i "/rgx-cli = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
+          done
+
+      - name: Update win32yank hashes
+        if: steps.detect.outputs.has_win32yank == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_win32yank }}
+        run: |
+          OVERLAY="nix/overlays/standalone.nix"
+          URL="https://github.com/equalsraf/win32yank/releases/download/v${VERSION}/win32yank-x64.zip"
+          # fetchzip uses unpacked hash (--unpack)
+          HASH=$(nix-prefetch-url --unpack --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+          sed -i "/win32yank = _final: prev:/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${HASH}\";|}" "$OVERLAY"
+
       - name: Update x-api-playground hashes
         if: steps.detect.outputs.has_x_api_playground == 'true'
         env:
@@ -342,6 +408,20 @@ jobs:
           for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
             verify_hash "octorus" "https://github.com/ushironoko/octorus/releases/download/v${VER}/octorus-${VER}-${PLAT}.tar.gz" "$SYS" "$BINARY"
+          done
+
+          # dcd
+          VER=$(sed -n '/dcd = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
+          for p in "osx-aarch64:aarch64-darwin" "osx-x86_64:x86_64-darwin" "linux-aarch64:aarch64-linux" "linux-x86_64:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "dcd" "https://github.com/dlang-community/DCD/releases/download/v${VER}/dcd-v${VER}-${PLAT}.tar.gz" "$SYS" "$BINARY"
+          done
+
+          # rgx-cli
+          VER=$(sed -n '/rgx-cli = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
+          for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
+            PLAT="${p%%:*}"; SYS="${p##*:}"
+            verify_hash "rgx-cli" "https://github.com/brevity1swos/rgx/releases/download/v${VER}/rgx-cli-${PLAT}.tar.xz" "$SYS" "$BINARY"
           done
 
           # claude-code
