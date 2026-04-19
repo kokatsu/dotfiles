@@ -71,13 +71,6 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }unocss-language-server $VERSION"
           fi
 
-          if echo "$DIFF" | grep -q 'playwright-cli\|@playwright/cli'; then
-            echo "has_playwright_cli=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=@playwright/cli" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            echo "version_playwright_cli=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }playwright-cli $VERSION"
-          fi
-
           if echo "$DIFF" | grep -q 'kakehashi'; then
             echo "has_kakehashi=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*kakehashi" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -97,13 +90,6 @@ jobs:
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*playground" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             echo "version_x_api_playground=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }x-api-playground $VERSION"
-          fi
-
-          if echo "$DIFF" | grep -q 'takt'; then
-            echo "has_takt=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=takt" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            echo "version_takt=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }takt $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'claude-code'; then
@@ -182,31 +168,6 @@ jobs:
 
       # === NPM packages with buildNpmPackage ===
 
-      - name: Update playwright-cli hashes
-        if: steps.detect.outputs.has_playwright_cli == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_playwright_cli }}
-        run: |
-          OVERLAY="nix/overlays/npm-packages.nix"
-          LOCK_DIR="nix/npm-locks/playwright-cli"
-
-          # Update version in custom package.json (playwright-cli-wrapper)
-          # This package.json bundles @playwright/cli
-          cd "$LOCK_DIR"
-          jq --arg v "$VERSION" '
-            .version = $v |
-            .dependencies["@playwright/cli"] = $v
-          ' package.json > package.json.tmp && mv package.json.tmp package.json
-
-          # Regenerate package-lock.json from custom package.json
-          rm -f package-lock.json
-          npm install --package-lock-only --ignore-scripts
-          cd "$GITHUB_WORKSPACE"
-
-          # Compute npmDepsHash using prefetch-npm-deps
-          NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
-          sed -i "/playwright-cli = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
-
       - name: Update unocss-language-server hashes
         if: steps.detect.outputs.has_unocss_language_server == 'true'
         env:
@@ -231,33 +192,6 @@ jobs:
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
           sed -i "/unocss-language-server = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
-
-      - name: Update takt hashes
-        if: steps.detect.outputs.has_takt == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_takt }}
-        run: |
-          OVERLAY="nix/overlays/npm-packages.nix"
-          LOCK_DIR="nix/npm-locks/takt"
-
-          # Update tarball hash
-          URL="https://registry.npmjs.org/takt/-/takt-${VERSION}.tgz"
-          TARBALL_HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-          sed -i "/takt = _final: prev: let/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${TARBALL_HASH}\";|}" "$OVERLAY"
-
-          # Regenerate package-lock.json
-          mkdir -p /tmp/takt-pkg
-          curl -fsSL "$URL" | tar -xzf - -C /tmp/takt-pkg --strip-components=1
-          cd /tmp/takt-pkg
-          # esbuild CORS脆弱性対策: devDep経由の古いesbuildを>=0.25.0に強制更新
-          jq '.overrides.esbuild = ">=0.25.0"' package.json > package.json.tmp && mv package.json.tmp package.json
-          npm install --package-lock-only --ignore-scripts
-          cp package-lock.json "$GITHUB_WORKSPACE/$LOCK_DIR/"
-          cd "$GITHUB_WORKSPACE"
-
-          # Compute npmDepsHash using prefetch-npm-deps
-          NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
-          sed -i "/takt = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update cssmodules-language-server hashes
         if: steps.detect.outputs.has_cssmodules_language_server == 'true'

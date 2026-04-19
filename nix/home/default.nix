@@ -86,19 +86,11 @@ in {
           if config.catppuccin.flavor == "latte"
           then "light"
           else "dark";
-        # Playwright ブラウザパス (Nix管理)
-        PLAYWRIGHT_BROWSERS_PATH = "${pkgs.playwright-driver.browsers}";
-        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
       }
       // lib.optionalAttrs isDarwin {
         # LDC (D言語コンパイラ) とNix clang-wrapperの互換性のため
         # arm64-apple-darwinトリプルを指定してcc-wrapperとの不一致警告を回避
         DFLAGS = "-mtriple=arm64-apple-darwin";
-      }
-      // lib.optionalAttrs (!isDarwin) {
-        # playwright-cli (MCP) がChromeを見つけるためのパス
-        # Nix管理のGoogle ChromeはLinuxの標準パス (/opt/google/chrome/chrome) にないため必要
-        PLAYWRIGHT_MCP_EXECUTABLE_PATH = "${pkgs.google-chrome}/bin/google-chrome-stable";
       };
   };
 
