@@ -74,9 +74,6 @@ in {
         CODEX_HOME = "${config.xdg.configHome}/codex";
         TERMFRAME_CONFIG = "${config.xdg.configHome}/termframe/config.toml";
         TAPLO_CONFIG = "${config.xdg.configHome}/taplo/taplo.toml";
-        # Nix 版 bun/node で npm プレビルト native モジュール (sharp 等) が libstdc++.so.6
-        # を解決できない問題の回避。`nix profile add nixpkgs#stdenv.cc.cc.lib` で導入
-        LD_LIBRARY_PATH = "${config.home.homeDirectory}/.nix-profile/lib";
         CATPPUCCIN_VIVID_THEME = "catppuccin-${config.catppuccin.flavor}";
         CC_STATUSLINE_THEME = "catppuccin-${config.catppuccin.flavor}";
         CATPPUCCIN_NVIM_FLAVOR = config.catppuccin.flavor;
@@ -91,6 +88,11 @@ in {
         # LDC (D言語コンパイラ) とNix clang-wrapperの互換性のため
         # arm64-apple-darwinトリプルを指定してcc-wrapperとの不一致警告を回避
         DFLAGS = "-mtriple=arm64-apple-darwin";
+      }
+      // lib.optionalAttrs (!isDarwin) {
+        # Nix 版 bun/node で npm プレビルト native モジュール (sharp 等) が
+        # libstdc++.so.6 を解決できない問題の回避 (Linux のみ)
+        LD_LIBRARY_PATH = lib.makeLibraryPath [pkgs.stdenv.cc.cc.lib];
       };
   };
 
