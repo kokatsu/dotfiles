@@ -41,7 +41,8 @@
     forkedSrc = prev.fetchFromGitHub {
       owner = "kokatsu";
       repo = "git-graph";
-      rev = "perf/optimize-graph-construction";
+      # branch: perf/optimize-graph-construction
+      rev = "2781f5305c8d46c6dda0e7c71d4238954887f5d9";
       hash = "sha256-i1E6Rxc+LqEetSqlhrHciybm+DQIAYeJfzWGO87G5+I=";
     };
   in {
