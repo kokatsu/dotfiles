@@ -107,7 +107,7 @@ export default defineConfig(({ env }) => {
       name: "darwin-rebuild",
       keyword: "rebuild",
       snippet:
-        "sudo HOSTNAME=$(hostname -s) darwin-rebuild switch --flake ~/workspace/dotfiles --impure",
+        "sudo HOSTNAME=$(hostname -s) darwin-rebuild switch --flake . --impure",
     });
   }
 
