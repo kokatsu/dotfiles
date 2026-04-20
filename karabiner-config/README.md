@@ -5,27 +5,18 @@ Karabiner-Elements の設定管理。
 
 ## 使い方
 
-```bash
-# 設定をビルドして適用
-deno task build
+`karabiner.ts` を編集したら `home-manager switch` (macOS なら
+`darwin-rebuild switch`) で `~/.config/karabiner/karabiner.json`
+に自動反映される。 activation script が deno 実行と初回スタブ作成を担当する
+([nix/home/activation.nix](../nix/home/activation.nix) の
+`buildKarabinerConfig`)。
 
-# ドライラン（JSON を確認）
+## ドライラン
+
+適用せずに生成 JSON を確認したい場合:
+
+```bash
 deno task dry-run
-```
-
-## 初回セットアップ
-
-`~/.config/karabiner/karabiner.json` が存在しない場合、以下を実行:
-
-```bash
-mkdir -p ~/.config/karabiner
-cat > ~/.config/karabiner/karabiner.json << 'EOF'
-{
-  "global": {},
-  "profiles": [{ "name": "Default", "selected": true }]
-}
-EOF
-deno task build
 ```
 
 ## 設定内容

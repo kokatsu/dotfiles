@@ -134,11 +134,20 @@ in {
       CMUX_EOF
     ''));
 
-    # Karabiner-Elements: 設定ディレクトリを作成 (macOS only)
-    # karabiner.json は karabiner.ts (TypeScript) で生成
-    ensureKarabinerDir = lib.mkIf isDarwin (
+    # Karabiner-Elements: karabiner.ts から karabiner.json を生成 (macOS only)
+    # writeToProfile() は ~/.config/karabiner/karabiner.json の既存プロファイルを上書きするため、
+    # 未作成ならスタブを配置してから deno を実行する
+    buildKarabinerConfig = lib.mkIf isDarwin (
       lib.hm.dag.entryAfter ["writeBoundary"] ''
-        $DRY_RUN_CMD mkdir -p "${config.home.homeDirectory}/.config/karabiner"
+        KARABINER_DIR="${config.home.homeDirectory}/.config/karabiner"
+        $DRY_RUN_CMD mkdir -p "$KARABINER_DIR"
+        if [ ! -f "$KARABINER_DIR/karabiner.json" ]; then
+          $DRY_RUN_CMD tee "$KARABINER_DIR/karabiner.json" > /dev/null <<< '{"global":{},"profiles":[{"name":"Default","selected":true}]}'
+        fi
+        $DRY_RUN_CMD ${pkgs.deno}/bin/deno run \
+          --config "${validDotfilesDir}/karabiner-config/deno.json" \
+          --allow-env --allow-read --allow-write \
+          "${validDotfilesDir}/karabiner-config/karabiner.ts"
       ''
     );
   };
