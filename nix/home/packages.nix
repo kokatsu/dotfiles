@@ -11,10 +11,6 @@
   inherit (pkgs.stdenv.hostPlatform) system;
 
   # ユーザースクリプトのラッパー (bin/ 内の Deno/Bun スクリプトを短い名前で実行)
-  mmd = pkgs.writeShellScriptBin "mmd" ''
-    exec ${pkgs.deno}/bin/deno run --allow-read --allow-write "''${DOTFILES_DIR:-${dotfilesDir}}/bin/mermaid-render.ts" "$@"
-  '';
-
   cc-metrics = pkgs.writeShellScriptBin "cc-metrics" ''
     exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${CLAUDE_CONFIG_DIR:-''${HOME}/.config/claude},''${HOME}/.claude,''${HOME}/.config/claude" --allow-env=HOME,CLAUDE_CONFIG_DIR "''${HOME}/.config/claude/scripts/cc-metrics.ts" "$@"
   '';
@@ -116,6 +112,8 @@ in {
       just # コマンドランナー
       # https://github.com/jqlang/jq
       jq # JSON プロセッサ
+      # https://github.com/mikefarah/yq
+      yq-go # YAML/JSON/XML プロセッサ (yq コマンド)
       # https://github.com/johnkerl/miller
       miller # CSV/JSON処理
       # https://github.com/jesseduffield/lazydocker
@@ -353,7 +351,6 @@ in {
 
       # https://github.com/denoland/deno
       deno # JavaScript/TypeScript ランタイム (trybuild tests fail on aarch64-darwin)
-      mmd # Mermaid図レンダラー (bin/mermaid-render.ts) — depends on deno
       cc-metrics # スキル・インストラクション統合メトリクス表示 — depends on deno
 
       #--- D言語ツール ---#

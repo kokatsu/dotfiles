@@ -6,7 +6,6 @@
       "!karabiner-config",
       "!scripts/*.ts",
       "!.claude",
-      "!bin/mermaid-render.ts",
       "!.config/zeno",
       "!.config/claude/scripts",
       "!.config/claude/hooks"
