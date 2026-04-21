@@ -338,6 +338,21 @@ do
   end, { desc = "Open yesterday's daily note" })
 end
 
+-- ターミナルバッファでは重い表示系を無効化して描画を軽くする
+vim.api.nvim_create_autocmd('TermOpen', {
+  callback = function(ev)
+    vim.wo.number = false
+    vim.wo.relativenumber = false
+    vim.wo.signcolumn = 'no'
+    vim.wo.foldcolumn = '0'
+    vim.wo.scrolloff = 0
+    vim.wo.sidescrolloff = 0
+    vim.b[ev.buf].snacks_scroll = false
+    vim.b[ev.buf].snacks_indent = false
+    vim.b[ev.buf].snacks_words = false
+  end,
+})
+
 -- :quit時に特殊ウィンドウ(quickfix, help等)だけが残る場合は一括で閉じる
 -- https://zenn.dev/vim_jp/articles/ff6cd224fab0c7
 vim.api.nvim_create_autocmd('QuitPre', {

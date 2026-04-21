@@ -3,7 +3,10 @@ local M = {}
 
 M.opts = {
   win = {
-    position = 'bottom',
+    position = 'float',
+    border = 'rounded',
+    width = 0.8,
+    height = 0.8,
   },
   keys = {
     term_normal = {
