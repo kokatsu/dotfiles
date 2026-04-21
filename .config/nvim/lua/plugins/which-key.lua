@@ -9,6 +9,7 @@ return {
       -- Leader groups
       { '<leader>c', group = 'code' },
       { '<leader>g', group = 'git' },
+      { '<leader>o', group = 'octo (github)' },
       { '<leader>r', group = 'refactor' },
       { '<leader>t', group = 'typescript' },
       { '<leader>x', group = 'diagnostics' },

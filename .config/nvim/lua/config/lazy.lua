@@ -42,6 +42,7 @@ require('lazy').setup({
     require('plugins.nvim-lint'),
     require('plugins.nvim-lspconfig'),
     require('plugins.nvim-treesitter'),
+    require('plugins.octo'),
     require('plugins.peek'),
     require('plugins.pkl-neovim'),
     require('plugins.rustaceanvim'),

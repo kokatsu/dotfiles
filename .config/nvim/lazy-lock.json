@@ -18,10 +18,11 @@
   "nvim-autopairs": { "branch": "master", "commit": "59bce2eef357189c3305e25bc6dd2d138c1683f5" },
   "nvim-colorizer.lua": { "branch": "master", "commit": "5cfe7fffbd01e17b3c1e14af85d5febdef88bd8c" },
   "nvim-lint": { "branch": "master", "commit": "eab58b48eb11d7745c11c505e0f3057165902461" },
-  "nvim-lspconfig": { "branch": "master", "commit": "4b7fbaa239c5db6b36f424a4521ca9f1a401be33" },
+  "nvim-lspconfig": { "branch": "master", "commit": "e05fb8c3bd61d909dacff24f77f23beb644daf54" },
   "nvim-notify": { "branch": "master", "commit": "8701bece920b38ea289b457f902e2ad184131a5d" },
   "nvim-treesitter": { "branch": "main", "commit": "4916d6592ede8c07973490d9322f187e07dfefac" },
   "nvim-web-devicons": { "branch": "master", "commit": "c72328a5494b4502947a022fe69c0c47e53b6aa6" },
+  "octo.nvim": { "branch": "master", "commit": "0384ae6b308725d29e735b02c5797e46edee52d0" },
   "peek.nvim": { "branch": "fix/deprecated-nvim-api", "commit": "d3b586b85efc6e0051a012405cc65b51cb25c0a5" },
   "pkl-neovim": { "branch": "main", "commit": "bdc3dbbbd134992a8d5ff4d0668d8baa40d396ab" },
   "plenary.nvim": { "branch": "master", "commit": "74b06c6c75e4eeb3108ec01852001636d85a932b" },
@@ -29,6 +30,6 @@
   "snacks.nvim": { "branch": "main", "commit": "ad9ede6a9cddf16cedbd31b8932d6dcdee9b716e" },
   "trouble.nvim": { "branch": "main", "commit": "bd67efe408d4816e25e8491cc5ad4088e708a69a" },
   "typescript-tools.nvim": { "branch": "feat/tsserver-plugins-location-languages", "commit": "8a7ceb16042125a55f2d07e15d4d59a66add19e0" },
-  "wezterm-types": { "branch": "main", "commit": "ffbef01037fa2a60415c67b8926921a5dcadd63d" },
+  "wezterm-types": { "branch": "main", "commit": "643d19e6244527cda2bd4696c477bc8df4758af8" },
   "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" }
 }
