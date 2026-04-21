@@ -12,6 +12,9 @@
 !skills/
 !skills/**
 
+!commands/
+!commands/**
+
 !.gitignore
 !.CLAUDE.md
 !file-suggestion.sh
