@@ -82,6 +82,20 @@ return {
       desc = 'Grep (No Regex)',
     },
     {
+      '<leader>sr',
+      function()
+        Snacks.picker.resume()
+      end,
+      desc = 'Resume Last Picker',
+    },
+    {
+      '<leader>sg',
+      function()
+        Snacks.picker.resume({ source = 'grep' })
+      end,
+      desc = 'Resume Grep',
+    },
+    {
       '<C-\\>',
       function()
         Snacks.lazygit()
