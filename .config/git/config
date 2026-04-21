@@ -1,8 +1,9 @@
 # 参考:
 #   - https://blog.gitbutler.com/how-git-core-devs-configure-git/
 
-[include]
-path = ../delta/catppuccin.gitconfig
+# difftastic 移行のため delta 連携を無効化 (戻す場合はコメント解除)
+# [include]
+# path = ../delta/catppuccin.gitconfig
 
 [include]
 path = ./config.local
@@ -18,11 +19,12 @@ cm = commit -m
 co = checkout
 cp = cherry-pick
 d = diff
-dd = "!f() { git diff \"$@\" | delta --side-by-side --paging=never; }; f"
+# difftastic 移行のため delta 連携 alias を無効化 (戻す場合はコメント解除)
+# dd = "!f() { git diff \"$@\" | delta --side-by-side --paging=never; }; f"
 ds = diff --staged
-dsd = "!f() { git diff --staged \"$@\" | delta --side-by-side --paging=never; }; f"
+# dsd = "!f() { git diff --staged \"$@\" | delta --side-by-side --paging=never; }; f"
 d1 = diff HEAD^
-d1d = "!f() { git diff HEAD^ \"$@\" | delta --side-by-side --paging=never; }; f"
+# d1d = "!f() { git diff HEAD^ \"$@\" | delta --side-by-side --paging=never; }; f"
 f = fetch origin
 fd = !git branch | fzf | xargs git checkout
 l = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph
@@ -101,20 +103,18 @@ quotepath = false
 untrackedCache = true
 # デフォルトのページャーをlessに設定する
 # pager = "less -+X -+F -+S --quit-if-one-screen -+G --no-init --raw-control-chars -K"
-# デフォルトのページャーをdeltaに設定する
-pager = delta
+# difftastic 移行のため delta を無効化 (戻す場合はコメント解除)
+# pager = delta
 
-[delta]
-# デフォルトのテーマをcatppuccin-mochaに設定する
-features = catppuccin-mocha
-# 異なるセクション間を移動するには、n と N を使用
-navigate = true
-# ダークモードを有効にする
-dark = true
-# deltaのページャーをlessに設定し、ベル音を抑制する
-pager = less --quiet
+# [delta]
+# features = catppuccin-mocha
+# navigate = true
+# dark = true
+# pager = less --quiet
 
 [diff]
+# 外部 diff ツールに difftastic を使用 (構文ベースの構造的 diff)
+external = difft
 # 差分を表示する際、差分アルゴリズムをhistogramに設定する
 algorithm = histogram
 # コードの移動を検出し、色付けして表示する
@@ -141,8 +141,8 @@ autocorrect = prompt
 defaultBranch = main
 
 [interactive]
-# インタラクティブなコマンドで差分を表示する際、deltaを使用する
-diffFilter = delta
+# difftastic 移行のため delta 連携を無効化 (difftastic はフィルタ非対応, 戻す場合はコメント解除)
+# diffFilter = delta
 
 [pull]
 # プルのデフォルト動作をrebaseに設定し、リモートリポジトリからデータを取得する際、リベースを有効にする

@@ -92,6 +92,8 @@ in {
       keychain # SSH/GPG エージェント管理
       # https://github.com/duckdb/duckdb
       duckdb # OLAP DB
+      # https://github.com/Wilfred/difftastic
+      difftastic # 構文を理解する構造的 diff (tree-sitter ベース, difft)
       # https://github.com/bootandy/dust
       dust # ディスク使用量可視化 (du alternative)
       # https://github.com/fastfetch-cli/fastfetch

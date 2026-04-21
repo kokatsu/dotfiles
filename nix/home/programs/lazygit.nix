@@ -20,7 +20,10 @@ _: {
         autoRefresh = true;
         branchLogCmd = "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --";
         pagers = [
-          {pager = "delta --dark --paging=never";}
+          # difftastic 移行のため delta 連携を無効化 (戻す場合はコメント解除)
+          # {pager = "delta --dark --paging=never";}
+          # git config の diff.external = difft を流用 (.gitattributes でファイル型別設定も可)
+          {useExternalDiffGitConfig = true;}
         ];
       };
       os = {
