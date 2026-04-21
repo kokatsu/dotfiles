@@ -2,7 +2,7 @@
 # CC_STATUSLINE_THEME は nix/home/default.nix の sessionVariables で flavor 連動
 {inputs}: {
   cli-tools = _final: prev: let
-    cliToolsPkgs = inputs.cli-tools.packages.${prev.system};
+    cliToolsPkgs = inputs.cli-tools.packages.${prev.stdenv.hostPlatform.system};
   in {
     inherit (cliToolsPkgs) cc-filter cc-statusline daily memo;
   };
