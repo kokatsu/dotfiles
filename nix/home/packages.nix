@@ -81,6 +81,8 @@ in {
       github-copilot-cli # GitHub Copilot CLI
       # https://github.com/crocidb/bulletty
       bulletty # TUI RSS/Atom フィードリーダー
+      # https://github.com/carapace-sh/carapace-bin
+      carapace # マルチシェル補完エンジン (carapace-bin)
       # https://github.com/hpjansson/chafa
       chafa # 画像→テキスト
       # https://github.com/curl/curl

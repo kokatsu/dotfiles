@@ -159,6 +159,15 @@ setopt no_beep
 # EDITOR, BAT_CONFIG_DIR は home.sessionVariables で管理
 
 # ------------------------------------------------------------------------------
+# Carapace (https://github.com/carapace-sh/carapace-bin)
+# ------------------------------------------------------------------------------
+
+# マルチシェル補完。Zim の completion モジュール (compinit) より後に初期化するため
+# zsh-defer キュー末尾に追加。CARAPACE_BRIDGES は補完実行時に参照されるので export
+export CARAPACE_BRIDGES="zsh,bash"
+zsh-defer -a +1 +2 -c '_evalcache carapace _carapace zsh'
+
+# ------------------------------------------------------------------------------
 # Cargo (https://github.com/rust-lang/cargo)
 # ------------------------------------------------------------------------------
 
