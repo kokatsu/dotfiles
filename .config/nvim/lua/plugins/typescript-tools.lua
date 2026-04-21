@@ -84,8 +84,12 @@ return {
         return
       end
 
-      -- Only start if package.json or tsconfig.json exists
+      -- Only start if package.json or tsconfig.json exists,
+      -- and skip when a Deno project marker is present (denols handles it)
       local root = vim.fs.root(bufnr, { 'package.json', 'tsconfig.json', 'jsconfig.json' })
+      if not root or vim.fs.root(bufnr, { 'deno.json', 'deno.jsonc' }) then
+        return
+      end
       on_dir(root)
     end,
   },
