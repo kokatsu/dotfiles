@@ -184,6 +184,14 @@ vim.keymap.set('n', 'z', function()
   end
 end, { desc = 'Cycle scroll after zz / normal z commands' })
 
+-- カーソル下のコメント/選択範囲を英語→日本語翻訳してフロート表示
+vim.keymap.set('n', '<leader>tr', function()
+  require('utils.translate').translate_comment()
+end, { desc = 'Translate comment under cursor' })
+vim.keymap.set('v', '<leader>tr', function()
+  require('utils.translate').translate_visual()
+end, { desc = 'Translate visual selection' })
+
 vim.keymap.set('n', '<leader>yp', function()
   local absolute_path = vim.fn.expand('%:p')
 

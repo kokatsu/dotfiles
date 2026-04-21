@@ -148,6 +148,8 @@ in {
       tree # ディレクトリツリー表示
       # https://github.com/tree-sitter/tree-sitter
       tree-sitter # Treesitter CLI (nvim-treesitter パーサービルド用)
+      # https://github.com/soimort/translate-shell
+      translate-shell # 多言語翻訳 CLI (trans)
       # https://github.com/sharkdp/vivid
       vivid # LS_COLORS ジェネレーター
       # https://infozip.sourceforge.net/UnZip.html
