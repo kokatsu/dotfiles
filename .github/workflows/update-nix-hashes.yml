@@ -9,16 +9,16 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: write
-  pull-requests: read
+permissions: {}
 
 jobs:
   update-hashes:
     name: Update hashes for Renovate PR
+    permissions:
+      contents: write
     # Only run for Renovate PRs from this repo (not forks) with expected branch naming
     if: >-
-      github.actor == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/')
+      github.event.pull_request.user.login == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -36,6 +36,16 @@ jobs:
       - name: Detect changed packages
         id: detect
         run: |
+          # Validate version strings to prevent shell injection via crafted overlay content.
+          # Allowed: digits, letters, dots, plus, underscore, hyphen (covers standard semver + pre-release).
+          validate_version() {
+            local name="$1" val="$2"
+            if ! [[ "$val" =~ ^[0-9a-zA-Z.+_-]+$ ]]; then
+              echo "::error::Invalid version format for $name: $val"
+              exit 1
+            fi
+          }
+
           # Get the diff to detect which packages were changed
           git fetch origin main
           DIFF=$(git diff origin/main -- nix/overlays/)
@@ -45,6 +55,7 @@ jobs:
           if echo "$DIFF" | grep -q 'termframe'; then
             echo "has_termframe=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*termframe" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "termframe" "$VERSION"
             echo "version_termframe=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }termframe $VERSION"
           fi
@@ -52,6 +63,7 @@ jobs:
           if echo "$DIFF" | grep -q 'deck'; then
             echo "has_deck=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*deck" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "deck" "$VERSION"
             echo "version_deck=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }deck $VERSION"
           fi
@@ -59,6 +71,7 @@ jobs:
           if echo "$DIFF" | grep -q 'cssmodules-language-server'; then
             echo "has_cssmodules_language_server=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*cssmodules-language-server" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "cssmodules-language-server" "$VERSION"
             echo "version_cssmodules_language_server=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }cssmodules-language-server $VERSION"
           fi
@@ -66,6 +79,7 @@ jobs:
           if echo "$DIFF" | grep -q 'unocss-language-server'; then
             echo "has_unocss_language_server=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*unocss-language-server" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "unocss-language-server" "$VERSION"
             echo "version_unocss_language_server=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }unocss-language-server $VERSION"
           fi
@@ -73,6 +87,7 @@ jobs:
           if echo "$DIFF" | grep -q 'kakehashi'; then
             echo "has_kakehashi=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*kakehashi" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "kakehashi" "$VERSION"
             echo "version_kakehashi=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }kakehashi $VERSION"
           fi
@@ -80,6 +95,7 @@ jobs:
           if echo "$DIFF" | grep -q 'octorus'; then
             echo "has_octorus=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*octorus" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "octorus" "$VERSION"
             echo "version_octorus=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }octorus $VERSION"
           fi
@@ -87,6 +103,7 @@ jobs:
           if echo "$DIFF" | grep -q '\bdcd\b\|DCD'; then
             echo "has_dcd=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*DCD" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "dcd" "$VERSION"
             echo "version_dcd=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }dcd $VERSION"
           fi
@@ -94,6 +111,7 @@ jobs:
           if echo "$DIFF" | grep -q 'rgx'; then
             echo "has_rgx_cli=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*rgx" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "rgx-cli" "$VERSION"
             echo "version_rgx_cli=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }rgx-cli $VERSION"
           fi
@@ -101,6 +119,7 @@ jobs:
           if echo "$DIFF" | grep -q 'win32yank'; then
             echo "has_win32yank=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*win32yank" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "win32yank" "$VERSION"
             echo "version_win32yank=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }win32yank $VERSION"
           fi
@@ -108,6 +127,7 @@ jobs:
           if echo "$DIFF" | grep -q 'x-api-playground'; then
             echo "has_x_api_playground=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*playground" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "x-api-playground" "$VERSION"
             echo "version_x_api_playground=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }x-api-playground $VERSION"
           fi
@@ -115,6 +135,7 @@ jobs:
           if echo "$DIFF" | grep -q 'claude-code'; then
             echo "has_claude_code=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=claude-code" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "claude-code" "$VERSION"
             echo "version_claude_code=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }claude-code $VERSION"
           fi
@@ -454,8 +475,10 @@ jobs:
   run-check:
     name: Run Check workflow
     needs: update-hashes
+    permissions:
+      contents: read
     if: >-
-      github.actor == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/')
+      github.event.pull_request.user.login == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/')
     uses: ./.github/workflows/check.yml
     with:
       ref: ${{ github.head_ref }}
