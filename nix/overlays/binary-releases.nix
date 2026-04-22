@@ -153,12 +153,12 @@ in {
   # Renovate: datasource=github-releases depName=brevity1swos/rgx
   rgx-cli = mkBinaryRelease rec {
     pname = "rgx-cli";
-    version = "0.10.2";
+    version = "0.12.1";
     hashes = {
-      "aarch64-darwin" = "sha256-svj9fPg99jO036JD8tRWFSvEm0fVdFJWHtnWCPqxWTk=";
-      "x86_64-darwin" = "sha256-yDD2RgV21fjIgf92LR38YaqR6lnQGEbNnv5CvewyoQ8=";
-      "aarch64-linux" = "sha256-CczwC0MDiiya6TmvY7+vVYi07Bu6HbyyzHIgHT76Oxc=";
-      "x86_64-linux" = "sha256-pbsmwYWaIonP3urHl2DPkkhjH2RxEgdpZ2E6Fvn69Z8=";
+      "aarch64-darwin" = "sha256-e4wC//IyZS2YwDQe5iPNABEtZJVZYwuDMgAFnKCsWXo=";
+      "x86_64-darwin" = "sha256-dSgJwotAZwrXBreQ0c6fILIzju4IaUngPfadEhESTSE=";
+      "aarch64-linux" = "sha256-ols5kOeKmTm2Z9YGhb3J468ow5RRxIabObHRkLnqEt0=";
+      "x86_64-linux" = "sha256-ZgjkDU7iwPpZjwuH9D1X/8IvQHIXk8UFCMNzt4D/ZA4=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
