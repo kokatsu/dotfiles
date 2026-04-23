@@ -10,7 +10,6 @@
   ignorePaths: [
     'nix/npm-locks/**',
   ],
-  commitBody: '[skip ci]',
   gitIgnoredAuthors: [
     'github-actions[bot]@users.noreply.github.com',
   ],
