@@ -87,6 +87,7 @@
       customOverlays.cssmodules-language-server
       customOverlays.dcd
       customOverlays.deck
+      customOverlays.direnv-no-check
       customOverlays.git-graph-fork
       customOverlays.kakehashi
       customOverlays.octorus
