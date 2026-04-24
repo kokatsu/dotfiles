@@ -36,6 +36,7 @@ require('lazy').setup({
     require('plugins.img-clip'),
     require('plugins.lazydev'),
     require('plugins.lualine'),
+    require('plugins.md-render'),
     require('plugins.mini'),
     require('plugins.noice'),
     require('plugins.nvim-autopairs'),
