@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<opml version="1.0">
+    <head>
+        <title>Generated from bulletty</title>
+        <url>https://github.com/CrociDB/bulletty</url>
+    </head>
+    <body>
+        <outline text="Forum" title="Forum">
+            <outline text="X Developers - Latest topics" title="X Developers - Latest topics" description="All new topics across the X (Twitter) Developers Community forum" xmlUrl="https://devcommunity.x.com/latest.rss" htmlUrl="https://devcommunity.x.com/" type="rss" />
+        </outline>
+    </body>
+</opml>
