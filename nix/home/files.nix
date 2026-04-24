@@ -407,6 +407,7 @@ in {
       ".config/octorus/themes/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).spaced}.tmTheme".source =
         ../../.config/bat/themes + "/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).spaced}.tmTheme";
       ".config/bulletty/feeds.opml".source = ../../.config/bulletty/feeds.opml;
+      ".config/bulletty/feeds-forum.opml".source = ../../.config/bulletty/feeds-forum.opml;
       ".config/biome".source = ../../.config/biome;
       ".config/lazydocker/config.yml".text = let
         p = config.catppuccinLib.palettes.${config.catppuccin.flavor};

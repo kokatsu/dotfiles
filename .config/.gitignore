@@ -16,7 +16,6 @@
 # bulletty (https://github.com/crocidb/bulletty)
 !bulletty/
 !bulletty/**
-bulletty/feeds-*.opml
 
 # Claude Code (https://github.com/anthropics/claude-code)
 !claude/
