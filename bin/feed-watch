@@ -8,7 +8,7 @@ set -euo pipefail
 #   feed-watch check          - 全フィードをチェックし status.json を更新
 #   feed-watch read [<name>]  - 指定フィード (または全フィード) を既読にする
 
-OPML_FILE="$HOME/.config/bulletty/feeds.opml"
+OPML_DIR="$HOME/.config/bulletty"
 
 # --- Windows 側の出力先を決定 ---
 get_status_dir() {
@@ -112,7 +112,18 @@ fetch_feed_ids() {
 
 # --- OPML パース: "name|xmlUrl|htmlUrl" 行を出力 ---
 parse_opml() {
-  grep 'xmlUrl=' "$OPML_FILE" | while IFS= read -r line; do
+  local files=()
+  local f
+  for f in "$OPML_DIR"/feeds*.opml; do
+    [[ -f "$f" ]] || continue
+    files+=("$f")
+  done
+
+  if [[ ${#files[@]} -eq 0 ]]; then
+    return
+  fi
+
+  grep -h 'xmlUrl=' "${files[@]}" | while IFS= read -r line; do
     local name xml_url html_url
     name=$(echo "$line" | grep -oP 'text="\K[^"]+')
     xml_url=$(echo "$line" | grep -oP 'xmlUrl="\K[^"]+')
@@ -125,8 +136,8 @@ parse_opml() {
 cmd_check() {
   ensure_status_file
 
-  if [[ ! -f "$OPML_FILE" ]]; then
-    echo "OPML file not found: $OPML_FILE" >&2
+  if ! compgen -G "$OPML_DIR/feeds*.opml" > /dev/null; then
+    echo "No OPML files matching $OPML_DIR/feeds*.opml" >&2
     exit 1
   fi
 
