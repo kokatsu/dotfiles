@@ -27,12 +27,11 @@
             https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
         fi
 
-        # .zimrc の宛先 (nix store path) が前回と変わった場合のみ install を走らせる。
+        # .zimrc の中身が前回と変わった場合のみ install を走らせる。
         # 毎回走らせると zsh 5.9 + macOS の SIGCHLD race で getoutput がハングしやすいため。
-        ZIMRC_TARGET=$(readlink "$ZIM_CONFIG_FILE" 2>/dev/null || echo "$ZIM_CONFIG_FILE")
-        LAST_TARGET_FILE="$ZIM_HOME/.last_zimrc_target"
-        LAST_TARGET=$(cat "$LAST_TARGET_FILE" 2>/dev/null || echo "")
-        if [ ! -e "$ZIM_HOME/init.zsh" ] || [ "$ZIMRC_TARGET" != "$LAST_TARGET" ]; then
+        # symlink 先 (store path) は中身が同じでも変わるので、内容で比較する。
+        LAST_ZIMRC="$ZIM_HOME/.last_zimrc"
+        if [ ! -e "$ZIM_HOME/init.zsh" ] || ! cmp -s "$ZIM_CONFIG_FILE" "$LAST_ZIMRC" 2>/dev/null; then
           if [ -n "$DRY_RUN_CMD" ]; then
             echo "$DRY_RUN_CMD ${pkgs.zsh}/bin/zsh -c 'source $ZIM_HOME/zimfw.zsh install'"
           else
@@ -40,10 +39,10 @@
               "ZIM_HOME='$ZIM_HOME' ZIM_CONFIG_FILE='$ZIM_CONFIG_FILE' source '$ZIM_HOME/zimfw.zsh' install" &
             ZIMFW_PID=$!
             # zsh 5.9 macOS の getoutput SIGCHLD race ワークアラウンド:
-            # ハングした waitforpid を SIGCHLD で起こし続ける
+            # ハングした waitforpid を SIGCHLD で起こし続ける (入れ子分早く起こすため短い間隔)
             (
               while kill -0 $ZIMFW_PID 2>/dev/null; do
-                sleep 1
+                sleep 0.2
                 pkill -CHLD -f "source.*zimfw\.zsh.*install" 2>/dev/null || true
               done
             ) &
@@ -51,7 +50,7 @@
             wait $ZIMFW_PID || true
             kill $WATCHDOG_PID 2>/dev/null || true
             wait $WATCHDOG_PID 2>/dev/null || true
-            echo "$ZIMRC_TARGET" > "$LAST_TARGET_FILE"
+            cp "$ZIM_CONFIG_FILE" "$LAST_ZIMRC"
           fi
         fi
       '';
