@@ -86,10 +86,6 @@
             "type": "command",
             "if": "Bash(gh api *)",
             "command": "~/.config/claude/hooks/gh-api-guard.sh"
-          },
-          {
-            "type": "command",
-            "command": "cc-filter hook"
           }
         ]
       },

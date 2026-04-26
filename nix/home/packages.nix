@@ -334,7 +334,6 @@ in {
 
       #--- CLI ツール (overlay) ---#
       cc-statusline # 高速 Claude Code statusline (Zig)
-      cc-filter # Claude Code Bash 出力圧縮フィルタ (Zig)
       daily # 日記メモツール (Zig)
       memo # タイムスタンプ付き単独メモツール (Zig)
 
