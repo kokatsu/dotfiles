@@ -35,8 +35,9 @@ return {
       ['<C-space>'] = { 'show', 'show_documentation', 'hide_documentation' },
       ['<Up>'] = { 'select_prev', 'fallback' },
       ['<Down>'] = { 'select_next', 'fallback' },
+      -- <Tab> is reserved for Copilot inline completion only.
+      -- blink.cmp menu is accepted with <C-y> (default preset).
       ['<Tab>'] = {
-        'accept',
         function()
           if
             vim.lsp.inline_completion.get({
