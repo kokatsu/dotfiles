@@ -11,4 +11,4 @@ local function toggle_checkbox()
   vim.api.nvim_set_current_line(line)
 end
 
-vim.keymap.set('n', '<leader>x', toggle_checkbox, { buffer = true, desc = 'Toggle checkbox' })
+vim.keymap.set('n', '<leader>tx', toggle_checkbox, { buffer = true, desc = 'Toggle checkbox' })
