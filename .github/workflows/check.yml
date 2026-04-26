@@ -3,8 +3,6 @@ name: Check
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_call:
     inputs:
       ref:
@@ -25,8 +23,6 @@ permissions:
 jobs:
   format:
     name: Format check
-    # Renovate PRの場合はUpdate Nix Hashesからのworkflow_callを待つ
-    if: github.actor != 'renovate[bot]' || inputs.ref != ''
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -43,7 +39,6 @@ jobs:
 
   hash-patterns:
     name: Hash update patterns
-    if: github.actor != 'renovate[bot]' || inputs.ref != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -59,7 +54,6 @@ jobs:
 
   npm-audit:
     name: npm audit
-    if: github.actor != 'renovate[bot]' || inputs.ref != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -81,7 +75,6 @@ jobs:
 
   build-linux:
     name: Build (Linux)
-    if: github.actor != 'renovate[bot]' || inputs.ref != ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -103,7 +96,6 @@ jobs:
 
   build-darwin:
     name: Build (macOS)
-    if: github.actor != 'renovate[bot]' || inputs.ref != ''
     runs-on: macos-latest
     timeout-minutes: 60
     steps:
