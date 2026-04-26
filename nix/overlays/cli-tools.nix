@@ -4,6 +4,6 @@
   cli-tools = _final: prev: let
     cliToolsPkgs = inputs.cli-tools.packages.${prev.stdenv.hostPlatform.system};
   in {
-    inherit (cliToolsPkgs) cc-filter cc-statusline daily memo;
+    inherit (cliToolsPkgs) cc-statusline daily memo;
   };
 }
