@@ -35,10 +35,10 @@ in {
     pname = "termframe";
     version = "0.8.4";
     hashes = {
-      "aarch64-darwin" = "sha256-/VIuBBdH+MDTRkFoy/0a1kmFWyIuEBGp9RNnU26YkXU=";
-      "x86_64-darwin" = "sha256-O4CGEP3IC8qhY9o9XyEee/wQE25eykUcaxyaSnNwkUs=";
-      "aarch64-linux" = "sha256-ErOVyg4HXTAjHIBYs13h5Fn3EJGiMZBKLvjXMTFC83I=";
-      "x86_64-linux" = "sha256-XGN10FwEEk06wtydfUvAXlccONtHxb+3A5PbIpongjw=";
+      "aarch64-darwin" = "sha256-l3FKDwozg/cZtGptWkngwyawUIIianSCT7RjuOqGx0U=";
+      "x86_64-darwin" = "sha256-cPEarNU4BluKTkFNlNloxCo9Y+K3xwer8+jhxYK4D40=";
+      "aarch64-linux" = "sha256-X2Ublw94nANEx21cjkBVu5UV06jdi8FzP/yYerwFfyM=";
+      "x86_64-linux" = "sha256-f23Q+SAiEdTQxFvpf9QQWLcJRK/0S0RP4y6wIH9nmGc=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-arm64";
