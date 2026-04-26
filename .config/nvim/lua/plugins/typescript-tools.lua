@@ -47,13 +47,13 @@ return {
     'vue',
   },
   keys = {
-    { '<leader>to', '<cmd>TSToolsOrganizeImports<cr>', desc = 'Organize imports' },
-    { '<leader>ta', '<cmd>TSToolsAddMissingImports<cr>', desc = 'Add missing imports' },
-    { '<leader>tr', '<cmd>TSToolsRemoveUnused<cr>', desc = 'Remove unused' },
-    { '<leader>tF', '<cmd>TSToolsFixAll<cr>', desc = 'Fix all' },
-    { '<leader>td', '<cmd>TSToolsGoToSourceDefinition<cr>', desc = 'Go to source definition' },
-    { '<leader>tR', '<cmd>TSToolsRenameFile<cr>', desc = 'Rename file' },
-    { '<leader>tf', '<cmd>TSToolsFileReferences<cr>', desc = 'File references' },
+    { '<leader>lo', '<cmd>TSToolsOrganizeImports<cr>', desc = 'Organize imports' },
+    { '<leader>la', '<cmd>TSToolsAddMissingImports<cr>', desc = 'Add missing imports' },
+    { '<leader>lu', '<cmd>TSToolsRemoveUnused<cr>', desc = 'Remove unused' },
+    { '<leader>lF', '<cmd>TSToolsFixAll<cr>', desc = 'Fix all' },
+    { '<leader>ld', '<cmd>TSToolsGoToSourceDefinition<cr>', desc = 'Go to source definition' },
+    { '<leader>lR', '<cmd>TSToolsRenameFile<cr>', desc = 'Rename file' },
+    { '<leader>lf', '<cmd>TSToolsFileReferences<cr>', desc = 'File references' },
   },
   opts = {
     -- Override default filetypes to fix checkhealth warnings

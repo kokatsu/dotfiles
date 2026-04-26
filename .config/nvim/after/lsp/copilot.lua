@@ -120,6 +120,14 @@ return {
           sign_out(bufnr, client)
         end, { desc = 'Sign out Copilot with GitHub' })
 
+        -- Sign-in / Sign-out keymaps (<leader>a* group)
+        vim.keymap.set('n', '<leader>ai', function()
+          sign_in(bufnr, client)
+        end, { buffer = bufnr, desc = 'Copilot sign in' })
+        vim.keymap.set('n', '<leader>ao', function()
+          sign_out(bufnr, client)
+        end, { buffer = bufnr, desc = 'Copilot sign out' })
+
         -- Enable inline completion for this buffer
         -- Accept is handled by <Tab> in blink.cmp keymap (lua/plugins/blink.lua)
         vim.lsp.inline_completion.enable(true, { bufnr = bufnr })

@@ -110,7 +110,7 @@ return {
       desc = 'Terminal',
     },
     {
-      '<leader>D',
+      '<leader>cD',
       function()
         Snacks.picker.diagnostics()
       end,

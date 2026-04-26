@@ -7,11 +7,12 @@ return {
     preset = 'helix',
     spec = {
       -- Leader groups
-      { '<leader>c', group = 'code' },
+      { '<leader>a', group = 'ai (copilot)' },
+      { '<leader>c', group = 'code/lsp' },
       { '<leader>g', group = 'git' },
+      { '<leader>l', group = 'language' },
       { '<leader>o', group = 'octo (github)' },
-      { '<leader>r', group = 'refactor' },
-      { '<leader>t', group = 'typescript' },
+      { '<leader>t', group = 'toggle' },
       { '<leader>x', group = 'diagnostics' },
       { '<leader>y', group = 'yank' },
       -- Navigation groups
