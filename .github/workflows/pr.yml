@@ -1,9 +1,8 @@
-name: Update Nix Hashes
+name: PR
 
 on:
   pull_request:
-    paths:
-      - nix/overlays/**/*.nix
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
@@ -472,13 +471,12 @@ jobs:
             git push
           fi
 
-  run-check:
-    name: Run Check workflow
+  check:
+    name: Check
     needs: update-hashes
     permissions:
       contents: read
-    if: >-
-      github.event.pull_request.user.login == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/')
+    if: always() && needs.update-hashes.result != 'failure' && needs.update-hashes.result != 'cancelled'
     uses: ./.github/workflows/check.yml
     with:
       ref: ${{ github.head_ref }}
