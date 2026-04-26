@@ -33,7 +33,7 @@ in {
   # Renovate: datasource=github-releases depName=pamburus/termframe
   termframe = mkBinaryRelease rec {
     pname = "termframe";
-    version = "0.8.3";
+    version = "0.8.4";
     hashes = {
       "aarch64-darwin" = "sha256-/VIuBBdH+MDTRkFoy/0a1kmFWyIuEBGp9RNnU26YkXU=";
       "x86_64-darwin" = "sha256-O4CGEP3IC8qhY9o9XyEee/wQE25eykUcaxyaSnNwkUs=";
