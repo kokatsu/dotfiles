@@ -11,13 +11,34 @@ concurrency:
 permissions: {}
 
 jobs:
+  detect-rerun:
+    name: Detect hash-update rerun
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      already_updated: ${{ steps.check.outputs.already_updated }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          MSG=$(gh api "repos/${REPO}/commits/${SHA}" --jq '.commit.message' | head -1)
+          if [[ "$MSG" == "fix: update nix hashes for"* ]]; then
+            echo "already_updated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "already_updated=false" >> "$GITHUB_OUTPUT"
+          fi
+
   update-hashes:
     name: Update hashes for Renovate PR
+    needs: detect-rerun
     permissions:
       contents: write
     # Only run for Renovate PRs from this repo (not forks) with expected branch naming
     if: >-
-      github.event.pull_request.user.login == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/')
+      github.event.pull_request.user.login == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/') && needs.detect-rerun.outputs.already_updated != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
