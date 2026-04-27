@@ -1,7 +1,17 @@
--- https://github.com/pwntester/octo.nvim
+-- Upstream: https://github.com/pwntester/octo.nvim
+-- Fork:     https://github.com/kokatsu/octo.nvim
+--
+-- Pinned to a personal fork branch that guards `M.load_buffer`'s async
+-- success callback against wiped buffers. Without it, snacks picker
+-- previews trigger `BufReadCmd` -> `load_buffer` for `octo://*` buffers,
+-- and the GraphQL response can return after the preview buffer is wiped,
+-- raising `Invalid buffer id` from `nvim_buf_call` (init.lua:111).
+-- Drop the `branch` line and switch back to `pwntester/octo.nvim` once
+-- the fix is merged upstream.
 
 return {
-  'pwntester/octo.nvim',
+  'kokatsu/octo.nvim',
+  branch = 'fix/load-buffer-invalid-bufnr',
   cmd = 'Octo',
   dependencies = {
     'nvim-lua/plenary.nvim',
