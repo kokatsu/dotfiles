@@ -30,8 +30,12 @@
     };
     taps = [
       "manaflow-ai/cmux"
+      "vjeantet/tap"
     ];
-    brews = [];
+    brews = [
+      # https://github.com/vjeantet/alerter
+      "vjeantet/tap/alerter" # macOS通知 (Apple Silicon対応、terminal-notifierの後継)
+    ];
     casks = [
       "clipy"
       "cmux"
