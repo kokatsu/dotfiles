@@ -44,6 +44,7 @@ If `wait` times out: proceed anyway — the page may still be usable.
 | Read article/docs text | `agent-browser eval "document.body.innerText"` | Blog posts, documentation, text-heavy pages. Most token-efficient |
 | Understand page structure | `agent-browser snapshot -c` | Need to see layout, navigation, or element refs for interaction |
 | Find interactive elements | `agent-browser snapshot -i -c` | Need to click links, buttons, or fill forms |
+| List links with URLs | `agent-browser snapshot -i -c -u` | Need link destinations (href) without an extra `get attribute` round-trip |
 
 For a typical single-article research, `eval "document.body.innerText"` is often sufficient. Use `snapshot` only when you need structure or element refs.
 
@@ -62,7 +63,7 @@ agent-browser click "@ref"     # dismiss the banner
 
 Then proceed with the chosen extraction method.
 
-**Stop here if you have enough information.** Steps 2–6 below are only needed for deeper investigation.
+**Stop here if you have enough information.** Steps 2–8 below are only needed for deeper investigation.
 
 ### 2. Get detailed content (if needed)
 
@@ -99,7 +100,30 @@ Scroll a specific element into view:
 agent-browser scrollintoview "@ref" && agent-browser snapshot -c
 ```
 
-### 4. Navigate to linked pages
+### 4. Observe network traffic (SPAs / API-heavy pages)
+
+When `eval` and `snapshot` cannot reveal dynamically loaded data, watch the underlying network calls to identify the real data source.
+
+Capture HAR while interacting with the page:
+
+```bash
+agent-browser network har start
+# perform navigation / scroll / clicks here
+agent-browser network har stop "/tmp/page.har"
+```
+
+Inspect requests inline (no HAR file needed):
+
+```bash
+agent-browser network requests --type xhr,fetch --status 2xx
+agent-browser network request <requestId>   # full request/response detail
+```
+
+Filter flags: `--type` (e.g. `xhr,fetch`, `document`, `script`), `--method` (e.g. `POST`), `--status` (e.g. `2xx`, `400-499`).
+
+Use this to locate the JSON endpoint behind a SPA list, then `WebFetch` the endpoint directly for the cleanest data extraction.
+
+### 5. Navigate to linked pages
 
 Click a link:
 
@@ -113,7 +137,7 @@ Go back:
 agent-browser back && agent-browser snapshot -c
 ```
 
-### 5. Research additional URLs
+### 6. Research additional URLs
 
 Use tabs to research multiple pages without losing previous context:
 
@@ -129,7 +153,7 @@ agent-browser tab <n>
 agent-browser tab close
 ```
 
-### 6. Save page as PDF (optional)
+### 7. Save page as PDF (optional)
 
 When the user requests a saved copy:
 
@@ -137,7 +161,7 @@ When the user requests a saved copy:
 agent-browser pdf "/path/to/output.pdf"
 ```
 
-### 7. Close when done
+### 8. Close when done
 
 ```bash
 agent-browser close
@@ -169,6 +193,7 @@ When researching multiple URLs or when the user requests it, save results to a f
 |------|-------------|
 | `-i`, `--interactive` | Show only interactive elements |
 | `-c`, `--compact` | Remove empty structural elements |
+| `-u`, `--urls` | Include `href` URLs for link elements |
 | `-d <n>`, `--depth <n>` | Limit DOM tree depth |
 | `-s <sel>`, `--selector <sel>` | Scope to CSS selector |
 
