@@ -56,6 +56,13 @@ return {
           i = { '@conditional.inner', '@loop.inner' },
         }),
       },
+      -- Neovim 0.12 のビルトイン `an`/`in` (treesitter 範囲拡大・縮小) と競合するため無効化
+      mappings = {
+        around_next = '',
+        inside_next = '',
+        around_last = '',
+        inside_last = '',
+      },
       -- 無効なテキストオブジェクトのエラーメッセージを抑制
       silent = true,
     })

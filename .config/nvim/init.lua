@@ -15,3 +15,5 @@ require('config.options')
 require('config.keymaps')
 require('config.autocmds')
 require('config.highlights')
+
+vim.cmd('packadd nvim.undotree')
