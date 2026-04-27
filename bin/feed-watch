@@ -45,12 +45,15 @@ ensure_status_file() {
 }
 
 # --- 共通: 新規エントリを数えて status を更新 ---
-# $1: status JSON, $2: フィード名, $3: IDs (改行区切り), $4: type (github|atom), $5: url
+# $1: status JSON, $2: フィード名, $3: IDs (改行区切り), $4: type (github|feed), $5: url, $6: category
 update_feed_status() {
-  local status="$1" name="$2" ids="$3" type="$4" url="$5"
+  local status="$1" name="$2" ids="$3" type="$4" url="$5" category="$6"
 
   if [[ -z "$ids" ]]; then
-    echo "$status"
+    # 既存エントリがあれば category だけ更新
+    echo "$status" | jq \
+      --arg name "$name" --arg category "$category" \
+      'if .feeds[$name] then .feeds[$name].category = $category else . end'
     return
   fi
 
@@ -63,16 +66,20 @@ update_feed_status() {
   local prev_unread
   prev_unread=$(echo "$status" | jq -r --arg name "$name" '.feeds[$name].unread_count // 0')
 
+  # 既存の last_summarized_id を保持 (上書きしない)
+  local prev_summarized
+  prev_summarized=$(echo "$status" | jq -r --arg name "$name" '.feeds[$name].last_summarized_id // ""')
+
   if [[ -z "$prev_id" ]]; then
     # 初回: 未読 0 で最新 ID を記録
     echo "$status" | jq \
-      --arg name "$name" --arg id "$latest_id" --arg type "$type" --arg url "$url" \
-      '.feeds[$name] = {"last_seen_id": $id, "unread_count": 0, "type": $type, "url": $url}'
+      --arg name "$name" --arg id "$latest_id" --arg type "$type" --arg url "$url" --arg category "$category" \
+      '.feeds[$name] = {"last_seen_id": $id, "unread_count": 0, "type": $type, "url": $url, "category": $category}'
   elif [[ "$prev_id" == "$latest_id" ]]; then
-    # 変更なし (url は常に最新化)
+    # 変更なし (url, category は常に最新化)
     echo "$status" | jq \
-      --arg name "$name" --arg url "$url" \
-      '.feeds[$name].url = $url'
+      --arg name "$name" --arg url "$url" --arg category "$category" \
+      '.feeds[$name].url = $url | .feeds[$name].category = $category'
   else
     # 新規エントリを数える
     local new_count=0
@@ -86,9 +93,11 @@ update_feed_status() {
     local total_unread=$(( prev_unread + new_count ))
 
     echo "$status" | jq \
-      --arg name "$name" --arg id "$latest_id" --arg type "$type" --arg url "$url" \
+      --arg name "$name" --arg id "$latest_id" --arg type "$type" --arg url "$url" --arg category "$category" \
+      --arg summarized "$prev_summarized" \
       --argjson count "$total_unread" \
-      '.feeds[$name] = {"last_seen_id": $id, "unread_count": $count, "type": $type, "url": $url}'
+      '.feeds[$name] = {"last_seen_id": $id, "unread_count": $count, "type": $type, "url": $url, "category": $category}
+      | if $summarized != "" then .feeds[$name].last_summarized_id = $summarized else . end'
   fi
 }
 
@@ -110,7 +119,7 @@ fetch_feed_ids() {
   echo "$content" | grep -oP '<guid[^>]*>\K[^<]+' || true
 }
 
-# --- OPML パース: "name|xmlUrl|htmlUrl" 行を出力 ---
+# --- OPML パース: "category|name|xmlUrl|htmlUrl" 行を出力 ---
 parse_opml() {
   local files=()
   local f
@@ -123,13 +132,33 @@ parse_opml() {
     return
   fi
 
-  grep -h 'xmlUrl=' "${files[@]}" | while IFS= read -r line; do
-    local name xml_url html_url
-    name=$(echo "$line" | grep -oP 'text="\K[^"]+')
-    xml_url=$(echo "$line" | grep -oP 'xmlUrl="\K[^"]+')
-    html_url=$(echo "$line" | grep -oP 'htmlUrl="\K[^"]+' || echo "$xml_url")
-    echo "${name}|${xml_url}|${html_url}"
-  done
+  awk '
+    function extract(attr, line,    pat, s, e) {
+      pat = attr "=\"[^\"]*\""
+      if (match(line, pat)) {
+        s = RSTART + length(attr) + 2
+        e = RLENGTH - length(attr) - 3
+        return substr(line, s, e)
+      }
+      return ""
+    }
+    /<outline/ && /xmlUrl=/ {
+      name = extract("text", $0)
+      xml_url = extract("xmlUrl", $0)
+      html_url = extract("htmlUrl", $0)
+      if (html_url == "") html_url = xml_url
+      print category "|" name "|" xml_url "|" html_url
+      next
+    }
+    /<outline/ && !/\/>/ {
+      t = extract("text", $0)
+      if (t != "") category = t
+    }
+    /<\/outline>/ {
+      # bulletty の OPML は 2 階層なので、閉じタグでカテゴリをリセットしても
+      # 次のカテゴリ outline で上書きされる。明示的なリセットは不要。
+    }
+  ' "${files[@]}"
 }
 
 # --- check サブコマンド ---
@@ -144,7 +173,7 @@ cmd_check() {
   local status
   status=$(cat "$STATUS_FILE")
 
-  while IFS='|' read -r name xml_url html_url; do
+  while IFS='|' read -r category name xml_url html_url; do
     local ids
 
     # GitHub フィード: gh api でコミットSHA を取得
@@ -154,13 +183,13 @@ cmd_check() {
         echo "Failed to fetch commits for $repo" >&2
         continue
       }
-      status=$(update_feed_status "$status" "$name" "$ids" "github" "$html_url")
+      status=$(update_feed_status "$status" "$name" "$ids" "github" "$html_url" "$category")
     else
       ids=$(fetch_feed_ids "$xml_url" 2>/dev/null) || {
         echo "Failed to fetch feed: $name" >&2
         continue
       }
-      status=$(update_feed_status "$status" "$name" "$ids" "feed" "$html_url")
+      status=$(update_feed_status "$status" "$name" "$ids" "feed" "$html_url" "$category")
     fi
   done < <(parse_opml)
 

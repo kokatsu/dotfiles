@@ -10,6 +10,7 @@
         </outline>
         <outline text="GitHub" title="GitHub">
             <outline text="Recent Commits to docs:main" title="Recent Commits to docs:main" description="Recent Commits to docs:main" xmlUrl="https://github.com/xdevplatform/docs/commits.atom" htmlUrl="https://github.com/xdevplatform/docs/commits" type="rss" />
+            <outline text="Claude Release Notes" title="Claude Release Notes" description="Claude Release Notes" xmlUrl="https://github.com/anthropics/claude-code/releases.atom" htmlUrl="https://github.com/anthropics/claude-code/releases" type="rss" />
         </outline>
         <outline text="Status" title="Status">
             <outline text="Graph API Status" title="Graph API Status" description="Status updates for Graph API" xmlUrl="https://metastatus.com/outage-events-feed-graph-api.rss" htmlUrl="https://metastatus.com/" type="rss" />
