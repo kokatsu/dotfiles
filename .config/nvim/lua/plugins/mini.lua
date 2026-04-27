@@ -4,7 +4,17 @@ return {
   'nvim-mini/mini.nvim',
   version = '*',
   config = function()
-    require('mini.surround').setup()
+    require('mini.surround').setup({
+      custom_surroundings = {
+        c = {
+          input = { '```%w*\n().-\n()```' },
+          output = function()
+            local lang = vim.fn.input('Language: ')
+            return { left = '```' .. lang .. '\n', right = '\n```' }
+          end,
+        },
+      },
+    })
 
     -- mini.pick: ファジーファインダー
     require('mini.pick').setup({
