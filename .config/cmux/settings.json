@@ -12,54 +12,112 @@
 
   "shortcuts": {
     "bindings": {
-      // App
+      // ============================================================
+      // App / Window
+      // ============================================================
+      // 設定ウィンドウを開く
       "openSettings": "ctrl+,",
+      // settings.json と Ghostty 設定を再読込(編集後の即時反映)
       "reloadConfiguration": "ctrl+shift+,",
+      // コマンドパレット(アクション検索)を開く
       "commandPalette": "ctrl+shift+p",
+      // 新規 cmux ウィンドウを開く
       "newWindow": "ctrl+shift+n",
+      // cmux を終了(warnBeforeQuit が true なら確認ダイアログ)
       "quit": "ctrl+q",
+      // 前回終了時のセッションを復元 (Chrome/WezTerm 慣習)
+      "reopenPreviousSession": "ctrl+shift+t",
 
-      // Workspaces
+      // ============================================================
+      // Workspaces / Sidebar
+      // ============================================================
+      // サイドバーの表示/非表示を切替
       "toggleSidebar": "ctrl+b",
+      // 新規ワークスペース(タブ)を作成
       "newTab": "ctrl+n",
+      // フォルダを選んでワークスペースを開く
       "openFolder": "ctrl+o",
+      // 現在のワークスペースを閉じる
       "closeWorkspace": "ctrl+shift+w",
+      // ワークスペース名を変更
       "renameWorkspace": "opt+r",
+      // 番号でワークスペース選択 (opt+1〜opt+9 系列のプレフィックス)
       "selectWorkspaceByNumber": "opt+1",
+      // ワークスペース切替の Quick Open
       "goToWorkspace": "ctrl+p",
+      // サイドバーの次のセクションへ
       "nextSidebarTab": "ctrl+opt+]",
+      // サイドバーの前のセクションへ
       "prevSidebarTab": "ctrl+opt+[",
 
-      // Surfaces (tabs) — 前後移動は Ghostty keybind (ctrl+tab/ctrl+shift+tab) で動作
+      // ============================================================
+      // Surfaces (tabs)
+      // 前後移動は Ghostty keybind (ctrl+tab/ctrl+shift+tab) で動作
+      // ============================================================
+      // 現在のワークスペース内に新規 surface を作成
       "newSurface": "ctrl+t",
+      // 現在の surface を閉じる
       "closeTab": "opt+w",
+      // 同ペイン内の他タブを閉じる
+      "closeOtherTabsInPane": "ctrl+opt+w",
+      // surface 名を変更
       "renameTab": "ctrl+shift+r",
 
+      // ============================================================
       // Split Panes
+      // ============================================================
+      // ペインを右に分割
       "splitRight": "ctrl+s",
+      // ペインを下に分割
       "splitDown": "ctrl+shift+s",
-      "focusLeft": "opt+\u2190",
-      "focusRight": "opt+\u2192",
-      "focusUp": "opt+\u2191",
-      "focusDown": "opt+\u2193",
+      // 左のペインへフォーカス移動 (opt+←)
+      "focusLeft": "opt+←",
+      // 右のペインへフォーカス移動 (opt+→)
+      "focusRight": "opt+→",
+      // 上のペインへフォーカス移動 (opt+↑)
+      "focusUp": "opt+↑",
+      // 下のペインへフォーカス移動 (opt+↓)
+      "focusDown": "opt+↓",
+      // 現在のペインを最大化/復元(tmux zoom 相当)
+      // 注: シェルの suspend (ctrl+z) と衝突する点に留意
       "toggleSplitZoom": "ctrl+z",
 
-      // Browser
+      // ============================================================
+      // Browser (内蔵ブラウザ)
+      // ============================================================
+      // 内蔵ブラウザパネルを開く
       "openBrowser": "ctrl+shift+l",
+      // 内蔵ブラウザのアドレスバーにフォーカス
       "focusBrowserAddressBar": "ctrl+l",
 
+      // ============================================================
       // Find
+      // ============================================================
+      // ターミナル内検索を開始
       "find": "ctrl+f",
+      // 次の検索結果へ
       "findNext": "ctrl+g",
+      // 前の検索結果へ
+      "findPrevious": "ctrl+shift+g",
+      // 検索バーを閉じる
       "hideFind": "ctrl+shift+f",
+      // 選択中のテキストを検索クエリに設定 (macOS の "Use Selection for Find")
       "useSelectionForFind": "ctrl+e",
 
+      // ============================================================
       // Notifications
+      // ============================================================
+      // 通知パネルを開く
       "showNotifications": "ctrl+i",
+      // 未読通知のあるワークスペースへジャンプ
       "jumpToUnread": "ctrl+shift+u",
 
+      // ============================================================
       // Misc
+      // ============================================================
+      // フルスクリーン切替
       "toggleFullScreen": "opt+f",
+      // ターミナルのコピーモード(スクロールバック内のキーボード選択)切替
       "toggleTerminalCopyMode": "ctrl+shift+x"
     }
   }

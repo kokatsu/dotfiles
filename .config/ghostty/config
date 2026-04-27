@@ -61,6 +61,9 @@ keybind = super+t=new_tab
 keybind = super+shift+t=new_tab
 keybind = ctrl+tab=next_tab
 keybind = ctrl+shift+tab=previous_tab
+# タブ並び替え (WezTerm: PRIMARY+[ / PRIMARY+])
+keybind = ctrl+left_bracket=move_tab:-1
+keybind = ctrl+right_bracket=move_tab:1
 
 # ウィンドウ操作
 keybind = ctrl+n=new_window
