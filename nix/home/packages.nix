@@ -408,8 +408,6 @@ in {
       # macOS専用
       # https://github.com/HakonHarnes/img-clip.nvim
       pngpaste # Neovim画像貼り付け (img-clip.nvim依存)
-      # https://github.com/julienXX/terminal-notifier
-      terminal-notifier # macOS通知
     ]
     ++ lib.optionals (!isDarwin) [
       # Linux/WSL専用

@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -n \"$CMUX_SURFACE_ID\" ]; then cmux claude-hook stop 2>/dev/null || true; elif [ \"$(uname)\" = \"Darwin\" ]; then terminal-notifier -title 'Claude Code' -message 'タスクが完了しました' -sound Glass || true; fi"
+            "command": "if [ -n \"$CMUX_SURFACE_ID\" ]; then cmux claude-hook stop 2>/dev/null || true; elif [ \"$(uname)\" = \"Darwin\" ]; then alerter --title 'Claude Code' --message 'タスクが完了しました' --sound Glass --timeout 10 >/dev/null || true; fi"
           },
           {
             "type": "command",
@@ -137,7 +137,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -n \"$CMUX_SURFACE_ID\" ]; then cmux claude-hook notification 2>/dev/null || true; elif [ \"$(uname)\" = \"Darwin\" ]; then terminal-notifier -title 'Claude Code' -message '権限の承認が必要です' -sound Glass || true; fi"
+            "command": "if [ -n \"$CMUX_SURFACE_ID\" ]; then cmux claude-hook notification 2>/dev/null || true; elif [ \"$(uname)\" = \"Darwin\" ]; then alerter --title 'Claude Code' --message '権限の承認が必要です' --sound Glass >/dev/null || true; fi"
           }
         ]
       }
