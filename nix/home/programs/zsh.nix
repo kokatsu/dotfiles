@@ -50,7 +50,7 @@
             wait $ZIMFW_PID || true
             kill $WATCHDOG_PID 2>/dev/null || true
             wait $WATCHDOG_PID 2>/dev/null || true
-            cp "$ZIM_CONFIG_FILE" "$LAST_ZIMRC"
+            install -m 644 "$ZIM_CONFIG_FILE" "$LAST_ZIMRC"
           fi
         fi
       '';
