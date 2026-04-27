@@ -1,15 +1,33 @@
 #!/bin/bash
 set -euo pipefail
 
-# feed-summarize: feed-watch が検出した新規 GitHub コミットを Claude で詳細要約する
+# feed-summarize: feed-watch が検出した新規エントリを Claude で要約する
 #
-# feed-watch の status.json を参照し、type=github のフィードについて
-# last_summarized_id 以降のコミットを claude -p で要約して Markdown に出力する。
+# status.json を参照し、各フィードの last_summarized_id 以降の新規分を
+# 取得・要約して summaries/<category>.md に追記する。
 #
 # Usage:
-#   feed-summarize            - 新規コミットを要約
+#   feed-summarize            - 全カテゴリを要約
+#   feed-summarize <category> - 指定カテゴリのみ要約
 
-# --- Windows 側の出力先を決定 ---
+OPML_DIR="$HOME/.config/bulletty"
+
+# 要約対象のフィード名 (status.json の key と一致させる)
+SUMMARIZE_FEEDS=(
+  "Facebook Developers"
+  "Recent Commits to docs:main"
+  "X Developers - Latest topics"
+  "Claude Release Notes"
+)
+
+is_summarize_target() {
+  local name="$1" t
+  for t in "${SUMMARIZE_FEEDS[@]}"; do
+    [[ "$t" == "$name" ]] && return 0
+  done
+  return 1
+}
+
 get_status_dir() {
   local winuser
   winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
@@ -21,14 +39,15 @@ get_status_dir() {
 
 STATUS_DIR=$(get_status_dir) || { echo "Windows mount not available, skipping." >&2; exit 0; }
 STATUS_FILE="$STATUS_DIR/status.json"
-SUMMARIES_DIR="$STATUS_DIR/summaries"
+# 要約 Markdown は WSL 側に保存 (status.json は WezTerm が読む都合で Windows 側のまま)
+SUMMARIES_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/feed-watch/summaries"
 
 if [[ ! -f "$STATUS_FILE" ]]; then
   echo "status.json not found. Run feed-watch check first." >&2
   exit 1
 fi
 
-SUMMARIZE_PROMPT='以下の JSON は GitHub リポジトリのコミット情報（差分・関連PR含む）です。
+GITHUB_PROMPT='以下の JSON は GitHub リポジトリのコミット情報（差分・関連PR含む）です。
 このコミットの内容を日本語で詳細に分析し、以下の構造でまとめてください。
 
 ### 概要
@@ -46,7 +65,88 @@ SUMMARIZE_PROMPT='以下の JSON は GitHub リポジトリのコミット情報
 
 マークダウンの h1 (# ) と h2 (## ) は使わないでください（h3 ### 以下のみ）。'
 
-# --- コミット情報を収集 (API) ---
+ARTICLE_PROMPT='以下の JSON は Web 記事の本文です（title, link, date, body）。
+記事の内容を日本語で要約し、以下の構造でまとめてください。
+
+### 要点
+記事の主旨を1-3行で簡潔に。
+
+### 詳細
+- 重要なポイントを箇条書きで
+- 技術的詳細・数値・固有名詞は省略しない
+
+### 示唆・アクション
+- 読者が得られる示唆や次に取り得るアクション
+- 該当なければこのセクションは省略
+
+マークダウンの h1 (# ) と h2 (## ) は使わないでください（h3 ### 以下のみ）。'
+
+# --- OPML から name → xml_url のマップを生成 ---
+build_opml_map() {
+  local files=()
+  local f
+  for f in "$OPML_DIR"/feeds*.opml; do
+    [[ -f "$f" ]] || continue
+    files+=("$f")
+  done
+  [[ ${#files[@]} -eq 0 ]] && return
+
+  awk '
+    function extract(attr, line,    pat, s, e) {
+      pat = attr "=\"[^\"]*\""
+      if (match(line, pat)) {
+        s = RSTART + length(attr) + 2
+        e = RLENGTH - length(attr) - 3
+        return substr(line, s, e)
+      }
+      return ""
+    }
+    /<outline/ && /xmlUrl=/ {
+      n = extract("text", $0)
+      x = extract("xmlUrl", $0)
+      if (n != "" && x != "") print n "\t" x
+    }
+  ' "${files[@]}"
+}
+
+OPML_MAP=$(build_opml_map)
+
+get_xml_url_for() {
+  local name="$1"
+  local line
+  line=$(echo "$OPML_MAP" | awk -F'\t' -v t="$name" '$1 == t { print $2; exit }')
+  [[ -z "$line" ]] && return 1
+  echo "$line"
+}
+
+# --- GitHub: html_url からリポジトリパス (owner/name) を抽出 ---
+extract_github_repo() {
+  local url="$1"
+  if [[ "$url" =~ ^https://github\.com/([^/]+/[^/]+)(/.*)?$ ]]; then
+    echo "${BASH_REMATCH[1]}"
+    return 0
+  fi
+  return 1
+}
+
+# --- ファイル名用のタイムスタンプ (UTC, ISO 8601 ベース) ---
+gen_timestamp() {
+  date -u +%Y%m%dT%H%M%SZ
+}
+
+# --- 任意文字列をファイル名に使える slug に変換 ---
+slugify() {
+  local s
+  s=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]' \
+    | LC_ALL=C sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//' \
+    | cut -c1-50)
+  if [[ -z "$s" ]]; then
+    s=$(printf '%s' "$1" | md5sum | cut -c1-8)
+  fi
+  printf '%s' "$s"
+}
+
+# --- GitHub コミット情報を収集 ---
 fetch_commit_context() {
   local repo="$1" sha="$2"
 
@@ -60,7 +160,6 @@ fetch_commit_context() {
     stats: {additions: .stats.additions, deletions: .stats.deletions, total: .stats.total}
   }' 2>/dev/null) || return 1
 
-  # 関連 PR を取得
   local pr_json
   pr_json=$(gh api "repos/$repo/commits/$sha/pulls" --jq '[.[:1][] | {
     number: .number,
@@ -73,43 +172,73 @@ fetch_commit_context() {
     '{commit: $commit, pull_requests: $prs}'
 }
 
-# --- メイン ---
-mkdir -p "$SUMMARIES_DIR"
+# --- Atom/RSS のエントリを JSONL で出力 (新しい順) ---
+parse_feed_entries() {
+  local url="$1"
+  local content
+  content=$(curl -sfL "$url") || return 1
 
-status=$(cat "$STATUS_FILE")
+  echo "$content" | python3 -c '
+import sys, json
+import xml.etree.ElementTree as ET
 
-# status.json から type=github のフィードを動的に取得
-repos=$(echo "$status" | jq -r '.feeds | to_entries[] | select(.value.type == "github") | .key')
+raw = sys.stdin.buffer.read().decode("utf-8", errors="replace")
+try:
+    root = ET.fromstring(raw)
+except ET.ParseError:
+    sys.exit(0)
 
-for repo in $repos; do
-  last_seen_id=$(echo "$status" | jq -r --arg name "$repo" '.feeds[$name].last_seen_id // ""')
-  last_summarized_id=$(echo "$status" | jq -r --arg name "$repo" '.feeds[$name].last_summarized_id // ""')
+def localname(t):
+    return t.split("}", 1)[1] if "}" in t else t
 
-  # check が未実行
-  if [[ -z "$last_seen_id" ]]; then
-    continue
-  fi
+entries = [el for el in root.iter() if localname(el.tag) in ("entry", "item")]
 
-  # 初回: 現在位置を記録して終了（過去コミットは要約しない）
-  if [[ -z "$last_summarized_id" ]]; then
-    status=$(echo "$status" | jq --arg name "$repo" --arg id "$last_seen_id" \
-      '.feeds[$name].last_summarized_id = $id')
-    echo "$status" | jq . > "$STATUS_FILE"
-    continue
-  fi
+for e in entries:
+    eid = title = link = pub = ""
+    for child in e:
+        n = localname(child.tag)
+        text = (child.text or "").strip() if child.text else ""
+        if n == "id" and not eid:
+            eid = text
+        elif n == "guid" and not eid:
+            eid = text
+        elif n == "title" and not title:
+            title = text
+        elif n == "link" and not link:
+            href = child.get("href")
+            link = href if href else text
+        elif n in ("published", "updated", "pubDate") and not pub:
+            pub = text
+    if not eid:
+        eid = link
+    print(json.dumps({"id": eid, "title": title, "link": link, "date": pub}, ensure_ascii=False))
+'
+}
 
-  # 新規コミットなし
-  if [[ "$last_summarized_id" == "$last_seen_id" ]]; then
-    continue
-  fi
+# --- agent-browser で記事本文を取得 ---
+fetch_article_text() {
+  local url="$1"
+  agent-browser open "$url" >/dev/null 2>&1 || return 1
+  agent-browser --max-output 20000 get text body 2>/dev/null || return 1
+}
 
-  # last_summarized_id 以降のコミット SHA を収集
-  commits=$(gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
-    echo "Failed to fetch commits for $repo" >&2
-    continue
+# --- GitHub フィードを要約 ---
+summarize_github_feed() {
+  local name="$1" summary_dir="$2" url="$3" last_summarized_id="$4"
+
+  local repo
+  repo=$(extract_github_repo "$url") || {
+    echo "Cannot derive repo from URL: $url ($name)" >&2
+    return
   }
 
-  new_shas=()
+  local commits
+  commits=$(gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
+    echo "Failed to fetch commits for $repo" >&2
+    return
+  }
+
+  local new_shas=()
   while IFS= read -r sha; do
     if [[ "$sha" == "$last_summarized_id" ]]; then
       break
@@ -118,12 +247,13 @@ for repo in $repos; do
   done <<< "$commits"
 
   if [[ ${#new_shas[@]} -eq 0 ]]; then
-    continue
+    return
   fi
 
-  summary_file="$SUMMARIES_DIR/${repo//\//-}.md"
+  local feed_slug
+  feed_slug=$(slugify "$name")
 
-  # 古い順に処理
+  local i sha context summary short_sha commit_date commit_url timestamp out_file
   for ((i=${#new_shas[@]}-1; i>=0; i--)); do
     sha="${new_shas[$i]}"
 
@@ -132,7 +262,7 @@ for repo in $repos; do
       continue
     }
 
-    summary=$(echo "$context" | claude -p "$SUMMARIZE_PROMPT" 2>/dev/null) || {
+    summary=$(echo "$context" | claude -p "$GITHUB_PROMPT" 2>/dev/null) || {
       echo "Failed to summarize commit $sha for $repo" >&2
       continue
     }
@@ -141,12 +271,185 @@ for repo in $repos; do
     commit_date=$(echo "$context" | jq -r '.commit.date' | cut -dT -f1)
     commit_url="https://github.com/$repo/commit/$sha"
 
-    printf '\n## [%s %s](%s)\n\n%s\n\n---\n' \
-      "$commit_date" "$short_sha" "$commit_url" "$summary" >> "$summary_file"
+    timestamp=$(gen_timestamp)
+    out_file="$summary_dir/${timestamp}_${feed_slug}_${short_sha}.md"
+    {
+      printf '# %s — %s\n\n' "$repo" "$short_sha"
+      printf '- Feed: %s\n' "$name"
+      printf '- Date: %s\n' "$commit_date"
+      printf '- URL: %s\n\n' "$commit_url"
+      printf '%s\n' "$summary"
+    } > "$out_file"
 
-    # 要約済み位置を更新（中断に対応）
-    status=$(echo "$status" | jq --arg name "$repo" --arg id "$sha" \
+    status=$(echo "$status" | jq --arg name "$name" --arg id "$sha" \
       '.feeds[$name].last_summarized_id = $id')
     echo "$status" | jq . > "$STATUS_FILE"
   done
-done
+}
+
+# --- RSS/Atom フィードを要約 ---
+summarize_article_feed() {
+  local name="$1" summary_dir="$2" last_summarized_id="$3"
+
+  local xml_url
+  xml_url=$(get_xml_url_for "$name") || {
+    echo "No xmlUrl found in OPML for: $name" >&2
+    return
+  }
+
+  local entries_jsonl
+  entries_jsonl=$(parse_feed_entries "$xml_url") || {
+    echo "Failed to parse feed: $name" >&2
+    return
+  }
+
+  if [[ -z "$entries_jsonl" ]]; then
+    return
+  fi
+
+  # 新規分のみを古い順で取り出す (last_summarized_id まで)
+  local new_entries
+  new_entries=$(echo "$entries_jsonl" | python3 -c "
+import sys, json
+last = '''$last_summarized_id'''
+lines = [l for l in sys.stdin.read().splitlines() if l.strip()]
+new = []
+for line in lines:
+    obj = json.loads(line)
+    if obj.get('id') == last:
+        break
+    new.append(line)
+# 古い順に出力
+for line in reversed(new):
+    print(line)
+")
+
+  if [[ -z "$new_entries" ]]; then
+    return
+  fi
+
+  local feed_slug
+  feed_slug=$(slugify "$name")
+
+  local entry id title link pub article_text input summary pub_short timestamp id_hash out_file
+  while IFS= read -r entry; do
+    [[ -z "$entry" ]] && continue
+    id=$(echo "$entry" | jq -r '.id')
+    title=$(echo "$entry" | jq -r '.title')
+    link=$(echo "$entry" | jq -r '.link')
+    pub=$(echo "$entry" | jq -r '.date')
+
+    if [[ -z "$link" ]]; then
+      echo "Skipping entry without link: $title ($name)" >&2
+      continue
+    fi
+
+    article_text=$(fetch_article_text "$link") || {
+      echo "Failed to fetch article: $link" >&2
+      continue
+    }
+
+    input=$(jq -n \
+      --arg title "$title" --arg link "$link" --arg date "$pub" --arg body "$article_text" \
+      '{title: $title, link: $link, date: $date, body: $body}')
+
+    summary=$(echo "$input" | claude -p "$ARTICLE_PROMPT" 2>/dev/null) || {
+      echo "Failed to summarize article: $link" >&2
+      continue
+    }
+
+    pub_short=$(echo "$pub" | cut -c1-10)
+    [[ -z "$pub_short" ]] && pub_short="$(date +%F)"
+
+    timestamp=$(gen_timestamp)
+    id_hash=$(printf '%s' "$id" | md5sum | cut -c1-8)
+    out_file="$summary_dir/${timestamp}_${feed_slug}_${id_hash}.md"
+    {
+      printf '# %s\n\n' "$title"
+      printf '- Feed: %s\n' "$name"
+      printf '- Date: %s\n' "$pub_short"
+      printf '- URL: %s\n\n' "$link"
+      printf '%s\n' "$summary"
+    } > "$out_file"
+
+    status=$(echo "$status" | jq --arg name "$name" --arg id "$id" \
+      '.feeds[$name].last_summarized_id = $id')
+    echo "$status" | jq . > "$STATUS_FILE"
+  done <<< "$new_entries"
+}
+
+# --- 1 フィード分の処理ディスパッチャ ---
+summarize_feed() {
+  local name="$1"
+  local feed_status type category url last_seen_id last_summarized_id
+
+  feed_status=$(echo "$status" | jq -r --arg name "$name" '.feeds[$name]')
+  type=$(echo "$feed_status" | jq -r '.type // ""')
+  category=$(echo "$feed_status" | jq -r '.category // ""')
+  url=$(echo "$feed_status" | jq -r '.url // ""')
+  last_seen_id=$(echo "$feed_status" | jq -r '.last_seen_id // ""')
+  last_summarized_id=$(echo "$feed_status" | jq -r '.last_summarized_id // ""')
+
+  [[ -z "$category" ]] && category="Uncategorized"
+
+  # check が未実行のフィード
+  if [[ -z "$last_seen_id" ]]; then
+    return
+  fi
+
+  # 初回: 現在位置を記録して終了 (過去分は要約しない)
+  if [[ -z "$last_summarized_id" ]]; then
+    status=$(echo "$status" | jq --arg name "$name" --arg id "$last_seen_id" \
+      '.feeds[$name].last_summarized_id = $id')
+    echo "$status" | jq . > "$STATUS_FILE"
+    return
+  fi
+
+  # 新規なし
+  if [[ "$last_summarized_id" == "$last_seen_id" ]]; then
+    return
+  fi
+
+  local summary_dir="$SUMMARIES_DIR/${category}"
+  mkdir -p "$summary_dir"
+
+  case "$type" in
+    github)
+      summarize_github_feed "$name" "$summary_dir" "$url" "$last_summarized_id"
+      ;;
+    feed)
+      summarize_article_feed "$name" "$summary_dir" "$last_summarized_id"
+      ;;
+    *)
+      echo "Unknown feed type for $name: $type" >&2
+      ;;
+  esac
+}
+
+# --- メイン ---
+mkdir -p "$SUMMARIES_DIR"
+
+target_category="${1:-}"
+
+status=$(cat "$STATUS_FILE")
+
+if [[ -n "$target_category" ]]; then
+  feeds=$(echo "$status" | jq -r --arg c "$target_category" \
+    '.feeds | to_entries[] | select(.value.category == $c) | .key')
+else
+  feeds=$(echo "$status" | jq -r '.feeds | keys[]')
+fi
+
+if [[ -z "$feeds" ]]; then
+  if [[ -n "$target_category" ]]; then
+    echo "No feeds found in category: $target_category" >&2
+    echo "(Run 'feed-watch check' first to populate categories)" >&2
+  fi
+  exit 0
+fi
+
+while IFS= read -r name; do
+  [[ -z "$name" ]] && continue
+  is_summarize_target "$name" || continue
+  summarize_feed "$name"
+done <<< "$feeds"

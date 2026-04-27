@@ -13,7 +13,7 @@ in
       Service = {
         Type = "oneshot";
         ExecStart = toString (pkgs.writeShellScript "feed-watch-check" ''
-          export PATH="${lib.makeBinPath (with pkgs; [gh jq curl coreutils gnused gnugrep claude-code])}"
+          export PATH="${lib.makeBinPath (with pkgs; [gh jq curl coreutils gnused gnugrep gawk python3 agent-browser claude-code])}"
           "$HOME/.local/bin/scripts/feed-watch" check
           exec "$HOME/.local/bin/scripts/feed-summarize"
         '');
