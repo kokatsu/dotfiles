@@ -275,9 +275,9 @@ summarize_github_feed() {
     out_file="$summary_dir/${timestamp}_${feed_slug}_${short_sha}.md"
     {
       printf '# %s — %s\n\n' "$repo" "$short_sha"
-      printf '- Feed: %s\n' "$name"
-      printf '- Date: %s\n' "$commit_date"
-      printf '- URL: %s\n\n' "$commit_url"
+      printf -- '- Feed: %s\n' "$name"
+      printf -- '- Date: %s\n' "$commit_date"
+      printf -- '- URL: %s\n\n' "$commit_url"
       printf '%s\n' "$summary"
     } > "$out_file"
 
@@ -366,9 +366,9 @@ for line in reversed(new):
     out_file="$summary_dir/${timestamp}_${feed_slug}_${id_hash}.md"
     {
       printf '# %s\n\n' "$title"
-      printf '- Feed: %s\n' "$name"
-      printf '- Date: %s\n' "$pub_short"
-      printf '- URL: %s\n\n' "$link"
+      printf -- '- Feed: %s\n' "$name"
+      printf -- '- Date: %s\n' "$pub_short"
+      printf -- '- URL: %s\n\n' "$link"
       printf '%s\n' "$summary"
     } > "$out_file"
 
