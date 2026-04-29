@@ -6,7 +6,7 @@ in {
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = mkBinaryRelease rec {
     pname = "claude-code";
-    version = "2.1.122";
+    version = "2.1.123";
     hashes = {
       "aarch64-darwin" = "sha256-SwEHW9kjCE/lYSS/tkf17KmMKx+jTLA50udczISvS4Y=";
       "x86_64-darwin" = "sha256-jFbNcgk8SwACx+wErWnA8NBPAELJ/jmcGUY58tNQk00=";
