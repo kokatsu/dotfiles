@@ -93,6 +93,8 @@ export ZENO_GIT_TREE="eza --tree"
 
 # fzf key bindings (Ctrl+T, Alt+C) — zeno より先に読み込み、Tab/Ctrl+R は zeno が上書き
 zsh-defer -a +1 +2 -c 'source <(fzf --zsh)'
+# Ctrl+T は WezTerm の新規タブと衝突するため Alt+T にリマップ
+zsh-defer -a +1 +2 -c 'bindkey -r "^T"; bindkey "^[t" fzf-file-widget'
 
 zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zeno.zsh/zeno.zsh
 zsh-defer -a +1 +2 -c 'bindkey " " zeno-auto-snippet'
