@@ -25,6 +25,10 @@ if (( _IS_WSL )); then
   export USERPROFILE="/mnt/c/Users/$(whoami)"
   export WEZTERM_HOSTNAME="$(< /proc/sys/kernel/hostname)"
 
+  # fzf: Ctrl+Y で選択行を Windows クリップボードへコピー
+  # FZF_DEFAULT_OPTS は fzf 側でシェル風に分割されるため、空白・|・() を含む bind 値はシングルクォート必須
+  export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }--bind='ctrl-y:execute-silent(echo -n {} | clip.exe)'"
+
   # https://blog.adglobe.co.jp/entry/2024/07/31/100000
   if [[ ! -f /tmp/.mtu_1400_set ]]; then
     if [[ $(ip link show eth0 2>/dev/null | grep -o 'mtu [0-9]*' | awk '{print $2}') != "1400" ]]; then
