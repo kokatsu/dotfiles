@@ -18,11 +18,15 @@
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     "CLAUDE_CODE_EFFORT_LEVEL": "xhigh",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "DISABLE_AUTOUPDATER": "1",
-    "DISABLE_INSTALLATION_CHECKS": "1"
+    "DISABLE_INSTALLATION_CHECKS": "1",
+    "DISABLE_UPDATES": "1"
   },
   "alwaysThinkingEnabled": true,
-  "includeCoAuthoredBy": false,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "tui": "fullscreen",
   "respectGitignore": false,
   "fileSuggestion": {
     "type": "command",
