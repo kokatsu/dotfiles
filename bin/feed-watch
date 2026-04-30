@@ -6,7 +6,9 @@ set -euo pipefail
 #
 # Usage:
 #   feed-watch check          - 全フィードをチェックし status.json を更新
-#   feed-watch read [<name>]  - 指定フィード (または全フィード) を既読にする
+#   feed-watch read           - fzf でフィードを選択して既読にする (TAB で複数選択)
+#   feed-watch read --all     - 全フィードを既読にする
+#   feed-watch read <name>    - 部分一致したフィードを既読にする
 
 OPML_DIR="$HOME/.config/bulletty"
 
@@ -204,9 +206,42 @@ cmd_read() {
   local status
   status=$(cat "$STATUS_FILE")
 
-  if [[ -z "$target" ]]; then
+  if [[ "$target" == "--all" ]]; then
     # 全フィード既読
     status=$(echo "$status" | jq '.feeds |= with_entries(.value.unread_count = 0)')
+  elif [[ -z "$target" ]]; then
+    # fzf で対話的に選択
+    if ! command -v fzf >/dev/null 2>&1; then
+      echo "fzf not found" >&2
+      exit 1
+    fi
+
+    local list
+    list=$(echo "$status" | jq -r '
+      .feeds | to_entries
+      | map(select(.value.unread_count > 0))
+      | sort_by(-.value.unread_count)
+      | .[] | "\(.value.unread_count)\t\(.key)\t\(.value.category)"
+    ')
+
+    if [[ -z "$list" ]]; then
+      echo "No unread feeds." >&2
+      exit 0
+    fi
+
+    local selected
+    selected=$(echo "$list" | fzf -m \
+      --delimiter=$'\t' --with-nth=1,2,3 \
+      --header='TAB: multi-select, Enter: mark as read' \
+      --prompt='read> ') || exit 0
+
+    [[ -z "$selected" ]] && exit 0
+
+    local _count name _category
+    while IFS=$'\t' read -r _count name _category; do
+      status=$(echo "$status" | jq --arg name "$name" \
+        '.feeds[$name].unread_count = 0')
+    done <<< "$selected"
   else
     # 部分一致で検索
     local matched
@@ -230,7 +265,7 @@ case "${1:-}" in
   check) cmd_check ;;
   read)  cmd_read "${2:-}" ;;
   *)
-    echo "Usage: feed-watch {check|read [<name>]}" >&2
+    echo "Usage: feed-watch {check|read [--all|<name>]}" >&2
     exit 1
     ;;
 esac
