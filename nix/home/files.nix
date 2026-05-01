@@ -430,20 +430,6 @@ in {
       ".config/taplo".source = ../../.config/taplo;
       ".config/termframe".source = ../../.config/termframe;
       # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
-      ".config/treemd/config.toml".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-      in ''
-        [ui]
-        theme = "${names.pascal}"
-        outline_width = 30
-
-        [terminal]
-        color_mode = "auto"
-
-        [image]
-        renderer = "kitty"
-      '';
-
       # bin: ユーザースクリプト (Deno/Bun/Shell)
       # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
       ".local/bin/scripts" = {
@@ -451,6 +437,56 @@ in {
         force = true;
       };
     }
+    # treemd: ビルトイン UI テーマは CatppuccinMocha のみ。
+    # 他フレーバー対応のため [theme] で全色を上書きする。
+    # コードブロックは bat と同じ tmTheme を流用。
+    // (let
+      names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+      p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+      rgb = c: "{ rgb = [${toString c.rgb.r}, ${toString c.rgb.g}, ${toString c.rgb.b}] }";
+    in {
+      ".config/treemd/config.toml".text = ''
+        [ui]
+        theme = "CatppuccinMocha"
+        code_theme = "${names.spaced}"
+        outline_width = 30
+
+        [terminal]
+        color_mode = "auto"
+
+        [image]
+        renderer = "kitty"
+
+        [theme]
+        background = ${rgb p.base}
+        foreground = ${rgb p.text}
+        heading_1 = ${rgb p.mauve}
+        heading_2 = ${rgb p.pink}
+        heading_3 = ${rgb p.blue}
+        heading_4 = ${rgb p.teal}
+        heading_5 = ${rgb p.green}
+        border_focused = ${rgb p.lavender}
+        border_unfocused = ${rgb p.surface2}
+        selection_bg = ${rgb p.surface1}
+        selection_fg = ${rgb p.text}
+        status_bar_bg = ${rgb p.mauve}
+        status_bar_fg = ${rgb p.base}
+        inline_code_fg = ${rgb p.peach}
+        inline_code_bg = ${rgb p.surface0}
+        code_fence = ${rgb p.overlay0}
+        bold_fg = ${rgb p.text}
+        italic_fg = ${rgb p.subtext1}
+        list_bullet = ${rgb p.sapphire}
+        blockquote_border = ${rgb p.mauve}
+        blockquote_fg = ${rgb p.subtext0}
+        search_match_bg = ${rgb p.yellow}
+        search_match_fg = ${rgb p.base}
+        search_current_bg = ${rgb p.peach}
+        search_current_fg = ${rgb p.base}
+      '';
+      ".config/treemd/code-themes/${names.spaced}.tmTheme".source =
+        ../../.config/bat/themes + "/${names.spaced}.tmTheme";
+    })
     # Claude Code カスタムテーマ: 4 flavor (latte/frappe/macchiato/mocha) を生成
     // (let
       mkClaudeTheme = flavor: let
