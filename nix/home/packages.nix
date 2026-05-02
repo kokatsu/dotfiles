@@ -73,8 +73,6 @@ in {
       _7zz # 7-Zip アーカイバ
       # https://github.com/charmbracelet/glow
       glow # Markdownプレビュー
-      # https://github.com/jdx/mise
-      mise # タスクランナー + プロジェクトごとのツールバージョン管理
       # https://github.com/rclone/rclone
       rclone # クラウドストレージ同期
       # https://github.com/github/copilot-cli
@@ -357,6 +355,9 @@ in {
       # https://github.com/denoland/deno
       deno # JavaScript/TypeScript ランタイム
       cc-metrics # スキル・インストラクション統合メトリクス表示 — depends on deno
+
+      # https://github.com/jdx/mise
+      mise # タスクランナー + プロジェクトごとのツールバージョン管理 (CI ではビルドに時間がかかるため除外)
 
       #--- D言語ツール ---#
       # https://github.com/ldc-developers/ldc
