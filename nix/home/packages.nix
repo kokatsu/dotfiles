@@ -355,7 +355,7 @@ in {
       # CI ではスキップ (ビルド時間短縮)
 
       # https://github.com/denoland/deno
-      deno # JavaScript/TypeScript ランタイム (trybuild tests fail on aarch64-darwin)
+      deno # JavaScript/TypeScript ランタイム
       cc-metrics # スキル・インストラクション統合メトリクス表示 — depends on deno
 
       #--- D言語ツール ---#

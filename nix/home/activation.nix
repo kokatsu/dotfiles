@@ -137,7 +137,8 @@ in {
     # Karabiner-Elements: karabiner.ts から karabiner.json を生成 (macOS only)
     # writeToProfile() は ~/.config/karabiner/karabiner.json の既存プロファイルを上書きするため、
     # 未作成ならスタブを配置してから deno を実行する
-    buildKarabinerConfig = lib.mkIf isDarwin (
+    # CI では除外: ${pkgs.deno} が closure に入ると deno のローカルビルド (trybuild fail) を誘発する
+    buildKarabinerConfig = lib.mkIf (isDarwin && !isCI) (
       lib.hm.dag.entryAfter ["writeBoundary"] ''
         KARABINER_DIR="${config.home.homeDirectory}/.config/karabiner"
         $DRY_RUN_CMD mkdir -p "$KARABINER_DIR"
