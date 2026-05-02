@@ -126,12 +126,12 @@ in {
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = mkBinaryRelease rec {
     pname = "octorus";
-    version = "0.6.1";
+    version = "0.6.2";
     hashes = {
-      "aarch64-darwin" = "sha256-AWvcVFARwiDOVYyhSP1/4CNIkRmtRkI1j0Hj/UYvGYk=";
-      "x86_64-darwin" = "sha256-7wws8I1XjubwQ1H3YYXzYS9zb00TRVhuQkEaJzAMGtk=";
-      "aarch64-linux" = "sha256-iF6Eo/yRrsCs80OQBDvZwPry0POJ0Y/sGcpmyOqY8Uw=";
-      "x86_64-linux" = "sha256-Yf64ijzZx+v/voM04Qv/bSwxf0RGcizec41xiQCFl0U=";
+      "aarch64-darwin" = "sha256-ErADFuUWXaxa4nKBn0UGIPUjKkJa5D77h1Ntm/4Q/LU=";
+      "x86_64-darwin" = "sha256-t7wz9i3UWfz0VGZsk+ewMeIBgQzERI/o5SGrWMm/PIs=";
+      "aarch64-linux" = "sha256-4od+JNSPOOm1ZSRNTYu2C29dJg67ajbXVy3ComeWH/k=";
+      "x86_64-linux" = "sha256-vHAR/jCtQeKzJVX+mYyQch+4nT3URekTAx73ZRrEV1o=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
