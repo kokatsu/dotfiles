@@ -317,8 +317,6 @@ in {
       #####################################
       # Git hooks/lint ツール
       #####################################
-      # https://github.com/biomejs/biome
-      biome # Web ツールチェーン (formatter + linter)
       # https://github.com/conventional-changelog/commitlint
       commitlint # コミットメッセージ lint
       # https://github.com/evilmartians/lefthook
@@ -358,6 +356,9 @@ in {
 
       # https://github.com/jdx/mise
       mise # タスクランナー + プロジェクトごとのツールバージョン管理 (CI ではビルドに時間がかかるため除外)
+
+      # https://github.com/biomejs/biome
+      biome # Web ツールチェーン (formatter + linter, CI ではビルドに時間がかかるため除外)
 
       #--- D言語ツール ---#
       # https://github.com/ldc-developers/ldc
