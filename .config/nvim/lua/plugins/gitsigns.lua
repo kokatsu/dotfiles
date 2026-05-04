@@ -4,6 +4,7 @@
 return {
   'kokatsu/gitsigns.nvim',
   branch = 'fix/blame-nil-repo-race',
+  event = { 'BufReadPre', 'BufNewFile' },
   config = function()
     require('gitsigns').setup({
       signs = {

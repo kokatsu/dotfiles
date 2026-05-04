@@ -239,50 +239,34 @@ vim.api.nvim_create_autocmd('FocusLost', {
 })
 
 -- Claude Code用プロンプト編集設定
--- .claude ファイルで @ を押すと mini.pick でファイル補完を発動
+-- tmux popup (M-v) → claude-prompt-edit.sh → /tmp/claude-prompt-*.claude を nvim で開く
+-- ftdetect/claude.lua で markdown filetype に割り当てているため
+-- after/ftplugin/claude.lua は発火しない。本 autocmd で @ キーマップを登録する。
 -- Claude Code では @ファイルパス でファイルを参照できる
 -- https://zenn.dev/shisashi/articles/0ba22e272d6f2f
 vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
   pattern = '*.claude',
   callback = function()
     vim.keymap.set('i', '@', function()
-      local pick = require('mini.pick')
-
-      -- カーソル後の単語を初期クエリにする
-      local line = vim.api.nvim_get_current_line()
-      local col = vim.api.nvim_win_get_cursor(0)[2]
-      local after_cursor = line:sub(col + 1)
-      local initial_query = after_cursor:match('^(%S+)') or ''
-
-      -- mini.pick でファイル選択
-      local selected_path = pick.builtin.files({}, {
-        source = {
-          name = 'Files (@reference)',
-          choose = function() end, -- ファイルを開かず、パスの返却のみ行う
-        },
-        window = { prompt_prefix = '@' },
-        query = initial_query,
-      })
-
-      -- 選択結果の処理
-      if selected_path then
-        -- 初期クエリとして使った文字列を削除
-        if initial_query ~= '' then
-          local _, cur_col = unpack(vim.api.nvim_win_get_cursor(0))
-          local cur_line = vim.api.nvim_get_current_line()
-          local new_line = cur_line:sub(1, cur_col) .. cur_line:sub(cur_col + 1 + #initial_query)
-          vim.api.nvim_set_current_line(new_line)
-        end
-        vim.api.nvim_put({ '@' .. selected_path .. ' ' }, '', false, true)
-      else
-        -- キャンセル時は @ のみ
-        vim.api.nvim_put({ '@' }, '', false, true)
+      local ok, snacks = pcall(require, 'snacks')
+      if not ok then
+        vim.api.nvim_feedkeys('@', 'n', true)
+        return
       end
 
-      -- インサートモードに戻る
-      vim.schedule(function()
-        vim.cmd('startinsert!')
-      end)
+      snacks.picker.files({
+        confirm = function(picker, item)
+          picker:close()
+          if item then
+            vim.api.nvim_put({ '@' .. item.file .. ' ' }, 'c', true, true)
+          else
+            vim.api.nvim_put({ '@' }, 'c', false, true)
+          end
+          vim.schedule(function()
+            vim.cmd('startinsert!')
+          end)
+        end,
+      })
     end, { buffer = true, noremap = true, desc = 'Claude Code: Insert @filepath reference' })
   end,
 })

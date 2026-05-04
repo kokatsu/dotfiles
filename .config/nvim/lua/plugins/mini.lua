@@ -3,6 +3,7 @@
 return {
   'nvim-mini/mini.nvim',
   version = '*',
+  event = 'VeryLazy',
   config = function()
     require('mini.surround').setup({
       custom_surroundings = {
@@ -13,24 +14,6 @@ return {
             return { left = '```' .. lang .. '\n', right = '\n```' }
           end,
         },
-      },
-    })
-
-    -- mini.pick: ファジーファインダー
-    require('mini.pick').setup({
-      mappings = {
-        choose = '<CR>',
-        choose_in_split = '<C-x>',
-        choose_in_vsplit = '<C-v>',
-        choose_marked = '<C-q>',
-        delete_char = '<BS>',
-        delete_char_right = '<Del>',
-        delete_word = '<C-w>',
-        move_down = '<C-j>',
-        move_up = '<C-k>',
-        scroll_down = '<C-d>',
-        scroll_up = '<C-u>',
-        stop = '<Esc>',
       },
     })
 

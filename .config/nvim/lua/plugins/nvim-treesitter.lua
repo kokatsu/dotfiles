@@ -3,6 +3,7 @@
 return {
   'nvim-treesitter/nvim-treesitter',
   build = ':TSUpdate',
+  event = { 'BufReadPre', 'BufNewFile' },
   config = function()
     -- macOS: パーサー.soのコード署名を検証/修復 (SIGKILL防止)
     -- Nixのtree-sitter CLIでコンパイルされたパーサーがmacOSのランタイム

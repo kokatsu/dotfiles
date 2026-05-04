@@ -16,11 +16,7 @@ return {
         },
       },
       workspace = {
-        library = vim.list_extend(vim.api.nvim_get_runtime_file('lua', true), {
-          '${3rd}/luv/library',
-          '${3rd}/busted/library',
-          '${3rd}/luassert/library',
-        }),
+        -- workspace.library は lazydev.nvim が動的に管理する
         checkThirdParty = 'Disable',
       },
       telemetry = {

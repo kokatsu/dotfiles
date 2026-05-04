@@ -98,6 +98,7 @@ return {
       'svelte',
       'tailwindcss',
       'taplo',
+      'tsgo',
       'unocss',
       'vtsls',
       'vue_ls',

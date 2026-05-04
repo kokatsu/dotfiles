@@ -66,7 +66,7 @@ return {
     }
 
     lint.linters_by_ft = {
-      -- markdown = { 'markdownlint', 'textlint' },
+      markdown = { 'markdownlint', 'textlint' },
     }
 
     vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufWritePost', 'InsertLeave' }, {
