@@ -92,7 +92,6 @@
       customOverlays.kakehashi
       customOverlays.octorus
       customOverlays.rgx-cli
-      customOverlays.termframe
       customOverlays.unocss-language-server
       customOverlays.vue-language-server-pin
       customOverlays.x-api-playground

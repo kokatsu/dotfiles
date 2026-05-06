@@ -109,104 +109,6 @@ in {
           (rgb p.teal)
         ]
         staticContent;
-      ".config/fresh/config.json".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-      in
-        builtins.toJSON {
-          version = 1;
-          theme = names.kebab;
-          check_for_updates = false;
-        };
-
-      ".config/fresh/themes/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).kebab}.json".text = let
-        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-        rgb = c: [c.rgb.r c.rgb.g c.rgb.b];
-      in
-        builtins.toJSON {
-          name = names.kebab;
-          editor = {
-            bg = rgb p.base;
-            fg = rgb p.text;
-            cursor = rgb p.rosewater;
-            selection_bg = rgb p.surface1;
-            current_line_bg = rgb p.surface0;
-            line_number_fg = rgb p.surface1;
-            line_number_bg = rgb p.base;
-            whitespace_indicator_fg = rgb p.surface1;
-          };
-          ui = {
-            tab_active_fg = rgb p.mauve;
-            tab_active_bg = rgb p.base;
-            tab_inactive_fg = rgb p.subtext0;
-            tab_inactive_bg = rgb p.mantle;
-            tab_separator_bg = rgb p.crust;
-            tab_hover_bg = rgb p.surface0;
-            status_bar_fg = rgb p.subtext1;
-            status_bar_bg = rgb p.mantle;
-            prompt_fg = rgb p.base;
-            prompt_bg = rgb p.rosewater;
-            prompt_selection_fg = rgb p.text;
-            prompt_selection_bg = rgb p.surface1;
-            popup_border_fg = rgb p.blue;
-            popup_bg = rgb p.surface0;
-            popup_selection_bg = rgb p.surface1;
-            popup_text_fg = rgb p.text;
-            suggestion_bg = rgb p.surface0;
-            suggestion_selected_bg = rgb p.surface1;
-            menu_bg = rgb p.surface0;
-            menu_fg = rgb p.overlay2;
-            menu_active_bg = rgb p.surface1;
-            menu_active_fg = rgb p.text;
-            menu_dropdown_bg = rgb p.surface0;
-            menu_dropdown_fg = rgb p.text;
-            menu_highlight_bg = rgb p.mauve;
-            menu_highlight_fg = rgb p.base;
-            menu_border_fg = rgb p.blue;
-            menu_separator_fg = rgb p.surface1;
-            menu_hover_bg = rgb p.surface1;
-            menu_hover_fg = rgb p.text;
-            menu_disabled_fg = rgb p.overlay0;
-            menu_disabled_bg = rgb p.surface0;
-            help_bg = rgb p.surface0;
-            help_fg = rgb p.overlay2;
-            help_key_fg = rgb p.sky;
-            help_separator_fg = rgb p.surface1;
-            help_indicator_fg = rgb p.red;
-            help_indicator_bg = rgb p.surface0;
-            split_separator_fg = rgb p.crust;
-            scrollbar_track_fg = rgb p.surface1;
-            scrollbar_thumb_fg = rgb p.overlay0;
-            scrollbar_track_hover_fg = rgb p.surface2;
-            scrollbar_thumb_hover_fg = rgb p.blue;
-            settings_selected_bg = rgb p.surface1;
-            settings_selected_fg = rgb p.text;
-          };
-          search = {
-            match_bg = rgb p.yellow;
-            match_fg = rgb p.base;
-          };
-          diagnostic = {
-            error_fg = rgb p.red;
-            error_bg = rgb p.base;
-            warning_fg = rgb p.yellow;
-            warning_bg = rgb p.base;
-            info_fg = rgb p.sky;
-            info_bg = rgb p.base;
-            hint_fg = rgb p.teal;
-            hint_bg = rgb p.base;
-          };
-          syntax = {
-            keyword = rgb p.mauve;
-            string = rgb p.green;
-            comment = rgb p.overlay2;
-            function = rgb p.blue;
-            type = rgb p.yellow;
-            variable = rgb p.text;
-            constant = rgb p.peach;
-            operator = rgb p.sky;
-          };
-        };
       ".config/git-graph/models/catppuccin-${config.catppuccin.flavor}.toml".text = let
         p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
         names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
@@ -428,7 +330,6 @@ in {
         ]
         staticContent;
       ".config/taplo".source = ../../.config/taplo;
-      ".config/termframe".source = ../../.config/termframe;
       # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
       # bin: ユーザースクリプト (Deno/Bun/Shell)
       # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される

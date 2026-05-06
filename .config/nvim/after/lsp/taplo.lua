@@ -12,7 +12,6 @@ local taplo_config = {
           ['.typos.toml'] = 'https://raw.githubusercontent.com/crate-ci/typos/master/config.schema.json',
           ['stylua.toml'] = 'https://raw.githubusercontent.com/JohnnyMorganz/StyLua/main/stylua.schema.json',
           ['taplo.toml'] = 'https://www.schemastore.org/taplo.json',
-          ['termframe/config.toml'] = 'https://raw.githubusercontent.com/pamburus/termframe/main/schema/json/config.schema.json',
         },
       },
     },

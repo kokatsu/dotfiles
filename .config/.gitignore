@@ -37,10 +37,6 @@
 !fastfetch/
 !fastfetch/**
 
-# fresh (https://github.com/sinelaw/fresh)
-!fresh/
-!fresh/**
-
 # gh (https://cli.github.com/)
 !gh/
 !gh/**
@@ -93,10 +89,6 @@
 !taplo/
 !taplo/**
 
-# termframe (https://github.com/pamburus/termframe)
-!termframe/
-!termframe/**
-
 # tmux (https://github.com/tmux/tmux)
 !tmux/
 !tmux/**
@@ -120,7 +112,6 @@
 # Zsh (https://www.zsh.org/)
 !zsh/
 !zsh/**
-
 
 # ripgrep (https://github.com/BurntSushi/ripgrep)
 !.ripgreprc

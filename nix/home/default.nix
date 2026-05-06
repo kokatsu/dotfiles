@@ -72,7 +72,6 @@ in {
         PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
         RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
         CODEX_HOME = "${config.xdg.configHome}/codex";
-        TERMFRAME_CONFIG = "${config.xdg.configHome}/termframe/config.toml";
         TAPLO_CONFIG = "${config.xdg.configHome}/taplo/taplo.toml";
         CATPPUCCIN_VIVID_THEME = "catppuccin-${config.catppuccin.flavor}";
         CC_STATUSLINE_THEME = "catppuccin-${config.catppuccin.flavor}";
