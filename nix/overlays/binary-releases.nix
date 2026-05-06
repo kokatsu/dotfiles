@@ -28,33 +28,6 @@ in {
     };
   };
 
-  # Add termframe package (not in nixpkgs)
-  # Uses pre-built binaries from GitHub releases
-  # Renovate: datasource=github-releases depName=pamburus/termframe
-  termframe = mkBinaryRelease rec {
-    pname = "termframe";
-    version = "0.8.4";
-    hashes = {
-      "aarch64-darwin" = "sha256-l3FKDwozg/cZtGptWkngwyawUIIianSCT7RjuOqGx0U=";
-      "x86_64-darwin" = "sha256-cPEarNU4BluKTkFNlNloxCo9Y+K3xwer8+jhxYK4D40=";
-      "aarch64-linux" = "sha256-X2Ublw94nANEx21cjkBVu5UV06jdi8FzP/yYerwFfyM=";
-      "x86_64-linux" = "sha256-f23Q+SAiEdTQxFvpf9QQWLcJRK/0S0RP4y6wIH9nmGc=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "macos-arm64";
-      "x86_64-darwin" = "macos-x86_64";
-      "aarch64-linux" = "linux-arm64-gnu";
-      "x86_64-linux" = "linux-x86_64-gnu";
-    };
-    url = platform: "https://github.com/pamburus/termframe/releases/download/v${version}/termframe-${platform}.tar.gz";
-    format = "tar";
-    extraAttrs = {sourceRoot = ".";};
-    meta = {
-      description = "Terminal output SVG screenshot tool";
-      homepage = "https://github.com/pamburus/termframe";
-    };
-  };
-
   # kakehashi - Tree-sitter Language Server
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=atusy/kakehashi

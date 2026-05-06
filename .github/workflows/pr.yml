@@ -73,14 +73,6 @@ jobs:
           PACKAGES=""
 
           # Check each package independently
-          if echo "$DIFF" | grep -q 'termframe'; then
-            echo "has_termframe=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*termframe" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "termframe" "$VERSION"
-            echo "version_termframe=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }termframe $VERSION"
-          fi
-
           if echo "$DIFF" | grep -q 'deck'; then
             echo "has_deck=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*deck" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -164,23 +156,6 @@ jobs:
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
 
       # === Pre-built binary packages ===
-
-      - name: Update termframe hashes
-        if: steps.detect.outputs.has_termframe == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_termframe }}
-        run: |
-          OVERLAY="nix/overlays/binary-releases.nix"
-
-          # Compute hashes for each platform
-          for platform in "macos-arm64:aarch64-darwin" "macos-x86_64:x86_64-darwin" \
-                          "linux-arm64-gnu:aarch64-linux" "linux-x86_64-gnu:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/pamburus/termframe/releases/download/v${VERSION}/termframe-${PLAT_NAME}.tar.gz"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/termframe = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
 
       - name: Update claude-code hashes
         if: steps.detect.outputs.has_claude_code == 'true'
@@ -422,13 +397,6 @@ jobs:
 
           BINARY="nix/overlays/binary-releases.nix"
           STANDALONE="nix/overlays/standalone.nix"
-
-          # termframe
-          VER=$(sed -n '/termframe = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "macos-arm64:aarch64-darwin" "macos-x86_64:x86_64-darwin" "linux-arm64-gnu:aarch64-linux" "linux-x86_64-gnu:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "termframe" "https://github.com/pamburus/termframe/releases/download/v${VER}/termframe-${PLAT}.tar.gz" "$SYS" "$BINARY"
-          done
 
           # deck
           VER=$(sed -n '/deck = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$STANDALONE" | head -1)

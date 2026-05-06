@@ -71,8 +71,6 @@ in {
       fontconfig # フォント管理 (fc-list等)
       # https://github.com/ip7z/7zip
       _7zz # 7-Zip アーカイバ
-      # https://github.com/charmbracelet/glow
-      glow # Markdownプレビュー
       # https://github.com/rclone/rclone
       rclone # クラウドストレージ同期
       # https://github.com/github/copilot-cli
@@ -100,14 +98,8 @@ in {
       fastfetch # システム情報表示
       # https://github.com/sharkdp/fd
       fd # ファイル検索 (find alternative)
-      # https://github.com/sinelaw/fresh
-      fresh-editor # ターミナルテキストエディタ (LSP対応)
-      # https://github.com/cmatsuoka/figlet
-      figlet # ASCIIアート
       # https://github.com/b4b4r07/gomi
       gomi # ゴミ箱CLI (rm alternative)
-      # https://github.com/ChrisBuilds/terminaltexteffects
-      terminaltexteffects # ターミナルテキストエフェクト (tte)
       # https://gitlab.com/graphviz/graphviz
       graphviz # グラフ可視化
       # https://github.com/casey/just
@@ -116,12 +108,8 @@ in {
       jq # JSON プロセッサ
       # https://github.com/mikefarah/yq
       yq-go # YAML/JSON/XML プロセッサ (yq コマンド)
-      # https://github.com/johnkerl/miller
-      miller # CSV/JSON処理
       # https://github.com/jesseduffield/lazydocker
       lazydocker # Docker TUI
-      # https://github.com/xwmx/nb
-      nb # ノート管理
       # https://github.com/rofl0r/ncdu
       ncdu # ディスク使用量 TUI (du alternative)
       # https://github.com/nurse/nkf
@@ -138,14 +126,10 @@ in {
       socat # 多機能ソケットリレー
       # https://github.com/homeport/termshot
       termshot # ターミナルスクリーンショット (PNG)
-      # https://github.com/jonas/tig
-      tig # Git TUI
       # https://github.com/xampprocky/tokei
       tokei # コード統計ツール (行数カウント)
       # https://github.com/Epistates/treemd
       treemd # Markdown navigator TUI
-      # https://github.com/Gaurav-Gosain/tuios
-      tuios # ターミナルベースウィンドウマネージャ
       # https://gitlab.com/OldManProgrammer/unix-tree
       tree # ディレクトリツリー表示
       # https://github.com/tree-sitter/tree-sitter
@@ -158,8 +142,6 @@ in {
       unzip # ZIP アーカイブ展開
       # https://www.gnu.org/software/wget/
       wget # ファイルダウンローダー
-      # https://github.com/bgreenwell/xleak
-      xleak # Excel TUI viewer
       # https://github.com/sxyazi/yazi
       yazi # ファイルマネージャ TUI
       # https://github.com/zimfw/zimfw
@@ -391,9 +373,6 @@ in {
       octorus # GitHub PR レビュー TUI (overlay)
       # https://github.com/brevity1swos/rgx
       rgx-cli # ターミナル正規表現テスター (regex101 の TUI 版, overlay)
-      # https://github.com/pamburus/termframe
-      termframe # ターミナルスクリーンショット (SVG, Nerd Font対応, overlay)
-
       #--- エディタ ---#
       # https://github.com/neovim/neovim
       neovim
