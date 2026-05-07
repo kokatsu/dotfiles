@@ -102,6 +102,8 @@ in {
       gomi # ゴミ箱CLI (rm alternative)
       # https://gitlab.com/graphviz/graphviz
       graphviz # グラフ可視化
+      # https://github.com/sharkdp/hyperfine
+      hyperfine # コマンドラインベンチマークツール
       # https://github.com/casey/just
       just # コマンドランナー
       # https://github.com/jqlang/jq
