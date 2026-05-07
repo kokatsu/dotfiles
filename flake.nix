@@ -28,6 +28,11 @@
       url = "github:kokatsu/cli-tools";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    cc-statusline = {
+      url = "github:kokatsu/cc-statusline";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -83,6 +88,7 @@
     # 共通オーバーレイ (全プラットフォーム)
     commonOverlays = [
       customOverlays.cli-tools
+      customOverlays.cc-statusline
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
       customOverlays.dcd
