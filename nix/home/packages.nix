@@ -116,6 +116,8 @@ in {
       nkf # 文字コード変換
       # https://github.com/nmap/nmap
       nmap # ネットワークスキャナ
+      # https://github.com/o2sh/onefetch
+      onefetch # Git リポジトリ情報表示
       # https://github.com/noborus/ov
       ov # ページャー
       # https://github.com/BurntSushi/ripgrep
