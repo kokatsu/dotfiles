@@ -76,5 +76,15 @@
       minimumReleaseAge: '0 days',
       sourceUrl: 'https://github.com/anthropics/claude-code',
     },
+    {
+      matchManagers: [
+        'deno',
+      ],
+      matchDepTypes: [
+        'tasks',
+        'tasks.command',
+      ],
+      enabled: false,
+    },
   ],
 }
