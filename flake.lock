@@ -18,6 +18,26 @@
         "type": "github"
       }
     },
+    "cc-statusline": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1778155105,
+        "narHash": "sha256-d/SV8+WCio075G564/mIq7QL1WdqQqNovpdHPwZEV+o=",
+        "owner": "kokatsu",
+        "repo": "cc-statusline",
+        "rev": "9826c93dccde115ec4449ae3dcc0f4a90ea32990",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kokatsu",
+        "repo": "cc-statusline",
+        "type": "github"
+      }
+    },
     "cli-tools": {
       "inputs": {
         "nixpkgs": [
@@ -25,11 +45,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777214658,
-        "narHash": "sha256-new4HnwvZmcnMMfyzic+elOzAS/22Iuv6iRd8fEG1mg=",
+        "lastModified": 1778150926,
+        "narHash": "sha256-l9/7N7smmFDYqBrvdvn11Q70jUxkkIS8xA4Q+aN80C0=",
         "owner": "kokatsu",
         "repo": "cli-tools",
-        "rev": "2a11397c2b86a829684fd5e0c2583fe643c89cf4",
+        "rev": "6bbef6b4b5d6f256ec4634ea530d01a8f9fc56c4",
         "type": "github"
       },
       "original": {
@@ -198,6 +218,7 @@
     "root": {
       "inputs": {
         "catppuccin": "catppuccin",
+        "cc-statusline": "cc-statusline",
         "cli-tools": "cli-tools",
         "home-manager": "home-manager",
         "nix-darwin": "nix-darwin",

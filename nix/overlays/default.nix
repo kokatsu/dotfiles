@@ -5,5 +5,6 @@
   sourceBuilds = import ./source-builds.nix;
   standalone = import ./standalone.nix;
   cliTools = import ./cli-tools.nix {inherit inputs;};
+  ccStatusline = import ./cc-statusline.nix {inherit inputs;};
 in
-  binaryReleases // npmPackages // buildFixes // sourceBuilds // standalone // cliTools
+  binaryReleases // npmPackages // buildFixes // sourceBuilds // standalone // cliTools // ccStatusline
