@@ -16,7 +16,7 @@ Karabiner-Elements の設定管理。
 適用せずに生成 JSON を確認したい場合:
 
 ```bash
-deno task dry-run
+just karabiner-dry-run
 ```
 
 ## 設定内容
