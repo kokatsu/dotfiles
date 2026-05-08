@@ -99,7 +99,7 @@ in {
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = mkBinaryRelease rec {
     pname = "octorus";
-    version = "0.6.2";
+    version = "0.6.3";
     hashes = {
       "aarch64-darwin" = "sha256-ErADFuUWXaxa4nKBn0UGIPUjKkJa5D77h1Ntm/4Q/LU=";
       "x86_64-darwin" = "sha256-t7wz9i3UWfz0VGZsk+ewMeIBgQzERI/o5SGrWMm/PIs=";
