@@ -127,3 +127,11 @@ typos-fix:
 # Test Neovim custom plugins (smoke test)
 nvim-test:
     nvim --headless --clean -l scripts/test-nvim-config.lua
+
+# Build karabiner.json from karabiner.ts
+karabiner-build:
+    cd karabiner-config && deno run --allow-env --allow-read --allow-write ./karabiner.ts
+
+# Dry-run karabiner.json generation (no write)
+karabiner-dry-run:
+    cd karabiner-config && deno run --allow-env --allow-read --allow-write ./karabiner.ts --dry-run
