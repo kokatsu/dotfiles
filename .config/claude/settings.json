@@ -55,7 +55,8 @@
           },
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/session-logger.ts"
+            "command": "~/.config/claude/hooks/session-logger.ts",
+            "async": true
           }
         ]
       }
