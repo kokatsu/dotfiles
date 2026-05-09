@@ -56,27 +56,28 @@ biome-fmt-check:
 biome-lint:
     biome lint .
 
-# Format Deno TypeScript files
-deno-fmt:
+# Run a deno subcommand over all configured Deno dirs and files
+_deno-each cmd:
     @for dir in {{ deno_dirs }}; do \
-      echo "deno fmt: $dir"; \
-      deno fmt "$dir"; \
+      echo "deno {{ cmd }}: $dir"; \
+      deno {{ cmd }} "$dir"; \
     done
     @for file in {{ deno_files }}; do \
-      echo "deno fmt: $file"; \
-      deno fmt "$file"; \
+      echo "deno {{ cmd }}: $file"; \
+      deno {{ cmd }} "$file"; \
     done
+
+# Format Deno TypeScript files
+deno-fmt:
+    @just _deno-each fmt
 
 # Check Deno TypeScript formatting (no write)
 deno-fmt-check:
-    @for dir in {{ deno_dirs }}; do \
-      echo "deno fmt --check: $dir"; \
-      deno fmt --check "$dir"; \
-    done
-    @for file in {{ deno_files }}; do \
-      echo "deno fmt --check: $file"; \
-      deno fmt --check "$file"; \
-    done
+    @just _deno-each "fmt --check"
+
+# Lint TypeScript with deno
+deno-lint:
+    @just _deno-each lint
 
 # Type-check Deno TypeScript files
 deno-check:
@@ -87,17 +88,6 @@ deno-check:
     @for file in {{ deno_files }}; do \
       echo "deno check: $file"; \
       deno check "$file"; \
-    done
-
-# Lint TypeScript with deno
-deno-lint:
-    @for dir in {{ deno_dirs }}; do \
-      echo "deno lint: $dir"; \
-      deno lint "$dir"; \
-    done
-    @for file in {{ deno_files }}; do \
-      echo "deno lint: $file"; \
-      deno lint "$file"; \
     done
 
 # Lint shell scripts
