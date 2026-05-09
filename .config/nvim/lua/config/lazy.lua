@@ -30,7 +30,7 @@ require('lazy').setup({
     require('plugins.blink'),
     require('plugins.catppuccin'),
     require('plugins.colorizer'),
-    require('plugins.diffview'),
+    require('plugins.difftastic'),
     require('plugins.flash'),
     require('plugins.gitsigns'),
     require('plugins.img-clip'),
