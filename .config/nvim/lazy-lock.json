@@ -4,7 +4,7 @@
   "blink.cmp": { "branch": "main", "commit": "78336bc89ee5365633bcf754d93df01678b5c08f" },
   "budoux.lua": { "branch": "main", "commit": "7f23658b127b9a74aae5b388fefcd997be30cbfc" },
   "catppuccin": { "branch": "main", "commit": "426dbebe06b5c69fd846ceb17b42e12f890aedf1" },
-  "diffview.nvim": { "branch": "main", "commit": "4516612fe98ff56ae0415a259ff6361a89419b0a" },
+  "difftastic.nvim": { "branch": "main", "commit": "6041ef0244b3fecf3b7f07de9af8cfbf8dbc4945" },
   "flash.nvim": { "branch": "main", "commit": "fcea7ff883235d9024dc41e638f164a450c14ca2" },
   "friendly-snippets": { "branch": "main", "commit": "6cd7280adead7f586db6fccbd15d2cac7e2188b9" },
   "gitsigns.nvim": { "branch": "fix/blame-nil-repo-race", "commit": "cd0dbfcb7f699b181f04e8c59641b1edcdf847c3" },
