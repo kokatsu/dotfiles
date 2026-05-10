@@ -202,6 +202,8 @@ in {
       #####################################
       # https://github.com/oven-sh/bun
       bun # JavaScript ランタイム + バンドラー
+      # https://github.com/voidzero-dev/vite-plus
+      vite-plus # Vite+ 統合フロントエンドツールチェーン (overlay)
       # https://github.com/anthropics/claude-code
       claude-code # AI コーディングエージェント (overlay)
 
