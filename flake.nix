@@ -99,6 +99,7 @@
       customOverlays.octorus
       customOverlays.rgx-cli
       customOverlays.unocss-language-server
+      customOverlays.vite-plus
       customOverlays.vue-language-server-pin
       customOverlays.x-api-playground
     ];

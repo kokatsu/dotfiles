@@ -1,0 +1,8 @@
+{
+  "name": "vite-plus-wrapper",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "vite-plus": "0.1.20"
+  }
+}

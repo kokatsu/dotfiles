@@ -97,6 +97,14 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }unocss-language-server $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'vite-plus'; then
+            echo "has_vite_plus=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=vite-plus" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "vite-plus" "$VERSION"
+            echo "version_vite_plus=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }vite-plus $VERSION"
+          fi
+
           if echo "$DIFF" | grep -q 'kakehashi'; then
             echo "has_kakehashi=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*kakehashi" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -229,6 +237,33 @@ jobs:
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
           sed -i "/unocss-language-server = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+
+      - name: Update vite-plus hashes
+        if: steps.detect.outputs.has_vite_plus == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_vite_plus }}
+        run: |
+          OVERLAY="nix/overlays/npm-packages.nix"
+          LOCK_DIR="nix/npm-locks/vite-plus"
+
+          # vite-plus's tarball references private workspace packages in its own
+          # devDependencies, so we vendor a wrapper package.json that depends on
+          # vite-plus@<version> and regenerate package-lock.json from it.
+          # --legacy-peer-deps must mirror npmFlags in npm-packages.nix.
+          jq --arg v "$VERSION" '.dependencies."vite-plus" = $v' \
+            "$LOCK_DIR/package.json" > /tmp/vite-plus-wrapper.json
+          mv /tmp/vite-plus-wrapper.json "$LOCK_DIR/package.json"
+
+          mkdir -p /tmp/vite-plus-pkg
+          cp "$LOCK_DIR/package.json" /tmp/vite-plus-pkg/
+          cd /tmp/vite-plus-pkg
+          npm install --package-lock-only --ignore-scripts --legacy-peer-deps
+          cp package-lock.json "$GITHUB_WORKSPACE/$LOCK_DIR/"
+          cd "$GITHUB_WORKSPACE"
+
+          # Compute npmDepsHash using prefetch-npm-deps
+          NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
+          sed -i "/vite-plus = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update cssmodules-language-server hashes
         if: steps.detect.outputs.has_cssmodules_language_server == 'true'
