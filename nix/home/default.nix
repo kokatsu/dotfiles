@@ -23,6 +23,7 @@ in {
     ./programs/fzf.nix
     ./programs/gh.nix
     ./programs/git.nix
+    ./programs/hunk.nix
     ./programs/lazygit.nix
     ./programs/readline.nix
     ./programs/starship.nix
