@@ -18,6 +18,20 @@ M.is_mac = wezterm.target_triple == 'x86_64-apple-darwin' or wezterm.target_trip
 --- Linuxかどうか
 M.is_linux = wezterm.target_triple:find('linux') ~= nil
 
+--- WezTerm 自身が WSL ホスト内で動いているか（/proc/version の microsoft 文字列で判定）
+M.is_wsl_host = (function()
+  if not M.is_linux then
+    return false
+  end
+  local f = io.open('/proc/version', 'r')
+  if not f then
+    return false
+  end
+  local content = f:read('*a') or ''
+  f:close()
+  return content:lower():find('microsoft') ~= nil
+end)()
+
 -- ==============================================================================
 -- WSL判定（動的：ペインごとに判定）
 -- ==============================================================================
