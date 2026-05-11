@@ -82,6 +82,26 @@ wezterm.on('open-uri', function(window, pane, uri)
       line = nil
     end
 
+    -- HTML はブラウザで開く
+    if file:match('%.html?$') then
+      local opener
+      if platform.is_wsl_domain(pane) then
+        -- WezTerm が Windows ホスト + WSL ペイン
+        opener = { 'wsl.exe', 'wslview', file }
+      elseif platform.is_wsl_host then
+        -- WezTerm 自身が WSL 内で動作（wslview が cmd.exe 経由で Windows 既定ブラウザを開く）
+        opener = { 'wslview', file }
+      elseif is_mac then
+        opener = { 'open', file }
+      elseif is_windows then
+        opener = { 'explorer.exe', file }
+      else
+        opener = { 'xdg-open', file }
+      end
+      wezterm.background_child_process(opener)
+      return false
+    end
+
     local nvim_args = line and ('+' .. line .. ' "' .. file .. '"') or ('"' .. file .. '"')
 
     window:perform_action(
@@ -132,6 +152,12 @@ config.mouse_bindings = {
         window:perform_action(wezterm.action.OpenLinkAtMouseCursor, pane)
       end
     end),
+  },
+  -- Shift+ダブルクリック: tmux のマウスキャプチャをバイパスしてリンクを開く（Claude Code 内で使用）
+  {
+    event = { Up = { streak = 2, button = 'Left' } },
+    mods = 'SHIFT',
+    action = wezterm.action.OpenLinkAtMouseCursor,
   },
 }
 
