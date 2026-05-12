@@ -128,10 +128,10 @@ in {
     pname = "rgx-cli";
     version = "0.12.2";
     hashes = {
-      "aarch64-darwin" = "sha256-e4wC//IyZS2YwDQe5iPNABEtZJVZYwuDMgAFnKCsWXo=";
-      "x86_64-darwin" = "sha256-dSgJwotAZwrXBreQ0c6fILIzju4IaUngPfadEhESTSE=";
-      "aarch64-linux" = "sha256-ols5kOeKmTm2Z9YGhb3J468ow5RRxIabObHRkLnqEt0=";
-      "x86_64-linux" = "sha256-ZgjkDU7iwPpZjwuH9D1X/8IvQHIXk8UFCMNzt4D/ZA4=";
+      "aarch64-darwin" = "sha256-7M9ALm1cmUE1USWu+iCW77w1+GdO9VNTnSrdqAfXRhs=";
+      "x86_64-darwin" = "sha256-RKuys72yp79uy1c2shpq5A2C0QOlw79cjDmX+jmacSg=";
+      "aarch64-linux" = "sha256-O6sXHbA+8ICo5FcXYhN/air3jN67Ix5QueIrM1quT9U=";
+      "x86_64-linux" = "sha256-uEux8J3vnsVJDR/OANRx2Nk2kKl25bq6BviR1AyGyGk=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
