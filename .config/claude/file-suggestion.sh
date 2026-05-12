@@ -7,9 +7,11 @@ query=$(jq -r '.query // empty')
 
 cd "${CLAUDE_PROJECT_DIR:-.}"
 
-# Common fd options
+# Common fd options. --full-path is added per-branch — branch 2 (`<dir>/<query>`)
+# must NOT use --full-path because fd resolves the search root to its absolute
+# path before matching, so e.g. `me` in `.kokatsu` would match the leading
+# `/home/...` prefix and surface unrelated entries.
 fd_opts=(
-  --full-path
   --fixed-strings
   --hidden
   --exclude .git
@@ -25,24 +27,32 @@ fd_opts=(
   --color never
 )
 
-# If query is an existing directory, list its contents (directories first)
+# If query is an existing directory, list its contents (directories first).
+# Empty pattern lists every entry under the search path regardless of name.
 if [[ -d "$query" ]]; then
   {
-    fd --type d --max-depth 1 --max-results 15 "${fd_opts[@]}" . "$query" 2>/dev/null || true
-    fd --type f --max-depth 1 --max-results 15 "${fd_opts[@]}" . "$query" 2>/dev/null || true
+    fd --type d --no-ignore-vcs --max-depth 1 --max-results 15 "${fd_opts[@]}" '' "$query" 2>/dev/null || true
+    fd --type f --no-ignore-vcs --max-depth 1 --max-results 15 "${fd_opts[@]}" '' "$query" 2>/dev/null || true
   } | head -15
 elif [[ "$query" == */* ]] && [[ -d "$(dirname "$query")" ]]; then
-  # Partial path with existing parent (e.g. ../dotfiles/.con, src/comp)
-  fd --type f --type d --max-results 200 "${fd_opts[@]}" "$(basename "$query")" "$(dirname "$query")" 2>/dev/null |
-    awk -F/ '{print NF, $0}' | sort -sn | head -15 | cut -d' ' -f2- || true
+  # Partial path with existing parent (e.g. ../dotfiles/.con, src/comp).
+  # Rank: prefix match on relative path > substring; then dir > file; then shallow > deep.
+  base=$(basename "$query")
+  dir=$(dirname "$query")
+  {
+    fd --type d --no-ignore-vcs "${fd_opts[@]}" "$base" "$dir" 2>/dev/null |
+      awk -v q="$query" -F/ '{p=(index($0,q)==1)?0:1; printf "%d\t0\t%d\t%s\n", p, NF, $0}'
+    fd --type f --no-ignore-vcs "${fd_opts[@]}" "$base" "$dir" 2>/dev/null |
+      awk -v q="$query" -F/ '{p=(index($0,q)==1)?0:1; printf "%d\t1\t%d\t%s\n", p, NF, $0}'
+  } | sort -t$'\t' -k1,1n -k2,2n -k3,3n | head -15 | cut -f4- || true
 else
-  # Sort by path depth (shallow first) so partial folder names surface the folder itself
-  if git rev-parse --is-inside-work-tree &>/dev/null; then
-    git ls-files --cached --others --exclude-standard 2>/dev/null |
-      grep -F "$query" |
-      awk -F/ '{print NF, $0}' | sort -sn | head -15 | cut -d' ' -f2- || true
-  else
-    fd --type f --type d --max-results 200 --strip-cwd-prefix "${fd_opts[@]}" "$query" 2>/dev/null |
-      awk -F/ '{print NF, $0}' | sort -sn | head -15 | cut -d' ' -f2- || true
-  fi
+  # Rank: prefix match on relative path > substring; then dir > file; then shallow > deep.
+  # --no-ignore-vcs lets gitignored entries (e.g. .local/) surface; --exclude in fd_opts still suppresses noisy dirs.
+  # --full-path matches the query against the full relative path so e.g. `src/comp` still works when branch 2 misses.
+  {
+    fd --type d --no-ignore-vcs --full-path --strip-cwd-prefix "${fd_opts[@]}" "$query" 2>/dev/null |
+      awk -v q="$query" -F/ '{p=(index($0,q)==1)?0:1; printf "%d\t0\t%d\t%s\n", p, NF, $0}'
+    fd --type f --no-ignore-vcs --full-path --strip-cwd-prefix "${fd_opts[@]}" "$query" 2>/dev/null |
+      awk -v q="$query" -F/ '{p=(index($0,q)==1)?0:1; printf "%d\t1\t%d\t%s\n", p, NF, $0}'
+  } | sort -t$'\t' -k1,1n -k2,2n -k3,3n | head -15 | cut -f4- || true
 fi
