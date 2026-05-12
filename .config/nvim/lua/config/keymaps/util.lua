@@ -16,6 +16,14 @@ vim.keymap.set('n', '<leader>yp', function()
   vim.notify('Copied "' .. relative_path .. '" to the clipboard!')
 end, { noremap = true, desc = 'Copy current file path to clipboard (relative to cwd)' })
 
+-- カレントファイルのディレクトリパス (cwd 相対) をクリップボードへ
+vim.keymap.set('n', '<leader>yP', function()
+  local absolute_dir = vim.fn.expand('%:p:h')
+  local relative_dir = vim.fn.fnamemodify(absolute_dir, ':.')
+  vim.fn.setreg('+', relative_dir)
+  vim.notify('Copied "' .. relative_dir .. '" to the clipboard!')
+end, { noremap = true, desc = 'Copy current directory path to clipboard (relative to cwd)' })
+
 -- カーソル位置の診断メッセージをクリップボードへ
 vim.keymap.set('n', '<leader>yd', function()
   local diagnostics = vim.diagnostic.get(0)
