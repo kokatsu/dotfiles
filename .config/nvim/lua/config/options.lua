@@ -37,6 +37,9 @@ if os_utils.detect_os() == 'wsl' then
     local url = vim.fn.expand('<cfile>')
     vim.fn.jobstart({ 'cmd.exe', '/c', 'start', url:gsub('&', '^&') }, { detach = true })
   end, { desc = 'Open URL in Windows browser' })
+  vim.keymap.set('n', 'gX', function()
+    vim.fn.jobstart({ 'wslview', vim.fn.expand('%:p') }, { detach = true })
+  end, { desc = 'Open current file in Windows browser' })
 end
 
 -- 行頭行末の左右移動で行をまたぐ
