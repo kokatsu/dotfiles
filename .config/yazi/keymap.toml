@@ -39,6 +39,11 @@ run = "shell '$EDITOR \"$@\"' --block --confirm"
 desc = "Edit with $EDITOR"
 
 [[mgr.prepend_keymap]]
+on = "b"
+run = '''shell 'if command -v wslview >/dev/null 2>&1; then wslview "$@"; elif [ "$(uname)" = "Darwin" ]; then open "$@"; else xdg-open "$@"; fi' --orphan --confirm'''
+desc = "Open with default app"
+
+[[mgr.prepend_keymap]]
 on = "+"
 run = "plugin zoom 1"
 desc = "Zoom in hovered file"
