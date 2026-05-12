@@ -287,6 +287,11 @@ in {
       ".config/wezterm/stylua.toml".source = ../../.config/wezterm/stylua.toml;
       ".config/wezterm/wezterm.lua".source = ../../.config/wezterm/wezterm.lua;
       ".config/wezterm/windows.lua".source = ../../.config/wezterm/windows.lua;
+      ".config/wezterm/wk.lua".source = ../../.config/wezterm/wk.lua;
+      ".config/wezterm/which-key/init.lua".source = ../../.config/wezterm/which-key/init.lua;
+      ".config/wezterm/which-key/walker.lua".source = ../../.config/wezterm/which-key/walker.lua;
+      ".config/wezterm/which-key/popup.lua".source = ../../.config/wezterm/which-key/popup.lua;
+      ".config/wezterm/which-key/status.lua".source = ../../.config/wezterm/which-key/status.lua;
 
       # Ghostty: catppuccin/nix 管理 (ビルトインテーマを利用)
       ".config/ghostty/config".text = let

@@ -167,4 +167,7 @@ elseif is_mac then
   require('mac').apply_to_config(config)
 end
 
+-- which-key 風 leader メニュー (LEADER = Ctrl+a, LEADER+? でメニュー表示)
+require('wk').apply_to_config(config)
+
 return config

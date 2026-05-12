@@ -95,14 +95,19 @@ in {
       fi
     '';
 
-    # WezTerm: WSL → Windows 側に設定ファイルをコピー (home-manager switch で自動反映)
+    # WezTerm: WSL → Windows 側に設定ファイル (.lua) を再帰コピー
     copyWezTermConfig = lib.mkIf (!isDarwin) (lib.hm.dag.entryAfter ["linkGeneration"] ''
       WINUSER=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r')
       WEZTERM_DIR="/mnt/c/Users/$WINUSER/.config/wezterm"
-      if [ -d "/mnt/c/Users/$WINUSER" ]; then
+      SRC_DIR="$HOME/.config/wezterm"
+      if [ -n "$WINUSER" ] && [ -d "/mnt/c/Users/$WINUSER" ]; then
         $DRY_RUN_CMD mkdir -p "$WEZTERM_DIR"
-        for f in "$HOME/.config/wezterm/"*.lua; do
-          [ -f "$f" ] && $DRY_RUN_CMD cp -f "$f" "$WEZTERM_DIR/"
+        # -L: home-manager の symlink を辿って実体をコピー
+        find -L "$SRC_DIR" -type f -name '*.lua' | while IFS= read -r f; do
+          rel="''${f#$SRC_DIR/}"
+          dst="$WEZTERM_DIR/$rel"
+          $DRY_RUN_CMD mkdir -p "$(dirname "$dst")"
+          $DRY_RUN_CMD cp -fL "$f" "$dst"
         done
       fi
     '');
