@@ -1,11 +1,8 @@
 {
   # Pin vue-language-server to 3.0.8
-  vue-language-server-pin = _final: prev: let
-    pnpmDepsHash =
-      if prev.stdenv.hostPlatform.isDarwin
-      then "sha256-KTpi7aldU9GBDwRwh51foePvoDEmEKhYDhNFGRXgeko="
-      else "sha256-0H7j/TlVTkQ5dGlm1AgvtXYa+pPnkvadlNGygEaB85k=";
-  in {
+  # fetcherVersion 2 normalizes permissions, so the pnpmDeps hash is
+  # platform-independent (no separate darwin/linux hashes needed).
+  vue-language-server-pin = _final: prev: {
     vue-language-server = prev.vue-language-server.overrideAttrs (old: rec {
       version = "3.0.8";
       src = prev.fetchFromGitHub {
@@ -17,8 +14,9 @@
       pnpmDeps = prev.fetchPnpmDeps {
         inherit (old) pname;
         inherit version src;
-        fetcherVersion = 1;
-        hash = pnpmDepsHash;
+        pnpm = prev.pnpm_10;
+        fetcherVersion = 2;
+        hash = "sha256-5Ul9TKCIzYI7aB3GtZ5GrPTZZeh931xyBcci9UhL/ac=";
       };
     });
   };
