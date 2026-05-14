@@ -226,22 +226,22 @@ local function get_cwd_name(pane)
   return cwd_name
 end
 
--- ベルを鳴らしたときに通知を出す
--- https://zenn.dev/choplin/articles/cb16c2da711de8
--- https://github.com/ucpr/dotfiles/blob/8dbb7b426f2bf5f820e28aaeabf95b7917537021/wezterm/wezterm.lua
+local function is_claude(pane)
+  return is_process(pane, 'claude', true)
+end
+
+--- pane が属するタブの 1-based 位置を返す（見つからなければ nil）
+---@param window any
+---@param pane any
+---@return integer?
 local function get_tab_id(window, pane)
-  local mux_window = window:mux_window()
-  for i, tab_info in ipairs(mux_window:tabs_with_info()) do
+  for i, tab_info in ipairs(window:mux_window():tabs_with_info()) do
     for _, p in ipairs(tab_info.tab:panes()) do
       if p:pane_id() == pane:pane_id() then
         return i
       end
     end
   end
-end
-
-local function is_claude(pane)
-  return is_process(pane, 'claude', true)
 end
 
 -- 各タブのディレクトリ名を記憶しておくテーブル
@@ -370,23 +370,26 @@ M.apply = function()
     }
   end)
 
-  -- ベルを鳴らしたときに通知を出す
-  -- 注: macOSではtoast_notificationが動作しないため、
-  -- Claude Codeの通知はhooks + terminal-notifierを使用
-  wezterm.on('bell', function(window, pane)
+  -- Claude Code の通知（ターン終了 / 承認待ち）
+  -- notify.sh が CC 本体の pts に OSC 1337 SetUserVar=CLAUDE_LAST_MSG を
+  -- 直書きする。その user var 更新を user-var-changed で受けて toast を出す。
+  -- bell ではなく user-var-changed を使うのは、CC 自身の turn 終了 BEL と
+  -- notify.sh の書き込みのレースを避けるため。
+  -- 注: macOSでは toast_notification が動作しないため hooks + terminal-notifier 経由
+  wezterm.on('user-var-changed', function(window, pane, name, value)
+    if name ~= 'CLAUDE_LAST_MSG' then
+      return
+    end
     if not is_claude(pane) then
       return
     end
-
+    if not value or value == '' then
+      return
+    end
+    -- 複数セッション時にどのタブが終わったか分かるようタイトルにタブ番号を付ける
     local tab_id = get_tab_id(window, pane)
-    local tab_title = get_cwd_name(pane) or 'Unknown Tab'
-
-    window:toast_notification(
-      'Claude Code',
-      'Task completed (tab_id: ' .. tostring(tab_id) .. ', tab_title: ' .. tab_title .. ')',
-      nil,
-      4000
-    )
+    local title = tab_id and ('Claude Code (タブ ' .. tab_id .. ')') or 'Claude Code'
+    window:toast_notification(title, value, nil, 4000)
   end)
 end
 

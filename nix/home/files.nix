@@ -65,6 +65,10 @@ in {
         source = ../../.config/claude/hooks/gh-api-guard.sh;
         executable = true;
       };
+      ".config/claude/hooks/notify.sh" = {
+        source = ../../.config/claude/hooks/notify.sh;
+        executable = true;
+      };
       ".config/claude/scripts/cc-metrics.ts" = {
         source = ../../.config/claude/scripts/cc-metrics.ts;
         executable = true;

@@ -4,6 +4,7 @@
 
 # WezTerm User Variable を設定（OSC 1337）
 # tmux内の場合はDCSパススルーでWezTermに転送
+# 注: 同じ OSC 1337 構築を .config/claude/hooks/notify.sh が複製（手動同期）
 function _wezterm_set_user_var() {
   if [[ -n "$TMUX" ]]; then
     printf "\033Ptmux;\033\033]1337;SetUserVar=%s=%s\007\033\\" "$1" "$(printf '%s' "$2" | base64)"
@@ -30,6 +31,8 @@ function claude() {
     local session_name="claude${WEZTERM_PANE:+-$WEZTERM_PANE}"
     _wezterm_set_user_var IS_CLAUDE 1
     # TMUX を空にして CC の tmux 検出を回避（薄palette回避）
+    # 通知は notify.sh が CC 本体の pts に DCS passthrough を直書きするので
+    # CC 自身の tmux 検出は不要
     tmux new-session -A -s "$session_name" \
       "TMUX= command claude"
     _wezterm_set_user_var IS_CLAUDE 0
