@@ -6,5 +6,6 @@
   standalone = import ./standalone.nix;
   cliTools = import ./cli-tools.nix {inherit inputs;};
   ccStatusline = import ./cc-statusline.nix {inherit inputs;};
+  hermesAgent = import ./hermes-agent.nix {inherit inputs;};
 in
-  binaryReleases // npmPackages // buildFixes // sourceBuilds // standalone // cliTools // ccStatusline
+  binaryReleases // npmPackages // buildFixes // sourceBuilds // standalone // cliTools // ccStatusline // hermesAgent

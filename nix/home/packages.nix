@@ -37,6 +37,8 @@ in {
     [
       # https://github.com/vercel-labs/agent-browser
       agent-browser # ブラウザ自動化エージェント
+      # https://github.com/NousResearch/hermes-agent
+      hermes-agent # 自己改善型 AI エージェント (long-term memory + skill learning, overlay)
 
       #####################################
       # ランタイム (グローバルデフォルト)
