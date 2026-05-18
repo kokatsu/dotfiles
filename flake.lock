@@ -186,15 +186,16 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1779092826,
-        "narHash": "sha256-k/1jIqxsIo88HBMNWr/jwcXdYBoGPD2/Ccfb0w/yFsA=",
+        "lastModified": 1778925537,
+        "narHash": "sha256-d9qhrTy45Q5UsmjapqMHOVi9e+gR9zE8Nq9Z0wObLmc=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "dadc8aa25580ac1ecc65d6185dfc6bd0e1d6d279",
+        "rev": "a91a57fa5a13d516c38b07a141a9ce8a3daabeb0",
         "type": "github"
       },
       "original": {
         "owner": "NousResearch",
+        "ref": "v2026.5.16",
         "repo": "hermes-agent",
         "type": "github"
       }
@@ -227,15 +228,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1778511233,
-        "narHash": "sha256-JB0IDW1V0WAlCUoHyt7ZWM0RL7i7/n6JKfZs1THetIw=",
+        "lastModified": 1779130509,
+        "narHash": "sha256-eIYNhBAz73GR6yfjjP9nKnZP2MPTKedLQ7Yv7TgWUxs=",
         "owner": "modem-dev",
         "repo": "hunk",
-        "rev": "e9ba01468488ba98bc90907b192efd152cc05c0c",
+        "rev": "3757dc9e29093db298b21111b146b38e513f4c9c",
         "type": "github"
       },
       "original": {
         "owner": "modem-dev",
+        "ref": "v0.13.0",
         "repo": "hunk",
         "type": "github"
       }

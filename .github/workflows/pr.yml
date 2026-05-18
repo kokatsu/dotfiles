@@ -481,9 +481,14 @@ jobs:
           fi
           echo "All hashes verified successfully."
 
+      - name: Sync flake.lock for flake.nix tag pins
+        id: sync-flake
+        run: bash scripts/sync-flake-inputs.sh "$GITHUB_OUTPUT"
+
       - name: Commit and push changes
         env:
           PACKAGES: ${{ steps.detect.outputs.packages }}
+          EXTRA_PACKAGES: ${{ steps.sync-flake.outputs.extra_packages }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -492,7 +497,8 @@ jobs:
             echo "No changes to commit"
           else
             git add -A
-            git commit -m "fix: update nix hashes for $PACKAGES"
+            MSG="${PACKAGES}${PACKAGES:+${EXTRA_PACKAGES:+, }}${EXTRA_PACKAGES}"
+            git commit -m "fix: update nix hashes for $MSG"
             git push
           fi
 
