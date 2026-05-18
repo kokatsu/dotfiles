@@ -32,6 +32,17 @@
       ],
       versioningTemplate: 'semver',
     },
+    {
+      // flake.nix のリリースタグ pin 用 (例: url = "github:owner/repo/v1.2.3")
+      customType: 'regex',
+      managerFilePatterns: [
+        '/^flake\\.nix$/',
+      ],
+      matchStrings: [
+        '#\\s*Renovate:\\s*datasource=(?<datasource>[\\w.-]+)\\s+depName=(?<depName>[\\w./-]+)\\s*\\n\\s+[\\w-]+\\s*=\\s*\\{\\s*\\n\\s+url\\s*=\\s*"github:[\\w./-]+/(?<currentValue>[^"]+)"',
+      ],
+      versioningTemplate: 'semver',
+    },
   ],
   packageRules: [
     {
@@ -48,8 +59,13 @@
       semanticCommitScope: 'deps',
     },
     {
+      // overlays では version 文字列を 'v' なしで保持しているため strip する
+      // flake.nix のタグ pin (例: url = ".../v1.2.3") には適用しない (URL ref に 'v' が必要)
       matchDatasources: [
         'github-releases',
+      ],
+      matchFileNames: [
+        'nix/overlays/*.nix',
       ],
       extractVersion: '^v?(?<version>.*)$',
     },

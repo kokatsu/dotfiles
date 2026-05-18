@@ -34,14 +34,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Renovate: datasource=github-releases depName=modem-dev/hunk
     hunk = {
-      url = "github:modem-dev/hunk";
+      url = "github:modem-dev/hunk/v0.13.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # https://github.com/NousResearch/hermes-agent
+    # Renovate: datasource=github-releases depName=NousResearch/hermes-agent
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent";
+      url = "github:NousResearch/hermes-agent/v2026.5.16";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
