@@ -38,6 +38,12 @@
       url = "github:modem-dev/hunk";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # https://github.com/NousResearch/hermes-agent
+    hermes-agent = {
+      url = "github:NousResearch/hermes-agent";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -100,6 +106,7 @@
       customOverlays.deck
       customOverlays.direnv-no-check
       customOverlays.git-graph-fork
+      customOverlays.hermes-agent
       customOverlays.kakehashi
       customOverlays.octorus
       customOverlays.rgx-cli

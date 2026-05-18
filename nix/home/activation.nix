@@ -76,6 +76,23 @@ in {
       done
     '';
 
+    # hermes-agent: catppuccin.flavor に追従して display.skin を書き戻す
+    # 現在値と差分があるときだけ呼ぶ (process spawn と config.yaml の mtime churn を回避)
+    applyHermesSkin = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      DESIRED="catppuccin-${config.catppuccin.flavor}"
+      CONFIG="${config.xdg.configHome}/hermes/config.yaml"
+      CURRENT=""
+      if [ -f "$CONFIG" ]; then
+        CURRENT=$(${pkgs.gnugrep}/bin/grep -E '^[[:space:]]*skin:[[:space:]]*' "$CONFIG" \
+          | ${pkgs.gnused}/bin/sed -E 's/^[[:space:]]*skin:[[:space:]]*"?([^"#]+)"?.*/\1/' \
+          | tr -d '[:space:]' || true)
+      fi
+      if [ "$CURRENT" != "$DESIRED" ]; then
+        $DRY_RUN_CMD env HERMES_HOME="${config.xdg.configHome}/hermes" \
+          "${pkgs.hermes-agent}/bin/hermes" config set display.skin "$DESIRED" > /dev/null
+      fi
+    '';
+
     # codex: git管理の設定 (tui等) とローカルの [projects] をマージ
     mergeCodexConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
       CODEX_DIR="$HOME/.config/codex"
