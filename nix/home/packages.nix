@@ -124,6 +124,8 @@ in {
       onefetch # Git リポジトリ情報表示
       # https://github.com/noborus/ov
       ov # ページャー
+      # https://github.com/ast-grep/ast-grep
+      ast-grep # AST ベース構造的コード検索・書き換え (grep/sed alternative, sg)
       # https://github.com/BurntSushi/ripgrep
       ripgrep # 高速テキスト検索 (grep alternative)
       # https://github.com/boyter/scc
