@@ -52,6 +52,29 @@ jobs:
       - name: Verify Renovate regex patterns match overlay files
         run: deno run --allow-read scripts/test-renovate-patterns.ts
 
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - name: Run shellcheck
+        # Backstop for the lefthook pre-commit/pre-push gate, which can be bypassed
+        # with --no-verify. Keep the file list aligned with justfile's `sh_files`.
+        run: |
+          shopt -s nullglob
+          files=(
+            .config/claude/file-suggestion.sh
+            .config/claude/hooks/*.sh
+            .config/tmux/scripts/*.sh
+            scripts/test-hash-patterns.sh
+            scripts/sync-flake-inputs.sh
+          )
+          shellcheck "${files[@]}"
+
   npm-audit:
     name: npm audit
     runs-on: ubuntu-latest
