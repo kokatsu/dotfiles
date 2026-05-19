@@ -8,10 +8,10 @@ in {
     pname = "claude-code";
     version = "2.1.144";
     hashes = {
-      "aarch64-darwin" = "sha256-JwHGz9aEg/j68DFqG6ZIGhRVqQZFraF58MSNjDbXIu8=";
-      "x86_64-darwin" = "sha256-vI/0zgK3ZaAzgI+1lvlSIwbL5cUNITRO2HUsCJZvNiw=";
-      "aarch64-linux" = "sha256-MujtxKXDxB0YYHx10bjnvsZDMwwD4ma+Rqw7QaRGxOs=";
-      "x86_64-linux" = "sha256-91/cP/nZzUlLhhkvnjSbXFxtOXDtTVzVx7MwxaKx3MQ=";
+      "aarch64-darwin" = "sha256-mIa6pOxMRV+GEIRk8SFzIZPuduXfzrAxAF9Z8xJ2pd8=";
+      "x86_64-darwin" = "sha256-0iXAe3E2Fc7aVM68+2KAlCsRPGTcy6oRSxIgTpFwh/g=";
+      "aarch64-linux" = "sha256-yMzMv84S1oRYi9OvNmOUEy9hTc88hr6yBm+GveJwRRM=";
+      "x86_64-linux" = "sha256-FHSAd0Ry5XIP1eg2F7PpKZNE5yE++oTDJrJb1aDyC04=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
