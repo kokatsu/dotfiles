@@ -1,26 +1,31 @@
 #!/usr/bin/env bash
 # PreToolUse guard for `gh api`.
 #
-# Strategy (fail-safe): auto-allow only when we can affirmatively prove the
-# invocation is read-only. Any uncertainty falls through to "ask".
+# Gated in settings.json by `if: "Bash(gh api *)"`, which fires on a per-subcommand
+# prefix match (or when a command is too complex to parse). So this script only
+# runs once a `gh api` invocation is already known to be present (or unparsable).
+# It then auto-allows only when it can affirmatively prove the call is read-only;
+# any uncertainty falls through to "ask" (fail-safe).
 #
 # Writes to gh's REST/GraphQL APIs can be triggered by:
 #   - -X / --method overriding the verb to POST/PUT/PATCH/DELETE
 #     (gh accepts -X POST, -XPOST, --method POST, --method=POST)
 #   - --field / -F / --raw-field / -f          (typed + raw body fields → POST default)
 #   - --input <file>                            (request body → POST default)
-# Wrappers like `eval`, `bash -c`, `xargs gh api`, $(…) substitutions or
-# backticks hide the actual command from this regex pass, so we also
-# defer those to "ask".
+# When a parseable `gh api` subcommand sits alongside `eval`, `bash -c`, a
+# subshell or backticks, the real verb may be hidden, so we defer to "ask".
+# Note: `eval "gh api …"` (gh api buried inside eval's string arg) never trips
+# the `if` gate, so this script won't see it — that form is blocked upstream by
+# the banned-commands `eval` rule instead.
 
 set -euo pipefail
 
 INPUT=$(cat)
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command')
 
-# Word-boundary match (not just substring) — anything mentioning `gh api`
-# qualifies, including wrapped forms like `eval "gh api …"` which the
-# shell-wrap check below catches.
+# Defensive re-check that a `gh api` token is actually present. The `if` gate
+# already guarantees this for parseable commands; this also covers the
+# "too complex to parse" fallback, where the gate fires without a confirmed match.
 if ! echo "$CMD" | grep -qE '\bgh\s+api\b'; then
   exit 0
 fi

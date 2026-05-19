@@ -75,6 +75,30 @@ jobs:
           )
           shellcheck "${files[@]}"
 
+  deno-check:
+    name: Deno check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+      - name: Type-check Deno TypeScript
+        # Backstop for the Lefthook pre-commit/pre-push gate (bypassable with
+        # --no-verify) and for type errors that otherwise surface only when these
+        # hooks run at session runtime. Mirrors the justfile `deno-check` recipe;
+        # keep the dir/file lists aligned with justfile's `deno_dirs`/`deno_files`
+        # (cd-per-dir lets each dir's own deno.json apply, e.g. karabiner-config).
+        run: |
+          for dir in karabiner-config scripts .config/claude/hooks; do
+            (cd "$dir" && find . -name '*.ts' -exec deno check {} +)
+          done
+          for file in .config/zeno/config.ts .config/claude/scripts/cc-metrics.ts; do
+            deno check "$file"
+          done
+
   npm-audit:
     name: npm audit
     runs-on: ubuntu-latest
