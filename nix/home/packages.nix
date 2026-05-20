@@ -395,11 +395,6 @@ in {
       # https://github.com/yuru7/HackGen
       hackgen-nf-font # HackGen + Nerd Fonts (日本語対応)
     ]
-    ++ lib.optionals isDarwin [
-      # macOS専用
-      # https://github.com/HakonHarnes/img-clip.nvim
-      pngpaste # Neovim画像貼り付け (img-clip.nvim依存)
-    ]
     ++ lib.optionals (!isDarwin) [
       # Linux/WSL専用
       # https://github.com/containers/bubblewrap

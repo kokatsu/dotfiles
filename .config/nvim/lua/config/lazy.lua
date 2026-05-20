@@ -33,7 +33,6 @@ require('lazy').setup({
     require('plugins.difftastic'),
     require('plugins.flash'),
     require('plugins.gitsigns'),
-    require('plugins.img-clip'),
     require('plugins.lazydev'),
     require('plugins.lualine'),
     require('plugins.md-render'),
