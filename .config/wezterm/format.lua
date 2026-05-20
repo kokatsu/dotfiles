@@ -184,10 +184,10 @@ end
 local function get_process_icon(pane)
   local name = get_process_name(pane, false)
 
-  for pattern, icon_info in pairs(process_icons) do
-    if name:find(pattern) then
-      return icon_info
-    end
+  -- 完全一致で照合する（部分一致だと cargo が go にマッチする等の誤判定が起きる）
+  local icon_info = process_icons[name]
+  if icon_info then
+    return icon_info
   end
 
   return default_icon
