@@ -2,11 +2,15 @@
 
 return {
   'mfussenegger/nvim-lint',
+  -- エディタ内の markdown lint (markdownlint/textlint) を無効化。
+  -- 両 linter は lefthook の commit/push hook で引き続き動作する。
+  enabled = false,
   ft = 'markdown',
   config = function()
     local lint = require('lint')
 
     lint.linters.textlint = {
+      name = 'textlint',
       cmd = 'textlint',
       args = {
         '--format',
