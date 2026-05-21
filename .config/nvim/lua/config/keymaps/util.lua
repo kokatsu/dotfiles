@@ -1,4 +1,4 @@
--- 補助系キーマップ (translate / yank path / diagnostic copy)
+-- 補助系キーマップ (translate / SQL helpers / yank path / diagnostic copy)
 
 -- 翻訳: <leader>R は normal/visual 共通
 vim.keymap.set('n', '<leader>R', function()
@@ -7,6 +7,31 @@ end, { desc = 'Translate comment under cursor' })
 vim.keymap.set('v', '<leader>R', function()
   require('utils.translate').translate_visual()
 end, { desc = 'Translate visual selection' })
+
+-- 現在の visual 選択の行範囲 (昇順) を返し、visual モードを抜ける
+local function visual_line_range()
+  local line1, line2 = vim.fn.line('v'), vim.fn.line('.')
+  if line1 > line2 then
+    line1, line2 = line2, line1
+  end
+  vim.cmd('normal! \27')
+  return line1, line2
+end
+
+-- 選択行の UUID を SQL の IN 句用リスト ('uuid', ...) へ整形 (最終行カンマ無し)
+vim.keymap.set('x', '<leader>u', function()
+  require('utils.sql').quote_uuid_list(visual_line_range())
+end, { noremap = true, desc = 'Quote UUIDs as SQL IN list' })
+
+-- 選択クエリを psql の \copy (...) TO 'result.csv' WITH CSV HEADER へ変換しコピー
+vim.keymap.set('x', '<leader>yc', function()
+  require('utils.sql').to_copy_csv(visual_line_range())
+end, { noremap = true, desc = 'Yank query as psql \\copy CSV command' })
+
+-- 選択クエリを COPY (...) TO STDOUT WITH CSV HEADER \g 'result.csv' へ変換しコピー
+vim.keymap.set('x', '<leader>yg', function()
+  require('utils.sql').to_copy_stdout_csv(visual_line_range())
+end, { noremap = true, desc = 'Yank query as COPY ... TO STDOUT \\g CSV command' })
 
 -- カレントファイルパス (cwd 相対) をクリップボードへ
 vim.keymap.set('n', '<leader>yp', function()
