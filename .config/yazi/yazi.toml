@@ -21,11 +21,11 @@ url = "*.ansi"
 run = "ansi-preview"
 
 [[plugin.prepend_fetchers]]
-id = "git"
 url = "*"
 run = "git"
+group = "git"
 
 [[plugin.prepend_fetchers]]
-id = "git"
 url = "*/"
 run = "git"
+group = "git"
