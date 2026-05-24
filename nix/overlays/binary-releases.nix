@@ -6,12 +6,12 @@ in {
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = mkBinaryRelease rec {
     pname = "claude-code";
-    version = "2.1.149";
+    version = "2.1.150";
     hashes = {
-      "aarch64-darwin" = "sha256-ZZ0aZc/UObtDcI/Rz76DRrWTcKJ/f2D3ieBfRgTe6aU=";
-      "x86_64-darwin" = "sha256-ZmogoZ0BGc7YjdOGw1A3AO4U9QjHzjsARydyVqQgIm0=";
-      "aarch64-linux" = "sha256-qxHLaixD7y3R5oJEst1HCvB94WNBmosHOpsOFX72T8M=";
-      "x86_64-linux" = "sha256-KVnAKmBaYW+znPoj4vdjVrJUaZ391eXoOPz7BBTkiYQ=";
+      "aarch64-darwin" = "sha256-L4QT6hCD8QhYeUBJahcFd1E0QQnSYftCOastRbIoXJk=";
+      "x86_64-darwin" = "sha256-xm1XId84zOgs3gPSRPj6knaBJf4G6NHTjUv7ra9KjRc=";
+      "aarch64-linux" = "sha256-IFKUlUPqB24rXNpEwDGys0/DA9uY3FatZYO34KQX6+s=";
+      "x86_64-linux" = "sha256-bAhqD1+/aE1BSLtpYpJotPUQlJjBp751es8YxR/QT0s=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
