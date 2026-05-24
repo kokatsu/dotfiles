@@ -111,6 +111,7 @@
       customOverlays.hermes-agent
       customOverlays.kakehashi
       customOverlays.octorus
+      customOverlays.pipx-no-check
       customOverlays.rgx-cli
       customOverlays.unocss-language-server
       customOverlays.vite-plus

@@ -68,6 +68,29 @@
     });
   };
 
+  # pipx 1.8.0 test_package_specifier tests fail with newer `packaging`,
+  # which normalizes PEP 508 direct references to `name @ url` (space around
+  # `@`) while the tests still assert the old `name@ url` form. Test-only
+  # formatting drift; pipx itself works fine. Disable via pythonPackagesExtensions
+  # because top-level `pipx` is `toPythonApplication python3Packages.pipx`,
+  # and the tests run through pytestCheckHook (not the `doCheck` gate).
+  pipx-no-check = _final: prev: {
+    pythonPackagesExtensions =
+      (prev.pythonPackagesExtensions or [])
+      ++ [
+        (_pyfinal: pyprev: {
+          pipx = pyprev.pipx.overrideAttrs (old: {
+            disabledTests =
+              (old.disabledTests or [])
+              ++ [
+                "test_fix_package_name"
+                "test_parse_specifier_for_metadata"
+              ];
+          });
+        })
+      ];
+  };
+
   # Fix jp2a build on darwin (marked as broken)
   jp2a-darwin-fix = _final: prev: {
     jp2a = prev.jp2a.overrideAttrs (old: {
