@@ -24,11 +24,6 @@ run = "plugin toggle-pane max-preview"
 desc = "Maximize or restore the preview pane"
 
 [[mgr.prepend_keymap]]
-on = "Y"
-run = '''shell 'for path in "$@"; do echo -n "$path"; done | pbcopy' --confirm'''
-desc = "Yank full path"
-
-[[mgr.prepend_keymap]]
 on = "S"
 run = "shell '$SHELL' --block --confirm"
 desc = "Open shell here"
@@ -42,6 +37,16 @@ desc = "Edit with $EDITOR"
 on = "b"
 run = '''shell 'if command -v wslview >/dev/null 2>&1; then wslview "$@"; elif [ "$(uname)" = "Darwin" ]; then open "$@"; else xdg-open "$@"; fi' --orphan --confirm'''
 desc = "Open with default app"
+
+[[mgr.prepend_keymap]]
+on = ["g", "s"]
+run = "plugin vcs-files"
+desc = "List Git-changed files"
+
+[[mgr.prepend_keymap]]
+on = ["g", "j"]
+run = '''shell 'root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0; cd "$root" || exit 0; sel=$(git -c core.quotePath=false status --porcelain | fzf --no-multi --layout=reverse --border --prompt="git changes> " --preview "git diff --color=always -- {2..}") || exit 0; [ -n "$sel" ] || exit 0; rel=${sel#???}; case "$rel" in *" -> "*) rel=${rel##* -> } ;; esac; ya emit reveal "$root/$rel"' --block --confirm'''
+desc = "Jump to a Git-changed file (fzf)"
 
 [[mgr.prepend_keymap]]
 on = "+"

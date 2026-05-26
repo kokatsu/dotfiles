@@ -28,6 +28,11 @@ use = "yazi-rs/plugins:zoom"
 rev = "b224ddf"
 hash = "d38879886586f10c8763d0943c329fd2"
 
+[[plugin.deps]]
+use = "yazi-rs/plugins:vcs-files"
+rev = "be524fb"
+hash = "6b141fbed3c74b45558fbc7088c805ee"
+
 [[flavor.deps]]
 use = "yazi-rs/flavors:catppuccin-mocha"
 rev = "9e053d0"
