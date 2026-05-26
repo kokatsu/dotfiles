@@ -56,7 +56,7 @@ in {
     # PATH に追加 (ユーザースクリプト)
     sessionPath = [
       "${config.home.homeDirectory}/.local/bin/scripts"
-      "${config.home.homeDirectory}/.local/share/pnpm" # pnpm グローバルバイナリ
+      "${config.home.homeDirectory}/.local/share/pnpm/bin" # pnpm グローバルバイナリ (v11+ は bin/ サブディレクトリ)
       "${config.home.homeDirectory}/.gem/bin" # ruby-lsp 等の gem 実行ファイル
     ];
 
