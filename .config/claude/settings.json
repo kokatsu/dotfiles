@@ -49,16 +49,10 @@
     ],
     "Stop": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "~/.config/claude/hooks/notify.sh"
-          },
-          {
-            "type": "command",
-            "command": "~/.config/claude/hooks/session-logger.ts",
-            "async": true
           }
         ]
       }
@@ -69,11 +63,6 @@
           {
             "type": "command",
             "command": "cmux claude-hook prompt-submit 2>/dev/null || true"
-          },
-          {
-            "type": "command",
-            "command": "~/.config/claude/hooks/run-deno-hook.sh ~/.config/claude/hooks/skill-tracker.ts",
-            "async": true
           }
         ]
       }
@@ -99,38 +88,6 @@
           {
             "type": "command",
             "command": "~/.config/claude/hooks/check-managed-paths.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.config/claude/hooks/run-deno-hook.sh ~/.config/claude/hooks/skill-tracker.ts",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "auto",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.config/claude/hooks/pre-compact-handover.ts"
-          }
-        ]
-      }
-    ],
-    "InstructionsLoaded": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.config/claude/hooks/run-deno-hook.sh ~/.config/claude/hooks/instructions-tracker.ts",
-            "async": true
           }
         ]
       }

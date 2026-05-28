@@ -11,10 +11,6 @@
   inherit (pkgs.stdenv.hostPlatform) system;
 
   # ユーザースクリプトのラッパー (bin/ 内の Deno/Bun スクリプトを短い名前で実行)
-  cc-metrics = pkgs.writeShellScriptBin "cc-metrics" ''
-    exec ${pkgs.deno}/bin/deno run --allow-read --allow-write="''${CLAUDE_CONFIG_DIR:-''${HOME}/.config/claude},''${HOME}/.claude,''${HOME}/.config/claude" --allow-env=HOME,CLAUDE_CONFIG_DIR "''${HOME}/.config/claude/scripts/cc-metrics.ts" "$@"
-  '';
-
   feed-watch = pkgs.writeShellScriptBin "feed-watch" ''
     exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/feed-watch" "$@"
   '';
@@ -344,7 +340,6 @@ in {
 
       # https://github.com/denoland/deno
       deno # JavaScript/TypeScript ランタイム
-      cc-metrics # スキル・インストラクション統合メトリクス表示 — depends on deno
 
       # https://github.com/jdx/mise
       mise # タスクランナー + プロジェクトごとのツールバージョン管理 (CI ではビルドに時間がかかるため除外)

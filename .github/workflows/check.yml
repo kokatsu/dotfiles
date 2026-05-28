@@ -92,10 +92,10 @@ jobs:
         # keep the dir/file lists aligned with justfile's `deno_dirs`/`deno_files`
         # (cd-per-dir lets each dir's own deno.json apply, e.g. karabiner-config).
         run: |
-          for dir in karabiner-config scripts .config/claude/hooks; do
+          for dir in karabiner-config scripts; do
             (cd "$dir" && find . -name '*.ts' -exec deno check {} +)
           done
-          for file in .config/zeno/config.ts .config/claude/scripts/cc-metrics.ts; do
+          for file in .config/zeno/config.ts; do
             deno check "$file"
           done
 

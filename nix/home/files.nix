@@ -32,26 +32,6 @@ in {
         source = ../../.config/claude/file-suggestion.sh;
         executable = true;
       };
-      ".config/claude/hooks/session-logger.ts" = {
-        source = ../../.config/claude/hooks/session-logger.ts;
-        executable = true;
-      };
-      ".config/claude/hooks/pre-compact-handover.ts" = {
-        source = ../../.config/claude/hooks/pre-compact-handover.ts;
-        executable = true;
-      };
-      ".config/claude/hooks/run-deno-hook.sh" = {
-        source = ../../.config/claude/hooks/run-deno-hook.sh;
-        executable = true;
-      };
-      ".config/claude/hooks/skill-tracker.ts" = {
-        source = ../../.config/claude/hooks/skill-tracker.ts;
-        executable = true;
-      };
-      ".config/claude/hooks/instructions-tracker.ts" = {
-        source = ../../.config/claude/hooks/instructions-tracker.ts;
-        executable = true;
-      };
       ".config/claude/hooks/banned-commands.json".source = ../../.config/claude/hooks/banned-commands.json;
       ".config/claude/hooks/check-banned-commands.sh" = {
         source = ../../.config/claude/hooks/check-banned-commands.sh;
@@ -67,10 +47,6 @@ in {
       };
       ".config/claude/hooks/notify.sh" = {
         source = ../../.config/claude/hooks/notify.sh;
-        executable = true;
-      };
-      ".config/claude/scripts/cc-metrics.ts" = {
-        source = ../../.config/claude/scripts/cc-metrics.ts;
         executable = true;
       };
       # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
