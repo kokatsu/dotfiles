@@ -95,3 +95,7 @@ vim.opt.updatetime = 300
 -- Markdownなどインジェクションが多いファイルでハイライトが途切れるのを防ぐ
 -- 大きすぎるとUI全体がブロックされるため控えめに設定（復旧は<leader>tS）
 vim.o.redrawtime = 3000
+
+-- プロジェクトローカルの .nvim.lua / .nvimrc / .exrc を読み込む
+-- Neovim 0.9+ の trust モデルにより未承認ファイルは実行されない（:trust で承認）
+vim.o.exrc = true
