@@ -40,6 +40,30 @@ function claude() {
 }
 
 # ------------------------------------------------------------------------------
+# Codex CLI (https://github.com/openai/codex)
+# ------------------------------------------------------------------------------
+
+# Codex CLIをtmux内で起動 (claude() と同じ要領)
+# tmux 内で動かす理由: tmux の Alt+c / Alt+g キーバインドから
+# codex-path-pick-{fzf,broot}.sh を display-popup で起動するため
+# 引数がある場合: 直接実行（--version 等のオプション用）
+# tmux/cmux内の場合: 直接実行（多重化不要）
+# それ以外: tmuxセッションを作成して codex 起動
+#   - WEZTERM_PANE がある場合: ペインごとに独立したセッション
+#   - それ以外: 共有セッション 'codex'
+function codex() {
+  if [[ $# -gt 0 ]]; then
+    command codex "$@"
+  elif [[ -n "$TMUX" ]] || [[ -n "$CMUX_SURFACE_ID" ]]; then
+    command codex
+  else
+    local session_name="codex${WEZTERM_PANE:+-$WEZTERM_PANE}"
+    tmux new-session -A -s "$session_name" \
+      "TMUX= command codex"
+  fi
+}
+
+# ------------------------------------------------------------------------------
 # Yazi (https://github.com/sxyazi/yazi)
 # ------------------------------------------------------------------------------
 

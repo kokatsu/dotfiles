@@ -244,14 +244,19 @@ in {
       bind -n M-v display-popup -E -w 80% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-prompt-edit.sh"
 
       # ------------------------------------------------------------------------------
-      # Claude Code: Path Picker (Alt+c: fzf / Alt+g: broot)
-      # 選択したパスを @path 形式で Claude Code に送信する
+      # Claude Code / Codex CLI: Path Picker (Alt+c: fzf / Alt+g: broot)
+      # 選択したパスを Claude Code (@path 形式) または Codex CLI (パスのみ) に送信する
+      # pane_current_command が "codex" のときは Codex 用スクリプト、それ以外は Claude 用にディスパッチ
       # - fzf: ファジー検索、Tab で複数選択
       # - broot: ツリー + あいまい絞込、Ctrl+p で選択確定
       # ------------------------------------------------------------------------------
 
-      bind -n M-c display-popup -E -d "#{pane_current_path}" -w 80% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-path-pick-fzf.sh"
-      bind -n M-g display-popup -E -d "#{pane_current_path}" -w 90% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-path-pick-broot.sh"
+      bind -n M-c if-shell -F '#{==:#{pane_current_command},codex}' \
+        'display-popup -E -d "#{pane_current_path}" -w 80% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/codex-path-pick-fzf.sh"' \
+        'display-popup -E -d "#{pane_current_path}" -w 80% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-path-pick-fzf.sh"'
+      bind -n M-g if-shell -F '#{==:#{pane_current_command},codex}' \
+        'display-popup -E -d "#{pane_current_path}" -w 90% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/codex-path-pick-broot.sh"' \
+        'display-popup -E -d "#{pane_current_path}" -w 90% -h 80% "$XDG_CONFIG_HOME/tmux/scripts/claude-path-pick-broot.sh"'
 
       # ------------------------------------------------------------------------------
       # Octorus: Rally History Browser (Alt+h)
@@ -308,6 +313,16 @@ in {
 
     ".config/tmux/scripts/claude-path-pick-broot.sh" = {
       source = ../../../.config/tmux/scripts/claude-path-pick-broot.sh;
+      executable = true;
+    };
+
+    ".config/tmux/scripts/codex-path-pick-fzf.sh" = {
+      source = ../../../.config/tmux/scripts/codex-path-pick-fzf.sh;
+      executable = true;
+    };
+
+    ".config/tmux/scripts/codex-path-pick-broot.sh" = {
+      source = ../../../.config/tmux/scripts/codex-path-pick-broot.sh;
       executable = true;
     };
   };

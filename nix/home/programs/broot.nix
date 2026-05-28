@@ -97,7 +97,9 @@ _: {
       verbs = [
         # Ctrl+p: カレント選択 (ファイル/ディレクトリ両対応) を
         # $CLAUDE_PATH_PICK_FILE に書き出して broot を終了
-        # Claude Code パス選択スクリプト (claude-path-pick-broot.sh) から利用
+        # Claude Code / Codex CLI のパス選択スクリプト
+        # (claude-path-pick-broot.sh, codex-path-pick-broot.sh) から利用
+        # 変数名は Claude 由来だが、Codex 側スクリプトでも同じ受け渡しに使う
         {
           invocation = "pp";
           key = "ctrl-p";
