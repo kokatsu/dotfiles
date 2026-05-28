@@ -145,6 +145,17 @@ local common_keys = {
       right:split({ direction = 'Bottom', size = 0.5, cwd = cwd })
     end),
   },
+  -- `Alt + :` で3列均等レイアウト
+  {
+    key = ':',
+    mods = 'ALT',
+    action = wezterm.action_callback(function(_, pane)
+      local cwd_uri = pane:get_current_working_dir()
+      local cwd = cwd_uri and cwd_uri.file_path or nil
+      local right = pane:split({ direction = 'Right', size = 0.66, cwd = cwd })
+      right:split({ direction = 'Right', size = 0.5, cwd = cwd })
+    end),
+  },
   -- `Alt + \` でレイアウト選択
   {
     key = '\\',
