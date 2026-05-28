@@ -53,11 +53,12 @@ M.opts = {
     {
       section = 'terminal',
       -- https://github.com/hpjansson/chafa
-      cmd = 'chafa -p off --speed=0.9 --clear --passthrough=tmux --scale max "$HOME/.config/assets/logos/logo.gif"',
+      -- 公式 docs (https://github.com/folke/snacks.nvim/blob/main/docs/dashboard.md)
+      cmd = 'chafa -p off --format symbols --symbols wedge --size 40x40 "$HOME/.config/assets/logos/logo.png"; sleep .1',
       indent = 12,
       ttl = 0,
       enabled = function()
-        local logo_path = vim.fn.expand('$HOME/.config/assets/logos/logo.gif')
+        local logo_path = vim.fn.expand('$HOME/.config/assets/logos/logo.png')
         return vim.fn.executable('chafa') == 1
           and vim.fn.environ()['SSH_CLIENT'] == nil
           and vim.fn.filereadable(logo_path) == 1
