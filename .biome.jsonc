@@ -7,7 +7,6 @@
       "!scripts/*.ts",
       "!.claude",
       "!.config/zeno",
-      "!.config/claude/scripts",
       "!.config/claude/hooks"
     ]
   },

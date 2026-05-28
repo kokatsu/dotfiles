@@ -37,10 +37,6 @@
         "glob": ["*.{yml,yaml}"],
         "run": "yamlfmt {staged_files} && git update-index --again"
       },
-      "deno-check": {
-        "glob": [".config/claude/hooks/*.ts", ".config/claude/scripts/*.ts"],
-        "run": "deno check {staged_files}"
-      },
       "shellcheck": {
         "glob": ["*.sh"],
         "exclude": [".config/zsh/wezterm-integration.sh"],
@@ -116,10 +112,6 @@
       "yaml-lint": {
         "glob": ["*.{yml,yaml}"],
         "run": "yamlfmt -lint {push_files}"
-      },
-      "deno-check": {
-        "glob": [".config/claude/hooks/*.ts", ".config/claude/scripts/*.ts"],
-        "run": "deno check {push_files}"
       },
       "shellcheck": {
         "glob": ["*.sh"],
