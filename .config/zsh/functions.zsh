@@ -52,3 +52,56 @@ function yi() {
   fi
   rm -f -- "$tmp"
 }
+
+# ------------------------------------------------------------------------------
+# Pkl (https://pkl-lang.org)
+# ------------------------------------------------------------------------------
+
+# .pkl を JSON / YAML へ変換し、入力と同じ場所に <basename>.json / .yaml を書き出す
+# 例: pkl2json config.pkl       → config.json を作成/更新
+#     pkl2yaml a.pkl b.pkl      → a.yaml, b.yaml を一括変換
+#     pkl2json -o out.json a.pkl → -o 等の出力指定があれば pkl eval にそのまま委譲
+
+function pkl2json() {
+  _pkl_convert json "$@"
+}
+
+function pkl2yaml() {
+  _pkl_convert yaml "$@"
+}
+
+# 内部: $1=フォーマット (拡張子兼用), 残りはユーザー引数
+function _pkl_convert() {
+  emulate -L zsh
+  local fmt=$1
+  shift
+
+  if (( $# == 0 )); then
+    print -u2 "usage: pkl2${fmt} [-o <out>] <file.pkl> [more.pkl ...]"
+    return 2
+  fi
+
+  # 出力指定フラグがあれば pkl eval にそのまま渡す
+  local arg
+  for arg in "$@"; do
+    case $arg in
+      -o|--output-path|--output-path=*|-m|--multiple-file-output-path|--multiple-file-output-path=*)
+        command pkl eval -f "$fmt" "$@"
+        return
+        ;;
+    esac
+  done
+
+  # デフォルト: 各入力の隣に <basename>.<fmt> を生成 (.pkl は除去)
+  local f out rc=0
+  for f in "$@"; do
+    if [[ ! -f $f ]]; then
+      print -u2 "pkl2${fmt}: not a file: $f"
+      rc=1
+      continue
+    fi
+    out=${f%.pkl}.${fmt}
+    command pkl eval -f "$fmt" -o "$out" "$f" || rc=$?
+  done
+  return $rc
+}
