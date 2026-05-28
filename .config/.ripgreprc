@@ -8,7 +8,7 @@
 --no-ignore
 
 # Exclude directories.
---glob=!{.anyenv,.bun,.bundle,.cache,.cargo,.cursor-server,.git,.vite.vscode-server,asset.*,debug,dist,node_modules,public,target,tmp,Trash,vendor}
+--glob=!{.anyenv,.bun,.bundle,.cache,.cargo,.git,.vite,asset.*,debug,dist,node_modules,public,storybook-static,target,tmp,Trash,vendor}
 
 # Exclude file types.
 --glob=!*.{lock,log}
