@@ -53,6 +53,11 @@ in {
     homeDirectory = homeDir;
     stateVersion = "24.11";
 
+    # nixpkgs-unstable (26.11) + home-manager master (release.json は 26.05 のまま)
+    # を意図的に追従しているため、両者のリリース番号一致チェックは常に警告を出す。
+    # upstream の home-manager が release.json を 26.11 にバンプしたら削除可。
+    enableNixpkgsReleaseCheck = false;
+
     # PATH に追加 (ユーザースクリプト)
     sessionPath = [
       "${config.home.homeDirectory}/.local/bin/scripts"
