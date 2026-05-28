@@ -45,7 +45,7 @@ desc = "List Git-changed files"
 
 [[mgr.prepend_keymap]]
 on = ["g", "j"]
-run = '''shell 'root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0; cd "$root" || exit 0; sel=$(git -c core.quotePath=false status --porcelain | fzf --no-multi --layout=reverse --border --prompt="git changes> " --preview "git diff --color=always -- {2..}") || exit 0; [ -n "$sel" ] || exit 0; rel=${sel#???}; case "$rel" in *" -> "*) rel=${rel##* -> } ;; esac; ya emit reveal "$root/$rel"' --block --confirm'''
+run = '''shell 'bash "$HOME/.config/yazi/git-changes.sh"' --block --confirm'''
 desc = "Jump to a Git-changed file (fzf)"
 
 [[mgr.prepend_keymap]]
