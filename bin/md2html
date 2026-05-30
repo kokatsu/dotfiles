@@ -1,0 +1,83 @@
+#!/bin/bash
+set -euo pipefail
+#
+# md2html: Markdown を pandoc で単一 HTML に変換する（CSS インライン埋め込み）。
+#
+# Usage:
+#   md2html <input.md> [output.html]
+#
+# 仕様:
+#   - 必ず -s --embed-resources 付きで生成し、CSS を HTML にインライン埋め込みする
+#     （symlink を辿れない環境（Windows から wsl$ 経由など）でも崩れないようにする）
+#   - CSS は以下の優先順で解決する:
+#       1. <input.md と同階層>/assets/style.css があればそれを使う（プロジェクト固有スタイル）
+#       2. 無ければ本スクリプト同梱の既定 CSS（assets/md2html.css）にフォールバック
+#   - title は input.md の最初の H1（`# ...`）を自動抽出する
+#   - output.html を省略すると、input.md と同じディレクトリに同名で .html を生成
+
+if [[ $# -lt 1 || $# -gt 2 ]]; then
+  echo "Usage: $(basename "$0") <input.md> [output.html]" >&2
+  exit 1
+fi
+
+input="$1"
+output="${2:-${input%.md}.html}"
+
+if [[ ! -f "$input" ]]; then
+  echo "Error: input not found: $input" >&2
+  exit 1
+fi
+
+# スクリプト自身の実体ディレクトリを解決（同梱 CSS 参照のため）。
+# PATH 上の ~/.local/bin/scripts は dotfiles/bin への symlink なので readlink で実体へ辿る。
+script_path="$(readlink -f "$0" 2>/dev/null || echo "$0")"
+script_dir="$(cd "$(dirname "$script_path")" && pwd)"
+default_css="$script_dir/assets/md2html.css"
+
+# 最初の H1 を title として抽出
+title="$(grep -m1 '^# ' "$input" | sed 's/^# //' || true)"
+if [[ -z "$title" ]]; then
+  echo "Error: no H1 (# ...) found in $input — add a top-level heading first" >&2
+  exit 1
+fi
+
+# input.md があるディレクトリで pandoc を実行（assets/style.css や画像の相対解決のため）
+input_dir="$(cd "$(dirname "$input")" && pwd)"
+input_base="$(basename "$input")"
+
+# 出力先を絶対パスに正規化（cd 後でも正しいパスに書き出す）
+output_dir_raw="$(dirname "$output")"
+if [[ -d "$output_dir_raw" ]]; then
+  output_dir="$(cd "$output_dir_raw" && pwd)"
+else
+  output_dir="$(cd "$(dirname "$output")" && pwd)"
+fi
+output_abs="$output_dir/$(basename "$output")"
+
+# CSS を解決: ローカルの assets/style.css を優先、無ければ同梱の既定 CSS（絶対パス）
+if [[ -f "$input_dir/assets/style.css" ]]; then
+  css_arg="assets/style.css"
+elif [[ -f "$default_css" ]]; then
+  css_arg="$default_css"
+else
+  echo "Error: bundled default CSS not found: $default_css" >&2
+  echo "  (and no $input_dir/assets/style.css present)" >&2
+  exit 1
+fi
+
+cd "$input_dir"
+
+pandoc \
+  -s \
+  -f markdown \
+  -t html5 \
+  -c "$css_arg" \
+  --embed-resources \
+  --metadata title="$title" \
+  --metadata lang=ja \
+  "$input_base" \
+  -o "$output_abs"
+
+echo "Generated: $output_abs"
+echo "  Title:   $title"
+echo "  CSS:     $css_arg"
