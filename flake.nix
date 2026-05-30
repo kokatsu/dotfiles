@@ -46,6 +46,15 @@
       url = "github:NousResearch/hermes-agent/v2026.5.16";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # MoonBit ツールチェーン (公式 nixpkgs 未収録のためコミュニティ overlay を使用)
+    # https://github.com/moonbit-community/moonbit-overlay
+    # overlay 自体は master 追従 (パッケージング修正を取り込む) だが、
+    # MoonBit のバージョンは nix/home/packages.nix の属性パスでピン留めする
+    moonbit-overlay = {
+      url = "github:moonbit-community/moonbit-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -100,6 +109,8 @@
 
     # 共通オーバーレイ (全プラットフォーム)
     commonOverlays = [
+      # upstream overlay (pkgs.moonbit-bin.* を生やす)
+      inputs.moonbit-overlay.overlays.default
       customOverlays.cli-tools
       customOverlays.cc-statusline
       customOverlays.claude-code
