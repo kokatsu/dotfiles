@@ -24,8 +24,9 @@ Include the following in each agent's prompt:
 > Design changes or refactoring may cause intentional apparent inconsistencies.
 > Do not declare something a "bug" without verification.
 >
-> **Self-check before reporting each finding:**
-> Before including a finding in your report, verify:
+> **Assess confidence before reporting each finding.**
+> A separate verification stage (run by the orchestrator) confirms and filters —
+> so report for coverage here; do not silently drop uncertain findings.
 >
 > 1. Can the problematic code path actually be reached with real input?
 >    - **For "unsafe pattern" findings** (SQL injection, dynamic dispatch, etc.): trace at least one level of callers using Grep to check whether user/external input can reach the parameter. If all callers pass hardcoded values, downgrade from Critical/High to Low (defense-in-depth).
@@ -33,8 +34,12 @@ Include the following in each agent's prompt:
 > 2. Does the framework or library already prevent this? (e.g., Rails CSRF, Rust borrow checker)
 > 3. Is it documented as intentional? (check comments, CLAUDE.md, README)
 >
-> If you cannot confirm the finding after checking, **do not include it**.
-> Never report a finding and then withdraw it — decide before reporting.
+> Steps 1–3 set the finding's **severity** and **confidence (High/Medium/Low)** —
+> they are not a reason to silently drop it. Omit only when clearly prevented by
+> the framework or clearly documented as intentional. Otherwise report it with a
+> Confidence tag: report everything at Medium+ confidence, plus any High-severity
+> finding even at Low confidence. Don't withhold a plausible bug just because
+> you're not certain — the verification stage ranks and filters.
 >
 > **What is NOT a bug (do not report):**
 >
