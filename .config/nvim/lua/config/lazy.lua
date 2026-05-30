@@ -37,6 +37,7 @@ require('lazy').setup({
     require('plugins.lualine'),
     require('plugins.md-render'),
     require('plugins.mini'),
+    require('plugins.moonbit'),
     require('plugins.noice'),
     require('plugins.nvim-autopairs'),
     require('plugins.nvim-lint'),
