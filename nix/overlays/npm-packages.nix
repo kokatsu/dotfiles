@@ -3,7 +3,7 @@
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=unocss-language-server
   unocss-language-server = _final: prev: let
-    version = "0.1.8";
+    version = "0.1.9";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/unocss-language-server/-/unocss-language-server-${version}.tgz";
       hash = "sha256-16xM1/6Um2FMj4i8Ua3uP7to2PiRX4Z8oDnUwnn232s=";
