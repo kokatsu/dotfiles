@@ -35,6 +35,9 @@ in {
 
   catppuccin = {
     enable = true;
+    # port 自動有効化フラグ。enable の現行値 (true) を明示して移行警告を抑制。
+    # release 27.05 以降は port の enable デフォルトが autoEnable 基準に切り替わる。
+    autoEnable = true;
     flavor = "mocha";
     accent = "blue";
     # 既存 symlink と競合するため後の Phase で有効化
