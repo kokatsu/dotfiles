@@ -94,6 +94,19 @@ local function merge_keys(...)
   return result
 end
 
+--- エディタ + コマンド + 右側ツール用のレイアウトを作成する
+---@param pane any
+local function split_editor_command_tools_layout(pane)
+  local cwd_uri = pane:get_current_working_dir()
+  local cwd = cwd_uri and cwd_uri.file_path or nil
+
+  -- 左 1/3 | 右 2/3 を作り、右側だけ下段を横長ペインにする。
+  local right_area = pane:split({ direction = 'Right', size = 0.66, cwd = cwd })
+  pane:split({ direction = 'Bottom', size = 0.15, cwd = cwd })
+  right_area:split({ direction = 'Bottom', size = 0.5, cwd = cwd })
+  right_area:split({ direction = 'Right', size = 0.5, cwd = cwd })
+end
+
 -- 共通キーバインド（プラットフォーム非依存）
 local common_keys = {
   -- `Alt + o` で前回の出力（実行コマンド付き）をクリップボードにコピー
@@ -156,6 +169,14 @@ local common_keys = {
       right:split({ direction = 'Right', size = 0.5, cwd = cwd })
     end),
   },
+  -- `Alt + l` でエディタ/コマンド/ツール用レイアウト
+  {
+    key = 'l',
+    mods = 'ALT',
+    action = wezterm.action_callback(function(_, pane)
+      split_editor_command_tools_layout(pane)
+    end),
+  },
   -- `Alt + \` でレイアウト選択
   {
     key = '\\',
@@ -167,6 +188,7 @@ local common_keys = {
         { label = '左 | 右上/右下', id = 'right-split' },
         { label = '上 / 下左|下右', id = 'bottom-split' },
         { label = '3列均等', id = 'three-cols' },
+        { label = 'エディタ/コマンド/ツール', id = 'editor-command-tools' },
       },
       action = wezterm.action_callback(function(_, pane, id, _)
         local cwd_uri = pane:get_current_working_dir()
@@ -180,6 +202,8 @@ local common_keys = {
         elseif id == 'three-cols' then
           local right = pane:split({ direction = 'Right', size = 0.66, cwd = cwd })
           right:split({ direction = 'Right', size = 0.5, cwd = cwd })
+        elseif id == 'editor-command-tools' then
+          split_editor_command_tools_layout(pane)
         end
       end),
     }),
