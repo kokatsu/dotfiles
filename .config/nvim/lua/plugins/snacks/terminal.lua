@@ -7,23 +7,16 @@ M.opts = {
     border = 'rounded',
     width = 0.8,
     height = 0.8,
-  },
-  keys = {
-    term_normal = {
-      '<esc>',
-      function(self)
-        self.esc_timer = self.esc_timer or vim.uv.new_timer()
-        if self.esc_timer:is_active() then
-          self.esc_timer:stop()
-          vim.cmd('stopinsert')
-        else
-          self.esc_timer:start(500, 0, function() end)
-          return '<esc>'
-        end
-      end,
-      mode = 't',
-      expr = true,
-      desc = 'Double escape to normal mode',
+    keys = {
+      term_normal = false,
+      term_double_escape = {
+        '<esc><esc>',
+        function()
+          vim.cmd.stopinsert()
+        end,
+        mode = 't',
+        desc = 'Double escape to normal mode',
+      },
     },
   },
 }
