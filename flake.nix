@@ -36,7 +36,7 @@
 
     # Renovate: datasource=github-releases depName=modem-dev/hunk
     hunk = {
-      url = "github:modem-dev/hunk/v0.13.0";
+      url = "github:modem-dev/hunk/v0.14.1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
