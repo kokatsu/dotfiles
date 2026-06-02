@@ -1,4 +1,18 @@
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[features]
+codex_git_commit = true
+
+[sandbox_workspace_write]
+network_access = false
+
+[tools]
+web_search = { context_size = "medium", location = { country = "JP", timezone = "Asia/Tokyo" } }
+
 [tui]
+notifications = true
+notification_condition = "always"
 status_line = [
   "model-with-reasoning",
   "context-remaining",
@@ -11,3 +25,6 @@ status_line = [
   "total-input-tokens",
   "total-output-tokens",
 ]
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
