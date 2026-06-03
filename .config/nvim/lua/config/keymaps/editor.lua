@@ -22,9 +22,16 @@ vim.keymap.set('i', '<C-k>', "<C-r>=strftime('%Y-%m-%d %H:%M:%S')<CR>", {
   noremap = true,
 })
 
--- Treesitter ベースの関数/クラス間移動
-local ts_motion = require('utils.ts_motion')
-vim.keymap.set('n', ']f', ts_motion.goto_textobject('function.outer', 'next'), { desc = 'Next function' })
-vim.keymap.set('n', '[f', ts_motion.goto_textobject('function.outer', 'prev'), { desc = 'Previous function' })
-vim.keymap.set('n', ']c', ts_motion.goto_textobject('class.outer', 'next'), { desc = 'Next class' })
-vim.keymap.set('n', '[c', ts_motion.goto_textobject('class.outer', 'prev'), { desc = 'Previous class' })
+-- Treesitter ベースの関数/クラス間移動 (nvim-treesitter-textobjects の move モジュール)
+vim.keymap.set('n', ']f', function()
+  require('nvim-treesitter-textobjects.move').goto_next_start('@function.outer', 'textobjects')
+end, { desc = 'Next function' })
+vim.keymap.set('n', '[f', function()
+  require('nvim-treesitter-textobjects.move').goto_previous_start('@function.outer', 'textobjects')
+end, { desc = 'Previous function' })
+vim.keymap.set('n', ']c', function()
+  require('nvim-treesitter-textobjects.move').goto_next_start('@class.outer', 'textobjects')
+end, { desc = 'Next class' })
+vim.keymap.set('n', '[c', function()
+  require('nvim-treesitter-textobjects.move').goto_previous_start('@class.outer', 'textobjects')
+end, { desc = 'Previous class' })
