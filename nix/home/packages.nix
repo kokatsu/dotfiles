@@ -18,14 +18,6 @@
   feed-summarize = pkgs.writeShellScriptBin "feed-summarize" ''
     exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/feed-summarize" "$@"
   '';
-
-  # WSL: Claude Code は clip.exe をハードコードで使用するが UTF-8 を正しく扱えない
-  # xsel (X11) + win32yank (Windows/Win+V履歴) の両方に書き込む
-  clip-exe-wrapper = pkgs.writeShellScriptBin "clip.exe" ''
-    input=$(cat)
-    printf '%s' "$input" | ${pkgs.xsel}/bin/xsel --clipboard --input
-    printf '%s' "$input" | win32yank.exe -i
-  '';
 in {
   # 以下のパッケージは programs.* モジュールで管理:
   # bat, btop, delta, eza, fzf, gh, git, lazygit, zoxide
@@ -404,7 +396,6 @@ in {
       inotify-tools # ファイルシステムイベント監視
       # https://github.com/strace/strace
       strace # システムコールトレーサ
-      clip-exe-wrapper # Claude Code WSL文字化け対策 (clip.exe → xsel)
       # https://valgrind.org
       valgrind # メモリデバッグ・プロファイリング
       # https://sourceware.org/gdb/

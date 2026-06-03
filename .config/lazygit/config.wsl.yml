@@ -1,2 +1,3 @@
 os:
-  copyToClipboardCmd: "printf '%s' {{text}} | clip.exe"
+  # 本物の clip.exe は UTF-8 を CP932 扱いして文字化けさせるため win32yank に流す
+  copyToClipboardCmd: "printf '%s' {{text}} | win32yank.exe -i"

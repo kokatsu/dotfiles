@@ -69,13 +69,13 @@ _: {
         {
           key = "Y";
           context = "localBranches";
-          command = "echo -n {{.SelectedLocalBranch.Name}} | clip.exe";
+          command = "echo -n {{.SelectedLocalBranch.Name}} | win32yank.exe -i";
           description = "Copy branch name to clipboard";
         }
         {
           key = "Y";
           context = "commits";
-          command = "echo -n {{.SelectedLocalCommit.Hash}} | clip.exe";
+          command = "echo -n {{.SelectedLocalCommit.Hash}} | win32yank.exe -i";
           description = "Copy commit hash to clipboard";
         }
         {

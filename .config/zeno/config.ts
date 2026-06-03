@@ -99,7 +99,7 @@ export default defineConfig(({ env }) => {
   }
 
   if (isWSL) {
-    snippets.push({ name: "copy (WSL)", keyword: "copy", snippet: "clip.exe" });
+    snippets.push({ name: "copy (WSL)", keyword: "copy", snippet: "win32yank.exe -i" });
   }
 
   if (isDarwin) {

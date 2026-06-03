@@ -35,7 +35,7 @@ if (( _IS_WSL )); then
 
   # fzf: Ctrl+Y で選択行を Windows クリップボードへコピー
   # FZF_DEFAULT_OPTS は fzf 側でシェル風に分割されるため、空白・|・() を含む bind 値はシングルクォート必須
-  export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }--bind='ctrl-y:execute-silent(echo -n {} | clip.exe)'"
+  export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }--bind='ctrl-y:execute-silent(echo -n {} | win32yank.exe -i)'"
 
   # https://blog.adglobe.co.jp/entry/2024/07/31/100000
   if [[ ! -f /tmp/.mtu_1400_set ]]; then
