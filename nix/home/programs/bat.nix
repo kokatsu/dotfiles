@@ -25,6 +25,7 @@
         ".ripgreprc:Bourne Again Shell (bash)"
         "*.markdownlintignore:Git Ignore"
         ".psqlrc:SQL"
+        "inputrc:INI"
         "btop.conf:INI"
         "*.theme:INI"
         "**/ghostty/config:INI"
