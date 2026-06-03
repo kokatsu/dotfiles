@@ -27,7 +27,9 @@
     },
     "catppuccin": {
       "inputs": {
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": [
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1780220641,
@@ -317,15 +319,18 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1779877693,
-        "narHash": "sha256-24YGUZ9p3uLeDBGS5Nc8V7Rt5PaRg1vZ+rnfSuBW7hM=",
-        "rev": "4100e830e085863741bc69b156ec4ccd53ab5be0",
-        "type": "tarball",
-        "url": "https://releases.nixos.org/nixpkgs/nixpkgs-26.11pre1006043.4100e830e085/nixexprs.tar.xz"
+        "lastModified": 1780336545,
+        "narHash": "sha256-vhVhuXzFrIOfcssC/9hDHx7MHzDKjF3keHuREOQqQiQ=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "4df1b885d76a54e1aa1a318f8d16fd6005b6401f",
+        "type": "github"
       },
       "original": {
-        "type": "tarball",
-        "url": "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz"
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
       }
     },
     "nixpkgs-lib": {
@@ -355,22 +360,6 @@
       "original": {
         "owner": "NixOS",
         "ref": "nixos-25.05",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1780336545,
-        "narHash": "sha256-vhVhuXzFrIOfcssC/9hDHx7MHzDKjF3keHuREOQqQiQ=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "4df1b885d76a54e1aa1a318f8d16fd6005b6401f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -494,7 +483,7 @@
         "hunk": "hunk",
         "moonbit-overlay": "moonbit-overlay",
         "nix-darwin": "nix-darwin",
-        "nixpkgs": "nixpkgs_2",
+        "nixpkgs": "nixpkgs",
         "nixpkgs-stable": "nixpkgs-stable",
         "wezterm": "wezterm"
       }

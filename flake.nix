@@ -22,7 +22,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    catppuccin.url = "github:catppuccin/nix";
+    catppuccin = {
+      url = "github:catppuccin/nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     cli-tools = {
       url = "github:kokatsu/cli-tools";
