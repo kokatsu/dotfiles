@@ -21,18 +21,27 @@ if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
   fi
 fi
 
+# zeno-completion の local 変数 options が zsh/parameter の $options をシャドウし
+# _zsh_highlight で "bad set of key/value pairs" エラーになる問題を修正する。
+# sed -i のバックアップ指定は GNU(-i)/BSD(-i '') で非互換なため、-i を使わず
+# stdout へ出力して書き戻す可搬な形にする。
+_patch_zeno_completion() {
+  local _f=${ZIM_HOME}/modules/zeno.zsh/shells/zsh/widgets/zeno-completion
+  [[ -f $_f ]] && grep -q 'local.*expect_key options ' $_f || return
+  local _patched
+  _patched=$(sed \
+    -e 's/expect_key options /expect_key fzf_options /' \
+    -e 's/^options=/fzf_options=/' \
+    -e 's/${options}/${fzf_options}/g' \
+    -e 's/${(z)options}/${(z)fzf_options}/g' \
+    $_f) && print -r -- "$_patched" >| $_f
+}
+
 # zimfw() 関数の定義（zimfw コマンド用）
 if [[ -e ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]] zimfw() {
   source ${ZIM_HOME}/zimfw.zsh "${@}"
-  # zeno-completion の local options が zsh/parameter の $options をシャドウし
-  # _zsh_highlight で "bad set of key/value pairs" エラーになる問題を修正
-  local _f=${ZIM_HOME}/modules/zeno.zsh/shells/zsh/widgets/zeno-completion
-  if [[ -f $_f ]] && grep -q 'local.*expect_key options ' $_f; then
-    sed -i '' 's/expect_key options /expect_key fzf_options /' $_f
-    sed -i '' 's/^options=/fzf_options=/' $_f
-    sed -i '' 's/${options}/${fzf_options}/g' $_f
-    sed -i '' 's/${(z)options}/${(z)fzf_options}/g' $_f
-  fi
+  # モジュール再インストール直後にも同セッションでパッチを当てる
+  _patch_zeno_completion
 }
 
 # fpath 設定（autoload 用、コスト: ~0ms）
@@ -79,17 +88,8 @@ export ZENO_HOME="${XDG_CONFIG_HOME}/zeno"
 export ZENO_GIT_CAT="bat --color=always"
 export ZENO_GIT_TREE="eza --tree"
 
-# zeno-completion の local options が zsh/parameter の $options をシャドウし
-# _zsh_highlight で "bad set of key/value pairs" エラーになる問題を修正
-() {
-  local _f=${ZIM_HOME}/modules/zeno.zsh/shells/zsh/widgets/zeno-completion
-  if [[ -f $_f ]] && grep -q 'local.*expect_key options ' $_f; then
-    sed -i '' 's/expect_key options /expect_key fzf_options /' $_f
-    sed -i '' 's/^options=/fzf_options=/' $_f
-    sed -i '' 's/${options}/${fzf_options}/g' $_f
-    sed -i '' 's/${(z)options}/${(z)fzf_options}/g' $_f
-  fi
-}
+# 起動時にパッチ（zeno モジュール再インストール時の取りこぼし対策）
+_patch_zeno_completion
 
 # fzf key bindings (Ctrl+T, Alt+C) — zeno より先に読み込み、Tab/Ctrl+R は zeno が上書き
 zsh-defer -a +1 +2 -c 'source <(fzf --zsh)'
