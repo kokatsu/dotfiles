@@ -31,7 +31,6 @@ in {
       set -s set-clipboard on
 
       # True color support (tmux 3.2+ syntax)
-      set -ga terminal-overrides ",xterm-256color:RGB"
       set -ag terminal-features "xterm-256color:RGB"
 
       # Start panes at 1, not 0 (windows handled by baseIndex)
@@ -71,11 +70,6 @@ in {
       # ------------------------------------------------------------------------------
       # Pane Operations (WezTerm style, without prefix)
       # ------------------------------------------------------------------------------
-
-      # Split panes (Ctrl+s for horizontal, Ctrl+Shift+s for vertical)
-      # Note: Requires `stty -ixon` in shell config to disable flow control
-      bind -n C-s split-window -h -c "#{pane_current_path}"
-      bind -n C-S split-window -v -c "#{pane_current_path}"
 
       # Close pane (Alt+w)
       bind -n M-w kill-pane
