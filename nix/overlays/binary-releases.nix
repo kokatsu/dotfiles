@@ -101,10 +101,10 @@ in {
     pname = "octorus";
     version = "0.6.6";
     hashes = {
-      "aarch64-darwin" = "sha256-ptNF4ZBCUdnXviNxDp5GtS/4rRl3mlUrS4CtKUF0Ve0=";
-      "x86_64-darwin" = "sha256-M5coT7/tVh9mg/8YJ2tBI1EFq+72xSfsrnTVN5aJCVU=";
-      "aarch64-linux" = "sha256-3sAHKMf75uGZD51AEJuvk1ZsPw1tnUYG5i7YXLIhyvI=";
-      "x86_64-linux" = "sha256-Xx3QrWwMkBiZWDV+C7qJyYGJm9Vg746iTNtyYUWXDiA=";
+      "aarch64-darwin" = "sha256-JzjEwUAieepLLrmCVU9EX5Uv6r7dehx/Io75M8RFzYA=";
+      "x86_64-darwin" = "sha256-RVNSxelmOWp8V0NuAGzp4ufnVqz+plb6m2Wa5vwPIIw=";
+      "aarch64-linux" = "sha256-iqitDRQs5PCqHq2VhDweCusrCCz0zT8htCWjnPcxv8U=";
+      "x86_64-linux" = "sha256-G7egRF11bjnJoiQ5uP8Hrb6EKnNHHk4DQ2IYU8P/DDg=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
