@@ -27,6 +27,9 @@
       autoUpdate = true;
       cleanup = "zap";
       upgrade = true;
+      # Homebrew 5.x は `brew bundle --cleanup` に force 系フラグ必須 (非対話で
+      # 未掲載パッケージを zap するため)。これがないと activation が失敗する。
+      extraFlags = ["--force-cleanup"];
     };
     taps = [
       "manaflow-ai/cmux"
