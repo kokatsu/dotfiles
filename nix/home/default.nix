@@ -51,6 +51,11 @@ in {
 
   programs.home-manager.enable = true;
 
+  # オフライン man (home-configuration.nix) の doc ビルドを無効化。
+  # HM の scrubDerivations が context なしの nixpkgs source パスを options.json
+  # に焼き込み "without a proper context" 警告を出すのを止める。Web マニュアルは無影響。
+  manual.manpages.enable = false;
+
   home = {
     inherit username;
     homeDirectory = homeDir;
