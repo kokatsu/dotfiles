@@ -10,7 +10,7 @@ Dotfiles repository for managing shell and tool configurations across macOS and 
 ## Features
 
 - 🔄 **Declarative & Reproducible** - All configurations managed through Nix Flakes
-- 🖥️ **Multi-platform** - Supports Linux (x86_64), macOS ARM (Apple Silicon), and macOS Intel
+- 🖥️ **Multi-platform** - Supports Linux (x86_64) and macOS ARM (Apple Silicon)
 - 📦 **Unified Package Management** - All CLI tools installed via Home Manager
 - 🔗 **Automated Symlinks** - Dotfiles automatically linked to `~/.config/`
 
@@ -18,7 +18,7 @@ Dotfiles repository for managing shell and tool configurations across macOS and 
 
 ### Prerequisites
 
-- macOS (arm64/x86_64) or Linux (x86_64)
+- macOS (arm64) or Linux (x86_64)
 - curl (for Nix installer)
 
 ### Installation

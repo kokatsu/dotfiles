@@ -77,7 +77,8 @@
     dotfilesDir = builtins.getEnv "PWD"; # dotfilesディレクトリ (git管理外ファイル用)
 
     # サポートするシステム
-    darwinSystems = ["aarch64-darwin" "x86_64-darwin"];
+    # x86_64-darwin (Intel Mac) は不使用のため除外
+    darwinSystems = ["aarch64-darwin"];
     linuxSystems = ["x86_64-linux" "aarch64-linux"];
     allSystems = darwinSystems ++ linuxSystems;
 
