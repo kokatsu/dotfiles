@@ -7,5 +7,6 @@
   cliTools = import ./cli-tools.nix {inherit inputs;};
   ccStatusline = import ./cc-statusline.nix {inherit inputs;};
   hermesAgent = import ./hermes-agent.nix {inherit inputs;};
+  unocssLanguageServer = import ./unocss-language-server.nix {inherit inputs;};
 in
-  binaryReleases // npmPackages // buildFixes // sourceBuilds // standalone // cliTools // ccStatusline // hermesAgent
+  binaryReleases // npmPackages // buildFixes // sourceBuilds // standalone // cliTools // ccStatusline // hermesAgent // unocssLanguageServer

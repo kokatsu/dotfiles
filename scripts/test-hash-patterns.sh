@@ -37,7 +37,6 @@ PACKAGES=(
   'deck|standalone.nix|deck = _final: prev:|# Renovate:.*depName=.*deck|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'octorus|binary-releases.nix|octorus = mkBinaryRelease|# Renovate:.*depName=.*octorus|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'kakehashi|binary-releases.nix|kakehashi = mkBinaryRelease|# Renovate:.*depName=.*kakehashi|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'unocss-language-server|npm-packages.nix|unocss-language-server = _final: prev: let|# Renovate:.*depName=.*unocss-language-server|both|'
   'cssmodules-language-server|source-builds.nix|cssmodules-language-server = _final: prev: {|# Renovate:.*depName=.*cssmodules-language-server|both|'
   'x-api-playground|source-builds.nix|x-api-playground = _final: prev: {|# Renovate:.*depName=.*playground|vendor|'
 )

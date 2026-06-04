@@ -50,6 +50,16 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # UnoCSS LSP (上流が flake を提供しているため自前ビルドから移行)
+    # https://github.com/xna00/unocss-language-server
+    # nixpkgs.follows は付けない: package.nix が pnpm.fetchDeps の offline store を
+    # 上流 pin の pnpm バージョンに密結合しており、別 nixpkgs だと
+    # ERR_PNPM_NO_OFFLINE_TARBALL でビルドが壊れるため。
+    # Renovate: datasource=github-releases depName=xna00/unocss-language-server
+    unocss-language-server = {
+      url = "github:xna00/unocss-language-server/v0.1.9";
+    };
+
     # MoonBit ツールチェーン (公式 nixpkgs 未収録のためコミュニティ overlay を使用)
     # https://github.com/moonbit-community/moonbit-overlay
     # overlay 自体は master 追従 (パッケージング修正を取り込む) だが、
