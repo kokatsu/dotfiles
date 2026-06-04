@@ -11,10 +11,6 @@
 *.local
 *.local.*
 
-# Claude Code session artifacts
-session-logs
-HANDOVER*.md
-
 # Environment variables
 .env
 .env.*
