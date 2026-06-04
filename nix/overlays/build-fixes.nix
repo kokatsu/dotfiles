@@ -1,7 +1,8 @@
 {
   # Pin vue-language-server to 3.0.8
-  # fetcherVersion 2 normalizes permissions, so the pnpmDeps hash is
-  # platform-independent (no separate darwin/linux hashes needed).
+  # fetcherVersion 3 normalizes permissions and packs a reproducible tarball,
+  # so the pnpmDeps hash is platform-independent (no separate darwin/linux
+  # hashes needed).
   vue-language-server-pin = _final: prev: {
     vue-language-server = prev.vue-language-server.overrideAttrs (old: rec {
       version = "3.0.8";
@@ -15,8 +16,8 @@
         inherit (old) pname;
         inherit version src;
         pnpm = prev.pnpm_10;
-        fetcherVersion = 2;
-        hash = "sha256-5Ul9TKCIzYI7aB3GtZ5GrPTZZeh931xyBcci9UhL/ac=";
+        fetcherVersion = 3;
+        hash = "sha256-ITZ4GD03U3hprUbt60MG9vi1G8+8u421x5QC6YvU11w=";
       };
     });
   };
