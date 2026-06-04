@@ -1,6 +1,11 @@
 # kokatsu private directory
 .kokatsu
 
+# Neovim Snacks Bookmarks picker reads a project-local .bookmarks file.
+# Keep it untracked because entries are personal navigation shortcuts.
+# See ../nvim/lua/plugins/snacks/bookmarks.lua
+.bookmarks
+
 # Local config files (e.g., CLAUDE.local.md, settings.local.json)
 .local
 *.local
