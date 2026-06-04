@@ -1,8 +1,26 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
 approval_policy = "on-request"
+check_for_update_on_startup = false
+personality = "pragmatic"
+project_doc_fallback_filenames = ["CLAUDE.md"]
 sandbox_mode = "workspace-write"
+web_search = "live"
 
 [features]
 codex_git_commit = true
+memories = true
+undo = true
+
+[history]
+max_bytes = 104857600
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
+
+[memories]
+disable_on_external_context = true
+min_rate_limit_remaining_percent = 50
 
 [sandbox_workspace_write]
 network_access = false
@@ -25,6 +43,3 @@ status_line = [
   "total-input-tokens",
   "total-output-tokens",
 ]
-
-[mcp_servers.openaiDeveloperDocs]
-url = "https://developers.openai.com/mcp"
