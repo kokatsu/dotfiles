@@ -3,10 +3,10 @@
   # Uses pre-built package from npm with vendored package-lock.json
   # Renovate: datasource=npm depName=unocss-language-server
   unocss-language-server = _final: prev: let
-    version = "0.1.8";
+    version = "0.1.9";
     tarball = prev.fetchurl {
       url = "https://registry.npmjs.org/unocss-language-server/-/unocss-language-server-${version}.tgz";
-      hash = "sha256-16xM1/6Um2FMj4i8Ua3uP7to2PiRX4Z8oDnUwnn232s=";
+      hash = "sha256-iesnSGLsYMJMcZ7VrZJ+zmqqadz/8j5RBQvbB1GopN0=";
     };
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/unocss-language-server/package-lock.json);
   in {
@@ -20,7 +20,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-6hm3UXxQrmS9nQzMjYGXrXVMkfi3pEdd0y6WY8KUFHA=";
+      npmDepsHash = "sha256-8AqdBMf98JIbwe46kJ7WoTiEk6qzwLtJnZKZO5ep8kI=";
 
       dontNpmBuild = true;
 
