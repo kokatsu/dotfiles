@@ -26,7 +26,7 @@ ds = diff --staged
 d1 = diff HEAD^
 # d1d = "!f() { git diff HEAD^ \"$@\" | delta --side-by-side --paging=never; }; f"
 f = fetch origin
-fd = !git branch | fzf | xargs git checkout
+fd = !git branch | fzf --preview 'git log -1 --color=always --stat {-1}' --preview-window=right,60% | xargs git checkout
 l = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph
 la = log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph --all --date-order
 lf = log --pretty=fuller
