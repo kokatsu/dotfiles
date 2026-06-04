@@ -169,7 +169,7 @@
         "run": "commitlint --edit {1}"
       },
       "textlint": {
-        "run": "sed '1s/([^)]*)//' < {1} | textlint --config .textlintrc-commit.json --stdin --stdin-filename commit.txt"
+        "run": "sed '1s/([^)]*)//' < {1} | textlint --config .textlintrc-commit.json --stdin --stdin-filename commit.md"
       }
     }
   }
