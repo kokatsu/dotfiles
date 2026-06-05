@@ -88,6 +88,7 @@ full_symbol = "  "        # nf-fa-battery_full
 charging_symbol = "  "    # nf-fa-plug
 discharging_symbol = "  " # nf-fa-battery_half
 empty_symbol = "  "       # nf-fa-battery_empty
+unknown_symbol = "  "     # nf-fa-plug
 
 [[battery.display]]
 threshold = 100
