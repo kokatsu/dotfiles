@@ -1,25 +1,44 @@
 {
-  # Pin vue-language-server to 3.0.8
-  # fetcherVersion 3 normalizes permissions and packs a reproducible tarball,
-  # so the pnpmDeps hash is platform-independent (no separate darwin/linux
-  # hashes needed).
-  vue-language-server-pin = _final: prev: {
-    vue-language-server = prev.vue-language-server.overrideAttrs (old: rec {
-      version = "3.0.8";
-      src = prev.fetchFromGitHub {
-        owner = "vuejs";
-        repo = "language-tools";
-        rev = "v${version}";
-        hash = "sha256-bUy1H481oxoddprj4WJaZdwbQA6a3SaJ92I/PJubltc=";
-      };
-      pnpmDeps = prev.fetchPnpmDeps {
-        inherit (old) pname;
-        inherit version src;
-        pnpm = prev.pnpm_10;
-        fetcherVersion = 3;
-        hash = "sha256-ITZ4GD03U3hprUbt60MG9vi1G8+8u421x5QC6YvU11w=";
-      };
-    });
+  # Pin vue-language-server to npm @vue/language-server 3.0.10.
+  # vuejs/language-tools has no v3.0.10 Git tag, so use a minimal npm wrapper
+  # package instead of the upstream monorepo build.
+  vue-language-server-pin = _final: prev: let
+    version = "3.0.10";
+    packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/vue-language-server/package.json);
+    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/vue-language-server/package-lock.json);
+  in {
+    vue-language-server = prev.buildNpmPackage {
+      pname = "vue-language-server";
+      inherit version;
+
+      src = prev.runCommand "vue-language-server-src" {} ''
+        mkdir -p $out
+        cp ${packageJson} $out/package.json
+        cp ${packageLock} $out/package-lock.json
+      '';
+
+      npmDepsHash = "sha256-HL5zSw7MP+sEv3ILDPJ53hPqXlMggRlLufaXqYgF4s8=";
+      forceGitDeps = true;
+      makeCacheWritable = true;
+      dontNpmBuild = true;
+      nativeBuildInputs = [prev.makeBinaryWrapper];
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p $out/lib $out/bin
+        cp -r node_modules $out/lib/node_modules
+        rm -f $out/lib/node_modules/.package-lock.json
+        makeWrapper ${prev.lib.getExe prev.nodejs} $out/bin/vue-language-server \
+          --add-flags $out/lib/node_modules/@vue/language-server/bin/vue-language-server.js
+        runHook postInstall
+      '';
+
+      meta =
+        prev.vue-language-server.meta
+        // {
+          changelog = "https://github.com/vuejs/language-tools/releases";
+        };
+    };
   };
 
   # Fix cava build on aarch64-darwin
