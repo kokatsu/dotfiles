@@ -2,6 +2,7 @@
 theme = catppuccin-mocha
 
 # フォント（WezTermと同様のフォールバック設定）
+font-family = "UDEV Gothic 35NFLG"
 font-family = "Firge35Nerd Console"
 font-family = "HackGen35 Console"
 font-size = 14

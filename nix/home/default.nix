@@ -111,6 +111,7 @@ in {
   };
 
   xdg.enable = true;
+  fonts.fontconfig.enable = true;
 
   # 不要なNixストアを自動削除 (週1回、7日以上前のものを削除)
   nix.gc = {

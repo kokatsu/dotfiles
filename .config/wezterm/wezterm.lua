@@ -20,6 +20,7 @@ config.automatically_reload_config = true
 config.disable_default_key_bindings = true
 config.scrollback_lines = 10000
 config.font = wezterm.font_with_fallback({
+  'UDEV Gothic 35NFLG',
   'Firge35Nerd Console',
   'HackGen35 Console NF',
   'PlemolJP35 Console NF',

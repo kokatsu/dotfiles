@@ -386,6 +386,8 @@ in {
       nerd-fonts.fira-code
       nerd-fonts.hack
       nerd-fonts.symbols-only
+      # https://github.com/yuru7/udev-gothic
+      udev-gothic-nf # UDEV Gothic + Nerd Fonts (35NFLG等、日本語対応)
       # https://github.com/yuru7/HackGen
       hackgen-nf-font # HackGen + Nerd Fonts (日本語対応)
     ]
