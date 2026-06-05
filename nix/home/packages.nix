@@ -292,7 +292,8 @@ in {
       # https://github.com/yioneko/vtsls
       vtsls # TypeScript LSP
       # https://github.com/vuejs/language-tools
-      vue-language-server # Vue LSP (overlay でピン留め)
+      vue-language-server # Vue LSP (Vue 2, overlay でピン留め)
+      vue-language-server-latest # Vue LSP (Vue 3, 最新)
       # https://github.com/redhat-developer/yaml-language-server
       yaml-language-server # YAML LSP
       # https://github.com/ziglang/zls

@@ -101,6 +101,7 @@ return {
       'unocss',
       'vtsls',
       'vue_ls',
+      'vue_ls_legacy',
       'yamlls',
       'zls',
     }

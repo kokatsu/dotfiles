@@ -39,6 +39,15 @@
           changelog = "https://github.com/vuejs/language-tools/releases";
         };
     };
+
+    # 最新 (Vue 3 専用)。prev.vue-language-server は overlay 適用前の nixpkgs 素の値
+    # なので、上書き前に別名 binary として退避し PATH 衝突を避ける。
+    # Vue 3 プロジェクトの vue_ls の cmd から参照する。
+    # 3.0.x を PATH 既定に残すのは、typescript-tools が PATH の vue-language-server から
+    # @vue/typescript-plugin を解決しており、3.0.x の plugin だけが Vue 2/3 両対応のため。
+    vue-language-server-latest = prev.writeShellScriptBin "vue-language-server-latest" ''
+      exec ${prev.lib.getExe prev.vue-language-server} "$@"
+    '';
   };
 
   # Fix cava build on aarch64-darwin
