@@ -110,6 +110,12 @@ in {
       else
         $DRY_RUN_CMD cp "$BASE" "$TARGET"
       fi
+
+      RULES_DIR="$CODEX_DIR/rules"
+      RULES_BASE="${validDotfilesDir}/.config/codex/rules/default.rules"
+      RULES_TARGET="$RULES_DIR/default.rules"
+      $DRY_RUN_CMD mkdir -p "$RULES_DIR"
+      $DRY_RUN_CMD cp "$RULES_BASE" "$RULES_TARGET"
     '';
 
     # WezTerm: WSL → Windows 側に設定ファイル (.lua) を再帰コピー

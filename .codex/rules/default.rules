@@ -1,0 +1,42 @@
+# Dotfiles repository-local commands.
+prefix_rule(
+    pattern = ["just", ["check", "fmt", "test"]],
+    decision = "allow",
+    justification = "Allow this trusted repository's standard check, format, and test recipes without prompting.",
+    match = [
+        "just check",
+        "just fmt",
+        "just test",
+    ],
+    not_match = [
+        "just deploy",
+    ],
+)
+
+prefix_rule(
+    pattern = ["nix", "flake", ["metadata", "show"]],
+    decision = "allow",
+    justification = "Allow read-only flake inspection for this trusted dotfiles repository.",
+    match = [
+        "nix flake metadata",
+        "nix flake show",
+    ],
+    not_match = [
+        "nix flake update",
+        "nix flake lock --update-input nixpkgs",
+    ],
+)
+
+prefix_rule(
+    pattern = ["nix", "eval"],
+    decision = "allow",
+    justification = "Allow evaluating this trusted repository's Nix expressions without prompting.",
+    match = [
+        "nix eval .#homeConfigurations",
+        "nix eval --raw .#formatter.aarch64-darwin",
+    ],
+    not_match = [
+        "nix build .#homeConfigurations.user.activationPackage",
+        "nix run .#some-app",
+    ],
+)

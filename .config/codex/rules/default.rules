@@ -1,0 +1,93 @@
+# Read-only git inspection commands.
+prefix_rule(
+    pattern = [
+        "git",
+        [
+            "status",
+            "diff",
+            "show",
+            "log",
+            "blame",
+            "ls-files",
+            "grep",
+            "add",
+            "rev-parse",
+            "merge-base",
+            "describe",
+            "name-rev",
+            "for-each-ref",
+            "cat-file",
+        ],
+    ],
+    decision = "allow",
+    justification = "Allow read-only Git inspection commands without prompting.",
+    match = [
+        "git status --short",
+        "git diff --no-ext-diff",
+        "git show --no-ext-diff HEAD",
+        "git log --oneline -5",
+        "git blame README.md",
+        "git add README.md",
+    ],
+    not_match = [
+        "git commit -m test",
+        "git push",
+        "git branch new-branch",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "branch", "--show-current"],
+    decision = "allow",
+    justification = "Allow checking the current Git branch without prompting.",
+    match = ["git branch --show-current"],
+    not_match = ["git branch new-branch"],
+)
+
+prefix_rule(
+    pattern = ["git", "remote", "-v"],
+    decision = "allow",
+    justification = "Allow listing Git remotes without prompting.",
+    match = ["git remote -v"],
+    not_match = ["git remote add origin git@github.com:owner/repo.git"],
+)
+
+# Read-only GitHub CLI commands.
+prefix_rule(
+    pattern = [
+        "gh",
+        ["pr", "issue", "repo", "release", "run", "workflow", "search"],
+        ["view", "list", "diff", "checks", "status"],
+    ],
+    decision = "allow",
+    justification = "Allow read-only GitHub CLI inspection commands without prompting.",
+    match = [
+        "gh pr view 123",
+        "gh pr list --state open",
+        "gh pr diff 123",
+        "gh issue view 456",
+        "gh repo view owner/repo",
+        "gh run list --limit 5",
+    ],
+    not_match = [
+        "gh pr create --fill",
+        "gh pr merge 123",
+        "gh issue edit 456 --add-label bug",
+        "gh repo delete owner/repo",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "auth", "status"],
+    decision = "allow",
+    justification = "Allow checking GitHub CLI authentication status without prompting.",
+    match = ["gh auth status"],
+    not_match = ["gh auth login"],
+)
+
+prefix_rule(
+    pattern = ["gh", "api"],
+    decision = "prompt",
+    justification = "GitHub API calls can mutate state; require approval unless a narrower rule is added.",
+    match = ["gh api repos/owner/repo/pulls/1"],
+)
