@@ -42,11 +42,11 @@ return {
   config = function()
     -- Set default capabilities for all LSP clients to use the same position encoding
     vim.lsp.config('*', {
-      capabilities = {
+      capabilities = require('blink.cmp').get_lsp_capabilities({
         general = {
           positionEncodings = { 'utf-16' },
         },
-      },
+      }),
     })
 
     vim.lsp.inlay_hint.enable()

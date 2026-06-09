@@ -30,7 +30,7 @@ return {
       },
       -- SQL (PostgreSQL)
       postgres_lsp = {
-        cmd = { 'postgres_lsp' },
+        cmd = { 'postgres-language-server', 'lsp-proxy' },
         languages = { 'sql' },
       },
       -- Vue
