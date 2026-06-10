@@ -125,16 +125,19 @@
     commonOverlays = [
       # upstream overlay (pkgs.moonbit-bin.* を生やす)
       inputs.moonbit-overlay.overlays.default
+      customOverlays.biome
       customOverlays.cli-tools
       customOverlays.cc-statusline
       customOverlays.claude-code
       customOverlays.cssmodules-language-server
       customOverlays.dcd
       customOverlays.deck
+      customOverlays.difftastic
       customOverlays.direnv-no-check
       customOverlays.git-graph-fork
       customOverlays.hermes-agent
       customOverlays.kakehashi
+      customOverlays.mise
       customOverlays.octorus
       customOverlays.pipx-no-check
       customOverlays.rgx-cli
@@ -142,6 +145,7 @@
       customOverlays.vite-plus
       customOverlays.vue-language-server-pin
       customOverlays.x-api-playground
+      customOverlays.yazi
     ];
 
     # CI用ヘルパー

@@ -15,6 +15,14 @@
     platform = platformMap.${system} or (throw "Unsupported system: ${system}");
     hash = hashes.${system} or (throw "No hash for system: ${system}");
     allPlatforms = builtins.attrNames platformMap;
+    resolvedExtraAttrs =
+      if builtins.isFunction extraAttrs
+      then extraAttrs prev
+      else extraAttrs;
+    formatNativeBuildInputs =
+      if format == "zip"
+      then [prev.unzip]
+      else [];
   in {
     ${pname} = prev.stdenvNoCC.mkDerivation ({
         inherit pname;
@@ -29,13 +37,18 @@
         # "binary": single prebuilt binary, no unpack
         # "tar":    tar archive (.tar.gz / .tar.xz) unpacked by stdenv default;
         #           caller sets sourceRoot / extraAttrs as needed
+        # "zip":    zip archive unpacked by stdenv default.
         if format == "binary"
         then {dontUnpack = true;}
         else if format == "tar"
         then {}
-        else throw "mkBinaryRelease: unknown format \"${format}\" (expected \"binary\" or \"tar\")"
+        else if format == "zip"
+        then {}
+        else throw "mkBinaryRelease: unknown format \"${format}\" (expected \"binary\", \"tar\", or \"zip\")"
       )
       // {
+        nativeBuildInputs = formatNativeBuildInputs ++ (resolvedExtraAttrs.nativeBuildInputs or []);
+
         installPhase = ''
           runHook preInstall
           mkdir -p $out/bin
@@ -58,6 +71,6 @@
           mainProgram = meta.mainProgram or binName;
         };
       }
-      // extraAttrs);
+      // builtins.removeAttrs resolvedExtraAttrs ["nativeBuildInputs"]);
   };
 }

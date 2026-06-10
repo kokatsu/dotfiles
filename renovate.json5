@@ -59,7 +59,8 @@
       semanticCommitScope: 'deps',
     },
     {
-      // overlays では version 文字列を 'v' なしで保持しているため strip する
+      // overlays では version 文字列を tag prefix なしで保持しているため strip する
+      // biomejs/biome の GitHub release tag は @biomejs/biome@2.4.16 形式
       // flake.nix のタグ pin (例: url = ".../v1.2.3") には適用しない (URL ref に 'v' が必要)
       matchDatasources: [
         'github-releases',
@@ -67,7 +68,7 @@
       matchFileNames: [
         'nix/overlays/*.nix',
       ],
-      extractVersion: '^v?(?<version>.*)$',
+      extractVersion: '^(?:v|@biomejs/biome@)?(?<version>.*)$',
     },
     {
       matchManagers: [
