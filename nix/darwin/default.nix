@@ -18,7 +18,19 @@
     git
     curl
     wget
+
+    # Rust crates with native OpenSSL dependencies (e.g. cargo-generate)
+    openssl
+    pkg-config
   ];
+
+  # cargo install 時に openssl-sys が Nix 管理の OpenSSL を見つけられるようにする
+  environment.variables = {
+    PKG_CONFIG = "${pkgs.pkg-config}/bin/pkg-config";
+    PKG_CONFIG_PATH = "${pkgs.openssl.dev}/lib/pkgconfig";
+    OPENSSL_INCLUDE_DIR = "${pkgs.openssl.dev}/include";
+    OPENSSL_LIB_DIR = "${pkgs.openssl.out}/lib";
+  };
 
   # Homebrew (Nixで管理できないGUIアプリ用)
   homebrew = {
