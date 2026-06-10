@@ -70,6 +70,37 @@ export default defineConfig(({ env }) => {
     { name: "git stash", keyword: "gst", snippet: "git stash" },
 
     // -------------------------------------------------------------------------
+    // Dev Container
+    // -------------------------------------------------------------------------
+    {
+      name: "devcontainer up",
+      keyword: "dcu",
+      snippet: "devcontainer up --workspace-folder .",
+    },
+    {
+      name: "devcontainer up (recreate)",
+      keyword: "dcur",
+      snippet:
+        "devcontainer up --workspace-folder . --remove-existing-container",
+    },
+    {
+      name: "devcontainer exec",
+      keyword: "dce",
+      snippet: "devcontainer exec --workspace-folder . {{command}}",
+    },
+    {
+      name: "devcontainer claude",
+      keyword: "dcc",
+      snippet: "devcontainer exec --workspace-folder . claude",
+    },
+    {
+      name: "devcontainer claude (skip permissions)",
+      keyword: "dcy",
+      snippet:
+        "devcontainer exec --workspace-folder . claude --dangerously-skip-permissions",
+    },
+
+    // -------------------------------------------------------------------------
     // Utility (global snippets)
     // -------------------------------------------------------------------------
     {
