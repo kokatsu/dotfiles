@@ -202,14 +202,6 @@ fi
 
 zsh-defer -a +1 +2 -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || delta --generate-completion zsh >$ZIM_HOME/modules/zsh-completions/src/_delta'
 
-# ------------------------------------------------------------------------------
-# DuckDB (https://github.com/duckdb/duckdb)
-# ------------------------------------------------------------------------------
-
-[ -e "$HOME/.duckdbrc" ] || {
-  ln -s "$XDG_CONFIG_HOME/duckdb/duckdbrc" "$HOME/.duckdbrc"
-}
-
 # fastfetch は home.file で管理
 
 # ------------------------------------------------------------------------------
