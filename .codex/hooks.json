@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "hooks": {
     "PostToolUse": [
       {
@@ -7,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.codex/hooks/format-post-tool-use.sh\""
+            "command": "bash .codex/hooks/format-post-tool-use.sh"
           }
         ]
       }

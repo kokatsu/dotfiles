@@ -1,7 +1,7 @@
 # Dotfiles task runner
 
 lua_dirs := ".config/nvim .config/wezterm"
-sh_files := ".config/claude/file-suggestion.sh .config/claude/hooks/*.sh .config/tmux/scripts/*.sh scripts/test-hash-patterns.sh scripts/sync-flake-inputs.sh"
+sh_files := ".codex/hooks/*.sh .config/claude/file-suggestion.sh .config/claude/hooks/*.sh .config/tmux/scripts/*.sh scripts/test-hash-patterns.sh scripts/sync-flake-inputs.sh"
 deno_dirs := "karabiner-config scripts"
 deno_files := ".config/zeno/config.ts"
 

@@ -67,6 +67,7 @@ jobs:
         run: |
           shopt -s nullglob
           files=(
+            .codex/hooks/*.sh
             .config/claude/file-suggestion.sh
             .config/claude/hooks/*.sh
             .config/tmux/scripts/*.sh
