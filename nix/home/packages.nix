@@ -18,6 +18,14 @@
   feed-summarize = pkgs.writeShellScriptBin "feed-summarize" ''
     exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/feed-summarize" "$@"
   '';
+
+  cargo-with-openssl = pkgs.writeShellScriptBin "cargo-with-openssl" ''
+    export PATH="${lib.makeBinPath [pkgs.pkg-config]}:$PATH"
+    export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+    export OPENSSL_INCLUDE_DIR="${pkgs.openssl.dev}/include"
+    export OPENSSL_LIB_DIR="${pkgs.openssl.out}/lib"
+    exec cargo "$@"
+  '';
 in {
   # 以下のパッケージは programs.* モジュールで管理:
   # bat, btop, delta, eza, fzf, gh, git, lazygit, zoxide
@@ -49,6 +57,7 @@ in {
       stablePkgs.ruby_3_2 # nixpkgs-stable から取得 (理由は flake.nix 参照)
       # https://github.com/rust-lang/rustup
       rustup # Rust ツールチェーンマネージャ
+      cargo-with-openssl # openssl-sys が必要な Cargo コマンド用 wrapper
       # https://github.com/moonbit-community/moonbit-overlay
       # MoonBit ツールチェーン (moon/moonc/moonrun + LSP 同梱)。特定バージョンをピン留め:
       # v0.9.3+b53c2807d+4a0c52f を overlay のエスケープ規則 (. → _, + → -) で属性化したもの。
