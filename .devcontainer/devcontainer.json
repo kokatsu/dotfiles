@@ -1,0 +1,22 @@
+{
+  "name": "claude-code-sandbox",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+  "remoteUser": "vscode",
+  "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
+  "containerEnv": {
+    "TZ": "${localEnv:TZ:Asia/Tokyo}",
+    "NODE_OPTIONS": "--max-old-space-size=4096",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
+  },
+  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.claude && sudo apt-get update && sudo apt-get install -y iptables ipset iproute2 dnsutils jq curl aggregate && sudo install -m 0755 .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh && sudo sh -c 'echo \"vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\" > /etc/sudoers.d/vscode && chmod 0440 /etc/sudoers.d/vscode'",
+  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
+  "waitFor": "postStartCommand",
+  "mounts": [
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+  ]
+}

@@ -207,6 +207,8 @@ in {
 
       # https://github.com/openai/codex
       codex # OpenAI Codex CLI
+      # https://github.com/devcontainers/cli
+      devcontainer # Dev Container CLI (devcontainer.json から環境構築・コンテナ内で claude 等を実行)
       # https://github.com/gitleaks/gitleaks
       gitleaks # シークレット検出
       # https://github.com/pypa/pipx
