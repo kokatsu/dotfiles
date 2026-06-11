@@ -159,10 +159,10 @@ in {
     pname = "claude-code";
     version = "2.1.173";
     hashes = {
-      "aarch64-darwin" = "sha256-PDHzRVdb9vJhx+GZgfZJG7k+6w/7SZ6VAzYQpxhIMc4=";
-      "x86_64-darwin" = "sha256-xQf5h1DFIw5CR/fq3/OOTbBMAGkE+FN54xxdXoLhw4Q=";
-      "aarch64-linux" = "sha256-TvDXNb1BgMO//DgfbcON+XkimoY30pS+dRxgQ9k9EuE=";
-      "x86_64-linux" = "sha256-wJFd0WkdVpruvHl4sS4ClxgyNoXsDdS1xqRTEI1r4fc=";
+      "aarch64-darwin" = "sha256-I1wbrNzH+djZI2jJWgxmwm/KyY+HjyGxDHOvNAvDMas=";
+      "x86_64-darwin" = "sha256-WjXB3isTJF6bO9csTfTwaK3OFPbUF6P2i/C7Q3InFoc=";
+      "aarch64-linux" = "sha256-zFk9/CY/cH7SIuM0/1wSqa3cJKvCBnaJYvnQY7L9esk=";
+      "x86_64-linux" = "sha256-z36hlOF0iTL6MPGA6qn1b5pwOdzjcDApiMKSZimyohk=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
