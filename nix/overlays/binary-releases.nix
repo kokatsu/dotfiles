@@ -186,10 +186,10 @@ in {
     pname = "kakehashi";
     version = "0.6.0";
     hashes = {
-      "aarch64-darwin" = "sha256-SfTEA5uPlXluRtLVXoPJ73m2UJjN3ElwqnEPp+zSDpE=";
-      "x86_64-darwin" = "sha256-W1+MXHYSYjFj8QqKmIXtIat/dqk6257qdH6V8nCdBJY=";
-      "aarch64-linux" = "sha256-YW3BJWx6GijmlSVO+tMWrA3JyJ+a7fr6bfWyOlZkPy8=";
-      "x86_64-linux" = "sha256-/O5ca7o5lG76sFo+4IBoVE5xbtc8gYBExlmzfhMaIVo=";
+      "aarch64-darwin" = "sha256-TBYLPSxG091PsX5KaO3C9Br9rxZ3BAnsi6mLRcYu8mo=";
+      "x86_64-darwin" = "sha256-ev9BnfkJIhssO/uF4WQR7MtsC7D6JdeYb2IL0IcQGw4=";
+      "aarch64-linux" = "sha256-zyPXAsr/wiK++LXghEsCSQmqN/QMUXauIajxP1NVxG8=";
+      "x86_64-linux" = "sha256-EXEAEbizAURTUf7Ve4Ke/EgOJqmalJcjqhODsU9/ekg=";
     };
     platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/atusy/kakehashi/releases/download/v${version}/kakehashi-v${version}-${platform}.tar.gz";
