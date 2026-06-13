@@ -62,7 +62,7 @@ in {
   # Renovate: datasource=github-releases depName=biomejs/biome
   biome = mkBinaryRelease rec {
     pname = "biome";
-    version = "2.4.16";
+    version = "2.5.0";
     hashes = {
       "aarch64-darwin" = "sha256-jPnpKhYeJr2/wIlsIIhk4d6LFg37kPYQQGCcJ0PPQzs=";
       "aarch64-linux" = "sha256-6BBneC3dmp1F4TuP4Yu+9UxJDPJhJvBdZ7s3DK9HUCo=";
