@@ -64,9 +64,9 @@ in {
     pname = "biome";
     version = "2.5.0";
     hashes = {
-      "aarch64-darwin" = "sha256-jPnpKhYeJr2/wIlsIIhk4d6LFg37kPYQQGCcJ0PPQzs=";
-      "aarch64-linux" = "sha256-6BBneC3dmp1F4TuP4Yu+9UxJDPJhJvBdZ7s3DK9HUCo=";
-      "x86_64-linux" = "sha256-9pBMIIzoiEz4WUYBePMviFJQs3XaGBDFUZEqAp9Kv3k=";
+      "aarch64-darwin" = "sha256-m54E90nbawN7CtOLoMXM5jsYWnzDsEnld9rTwY9K2yw=";
+      "aarch64-linux" = "sha256-J8m8WZTftXEfXwmkw8NXScqcSomKBjuwYua5MtvCVx0=";
+      "x86_64-linux" = "sha256-598pjwVR3ZC+pEJXeTaaoxMNmBf0rMT2Y+9jwycgahk=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
