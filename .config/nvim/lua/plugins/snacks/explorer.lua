@@ -82,12 +82,61 @@ local function explorer_layout()
   return bottom_preview_layout()
 end
 
+local function same_item(left, right)
+  return left == right or left and right and left.file == right.file
+end
+
+local function current_child_parent(item)
+  if not item then
+    return
+  end
+
+  if item.dir then
+    return item
+  end
+
+  return item.parent
+end
+
+local function move_to_last_child(picker, parent)
+  local target
+  for child, idx in picker:iter() do
+    if same_item(child.parent, parent) then
+      target = idx
+    end
+  end
+
+  if target then
+    picker.list:view(target)
+  end
+end
+
 M.config = {
   auto_close = true,
   hidden = true,
   ignored = true,
   exclude = common_exclude,
   layout = explorer_layout,
+  actions = {
+    explorer_last_child = {
+      desc = 'Go to Last Child',
+      action = function(picker, item)
+        local parent = current_child_parent(item)
+        if not parent then
+          return
+        end
+
+        move_to_last_child(picker, parent)
+      end,
+    },
+  },
+  win = {
+    list = {
+      keys = {
+        ['gG'] = { 'explorer_last_child', desc = 'Go to Last Child' },
+      },
+    },
+  },
 }
 
 -- Explorer opts
