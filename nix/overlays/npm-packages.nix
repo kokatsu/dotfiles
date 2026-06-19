@@ -32,6 +32,16 @@
         runHook postInstall
       '';
 
+      # `vp create` copies its scaffold templates with fs.copyFileSync, which
+      # preserves the source mode. Sourced from the read-only Nix store, every
+      # generated file lands as 0444, so vp's own follow-up edit of package.json
+      # fails with EACCES. Make copy() restore a writable mode on the output.
+      postInstall = ''
+        substituteInPlace $out/lib/node_modules/vite-plus/dist/create/bin.js \
+          --replace-fail 'else fs.copyFileSync(src, dest);' \
+            'else { fs.copyFileSync(src, dest); fs.chmodSync(dest, 0o644); }'
+      '';
+
       meta = with prev.lib; {
         description = "The Unified Toolchain for the Web";
         homepage = "https://github.com/voidzero-dev/vite-plus";
