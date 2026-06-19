@@ -243,6 +243,7 @@ in {
           pkgs.textlint
           pkgs.textlint-rule-preset-ja-technical-writing
           pkgs.textlint-rule-terminology
+          pkgs.textlint-rule-preset-ai-writing # AI 文章パターン検出 (overlay)
         ];
         nativeBuildInputs = [pkgs.makeWrapper];
         postBuild = ''

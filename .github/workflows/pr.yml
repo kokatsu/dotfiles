@@ -101,6 +101,14 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }vite-plus $VERSION"
           fi
 
+          if echo "$DIFF" | grep -q 'textlint-rule-preset-ai-writing'; then
+            echo "has_textlint_rule_preset_ai_writing=true" >> $GITHUB_OUTPUT
+            VERSION=$(grep -A 20 "# Renovate:.*depName=@textlint-ja/textlint-rule-preset-ai-writing" "nix/overlays/npm-packages.nix" | grep -oP 'version = "\K[^"]+' | head -1)
+            validate_version "textlint-rule-preset-ai-writing" "$VERSION"
+            echo "version_textlint_rule_preset_ai_writing=$VERSION" >> $GITHUB_OUTPUT
+            PACKAGES="${PACKAGES:+$PACKAGES, }textlint-rule-preset-ai-writing $VERSION"
+          fi
+
           if echo "$DIFF" | grep -q 'mise'; then
             echo "has_mise=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 30 "# Renovate:.*depName=.*mise" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -273,6 +281,32 @@ jobs:
           # Compute npmDepsHash using prefetch-npm-deps
           NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
           sed -i "/vite-plus = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
+
+      - name: Update textlint-rule-preset-ai-writing hashes
+        if: steps.detect.outputs.has_textlint_rule_preset_ai_writing == 'true'
+        env:
+          VERSION: ${{ steps.detect.outputs.version_textlint_rule_preset_ai_writing }}
+        run: |
+          OVERLAY="nix/overlays/npm-packages.nix"
+          LOCK_DIR="nix/npm-locks/textlint-rule-preset-ai-writing"
+
+          # Scoped npm package vendored via a wrapper package.json that depends on
+          # @textlint-ja/textlint-rule-preset-ai-writing@<version>; regenerate the lock.
+          # No special npm flags here, mirroring npm-packages.nix (no npmFlags).
+          jq --arg v "$VERSION" '.dependencies."@textlint-ja/textlint-rule-preset-ai-writing" = $v' \
+            "$LOCK_DIR/package.json" > /tmp/ai-writing-wrapper.json
+          mv /tmp/ai-writing-wrapper.json "$LOCK_DIR/package.json"
+
+          mkdir -p /tmp/ai-writing-pkg
+          cp "$LOCK_DIR/package.json" /tmp/ai-writing-pkg/
+          cd /tmp/ai-writing-pkg
+          npm install --package-lock-only --ignore-scripts
+          cp package-lock.json "$GITHUB_WORKSPACE/$LOCK_DIR/"
+          cd "$GITHUB_WORKSPACE"
+
+          # Compute npmDepsHash using prefetch-npm-deps
+          NPM_HASH=$(nix run nixpkgs#prefetch-npm-deps -- "$LOCK_DIR/package-lock.json" 2>/dev/null)
+          sed -i "/textlint-rule-preset-ai-writing = _final: prev: let/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
       - name: Update cssmodules-language-server hashes
         if: steps.detect.outputs.has_cssmodules_language_server == 'true'

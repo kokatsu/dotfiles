@@ -141,6 +141,7 @@
       customOverlays.octorus
       customOverlays.pipx-no-check
       customOverlays.rgx-cli
+      customOverlays.textlint-rule-preset-ai-writing
       customOverlays.unocss-language-server
       customOverlays.vite-plus
       customOverlays.vue-language-server-pin

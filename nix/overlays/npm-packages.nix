@@ -41,4 +41,51 @@
       };
     };
   };
+
+  # textlint-rule-preset-ai-writing - AI が生成した文章パターンを検出する textlint プリセット。
+  # nixpkgs 未収録。旧名 `textlint-rule-preset-ai-writing` は npm 1.1.0 で凍結され、現行は
+  # スコープ付き `@textlint-ja/textlint-rule-preset-ai-writing` で配布されている。vite-plus と
+  # 同じく wrapper package.json で npm tarball を取り込み、prebuilt な lib/ をそのまま使う
+  # (ソースは lib/ を含まず prepare で git config を呼ぶためビルドしない)。依存はルール本体の
+  # node_modules にネストし、packages.nix の symlinkJoin で @textlint 等が衝突しないようにする。
+  # Renovate: datasource=npm depName=@textlint-ja/textlint-rule-preset-ai-writing
+  textlint-rule-preset-ai-writing = _final: prev: let
+    version = "1.7.0";
+    packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/textlint-rule-preset-ai-writing/package.json);
+    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/textlint-rule-preset-ai-writing/package-lock.json);
+  in {
+    textlint-rule-preset-ai-writing = prev.buildNpmPackage {
+      pname = "textlint-rule-preset-ai-writing";
+      inherit version;
+
+      src = prev.runCommand "textlint-rule-preset-ai-writing-src" {} ''
+        mkdir -p $out
+        cp ${packageJson} $out/package.json
+        cp ${packageLock} $out/package-lock.json
+      '';
+
+      npmDepsHash = "sha256-Sv4t7GR8SJpbfiEGX5TxduWG8zI6HBOnHMmIMgTPTXg=";
+      dontNpmBuild = true;
+
+      # nixpkgs の textlint ルールパッケージと同じ構造にする:
+      # トップレベルにはルール本体 (@textlint-ja/...) のみを公開し、依存はその
+      # node_modules にネストする。これで textlint の symlinkJoin 時に衝突しない。
+      installPhase = ''
+        runHook preInstall
+        dest=$out/lib/node_modules/@textlint-ja/textlint-rule-preset-ai-writing
+        mkdir -p "$(dirname "$dest")"
+        mv node_modules/@textlint-ja/textlint-rule-preset-ai-writing "$dest"
+        rmdir node_modules/@textlint-ja 2>/dev/null || true
+        mv node_modules "$dest/node_modules"
+        runHook postInstall
+      '';
+
+      meta = with prev.lib; {
+        description = "Textlint preset to detect AI-generated writing patterns in Japanese";
+        homepage = "https://github.com/textlint-ja/textlint-rule-preset-ai-writing";
+        license = licenses.mit;
+        platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
+      };
+    };
+  };
 }

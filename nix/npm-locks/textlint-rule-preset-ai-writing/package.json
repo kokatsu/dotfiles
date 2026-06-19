@@ -1,0 +1,8 @@
+{
+  "name": "textlint-rule-preset-ai-writing-wrapper",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@textlint-ja/textlint-rule-preset-ai-writing": "1.7.0"
+  }
+}
