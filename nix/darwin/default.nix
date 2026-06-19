@@ -30,6 +30,14 @@
       # Homebrew 5.x は `brew bundle --cleanup` に force 系フラグ必須 (非対話で
       # 未掲載パッケージを zap するため)。これがないと activation が失敗する。
       extraFlags = ["--force-cleanup"];
+      # Homebrew 6.0 以降、非公式 tap は `brew trust` での信頼が必須
+      # (HOMEBREW_REQUIRE_TAP_TRUST がデフォルト true)。activation は
+      # `sudo --preserve-env=PATH` で走り XDG_CONFIG_HOME が失われるため、
+      # 既定だと ~/.homebrew/trust.json を見て未信頼扱いになり bundle が失敗する。
+      # trust.json は ~/.config/homebrew/ にあるので参照先をそこへ向ける。
+      extraEnv = {
+        HOMEBREW_XDG_CONFIG_HOME = "/Users/${username}/.config";
+      };
     };
     taps = [
       "manaflow-ai/cmux"
