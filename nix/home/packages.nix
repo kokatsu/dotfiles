@@ -197,6 +197,8 @@ in {
       pandoc # ドキュメント変換ツール
       # https://poppler.freedesktop.org/
       poppler-utils # PDF操作ツール (pdftotext, pdfimages等)
+      # https://github.com/itsjunetime/tdf
+      tdf # ターミナル PDF ビューア
 
       #--- その他言語/ツール ---#
       # https://github.com/luarocks/luarocks
