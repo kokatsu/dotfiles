@@ -267,12 +267,12 @@ in {
   # Renovate: datasource=github-releases depName=brevity1swos/rgx
   rgx-cli = mkBinaryRelease rec {
     pname = "rgx-cli";
-    version = "0.12.2";
+    version = "0.14.1";
     hashes = {
-      "aarch64-darwin" = "sha256-7M9ALm1cmUE1USWu+iCW77w1+GdO9VNTnSrdqAfXRhs=";
-      "x86_64-darwin" = "sha256-RKuys72yp79uy1c2shpq5A2C0QOlw79cjDmX+jmacSg=";
-      "aarch64-linux" = "sha256-O6sXHbA+8ICo5FcXYhN/air3jN67Ix5QueIrM1quT9U=";
-      "x86_64-linux" = "sha256-uEux8J3vnsVJDR/OANRx2Nk2kKl25bq6BviR1AyGyGk=";
+      "aarch64-darwin" = "sha256-gdjKojHrjsgE5Ytgjq8ZHqgRpz8yYEXSn+2+qf2vWbw=";
+      "x86_64-darwin" = "sha256-XlqyJmuk8sELrQ4ti0W33gi0BnqjzVJJftFA3WRAvLM=";
+      "aarch64-linux" = "sha256-9Wp9ScdUitN7YLxSs3QoBV/qzVEnHdaqPNwu4KZSF7Q=";
+      "x86_64-linux" = "sha256-y21ExogHIjHxbmRd2/THd51pylcQzHTjTVkwGGjIggk=";
     };
     platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/brevity1swos/rgx/releases/download/v${version}/rgx-cli-${platform}.tar.xz";
