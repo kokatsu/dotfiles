@@ -183,7 +183,7 @@ in {
   # Renovate: datasource=github-releases depName=openai/codex
   codex = mkBinaryRelease rec {
     pname = "codex";
-    version = "0.141.0";
+    version = "0.142.0";
     hashes = {
       "aarch64-darwin" = "sha256-o38WiPabOLHO0FYIbSM+ZHhHQP4ZoqFeOtwcaCjhuTM=";
       "x86_64-darwin" = "sha256-tbsa+cgjMGtoLKjVwvGGENXww9Xb5GdLC18Y7s05hqc=";
