@@ -179,6 +179,45 @@ in {
     };
   };
 
+  # Codex - OpenAI Codex CLI
+  # Renovate: datasource=github-releases depName=openai/codex
+  codex = mkBinaryRelease rec {
+    pname = "codex";
+    version = "0.141.0";
+    hashes = {
+      "aarch64-darwin" = "sha256-o38WiPabOLHO0FYIbSM+ZHhHQP4ZoqFeOtwcaCjhuTM=";
+      "x86_64-darwin" = "sha256-tbsa+cgjMGtoLKjVwvGGENXww9Xb5GdLC18Y7s05hqc=";
+      "aarch64-linux" = "sha256-twAwM4WS3j42Hzzeg9Yk+IBh3zAKvjG2IHWlxaBYpvw=";
+      "x86_64-linux" = "sha256-CRyKLic3DEFAf6HLZH/pBb1P1w5GicE+/+4KLc4bKwc=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "aarch64-apple-darwin";
+      "x86_64-darwin" = "x86_64-apple-darwin";
+      "aarch64-linux" = "aarch64-unknown-linux-musl";
+      "x86_64-linux" = "x86_64-unknown-linux-musl";
+    };
+    url = platform: "https://github.com/openai/codex/releases/download/rust-v${version}/codex-package-${platform}.tar.gz";
+    format = "tar";
+    binPath = "bin/codex";
+    extraAttrs = {
+      sourceRoot = ".";
+      installPhase = ''
+        runHook preInstall
+        mkdir -p "$out"
+        cp -R bin codex-package.json codex-path "$out/"
+        if [ -d codex-resources ]; then
+          cp -R codex-resources "$out/"
+        fi
+        runHook postInstall
+      '';
+    };
+    meta = {
+      description = "OpenAI Codex CLI";
+      homepage = "https://github.com/openai/codex";
+      license = "asl20";
+    };
+  };
+
   # kakehashi - Tree-sitter Language Server
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=atusy/kakehashi

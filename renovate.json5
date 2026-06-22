@@ -68,7 +68,7 @@
       matchFileNames: [
         'nix/overlays/*.nix',
       ],
-      extractVersion: '^(?:v|@biomejs/biome@)?(?<version>.*)$',
+      extractVersion: '^(?:rust-v|v|@biomejs/biome@)?(?<version>.*)$',
     },
     {
       matchManagers: [

@@ -217,7 +217,7 @@ in {
       claude-code # AI コーディングエージェント (overlay)
 
       # https://github.com/openai/codex
-      codex # OpenAI Codex CLI
+      codex # OpenAI Codex CLI (overlay)
       # https://github.com/devcontainers/cli
       devcontainer # Dev Container CLI (devcontainer.json から環境構築・コンテナ内で claude 等を実行)
       # https://github.com/gitleaks/gitleaks

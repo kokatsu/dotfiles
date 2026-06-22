@@ -129,6 +129,7 @@
       customOverlays.cli-tools
       customOverlays.cc-statusline
       customOverlays.claude-code
+      customOverlays.codex
       customOverlays.cssmodules-language-server
       customOverlays.dcd
       customOverlays.deck
