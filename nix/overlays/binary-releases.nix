@@ -185,10 +185,10 @@ in {
     pname = "codex";
     version = "0.142.0";
     hashes = {
-      "aarch64-darwin" = "sha256-o38WiPabOLHO0FYIbSM+ZHhHQP4ZoqFeOtwcaCjhuTM=";
-      "x86_64-darwin" = "sha256-tbsa+cgjMGtoLKjVwvGGENXww9Xb5GdLC18Y7s05hqc=";
-      "aarch64-linux" = "sha256-twAwM4WS3j42Hzzeg9Yk+IBh3zAKvjG2IHWlxaBYpvw=";
-      "x86_64-linux" = "sha256-CRyKLic3DEFAf6HLZH/pBb1P1w5GicE+/+4KLc4bKwc=";
+      "aarch64-darwin" = "sha256-cObUiva38bafAmZ9IJY3oT224GHGagQ5SRTwdqBOoJI=";
+      "x86_64-darwin" = "sha256-lIScpEf37UPn4UuxvmL8xKS45ksPkXclQ9ltnNTpKy8=";
+      "aarch64-linux" = "sha256-i4Oa4OEKham7mijiRLMWyB0FTsMOeRSyO1jCxq/YBMg=";
+      "x86_64-linux" = "sha256-2rt38/SxHCenw3CzN8j4XgqvodFVn1OT+KmjAkJJ6Z0=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
