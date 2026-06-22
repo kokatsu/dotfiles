@@ -6,7 +6,7 @@
   labels: [
     'dependencies',
   ],
-  minimumReleaseAge: '1 day',
+  minimumReleaseAge: '7 days',
   ignorePaths: [
     'nix/npm-locks/**',
   ],
@@ -46,12 +46,6 @@
   ],
   packageRules: [
     {
-      matchDatasources: [
-        'npm',
-      ],
-      minimumReleaseAge: '7 days',
-    },
-    {
       matchFileNames: [
         'nix/overlays/*.nix',
       ],
@@ -74,7 +68,6 @@
       matchManagers: [
         'github-actions',
       ],
-      minimumReleaseAge: '7 days',
       internalChecksFilter: 'strict',
     },
     {
@@ -92,6 +85,15 @@
       ],
       minimumReleaseAge: '0 days',
       sourceUrl: 'https://github.com/anthropics/claude-code',
+    },
+    {
+      matchDatasources: [
+        'github-releases',
+      ],
+      matchPackageNames: [
+        'openai/codex',
+      ],
+      minimumReleaseAge: '0 days',
     },
   ],
 }
