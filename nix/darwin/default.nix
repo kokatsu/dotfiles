@@ -30,18 +30,20 @@
       # Homebrew 5.x は `brew bundle --cleanup` に force 系フラグ必須 (非対話で
       # 未掲載パッケージを zap するため)。これがないと activation が失敗する。
       extraFlags = ["--force-cleanup"];
-      # Homebrew 6.0 以降、非公式 tap は `brew trust` での信頼が必須
-      # (HOMEBREW_REQUIRE_TAP_TRUST がデフォルト true)。activation は
-      # `sudo --preserve-env=PATH` で走り XDG_CONFIG_HOME が失われるため、
-      # 既定だと ~/.homebrew/trust.json を見て未信頼扱いになり bundle が失敗する。
-      # trust.json は ~/.config/homebrew/ にあるので参照先をそこへ向ける。
-      extraEnv = {
-        HOMEBREW_XDG_CONFIG_HOME = "/Users/${username}/.config";
-      };
     };
+    # Homebrew 6.0 以降、非公式 tap は信頼が必須 (HOMEBREW_REQUIRE_TAP_TRUST が
+    # デフォルト true)。`trusted = true` で Brewfile に `trusted: true` が出力され、
+    # bundle がインラインで信頼を受け取る。これにより外部状態 (~/.config の
+    # trust.json) に依存せず、ファイル消失による activation 失敗が起きない。
     taps = [
-      "manaflow-ai/cmux"
-      "vjeantet/tap"
+      {
+        name = "manaflow-ai/cmux";
+        trusted = true;
+      }
+      {
+        name = "vjeantet/tap";
+        trusted = true;
+      }
     ];
     brews = [
       # https://github.com/vjeantet/alerter
