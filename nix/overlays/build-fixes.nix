@@ -142,4 +142,15 @@
         '';
     });
   };
+
+  # Fix a whole-server crash in tmux. tty_keys_next() dereferences
+  # c->session->curw->window when handling a FocusIn/FocusOut escape sequence,
+  # with no NULL guard on c->session. If a focus event arrives while the client
+  # has no current session (e.g. mid-detach, with focus-events + destroy-unattached),
+  # the server segfaults and every session dies. Unfixed upstream as of 3.6a/master.
+  tmux-focus-crash-fix = _final: prev: {
+    tmux = prev.tmux.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [./tmux-focus-null-guard.patch];
+    });
+  };
 }

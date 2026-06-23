@@ -1,0 +1,26 @@
+Guard NULL c->session in tty_keys_next() focus handling.
+
+A FocusIn/FocusOut escape sequence arriving while a client has no current
+session (c->session == NULL, e.g. mid-detach) makes window_update_focus()
+dereference c->session->curw->window and segfault the whole tmux server,
+taking every session down with it. Unfixed upstream as of tmux 3.6a/master.
+
+--- a/tty-keys.c
++++ b/tty-keys.c
+@@ -978,12 +978,14 @@
+ 	/* Check for focus events. */
+ 	if (key == KEYC_FOCUS_OUT) {
+ 		c->flags &= ~CLIENT_FOCUSED;
+-		window_update_focus(c->session->curw->window);
++		if (c->session != NULL)
++			window_update_focus(c->session->curw->window);
+ 		notify_client("client-focus-out", c);
+ 	} else if (key == KEYC_FOCUS_IN) {
+ 		c->flags |= CLIENT_FOCUSED;
+ 		notify_client("client-focus-in", c);
+-		window_update_focus(c->session->curw->window);
++		if (c->session != NULL)
++			window_update_focus(c->session->curw->window);
+ 	}
+ 
+ 	/* Fire the key. */
