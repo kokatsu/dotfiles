@@ -23,7 +23,12 @@ in {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/nvim";
         force = true;
       };
-      ".config/claude/settings.json".source = ../../.config/claude/settings.json;
+      # settings.json: mkOutOfStoreSymlink でリポジトリを直接リンク
+      # これにより /effort などランタイムでの書き込みがリポジトリに反映される
+      ".config/claude/settings.json" = {
+        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/claude/settings.json";
+        force = true;
+      };
       ".config/claude/CLAUDE.md".source = ../../.config/claude/.CLAUDE.md;
       ".config/claude/skills".source = ../../.config/claude/skills;
       ".config/claude/commands".source = ../../.config/claude/commands;
