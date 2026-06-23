@@ -16,6 +16,7 @@
             <outline text="Graph API Status" title="Graph API Status" description="Status updates for Graph API" xmlUrl="https://metastatus.com/outage-events-feed-graph-api.rss" htmlUrl="https://metastatus.com/" type="rss" />
             <outline text="Claude Status - Incident History" title="Claude Status - Incident History" description="Claude Status - Incident History" xmlUrl="https://status.anthropic.com/history.atom" htmlUrl="https://status.anthropic.com/" type="rss" />
             <outline text="GitHub Status - Incident History" title="GitHub Status - Incident History" description="GitHub Status - Incident History" xmlUrl="https://www.githubstatus.com/history.atom" htmlUrl="https://www.githubstatus.com/" type="rss" />
+            <outline text="OpenAI Status - Incident History" title="OpenAI Status - Incident History" description="OpenAI Status - Incident History" xmlUrl="https://status.openai.com/feed.atom" htmlUrl="https://status.openai.com/" type="rss" />
         </outline>
     </body>
 </opml>
