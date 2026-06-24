@@ -3,9 +3,16 @@
 
 ---@type vim.lsp.Config
 local ruby_lsp_config = {
-  -- Docker環境のプロジェクトではホスト上で bundle install が成功しないため
-  -- BUNDLE_GEMFILE を設定して bundler セットアップをスキップし直接起動
-  cmd = { 'env', 'BUNDLE_GEMFILE=.', 'ruby-lsp' },
+  -- BUNDLE_GEMFILE=. で bundler セットアップをスキップし直接起動。
+  -- root_dir を cwd に渡し、モノレポ内の各サブプロジェクトを正しく認識させる。
+  cmd = function(dispatchers, config)
+    return vim.lsp.rpc.start(
+      { 'env', 'BUNDLE_GEMFILE=.', 'ruby-lsp' },
+      dispatchers,
+      config and config.root_dir and { cwd = config.cmd_cwd or config.root_dir }
+    )
+  end,
+  root_markers = { 'Gemfile', '.git' },
   init_options = {
     -- フォーマッタ設定 ('auto', 'rubocop', 'standard', 'syntax_tree')
     formatter = 'auto',
@@ -52,6 +59,12 @@ local ruby_lsp_config = {
       },
     },
   },
+
+  -- root_dir が異なるサブプロジェクトには別クライアントを起動
+  reuse_client = function(client, config)
+    config.cmd_cwd = config.root_dir
+    return client.name == config.name and client.config.root_dir == config.root_dir
+  end,
 
   -- LSPアタッチ時のコールバック
   on_attach = function(client, bufnr)
