@@ -1,0 +1,4 @@
+interface:
+  display_name: "Browser Research"
+  short_description: "Research rendered web pages with agent-browser"
+  default_prompt: "Use $browser-research to research this URL with a rendered browser."

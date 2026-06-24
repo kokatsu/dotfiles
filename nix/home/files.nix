@@ -61,6 +61,9 @@ in {
       # 実体は `home.file` ブロック末尾で `// (builtins.listToAttrs ...)` として合流
       # 起動中もファイルウォッチで反映。`/theme` で "Catppuccin <Flavor>" を選択
 
+      # Codex: built-in skills (.system) を残すため、共有したい skill だけを個別にリンク
+      ".config/codex/skills/browser-research".source = ../../.config/codex/skills/browser-research;
+
       ".config/cmux/settings.json".source = ../../.config/cmux/settings.json;
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch/config.jsonc".text = let
