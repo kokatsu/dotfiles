@@ -45,6 +45,11 @@ in {
       # Focus events (for vim autoread)
       set -g focus-events on
 
+      # クリックをアプリに転送しない（誤操作防止）。ホイールスクロールはデフォルトのまま転送される
+      bind -n MouseDown1Pane select-pane -t=
+      bind -n MouseUp1Pane select-pane -t=
+      bind -n MouseDown1Status select-window -t=
+
       # Status bar position
       set -g status-position bottom
 
