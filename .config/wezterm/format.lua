@@ -284,20 +284,24 @@ M.apply = function()
       border_color = zoomed_color
     end
 
-    local window_frame = {
-      border_left_width = '0.5cell',
-      border_right_width = '0.5cell',
-      border_bottom_height = '0.25cell',
-      border_top_height = '0.25cell',
-      border_left_color = border_color,
-      border_right_color = border_color,
-      border_bottom_color = border_color,
-      border_top_color = border_color,
-    }
-
+    -- set_config_overrides は呼ぶたびに config 全体を再評価する高コスト操作のため、
+    -- 枠色が実際に変わった時（ズーム状態の変化 / 背景切替で window_frame が消えた時）だけ呼ぶ。
+    -- update-status は周期的に発火するので、毎ティック呼ぶと入力遅延の一因になる。
     local overrides = window:get_config_overrides() or {}
-    overrides.window_frame = window_frame
-    window:set_config_overrides(overrides)
+    local current_frame = overrides.window_frame
+    if not current_frame or current_frame.border_left_color ~= border_color then
+      overrides.window_frame = {
+        border_left_width = '0.5cell',
+        border_right_width = '0.5cell',
+        border_bottom_height = '0.25cell',
+        border_top_height = '0.25cell',
+        border_left_color = border_color,
+        border_right_color = border_color,
+        border_bottom_color = border_color,
+        border_top_color = border_color,
+      }
+      window:set_config_overrides(overrides)
+    end
 
     window:set_left_status(wezterm.format({}))
 
