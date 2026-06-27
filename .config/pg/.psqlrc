@@ -1,16 +1,37 @@
+-- ---------- テーブル出力の設定 ----------
+
+-- 罫線を内側のみ表示 (0=なし, 2=外枠も)
 \pset border 1
+-- 罫線に Unicode 文字を使う
 \pset linestyle unicode
+-- NULL を [NULL] と表示
 \pset null '[NULL]'
+-- ページャを無効化し結果を一括出力
 \pset pager off
 
+-- ---------- 入力補完・履歴の設定 ----------
+
+-- タブ補完で挿入するキーワードを大文字にする
 \set COMP_KEYWORD_CASE upper
+-- 直前と同じコマンドを履歴に残さない
 \set HISTCONTROL ignoredups
+-- 履歴ファイルを接続データベースごとに分ける
 \set HISTFILE ~/.psql_history- :DBNAME
+-- コマンド履歴の保存件数
 \set HISTSIZE 10000
+
+-- ---------- プロンプトの設定 ----------
+
+-- 通常プロンプト (カレントDBと時刻を緑で表示)
 \set PROMPT1 '%[%033[1;32m%]%/ [%`date +%H:%M:%S`] %R%#%[%033[0m%] '
+-- 継続行のプロンプト
 \set PROMPT2 '[more] %R > '
+
+-- ---------- その他の設定 ----------
+
+-- エラーを詳細表示
 \set VERBOSITY verbose
-
+-- クエリの実行時間を表示
 \timing
-
+-- 行が広いとき自動で拡張表示に切り替え
 \x auto
