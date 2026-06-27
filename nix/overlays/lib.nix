@@ -10,6 +10,11 @@
     binPath ? binName,
     format ? "binary",
     extraAttrs ? {},
+    # CI の hash 更新方法。"prefetch" = artifact を nix-prefetch-url して算出 (既定)。
+    # publisher が checksum を別途公開していて大容量 artifact の DL を避けたい場合に
+    # 上書きする (例: claude-code は "manifest"、codex は "sha256sums")。pr.yml の
+    # 汎用 update ループは "prefetch" のものだけを対象にし、それ以外は個別ステップで扱う。
+    hashSource ? "prefetch",
   }: _final: prev: let
     inherit (prev.stdenv.hostPlatform) system;
     platform = platformMap.${system} or (throw "Unsupported system: ${system}");
@@ -27,7 +32,7 @@
     # 走査するため、`nix eval .#hashUpdateManifest` から全プラットフォーム分の
     # (url, 現在 overlay に書かれている hash) を取り出せる。
     hashTargets = {
-      inherit pname version;
+      inherit pname version hashSource;
       targets =
         builtins.mapAttrs (sys: plat: {
           url = url plat;

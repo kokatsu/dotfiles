@@ -109,76 +109,12 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }textlint-rule-preset-ai-writing $VERSION"
           fi
 
-          if echo "$DIFF" | grep -q 'mise'; then
-            echo "has_mise=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 30 "# Renovate:.*depName=.*mise" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "mise" "$VERSION"
-            echo "version_mise=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }mise $VERSION"
-          fi
-
-          if echo "$DIFF" | grep -q 'biome'; then
-            echo "has_biome=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 30 "# Renovate:.*depName=.*biomejs/biome" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "biome" "$VERSION"
-            echo "version_biome=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }biome $VERSION"
-          fi
-
-          if echo "$DIFF" | grep -q 'yazi'; then
-            echo "has_yazi=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 30 "# Renovate:.*depName=.*yazi" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "yazi" "$VERSION"
-            echo "version_yazi=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }yazi $VERSION"
-          fi
-
-          if echo "$DIFF" | grep -q 'difftastic'; then
-            echo "has_difftastic=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 30 "# Renovate:.*depName=.*difftastic" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "difftastic" "$VERSION"
-            echo "version_difftastic=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }difftastic $VERSION"
-          fi
-
           if echo "$DIFF" | grep -q 'codex'; then
             echo "has_codex=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 30 "# Renovate:.*depName=openai/codex" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
             validate_version "codex" "$VERSION"
             echo "version_codex=$VERSION" >> $GITHUB_OUTPUT
             PACKAGES="${PACKAGES:+$PACKAGES, }codex $VERSION"
-          fi
-
-          if echo "$DIFF" | grep -q 'kakehashi'; then
-            echo "has_kakehashi=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*kakehashi" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "kakehashi" "$VERSION"
-            echo "version_kakehashi=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }kakehashi $VERSION"
-          fi
-
-          if echo "$DIFF" | grep -q 'octorus'; then
-            echo "has_octorus=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*octorus" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "octorus" "$VERSION"
-            echo "version_octorus=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }octorus $VERSION"
-          fi
-
-          if echo "$DIFF" | grep -q '\bdcd\b\|DCD'; then
-            echo "has_dcd=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*DCD" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "dcd" "$VERSION"
-            echo "version_dcd=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }dcd $VERSION"
-          fi
-
-          if echo "$DIFF" | grep -q 'rgx'; then
-            echo "has_rgx_cli=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*rgx" "nix/overlays/binary-releases.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "rgx-cli" "$VERSION"
-            echo "version_rgx_cli=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }rgx-cli $VERSION"
           fi
 
           if echo "$DIFF" | grep -q 'win32yank'; then
@@ -338,67 +274,55 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           sed -i "/cssmodules-language-server = _final: prev: {/,/^  };/{s|npmDepsHash = \"sha256-[^\"]*\"|npmDepsHash = \"${NPM_HASH}\"|}" "$OVERLAY"
 
-      # === Binary releases ===
-
-      - name: Update mise hashes
-        if: steps.detect.outputs.has_mise == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_mise }}
+      # === Binary releases (prefetch) ===
+      # hashSource="prefetch" の mkBinaryRelease パッケージは全て同形 (artifact を
+      # nix-prefetch-url して hash 算出) なので、flake の hashUpdateManifest を使い
+      # 1 ステップで汎用処理する。バージョンが origin/main と異なるものだけ更新し、
+      # URL は overlay の url 関数 (manifest 経由) を再利用するため CI 側に URL や
+      # platform を再記述しない。新しい prefetch バイナリ追加時もこのステップは不変。
+      # claude-code / codex は publisher 公開 checksum を使うため対象外 (別ステップ)。
+      - name: Update prefetch binary hashes
+        id: update_prefetch
         run: |
           OVERLAY="nix/overlays/binary-releases.nix"
+          MANIFEST=$(nix eval --json .#hashUpdateManifest)
 
-          for platform in "macos-arm64:aarch64-darwin" "linux-arm64-musl:aarch64-linux" "linux-x64-musl:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/jdx/mise/releases/download/v${VERSION}/mise-v${VERSION}-${PLAT_NAME}"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/mise = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
+          git fetch origin main
+          OLDFILE=$(mktemp)
+          git show origin/main:"$OVERLAY" > "$OLDFILE"
 
-      - name: Update biome hashes
-        if: steps.detect.outputs.has_biome == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_biome }}
-        run: |
-          OVERLAY="nix/overlays/binary-releases.nix"
+          # mkBinaryRelease セクションから pkg ($2) のバージョンを取り出す。
+          # ubuntu-latest の awk は mawk なので gawk 専用の match(...,arr) は使わず、
+          # verify ステップの deck パーサと同じ POSIX sed 方式で抽出する。
+          extract_ver() {
+            sed -n "/^  $2 = mkBinaryRelease/,/^  };/{s/.*version = \"\([^\"]*\)\".*/\1/p;}" "$1" | head -1
+          }
 
-          for platform in "darwin-arm64:aarch64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${VERSION}/biome-${PLAT_NAME}"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/biome = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
+          CHANGED=""
+          while IFS=$'\t' read -r pkg curver; do
+            # overlay 由来のバージョンをシェルへ展開する前に検証 (インジェクション対策)
+            if ! [[ "$curver" =~ ^[0-9a-zA-Z.+_-]+$ ]]; then
+              echo "::error::Invalid version format for $pkg: $curver"
+              exit 1
+            fi
+            oldver=$(extract_ver "$OLDFILE" "$pkg")
+            [ "$curver" = "$oldver" ] && continue
 
-      - name: Update yazi hashes
-        if: steps.detect.outputs.has_yazi == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_yazi }}
-        run: |
-          OVERLAY="nix/overlays/binary-releases.nix"
+            echo "::group::Update $pkg ($oldver -> $curver)"
+            while IFS=$'\t' read -r sys url; do
+              HASH=$(nix-prefetch-url --type sha256 "$url" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+              if [ -z "$HASH" ]; then
+                echo "::error::prefetch failed for $pkg ($sys): $url"
+                exit 1
+              fi
+              sed -i "/^  ${pkg} = mkBinaryRelease/,/^  };/{s|\"${sys}\" = \"sha256-[^\"]*\"|\"${sys}\" = \"${HASH}\"|}" "$OVERLAY"
+            done < <(echo "$MANIFEST" | jq -r --arg p "$pkg" '.[$p].targets | to_entries[] | [.key, .value.url] | @tsv')
+            CHANGED="${CHANGED:+$CHANGED, }$pkg $curver"
+            echo "::endgroup::"
+          done < <(echo "$MANIFEST" | jq -r 'to_entries[] | select(.value.hashSource == "prefetch") | [.key, .value.version] | @tsv')
 
-          for platform in "aarch64-apple-darwin:aarch64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/sxyazi/yazi/releases/download/v${VERSION}/yazi-${PLAT_NAME}.zip"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/yazi = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
-
-      - name: Update difftastic hashes
-        if: steps.detect.outputs.has_difftastic == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_difftastic }}
-        run: |
-          OVERLAY="nix/overlays/binary-releases.nix"
-
-          for platform in "aarch64-apple-darwin:aarch64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/Wilfred/difftastic/releases/download/${VERSION}/difft-${PLAT_NAME}.tar.gz"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/difftastic = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
+          rm -f "$OLDFILE"
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
 
       - name: Update codex hashes
         if: steps.detect.outputs.has_codex == 'true'
@@ -420,74 +344,6 @@ jobs:
             fi
             HASH=$(nix hash convert --hash-algo sha256 --to sri "$HEX")
             sed -i "/codex = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
-
-      - name: Update kakehashi hashes
-        if: steps.detect.outputs.has_kakehashi == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_kakehashi }}
-        run: |
-          OVERLAY="nix/overlays/binary-releases.nix"
-
-          # Compute hashes for each platform
-          for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
-                          "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/atusy/kakehashi/releases/download/v${VERSION}/kakehashi-v${VERSION}-${PLAT_NAME}.tar.gz"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/kakehashi = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
-
-      - name: Update octorus hashes
-        if: steps.detect.outputs.has_octorus == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_octorus }}
-        run: |
-          OVERLAY="nix/overlays/binary-releases.nix"
-
-          # Compute hashes for each platform
-          for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
-                          "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/ushironoko/octorus/releases/download/v${VERSION}/octorus-${VERSION}-${PLAT_NAME}.tar.gz"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/octorus = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
-
-      - name: Update dcd hashes
-        if: steps.detect.outputs.has_dcd == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_dcd }}
-        run: |
-          OVERLAY="nix/overlays/binary-releases.nix"
-
-          # Compute hashes for each platform
-          for platform in "osx-aarch64:aarch64-darwin" "osx-x86_64:x86_64-darwin" \
-                          "linux-aarch64:aarch64-linux" "linux-x86_64:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/dlang-community/DCD/releases/download/v${VERSION}/dcd-v${VERSION}-${PLAT_NAME}.tar.gz"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/dcd = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
-
-      - name: Update rgx-cli hashes
-        if: steps.detect.outputs.has_rgx_cli == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_rgx_cli }}
-        run: |
-          OVERLAY="nix/overlays/binary-releases.nix"
-
-          # Compute hashes for each platform
-          for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
-                          "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/brevity1swos/rgx/releases/download/v${VERSION}/rgx-cli-${PLAT_NAME}.tar.xz"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/rgx-cli = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
 
       - name: Update win32yank hashes
@@ -622,6 +478,7 @@ jobs:
       - name: Commit and push changes
         env:
           PACKAGES: ${{ steps.detect.outputs.packages }}
+          PREFETCH_PACKAGES: ${{ steps.update_prefetch.outputs.changed }}
           EXTRA_PACKAGES: ${{ steps.sync-flake.outputs.extra_packages }}
         run: |
           git config user.name "github-actions[bot]"
@@ -633,7 +490,11 @@ jobs:
           # it ships as its own chore commit below with a meaningful subject.
           if ! git diff --quiet -- ':!karabiner-config/deno.lock'; then
             git add -A -- ':!karabiner-config/deno.lock'
-            MSG="${PACKAGES}${PACKAGES:+${EXTRA_PACKAGES:+, }}${EXTRA_PACKAGES}"
+            # 各 detect/update ステップが出す "name X, name Y" 断片を ", " で連結する
+            MSG=""
+            for part in "$PACKAGES" "$PREFETCH_PACKAGES" "$EXTRA_PACKAGES"; do
+              [ -n "$part" ] && MSG="${MSG:+$MSG, }$part"
+            done
             git commit -m "fix: update nix hashes for $MSG"
             pushed=true
           fi

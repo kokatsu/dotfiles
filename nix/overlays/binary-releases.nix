@@ -158,6 +158,9 @@ in {
   claude-code = mkBinaryRelease rec {
     pname = "claude-code";
     version = "2.1.193";
+    # hash は Google の manifest.json (publisher 公開 checksum) から取得するため
+    # 汎用 prefetch ループの対象外。更新は pr.yml の個別ステップが担う。
+    hashSource = "manifest";
     hashes = {
       "aarch64-darwin" = "sha256-91E6MDha2QGcI3Im/W7EZQizBi6+/Kiu2+OX0RGoGP8=";
       "x86_64-darwin" = "sha256-y6XDvcqKtfjnWQQGcC1Bj2EU2bOfSPFodmgOiBq/Hug=";
@@ -184,6 +187,9 @@ in {
   codex = mkBinaryRelease rec {
     pname = "codex";
     version = "0.142.2";
+    # hash は release の codex-package_SHA256SUMS (publisher 公開 checksum) から取得する
+    # ため汎用 prefetch ループの対象外。更新は pr.yml の個別ステップが担う。
+    hashSource = "sha256sums";
     hashes = {
       "aarch64-darwin" = "sha256-/X6UeasjxKHYKxl+H7uq4bP/DaPS5fCk83pE+ZHZ9/I=";
       "x86_64-darwin" = "sha256-DHmfRHzH7whyBQ6i4vK0/MJF3vO+T9viau6ys2UT3CM=";
