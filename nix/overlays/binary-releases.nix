@@ -328,4 +328,40 @@ in {
       homepage = "https://github.com/brevity1swos/rgx";
     };
   };
+
+  # k1LoW/deck - Markdown to Google Slides
+  # darwin は zip、linux は tar.gz と配布形式が異なるため format をプラットフォーム別に指定する。
+  # アーカイブ内のバイナリ名は deck だが deck-slides として公開する (binPath/binName で改名)。
+  # Renovate: datasource=github-releases depName=k1LoW/deck
+  deck-slides = mkBinaryRelease rec {
+    pname = "deck-slides";
+    version = "1.24.0";
+    hashes = {
+      "aarch64-darwin" = "sha256-fNvfaTb66xqbjd1nUHgnJWQGmtQ0hXf2ngog5jTD1CY=";
+      "x86_64-darwin" = "sha256-n6fc2s9D5YR8kEfyeACJ8AdLfNT4AoWN1Fc7veNxtdU=";
+      "aarch64-linux" = "sha256-Wbn0ww2GzNCB3n4t+TwZb/4kQrZv9imjlRADUtOEtGE=";
+      "x86_64-linux" = "sha256-5TiGpxeG9/gryjeICKXeOL+XITdt0tuLej277AjMI6E=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "darwin_arm64.zip";
+      "x86_64-darwin" = "darwin_amd64.zip";
+      "aarch64-linux" = "linux_arm64.tar.gz";
+      "x86_64-linux" = "linux_amd64.tar.gz";
+    };
+    format = {
+      "aarch64-darwin" = "zip";
+      "x86_64-darwin" = "zip";
+      "aarch64-linux" = "tar";
+      "x86_64-linux" = "tar";
+    };
+    url = platform: "https://github.com/k1LoW/deck/releases/download/v${version}/deck_v${version}_${platform}";
+    binPath = "deck";
+    extraAttrs = {sourceRoot = ".";};
+    meta = {
+      description = "A tool for creating deck using Markdown and Google Slides";
+      homepage = "https://github.com/k1LoW/deck";
+      license = "mit";
+      mainProgram = "deck-slides";
+    };
+  };
 }

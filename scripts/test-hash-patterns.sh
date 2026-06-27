@@ -39,7 +39,7 @@ PACKAGES=(
   'yazi|binary-releases.nix|yazi = mkBinaryRelease|# Renovate:.*depName=.*yazi|platform|aarch64-darwin aarch64-linux x86_64-linux'
   'difftastic|binary-releases.nix|difftastic = mkBinaryRelease|# Renovate:.*depName=.*difftastic|platform|aarch64-darwin aarch64-linux x86_64-linux'
   'codex|binary-releases.nix|codex = mkBinaryRelease|# Renovate:.*depName=openai/codex|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
-  'deck|standalone.nix|deck = _final: prev:|# Renovate:.*depName=.*deck|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
+  'deck-slides|binary-releases.nix|deck-slides = mkBinaryRelease|# Renovate:.*depName=.*deck|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'octorus|binary-releases.nix|octorus = mkBinaryRelease|# Renovate:.*depName=.*octorus|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'kakehashi|binary-releases.nix|kakehashi = mkBinaryRelease|# Renovate:.*depName=.*kakehashi|platform|aarch64-darwin x86_64-darwin aarch64-linux x86_64-linux'
   'cssmodules-language-server|source-builds.nix|cssmodules-language-server = _final: prev: {|# Renovate:.*depName=.*cssmodules-language-server|both|'
@@ -143,7 +143,7 @@ DRY_RUN_PACKAGES=(
   'yazi|binary-releases.nix|yazi = mkBinaryRelease|aarch64-darwin'
   'difftastic|binary-releases.nix|difftastic = mkBinaryRelease|aarch64-darwin'
   'codex|binary-releases.nix|codex = mkBinaryRelease|aarch64-darwin'
-  'deck|standalone.nix|deck = _final: prev:|aarch64-darwin'
+  'deck-slides|binary-releases.nix|deck-slides = mkBinaryRelease|aarch64-darwin'
   'octorus|binary-releases.nix|octorus = mkBinaryRelease|aarch64-darwin'
   'kakehashi|binary-releases.nix|kakehashi = mkBinaryRelease|aarch64-darwin'
 )

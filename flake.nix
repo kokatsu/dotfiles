@@ -132,7 +132,7 @@
       customOverlays.codex
       customOverlays.cssmodules-language-server
       customOverlays.dcd
-      customOverlays.deck
+      customOverlays.deck-slides
       customOverlays.difftastic
       customOverlays.direnv-no-check
       customOverlays.git-graph-fork

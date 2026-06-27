@@ -8,6 +8,8 @@
     meta,
     binName ? pname,
     binPath ? binName,
+    # "binary" | "tar" | "zip"。配布形式がプラットフォームで異なる場合は
+    # system をキーにした attrset で指定できる (例: deck は darwin=zip / linux=tar)。
     format ? "binary",
     extraAttrs ? {},
     # CI の hash 更新方法。"prefetch" = artifact を nix-prefetch-url して算出 (既定)。
@@ -20,12 +22,17 @@
     platform = platformMap.${system} or (throw "Unsupported system: ${system}");
     hash = hashes.${system} or (throw "No hash for system: ${system}");
     allPlatforms = builtins.attrNames platformMap;
+    # format は文字列 (全プラットフォーム共通) か system キーの attrset (プラットフォーム別)
+    resolvedFormat =
+      if builtins.isAttrs format
+      then format.${system} or (throw "No format for system: ${system}")
+      else format;
     resolvedExtraAttrs =
       if builtins.isFunction extraAttrs
       then extraAttrs prev
       else extraAttrs;
     formatNativeBuildInputs =
-      if format == "zip"
+      if resolvedFormat == "zip"
       then [prev.unzip]
       else [];
     # CI の hash 更新/検証用メタデータ。host system に依存せず platformMap 全体を
@@ -55,13 +62,13 @@
         # "tar":    tar archive (.tar.gz / .tar.xz) unpacked by stdenv default;
         #           caller sets sourceRoot / extraAttrs as needed
         # "zip":    zip archive unpacked by stdenv default.
-        if format == "binary"
+        if resolvedFormat == "binary"
         then {dontUnpack = true;}
-        else if format == "tar"
+        else if resolvedFormat == "tar"
         then {}
-        else if format == "zip"
+        else if resolvedFormat == "zip"
         then {}
-        else throw "mkBinaryRelease: unknown format \"${format}\" (expected \"binary\", \"tar\", or \"zip\")"
+        else throw "mkBinaryRelease: unknown format \"${resolvedFormat}\" (expected \"binary\", \"tar\", or \"zip\")"
       )
       // {
         nativeBuildInputs = formatNativeBuildInputs ++ (resolvedExtraAttrs.nativeBuildInputs or []);
@@ -70,7 +77,7 @@
           runHook preInstall
           mkdir -p $out/bin
           cp ${
-            if format == "binary"
+            if resolvedFormat == "binary"
             then "$src"
             else binPath
           } $out/bin/${binName}

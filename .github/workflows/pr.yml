@@ -77,14 +77,6 @@ jobs:
           PACKAGES=""
 
           # Check each package independently
-          if echo "$DIFF" | grep -q 'deck'; then
-            echo "has_deck=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*deck" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "deck" "$VERSION"
-            echo "version_deck=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }deck $VERSION"
-          fi
-
           if echo "$DIFF" | grep -q 'cssmodules-language-server'; then
             echo "has_cssmodules_language_server=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*cssmodules-language-server" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -179,23 +171,6 @@ jobs:
             s|"aarch64-linux" = "sha256-[^"]*"|"aarch64-linux" = "'"${HASH_LINUX_ARM64}"'"|
             s|"x86_64-linux" = "sha256-[^"]*"|"x86_64-linux" = "'"${HASH_LINUX_X64}"'"|
           }' "$OVERLAY"
-
-      - name: Update deck hashes
-        if: steps.detect.outputs.has_deck == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_deck }}
-        run: |
-          OVERLAY="nix/overlays/standalone.nix"
-
-          # Compute hashes for each platform
-          for platform in "darwin_arm64.zip:aarch64-darwin" "darwin_amd64.zip:x86_64-darwin" \
-                          "linux_arm64.tar.gz:aarch64-linux" "linux_amd64.tar.gz:x86_64-linux"; do
-            PLAT_NAME="${platform%%:*}"
-            NIX_SYSTEM="${platform##*:}"
-            URL="https://github.com/k1LoW/deck/releases/download/v${VERSION}/deck_v${VERSION}_${PLAT_NAME}"
-            HASH=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            sed -i "/deck = _final: prev:/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
-          done
 
       # === NPM packages with buildNpmPackage ===
 
@@ -393,13 +368,12 @@ jobs:
       - name: Verify all hashes in overlay
         run: |
           ERRORS=0
-          STANDALONE="nix/overlays/standalone.nix"
 
-          # mkBinaryRelease 製パッケージ (binary-releases.nix) は flake の
-          # hashUpdateManifest が「全プラットフォームの url + 現在 overlay に書かれた
-          # hash」を一括提供する。fetchurl は生ファイルを hash 化するため、format に
-          # 依らず nix-prefetch-url (--unpack なし) だけで照合できる。新しい binary
-          # ツールを追加しても overlay 定義だけでこのループに自動で乗る (ここは不変)。
+          # mkBinaryRelease 製パッケージは全て flake の hashUpdateManifest が
+          # 「全プラットフォームの url + 現在 overlay に書かれた hash」を一括提供する。
+          # fetchurl は生ファイルを hash 化するため、format に依らず nix-prefetch-url
+          # (--unpack なし) だけで照合できる。新しい binary ツールを追加しても overlay
+          # 定義だけでこのループに自動で乗る (ここは不変)。
           MANIFEST=$(nix eval --json .#hashUpdateManifest)
           while IFS=$'\t' read -r pkg sys url expected; do
             actual=$(nix-prefetch-url --type sha256 "$url" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
@@ -416,35 +390,6 @@ jobs:
           done < <(echo "$MANIFEST" | jq -r '
             to_entries[] | .key as $p | .value.targets | to_entries[]
             | [$p, .key, .value.url, .value.hash] | @tsv')
-
-          # deck は mkBinaryRelease 製ではなく standalone.nix で手書きのため、
-          # overlay から sed で hash を取り出して個別に照合する。
-          verify_hash() {
-            local pkg="$1" url="$2" nix_system="$3" overlay="$4"
-            local actual expected
-            actual=$(nix-prefetch-url --type sha256 "$url" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-            if [ -z "$actual" ]; then
-              echo "::warning::$pkg ($nix_system): could not fetch $url"
-              return
-            fi
-            expected=$(sed -n "/^\s*${pkg} = /,/^  };/{/\"${nix_system}\" = \"sha256-/s/.*\"sha256-\([^\"]*\)\".*/sha256-\1/p}" "$overlay" | head -1)
-            if [ -z "$expected" ]; then
-              echo "::warning::$pkg ($nix_system): no hash found in overlay"
-              return
-            fi
-            if [ "$actual" != "$expected" ]; then
-              echo "::error::$pkg ($nix_system): hash mismatch! overlay=$expected actual=$actual"
-              ERRORS=$((ERRORS + 1))
-            else
-              echo "$pkg ($nix_system): OK"
-            fi
-          }
-
-          VER=$(sed -n '/deck = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$STANDALONE" | head -1)
-          for p in "darwin_arm64.zip:aarch64-darwin" "darwin_amd64.zip:x86_64-darwin" "linux_arm64.tar.gz:aarch64-linux" "linux_amd64.tar.gz:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "deck" "https://github.com/k1LoW/deck/releases/download/v${VER}/deck_v${VER}_${PLAT}" "$SYS" "$STANDALONE"
-          done
 
           if [ "$ERRORS" -gt 0 ]; then
             echo "::error::${ERRORS} hash mismatch(es) found. The sed-based hash update likely failed."
