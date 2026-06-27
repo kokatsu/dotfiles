@@ -23,6 +23,18 @@
       if format == "zip"
       then [prev.unzip]
       else [];
+    # CI の hash 更新/検証用メタデータ。host system に依存せず platformMap 全体を
+    # 走査するため、`nix eval .#hashUpdateManifest` から全プラットフォーム分の
+    # (url, 現在 overlay に書かれている hash) を取り出せる。
+    hashTargets = {
+      inherit pname version;
+      targets =
+        builtins.mapAttrs (sys: plat: {
+          url = url plat;
+          hash = hashes.${sys} or null;
+        })
+        platformMap;
+    };
   in {
     ${pname} = prev.stdenvNoCC.mkDerivation ({
         inherit pname;
@@ -70,7 +82,9 @@
           platforms = meta.platforms or allPlatforms;
           mainProgram = meta.mainProgram or binName;
         };
+
+        passthru = (resolvedExtraAttrs.passthru or {}) // {inherit hashTargets;};
       }
-      // builtins.removeAttrs resolvedExtraAttrs ["nativeBuildInputs"]);
+      // builtins.removeAttrs resolvedExtraAttrs ["nativeBuildInputs" "passthru"]);
   };
 }

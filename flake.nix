@@ -189,6 +189,26 @@
     linuxOnlyOverlays = [
       customOverlays.win32yank
     ];
+
+    # CI の hash 検証用マニフェスト。
+    # binary-releases.nix の mkBinaryRelease 製パッケージを attrNames で自動収集し、
+    # 各パッケージの passthru.hashTargets (全プラットフォームの url + 現在の hash) を
+    # JSON で公開する。`.github/workflows/pr.yml` の verify ステップが
+    # `nix eval --json .#hashUpdateManifest` で読み取り、汎用ループで照合する。
+    # 新しい binary ツールを追加しても、ここと CI の編集は不要 (overlay 定義だけで完結)。
+    hashUpdateManifest = let
+      # binary-releases.nix の overlay 群は nixpkgs (prev) のみに依存し相互依存も
+      # ないため、moonbit-overlay 等の input を巻き込まず最小構成で評価できる。
+      binaryReleaseOverlays = import ./nix/overlays/binary-releases.nix;
+      manifestPkgs = import nixpkgs {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+        overlays = builtins.attrValues binaryReleaseOverlays;
+      };
+      binaryNames = builtins.attrNames binaryReleaseOverlays;
+    in
+      lib.filterAttrs (_: v: v != null)
+      (lib.genAttrs binaryNames (n: manifestPkgs.${n}.hashTargets or null));
   in {
     # macOS (nix-darwin + home-manager)
     darwinConfigurations.${finalHostname} = nix-darwin.lib.darwinSystem {
@@ -262,5 +282,8 @@
 
     # フォーマッター
     formatter = forAllSystems (system: (pkgsFor system).alejandra);
+
+    # CI の hash 検証用マニフェスト (上の let で定義)
+    inherit hashUpdateManifest;
   };
 }

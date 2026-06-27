@@ -537,24 +537,45 @@ jobs:
       - name: Verify all hashes in overlay
         run: |
           ERRORS=0
+          STANDALONE="nix/overlays/standalone.nix"
 
+          # mkBinaryRelease 製パッケージ (binary-releases.nix) は flake の
+          # hashUpdateManifest が「全プラットフォームの url + 現在 overlay に書かれた
+          # hash」を一括提供する。fetchurl は生ファイルを hash 化するため、format に
+          # 依らず nix-prefetch-url (--unpack なし) だけで照合できる。新しい binary
+          # ツールを追加しても overlay 定義だけでこのループに自動で乗る (ここは不変)。
+          MANIFEST=$(nix eval --json .#hashUpdateManifest)
+          while IFS=$'\t' read -r pkg sys url expected; do
+            actual=$(nix-prefetch-url --type sha256 "$url" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
+            if [ -z "$actual" ]; then
+              echo "::warning::$pkg ($sys): could not fetch $url"
+              continue
+            fi
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::$pkg ($sys): hash mismatch! overlay=$expected actual=$actual"
+              ERRORS=$((ERRORS + 1))
+            else
+              echo "$pkg ($sys): OK"
+            fi
+          done < <(echo "$MANIFEST" | jq -r '
+            to_entries[] | .key as $p | .value.targets | to_entries[]
+            | [$p, .key, .value.url, .value.hash] | @tsv')
+
+          # deck は mkBinaryRelease 製ではなく standalone.nix で手書きのため、
+          # overlay から sed で hash を取り出して個別に照合する。
           verify_hash() {
             local pkg="$1" url="$2" nix_system="$3" overlay="$4"
-            local actual
+            local actual expected
             actual=$(nix-prefetch-url --type sha256 "$url" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
             if [ -z "$actual" ]; then
               echo "::warning::$pkg ($nix_system): could not fetch $url"
               return
             fi
-
-            # Extract hash from overlay for this package and system
-            local expected
             expected=$(sed -n "/^\s*${pkg} = /,/^  };/{/\"${nix_system}\" = \"sha256-/s/.*\"sha256-\([^\"]*\)\".*/sha256-\1/p}" "$overlay" | head -1)
             if [ -z "$expected" ]; then
               echo "::warning::$pkg ($nix_system): no hash found in overlay"
               return
             fi
-
             if [ "$actual" != "$expected" ]; then
               echo "::error::$pkg ($nix_system): hash mismatch! overlay=$expected actual=$actual"
               ERRORS=$((ERRORS + 1))
@@ -563,84 +584,10 @@ jobs:
             fi
           }
 
-          BINARY="nix/overlays/binary-releases.nix"
-          STANDALONE="nix/overlays/standalone.nix"
-
-          # mise
-          VER=$(sed -n '/mise = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "macos-arm64:aarch64-darwin" "linux-arm64-musl:aarch64-linux" "linux-x64-musl:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "mise" "https://github.com/jdx/mise/releases/download/v${VER}/mise-v${VER}-${PLAT}" "$SYS" "$BINARY"
-          done
-
-          # biome
-          VER=$(sed -n '/biome = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "darwin-arm64:aarch64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "biome" "https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${VER}/biome-${PLAT}" "$SYS" "$BINARY"
-          done
-
-          # yazi
-          VER=$(sed -n '/yazi = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "aarch64-apple-darwin:aarch64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "yazi" "https://github.com/sxyazi/yazi/releases/download/v${VER}/yazi-${PLAT}.zip" "$SYS" "$BINARY"
-          done
-
-          # difftastic
-          VER=$(sed -n '/difftastic = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "aarch64-apple-darwin:aarch64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "difftastic" "https://github.com/Wilfred/difftastic/releases/download/${VER}/difft-${PLAT}.tar.gz" "$SYS" "$BINARY"
-          done
-
-          # codex
-          VER=$(sed -n '/codex = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-musl:aarch64-linux" "x86_64-unknown-linux-musl:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "codex" "https://github.com/openai/codex/releases/download/rust-v${VER}/codex-package-${PLAT}.tar.gz" "$SYS" "$BINARY"
-          done
-
-          # deck
           VER=$(sed -n '/deck = _final/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$STANDALONE" | head -1)
           for p in "darwin_arm64.zip:aarch64-darwin" "darwin_amd64.zip:x86_64-darwin" "linux_arm64.tar.gz:aarch64-linux" "linux_amd64.tar.gz:x86_64-linux"; do
             PLAT="${p%%:*}"; SYS="${p##*:}"
             verify_hash "deck" "https://github.com/k1LoW/deck/releases/download/v${VER}/deck_v${VER}_${PLAT}" "$SYS" "$STANDALONE"
-          done
-
-          # kakehashi
-          VER=$(sed -n '/kakehashi = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "kakehashi" "https://github.com/atusy/kakehashi/releases/download/v${VER}/kakehashi-v${VER}-${PLAT}.tar.gz" "$SYS" "$BINARY"
-          done
-
-          # octorus
-          VER=$(sed -n '/octorus = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "octorus" "https://github.com/ushironoko/octorus/releases/download/v${VER}/octorus-${VER}-${PLAT}.tar.gz" "$SYS" "$BINARY"
-          done
-
-          # dcd
-          VER=$(sed -n '/dcd = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "osx-aarch64:aarch64-darwin" "osx-x86_64:x86_64-darwin" "linux-aarch64:aarch64-linux" "linux-x86_64:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "dcd" "https://github.com/dlang-community/DCD/releases/download/v${VER}/dcd-v${VER}-${PLAT}.tar.gz" "$SYS" "$BINARY"
-          done
-
-          # rgx-cli
-          VER=$(sed -n '/rgx-cli = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" "aarch64-unknown-linux-gnu:aarch64-linux" "x86_64-unknown-linux-gnu:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "rgx-cli" "https://github.com/brevity1swos/rgx/releases/download/v${VER}/rgx-cli-${PLAT}.tar.xz" "$SYS" "$BINARY"
-          done
-
-          # claude-code
-          VER=$(sed -n '/claude-code = mkBinaryRelease/,/^  };/{/version = "/s/.*"\(.*\)".*/\1/p}' "$BINARY" | head -1)
-          for p in "darwin-arm64:aarch64-darwin" "darwin-x64:x86_64-darwin" "linux-arm64:aarch64-linux" "linux-x64:x86_64-linux"; do
-            PLAT="${p%%:*}"; SYS="${p##*:}"
-            verify_hash "claude-code" "https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases/${VER}/${PLAT}/claude" "$SYS" "$BINARY"
           done
 
           if [ "$ERRORS" -gt 0 ]; then
