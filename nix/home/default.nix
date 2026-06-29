@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  inputs,
   username ? "user",
   ...
 }: let
@@ -40,6 +41,35 @@ in {
     autoEnable = true;
     flavor = "mocha";
     accent = "blue";
+
+    # ポート生成に使う whiskers を nixpkgs の prebuilt 版に差し替える。
+    # catppuccin/nix 同梱の whiskers は自前ビルド (= cache.nixos.org に無く毎回
+    # ソースコンパイル) で、しかも nativeBuildInput のためランタイム closure に
+    # 入らず GC されやすい → ポート再ビルドのたびに再コンパイルされ switch が遅い。
+    # nixpkgs の catppuccin-whiskers は同 2.9.0 でバイナリキャッシュ済み。
+    sources = let
+      base = inputs.catppuccin.packages.${pkgs.stdenv.hostPlatform.system};
+      # whiskers だけ nixpkgs 版に差し替えた buildCatppuccinPort。
+      fastBuild = base.buildCatppuccinPort.override {
+        whiskers = pkgs.catppuccin-whiskers;
+      };
+    in
+      base
+      // builtins.mapAttrs (
+        name: drv:
+        # buildCatppuccinPort 製ポートは whiskersTemplates 属性を持つ。
+          if !(lib.isDerivation drv && drv ? whiskersTemplates)
+          then drv
+          # pkgs/<port> 由来 (override 可) は引数だけ差し替えて固有設定を維持。
+          else if drv ? override
+          then
+            drv.override (old:
+              (lib.optionalAttrs (old ? buildCatppuccinPort) {buildCatppuccinPort = fastBuild;})
+              // (lib.optionalAttrs (old ? whiskers) {whiskers = pkgs.catppuccin-whiskers;}))
+          # sources.json のみ由来 (override なし) は fast 版で同名ポートを再生成。
+          else fastBuild {port = name;}
+      )
+      base;
     # 既存 symlink と競合するため後の Phase で有効化
     delta.enable = false;
     # 手動管理 or カスタムテンプレートで管理
