@@ -29,11 +29,13 @@ function claude() {
     _wezterm_set_user_var IS_CLAUDE 0
   else
     local session_name="claude${WEZTERM_PANE:+-$WEZTERM_PANE}"
+    # ウィンドウ名にバージョンのみを表示（automatic-rename は -n 指定で off になる）
+    local version="$(command claude --version 2>/dev/null | grep -oE '[0-9]+(\.[0-9]+)+' | head -1)"
     _wezterm_set_user_var IS_CLAUDE 1
     # TMUX を空にして CC の tmux 検出を回避（薄palette回避）
     # 通知は notify.sh が CC 本体の pts に DCS passthrough を直書きするので
     # CC 自身の tmux 検出は不要
-    tmux new-session -A -s "$session_name" \
+    tmux new-session -A -s "$session_name" -n "$version" \
       "TMUX= command claude"
     _wezterm_set_user_var IS_CLAUDE 0
   fi
@@ -58,7 +60,9 @@ function codex() {
     command codex
   else
     local session_name="codex${WEZTERM_PANE:+-$WEZTERM_PANE}"
-    tmux new-session -A -s "$session_name" \
+    # ウィンドウ名にバージョンのみを表示（automatic-rename は -n 指定で off になる）
+    local version="$(command codex --version 2>/dev/null | grep -oE '[0-9]+(\.[0-9]+)+' | head -1)"
+    tmux new-session -A -s "$session_name" -n "$version" \
       "TMUX= command codex"
   fi
 }
