@@ -159,7 +159,12 @@
       home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           inherit system;
-          config.allowUnfree = true;
+          config = {
+            allowUnfree = true;
+            # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
+            # nixpkgs が patched pnpm_10 に bump したら削除する。
+            permittedInsecurePackages = ["pnpm-10.34.0"];
+          };
           overlays =
             commonOverlays
             ++ (
@@ -245,7 +250,12 @@
       ${finalUsername} = home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           system = currentSystem;
-          config.allowUnfree = true;
+          config = {
+            allowUnfree = true;
+            # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
+            # nixpkgs が patched pnpm_10 に bump したら削除する。
+            permittedInsecurePackages = ["pnpm-10.34.0"];
+          };
           overlays =
             commonOverlays
             ++ (

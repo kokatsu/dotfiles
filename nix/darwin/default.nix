@@ -7,7 +7,12 @@
   nix.enable = false;
 
   # nixpkgsの設定
-  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config = {
+    allowUnfree = true;
+    # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
+    # nixpkgs が patched pnpm_10 に bump したら削除する。
+    permittedInsecurePackages = ["pnpm-10.34.0"];
+  };
 
   # プライマリユーザー設定 (nix-darwin 最新版で必要)
   system.primaryUser = username;
