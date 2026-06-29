@@ -97,6 +97,6 @@
 
         passthru = (resolvedExtraAttrs.passthru or {}) // {inherit hashTargets;};
       }
-      // builtins.removeAttrs resolvedExtraAttrs ["nativeBuildInputs" "passthru"]);
+      // removeAttrs resolvedExtraAttrs ["nativeBuildInputs" "passthru"]);
   };
 }

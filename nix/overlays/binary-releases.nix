@@ -7,7 +7,7 @@ let
     "aarch64-linux" = "aarch64-unknown-linux-gnu";
     "x86_64-linux" = "x86_64-unknown-linux-gnu";
   };
-  currentAppleGnuPlatformMap = builtins.removeAttrs appleGnuPlatformMap ["x86_64-darwin"];
+  currentAppleGnuPlatformMap = removeAttrs appleGnuPlatformMap ["x86_64-darwin"];
 in {
   # mise - dev tools, env vars, task runner
   # Renovate: datasource=github-releases depName=jdx/mise
