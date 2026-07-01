@@ -18,9 +18,8 @@ M.apply_to_config = function(config)
   background.apply_to_keys(keys, 'CTRL', 'ALT')
   config.background = background.default_background
 
-  -- Custom fork feature: unfocused split pane styling
-  config.unfocused_split_opacity = 0.5
-  config.unfocused_split_fill = '#181825'
+  -- 非アクティブなペインを薄く表示（本家 WezTerm の標準機能）
+  config.inactive_pane_hsb = { saturation = 1.0, brightness = 0.3 }
 end
 
 return M

@@ -1,14 +1,12 @@
 {
   pkgs,
   lib,
-  inputs,
   stablePkgs,
   dotfilesDir ? "",
   isCI ? false,
   ...
 }: let
   inherit (pkgs.stdenv) isDarwin;
-  inherit (pkgs.stdenv.hostPlatform) system;
 
   # ユーザースクリプトのラッパー (bin/ 内の Deno/Bun スクリプトを短い名前で実行)
   feed-watch = pkgs.writeShellScriptBin "feed-watch" ''
@@ -434,7 +432,7 @@ in {
       # ターミナル (WezTerm nightly)
       # Ghostty は Homebrew cask で管理 (nix/darwin/default.nix)
       # WSLではWindows側にインストールするためLinuxでは除外
-      # https://github.com/wez/wezterm (fork: kokatsu/wezterm, unfocused split pane 対応)
-      inputs.wezterm.packages.${system}.default
+      # https://github.com/wez/wezterm
+      pkgs.wezterm
     ];
 }

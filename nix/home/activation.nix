@@ -2,13 +2,11 @@
   pkgs,
   lib,
   config,
-  inputs,
   dotfilesDir ? "",
   isCI ? false,
   ...
 }: let
   inherit (pkgs.stdenv) isDarwin;
-  inherit (pkgs.stdenv.hostPlatform) system;
   validDotfilesDir =
     if isCI
     then "/tmp/dotfiles"
@@ -137,7 +135,7 @@ in {
 
     # WezTerm.app を /Applications にリンク (Dock対応)
     linkWezTermApp = lib.mkIf (isDarwin && !isCI) (lib.hm.dag.entryAfter ["linkGeneration"] ''
-      WEZTERM_APP="${inputs.wezterm.packages.${system}.default}/Applications/WezTerm.app"
+      WEZTERM_APP="${pkgs.wezterm}/Applications/WezTerm.app"
       if [ -d "$WEZTERM_APP" ]; then
         $DRY_RUN_CMD rm -f /Applications/WezTerm.app
         $DRY_RUN_CMD ln -sf "$WEZTERM_APP" /Applications/WezTerm.app

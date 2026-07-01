@@ -15,13 +15,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Fork: unfocused split pane の opacity/fill 設定を追加
-    # https://github.com/kokatsu/wezterm/tree/feat/unfocused-split-opacity
-    wezterm = {
-      url = "github:kokatsu/wezterm/feat/unfocused-split-opacity?dir=nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     catppuccin = {
       url = "github:catppuccin/nix";
       inputs.nixpkgs.follows = "nixpkgs";
