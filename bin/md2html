@@ -14,6 +14,8 @@ set -euo pipefail
 #       2. 無ければ本スクリプト同梱の既定 CSS（assets/md2html.css）にフォールバック
 #   - title は input.md の最初の H1（`# ...`）を自動抽出する
 #   - output.html を省略すると、input.md と同じディレクトリに同名で .html を生成
+#   - ```mermaid フェンスコード / :::mermaid フェンス div を含む場合、mmdc (mermaid-cli) で
+#     事前に SVG へレンダリングしてから pandoc に渡す（--embed-resources で HTML に埋め込まれる）
 
 if [[ $# -lt 1 || $# -gt 2 ]]; then
   echo "Usage: $(basename "$0") <input.md> [output.html]" >&2
@@ -65,6 +67,21 @@ else
   exit 1
 fi
 
+# mermaid 記法があれば mmdc で SVG に事前レンダリングし、生成物を pandoc の resource-path に追加する
+pandoc_input="$input_base"
+resource_path_args=()
+if grep -Eq '^(```+[[:space:]]*mermaid\b|:::+[[:space:]]*mermaid\b)' "$input"; then
+  if ! command -v mmdc >/dev/null 2>&1; then
+    echo "Error: mermaid diagram found in $input but mmdc (mermaid-cli) is not installed" >&2
+    exit 1
+  fi
+  mermaid_dir="$(mktemp -d)"
+  trap 'rm -rf "$mermaid_dir"' EXIT
+  mmdc -i "$input_dir/$input_base" -o "$mermaid_dir/rendered.md" -e svg -q
+  pandoc_input="$mermaid_dir/rendered.md"
+  resource_path_args=(--resource-path ".:$mermaid_dir")
+fi
+
 cd "$input_dir"
 
 pandoc \
@@ -73,9 +90,10 @@ pandoc \
   -t html5 \
   -c "$css_arg" \
   --embed-resources \
+  "${resource_path_args[@]+"${resource_path_args[@]}"}" \
   --metadata title="$title" \
   --metadata lang=ja \
-  "$input_base" \
+  "$pandoc_input" \
   -o "$output_abs"
 
 echo "Generated: $output_abs"

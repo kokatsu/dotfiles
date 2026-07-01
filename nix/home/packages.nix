@@ -422,6 +422,9 @@ in {
       # https://github.com/docker/compose
       docker-compose # macOSではOrbStackを使用
       google-chrome # Chromium ベースブラウザ
+      # https://github.com/mermaid-js/mermaid-cli
+      # Darwin では chromium (Linux専用) が無く PUPPETEER_EXECUTABLE_PATH が設定されないため未対応
+      mermaid-cli # Mermaid 図の SVG 事前レンダリング (md2html 用)
       # https://github.com/googlefonts/noto-cjk
       noto-fonts-cjk-sans # 日本語フォント
     ]
