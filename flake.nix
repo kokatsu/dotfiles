@@ -179,6 +179,7 @@
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
       customOverlays.cava-darwin-fix
+      customOverlays.herdr-darwin-fix
       customOverlays.jp2a-darwin-fix
       customOverlays.ldc-darwin-fix
     ];

@@ -97,6 +97,30 @@
     });
   };
 
+  # herdr の vendored libghostty-vt ビルドを darwin の Nix サンドボックス内で通す。
+  # zig は macOS SDK を `xcode-select --print-path` (exit 0 + stdout 非空の確認) と
+  # `xcrun --sdk macosx --show-sdk-path` の実行でしか探せず (SDKROOT 環境変数への
+  # フォールバックなし)、サンドボックスには両コマンドが無いため DarwinSdkNotFound
+  # で落ちる。stdenv の apple-sdk が設定する $SDKROOT を echo するだけのシムで解決。
+  # また fat static archive (libghostty-vt.a) の作成に Apple libtool を直接 spawn
+  # するので cctools の libtool だけを PATH に足す (cctools 全 bin は ld 等が
+  # cc-wrapper と衝突しうるため symlink 1 本に絞る)。
+  # upstream herdr v0.7.1 / nixpkgs master 時点で未修正。
+  herdr-darwin-fix = _final: prev: {
+    herdr = prev.herdr.overrideAttrs (old: {
+      nativeBuildInputs =
+        (old.nativeBuildInputs or [])
+        ++ [
+          (prev.runCommand "cctools-libtool-only" {} ''
+            mkdir -p $out/bin
+            ln -s ${prev.cctools}/bin/libtool $out/bin/libtool
+          '')
+          (prev.writeShellScriptBin "xcode-select" ''echo "$SDKROOT"'')
+          (prev.writeShellScriptBin "xcrun" ''echo "$SDKROOT"'')
+        ];
+    });
+  };
+
   # pipx 1.8.0 test_package_specifier tests fail with newer `packaging`,
   # which normalizes PEP 508 direct references to `name @ url` (space around
   # `@`) while the tests still assert the old `name@ url` form. Test-only
