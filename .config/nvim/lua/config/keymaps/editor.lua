@@ -35,3 +35,7 @@ end, { desc = 'Next class' })
 vim.keymap.set('n', '[c', function()
   require('nvim-treesitter-textobjects.move').goto_previous_start('@class.outer', 'textobjects')
 end, { desc = 'Previous class' })
+
+-- Quickfix リスト内移動
+vim.keymap.set('n', ']q', '<cmd>cnext<cr>zz', { desc = 'Next quickfix item' })
+vim.keymap.set('n', '[q', '<cmd>cprevious<cr>zz', { desc = 'Previous quickfix item' })
