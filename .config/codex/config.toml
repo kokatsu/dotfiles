@@ -7,11 +7,12 @@ personality = "pragmatic"
 plan_mode_reasoning_effort = "xhigh"
 project_doc_fallback_filenames = ["CLAUDE.md"]
 sandbox_mode = "workspace-write"
-web_search = "live"
+web_search = "cached"
 
 [features]
 codex_git_commit = true
 memories = true
+shell_snapshot = true
 undo = true
 
 [history]
@@ -40,8 +41,4 @@ status_line = [
   "five-hour-limit",
   "weekly-limit",
   "codex-version",
-  "context-window-size",
-  "used-tokens",
-  "total-input-tokens",
-  "total-output-tokens",
 ]

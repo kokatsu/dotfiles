@@ -8,7 +8,7 @@ M.apply_to_config = function(config)
   config.window_background_opacity = 1.0
   config.font_size = 10.5
   -- 非アクティブなペインを薄く表示（本家 WezTerm の標準機能）
-  config.inactive_pane_hsb = { saturation = 1.0, brightness = 0.3 }
+  config.inactive_pane_hsb = { saturation = 1.0, brightness = 0.6 }
 
   ---@type WslDomain[]
   local wsl_domains = wezterm.default_wsl_domains()
