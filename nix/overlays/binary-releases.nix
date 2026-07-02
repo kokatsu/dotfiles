@@ -15,9 +15,9 @@ in {
     pname = "mise";
     version = "2026.6.14";
     hashes = {
-      "aarch64-darwin" = "sha256-rWKyuGxW+Ya1pofL79UGkziqia7J+Jl6m6/hg+cIwco=";
-      "aarch64-linux" = "sha256-W6iUyGA8IqbtfdgVPLc/5+Ckwq/NBF1HeaufczMjqdA=";
-      "x86_64-linux" = "sha256-ILZqFQSzWK9plUSxETqnefzCFCAumjIf5xyY/q3QClg=";
+      "aarch64-darwin" = "sha256-L3Ck338S1QImw0uFeCHID5EbOCWYzz95cunQ3uBwa7k=";
+      "aarch64-linux" = "sha256-SGJllxDYdQ2EXhUoQhNKRH6K66plfCe00JpYn/rtJzY=";
+      "x86_64-linux" = "sha256-+e9V3gqLwuEpCDfZ1QI0e4Cuw4fI1fMsOd1SiMl7o2Y=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-arm64";
