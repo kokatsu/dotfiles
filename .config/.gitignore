@@ -21,10 +21,6 @@
 !claude/
 !claude/**
 
-# cmux (https://github.com/manaflow-ai/cmux)
-!cmux/
-!cmux/**
-
 # Codex (https://github.com/openai/codex)
 !codex/
 !codex/**

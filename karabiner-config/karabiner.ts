@@ -10,16 +10,6 @@ import { ifApp, map, rule, writeToProfile } from "karabiner.ts";
 const terminalApps = ifApp([
   "^com\\.github\\.wez\\.wezterm$",
   "^com\\.mitchellh\\.ghostty$",
-  "^com\\.cmuxterm\\.app",
-  "^com\\.apple\\.Terminal$",
-  "^com\\.googlecode\\.iterm2$",
-]);
-
-// Terminal apps that handle Cmd+C/V → Ctrl+C/V internally (via app-level keybinds)
-// cmux relies on system Cmd+C/V for copy/paste (no rebindable clipboard action)
-const terminalAppsWithOwnClipboard = ifApp([
-  "^com\\.github\\.wez\\.wezterm$",
-  "^com\\.mitchellh\\.ghostty$",
   "^com\\.apple\\.Terminal$",
   "^com\\.googlecode\\.iterm2$",
 ]);
@@ -34,7 +24,7 @@ const keyList = [
   // Alphabet keys
   "a",
   "b",
-  // "c" is excluded — handled separately per app (cmux needs system Cmd+C for copy)
+  "c",
   "d",
   "e",
   "f",
@@ -53,7 +43,7 @@ const keyList = [
   "s",
   "t",
   "u",
-  // "v" is excluded — handled separately per app (cmux needs system Cmd+V for paste)
+  "v",
   "w",
   "x",
   "y",
@@ -106,19 +96,6 @@ writeToProfile(
         ...keyList.map((key) =>
           map(key, ["command", "shift"]).to(key, ["control", "shift"])
         ),
-      ]),
-
-    // Terminal apps (except cmux): Convert Command+C/V to Control+C/V
-    // cmux is excluded because it relies on system Cmd+C/V for copy/paste
-    rule(
-      "Terminal (non-cmux): Cmd+C/V to Ctrl+C/V",
-      terminalAppsWithOwnClipboard,
-    )
-      .manipulators([
-        map("c", "command").to("c", "control"),
-        map("c", ["command", "shift"]).to("c", ["control", "shift"]),
-        map("v", "command").to("v", "control"),
-        map("v", ["command", "shift"]).to("v", ["control", "shift"]),
       ]),
 
     // Chrome: Command+Tab to Control+Tab (tab switching)

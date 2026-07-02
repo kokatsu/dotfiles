@@ -142,24 +142,6 @@ in {
       fi
     '');
 
-    # cmux: Ghostty設定の上書き (実ファイルとしてコピー)
-    # cmuxのreadConfigFileはシンボリンクを拒否するためhome.fileでは不可
-    # 読み込み順: ~/.config/ghostty/config → com.cmuxterm.app/config (後勝ち)
-    copyCmuxGhosttyConfig = lib.mkIf isDarwin (lib.hm.dag.entryAfter ["linkGeneration"] (let
-      names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-    in ''
-            CMUX_DIR="$HOME/Library/Application Support/com.cmuxterm.app"
-            $DRY_RUN_CMD mkdir -p "$CMUX_DIR"
-            $DRY_RUN_CMD cat > "$CMUX_DIR/config" << 'CMUX_EOF'
-      theme = ${names.spaced}
-      window-padding-x = 20
-      window-padding-y = 5
-      window-padding-balance = true
-      window-theme = ghostty
-      background-opacity = 0.65
-      CMUX_EOF
-    ''));
-
     # Karabiner-Elements: karabiner.ts から karabiner.json を生成 (macOS only)
     # writeToProfile() は ~/.config/karabiner/karabiner.json の既存プロファイルを上書きするため、
     # 未作成ならスタブを配置してから deno を実行する

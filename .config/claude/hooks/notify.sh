@@ -32,14 +32,6 @@ if [ -n "${HERDR_PANE_ID:-}" ]; then
   exit 0
 fi
 
-if [ -n "${CMUX_SURFACE_ID:-}" ]; then
-  case "$event" in
-  permission) printf '%s' "$payload" | cmux claude-hook notification 2>/dev/null || true ;;
-  *) printf '%s' "$payload" | cmux claude-hook stop 2>/dev/null || true ;;
-  esac
-  exit 0
-fi
-
 if [ "$(uname)" = "Darwin" ]; then
   case "$event" in
   permission) alerter --title 'Claude Code' --message '権限の承認が必要です' --sound Glass >/dev/null 2>&1 || true ;;

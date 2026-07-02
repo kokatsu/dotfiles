@@ -53,14 +53,6 @@
     ],
     "SessionStart": [
       {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cmux claude-hook session-start 2>/dev/null || true"
-          }
-        ]
-      },
-      {
         "matcher": "*",
         "hooks": [
           {
@@ -77,16 +69,6 @@
           {
             "type": "command",
             "command": "~/.config/claude/hooks/notify.sh"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cmux claude-hook prompt-submit 2>/dev/null || true"
           }
         ]
       }

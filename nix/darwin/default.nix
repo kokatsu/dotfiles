@@ -42,10 +42,6 @@
     # trust.json) に依存せず、ファイル消失による activation 失敗が起きない。
     taps = [
       {
-        name = "manaflow-ai/cmux";
-        trusted = true;
-      }
-      {
         name = "vjeantet/tap";
         trusted = true;
       }
@@ -56,7 +52,6 @@
     ];
     casks = [
       "clipy"
-      "cmux"
       "orbstack"
       "ghostty"
       "google-chrome"
