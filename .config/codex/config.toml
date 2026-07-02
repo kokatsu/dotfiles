@@ -10,6 +10,8 @@ sandbox_mode = "workspace-write"
 web_search = "cached"
 
 [features]
+# herdr integration (hooks.json の SessionStart hook を有効化)
+hooks = true
 codex_git_commit = true
 memories = true
 shell_snapshot = true

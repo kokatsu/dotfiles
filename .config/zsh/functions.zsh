@@ -13,57 +13,18 @@ function _wezterm_set_user_var() {
   fi
 }
 
-# Claude Codeをtmux内で起動
-# 引数がある場合: 直接実行（--version等のオプション用）
-# tmux/cmux/herdr内の場合: 直接実行（多重化不要）
-# それ以外: tmuxセッションを作成してclaude起動
-#   - WEZTERM_PANE がある場合: ペインごとに独立したセッション
-#   - それ以外: 共有セッション 'claude'
+# Claude Code を起動
+# マルチプレクサは herdr が常時ハブ (WezTerm gui-startup で自動起動) のため
+# tmux セッションの自動生成はせず常に直接実行する
 # IS_CLAUDE user varでWezTermのマウス動作を切り替え
+# (herdr 配下ではマウスは herdr が処理するため実質 no-op、生シェルでは従来通り)
 function claude() {
   if [[ $# -gt 0 ]]; then
     command claude "$@"
-  elif [[ -n "$TMUX" ]] || [[ -n "$CMUX_SURFACE_ID" ]] || [[ -n "$HERDR_PANE_ID" ]]; then
+  else
     _wezterm_set_user_var IS_CLAUDE 1
     command claude
     _wezterm_set_user_var IS_CLAUDE 0
-  else
-    local session_name="claude${WEZTERM_PANE:+-$WEZTERM_PANE}"
-    # ウィンドウ名にバージョンのみを表示（automatic-rename は -n 指定で off になる）
-    local version="$(command claude --version 2>/dev/null | grep -oE '[0-9]+(\.[0-9]+)+' | head -1)"
-    _wezterm_set_user_var IS_CLAUDE 1
-    # TMUX を空にして CC の tmux 検出を回避（薄palette回避）
-    # 通知は notify.sh が CC 本体の pts に DCS passthrough を直書きするので
-    # CC 自身の tmux 検出は不要
-    tmux new-session -A -s "$session_name" -n "$version" \
-      "TMUX= command claude"
-    _wezterm_set_user_var IS_CLAUDE 0
-  fi
-}
-
-# ------------------------------------------------------------------------------
-# Codex CLI (https://github.com/openai/codex)
-# ------------------------------------------------------------------------------
-
-# Codex CLIをtmux内で起動 (claude() と同じ要領)
-# tmux 内で動かす理由: tmux の Alt+c / Alt+g キーバインドから
-# codex-path-pick-{fzf,broot}.sh を display-popup で起動するため
-# 引数がある場合: 直接実行（--version 等のオプション用）
-# tmux/cmux/herdr内の場合: 直接実行（多重化不要）
-# それ以外: tmuxセッションを作成して codex 起動
-#   - WEZTERM_PANE がある場合: ペインごとに独立したセッション
-#   - それ以外: 共有セッション 'codex'
-function codex() {
-  if [[ $# -gt 0 ]]; then
-    command codex "$@"
-  elif [[ -n "$TMUX" ]] || [[ -n "$CMUX_SURFACE_ID" ]] || [[ -n "$HERDR_PANE_ID" ]]; then
-    command codex
-  else
-    local session_name="codex${WEZTERM_PANE:+-$WEZTERM_PANE}"
-    # ウィンドウ名にバージョンのみを表示（automatic-rename は -n 指定で off になる）
-    local version="$(command codex --version 2>/dev/null | grep -oE '[0-9]+(\.[0-9]+)+' | head -1)"
-    tmux new-session -A -s "$session_name" -n "$version" \
-      "TMUX= command codex"
   fi
 }
 

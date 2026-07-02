@@ -15,7 +15,9 @@ M.apply_to_config = function(config)
   config.key_tables = keybinds.key_tables
 
   local background = require('background')
-  background.apply_to_keys(keys, 'CTRL', 'ALT')
+  -- Ctrl+b はシェルに返し、Alt+矢印は herdr の focus_pane が使うため
+  -- 背景選択・不透明度変更は Ctrl+Shift 系に退避
+  background.apply_to_keys(keys, 'CTRL|SHIFT', 'CTRL|SHIFT')
   config.background = background.default_background
 
   -- 非アクティブなペインを薄く表示（本家 WezTerm の標準機能）

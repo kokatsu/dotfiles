@@ -3,9 +3,12 @@ local wezterm = require('wezterm') ---@type Wezterm
 local act = wezterm.action
 local platform = require('platform')
 
+-- herdr に委譲したため無効化 (Alt+f 最大化用イベント)。herdr をやめる場合はコメント解除
+--[=[
 wezterm.on('maximize-window', function(window, _)
   window:maximize()
 end)
+--]=]
 
 -- ダブルプレス確認用のグローバル状態
 wezterm.GLOBAL = wezterm.GLOBAL or {}
@@ -94,6 +97,8 @@ local function merge_keys(...)
   return result
 end
 
+-- herdr に委譲したため無効化 (レイアウトキーが使用)。herdr をやめる場合はコメント解除
+--[=[
 --- エディタ + コマンド + 右側ツール用のレイアウトを作成する
 ---@param pane any
 local function split_editor_command_tools_layout(pane)
@@ -106,9 +111,15 @@ local function split_editor_command_tools_layout(pane)
   right_area:split({ direction = 'Bottom', size = 0.5, cwd = cwd })
   right_area:split({ direction = 'Right', size = 0.5, cwd = cwd })
 end
+--]=]
 
 -- 共通キーバインド（プラットフォーム非依存）
+-- ペイン/タブ/レイアウト管理は herdr に全面委譲したため、
+-- WezTerm は GUI シェル (コピペ・フォント・QuickSelect 等) に徹する。
+-- 委譲で不要になったバインドはコメントアウトで残している (herdr をやめる場合に復元)
 local common_keys = {
+  -- herdr に委譲したため無効化。herdr をやめる場合はコメント解除
+  --[=[
   -- `Alt + o` で前回の出力（実行コマンド付き）をクリップボードにコピー
   {
     key = 'o',
@@ -144,9 +155,12 @@ local common_keys = {
     mods = 'ALT',
     action = act.SendKey({ key = 'e', mods = 'ALT' }),
   },
+  --]=]
   -- `Shift + Enter` で 改行を送信
   -- https://zenn.dev/glaucus03/articles/070589323cb450
   { key = 'Enter', mods = 'SHIFT', action = act.SendString('\n') },
+  -- herdr に委譲したため無効化。herdr をやめる場合はコメント解除
+  --[=[
   -- `Alt + ;` で右分割レイアウト (左 | 右上/右下)
   {
     key = ';',
@@ -271,13 +285,15 @@ local common_keys = {
       )
     end),
   },
-  -- `Ctrl + q` で終了（2度押しで確認）
+  --]=]
+  -- `Ctrl + q` で WezTerm を終了（2度押しで確認）
+  -- herdr セッションはサーバ側に残るため、次回起動時にそのまま復帰する
   {
     key = 'q',
     mods = 'CTRL',
     action = double_press_action(
       'ctrl_q_press',
-      act.SendKey({ key = 'q', mods = 'CTRL' }),
+      act.QuitApplication,
       2, -- 2秒以内に再度押すと実行
       'もう一度 Ctrl+Q で終了'
     ),
@@ -295,6 +311,8 @@ local unified_keys = {
   { key = 'C', mods = 'PRIMARY', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
   -- `PRIMARY + v` でクリップボードからペースト
   { key = 'v', mods = 'PRIMARY', action = act.PasteFrom('Clipboard') },
+  -- herdr に委譲したため無効化。herdr をやめる場合はコメント解除
+  --[=[
   -- `PRIMARY + s` で水平分割
   { key = 's', mods = 'PRIMARY', action = act.SplitHorizontal({}) },
   -- `PRIMARY + Shift + s` で垂直分割
@@ -305,8 +323,11 @@ local unified_keys = {
   { key = 'T', mods = 'PRIMARY', action = act.SpawnTab('CurrentPaneDomain') },
   -- `PRIMARY + n` で新しいウィンドウを作成
   { key = 'n', mods = 'PRIMARY', action = act.SpawnCommandInNewWindow({ cwd = wezterm.home_dir }) },
-  -- `PRIMARY + Shift + n` で現在のウィンドウを新しいウィンドウにコピー
+  --]=]
+  -- `PRIMARY + Shift + n` で新しいウィンドウを作成 (herdr 外の生シェル escape hatch)
   { key = 'N', mods = 'PRIMARY', action = act.SpawnWindow },
+  -- herdr に委譲したため無効化。herdr をやめる場合はコメント解除
+  --[=[
   -- `PRIMARY + Tab` で右のタブに移動
   { key = 'Tab', mods = 'PRIMARY', action = act.ActivateTabRelative(1) },
   -- `PRIMARY + Shift + Tab` で左のタブに移動
@@ -320,6 +341,7 @@ local unified_keys = {
   { key = 'RightArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Right') },
   { key = 'UpArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Up') },
   { key = 'DownArrow', mods = 'SECONDARY', action = act.ActivatePaneDirection('Down') },
+  --]=]
   -- `PRIMARY + 左矢印` で前の単語に移動 (Esc+b)
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'PRIMARY', action = act.SendString('\x1bb') },
@@ -334,12 +356,17 @@ local unified_keys = {
   { key = '-', mods = 'PRIMARY', action = act.DecreaseFontSize },
   -- `PRIMARY + :` でフォントをリセット
   { key = ':', mods = 'PRIMARY', action = act.ResetFontSize },
+  -- herdr に委譲したため無効化。herdr をやめる場合はコメント解除
+  --[=[
   -- `PRIMARY + [` でタブを左に移動
   { key = '[', mods = 'PRIMARY', action = act.MoveTabRelative(-1) },
   -- `PRIMARY + ]` でタブを右に移動
   { key = ']', mods = 'PRIMARY', action = act.MoveTabRelative(1) },
+  --]=]
   -- `PRIMARY + Backspace` で単語を削除
   { key = 'Backspace', mods = 'PRIMARY', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
+  -- herdr に委譲したため無効化。herdr をやめる場合はコメント解除
+  --[=[
   -- `PRIMARY + 1-9` でタブ切替
   { key = '1', mods = 'PRIMARY', action = act.ActivateTab(0) },
   { key = '2', mods = 'PRIMARY', action = act.ActivateTab(1) },
@@ -359,10 +386,14 @@ local unified_keys = {
   { key = 'L', mods = 'SECONDARY|SHIFT', action = act.RotatePanes('CounterClockwise') },
   -- `SECONDARY + Shift + r` でペインを右に回転
   { key = 'R', mods = 'SECONDARY|SHIFT', action = act.RotatePanes('Clockwise') },
+  --]=]
   -- `PRIMARY + Shift + X` でコピーモードをアクティブにする
   { key = 'X', mods = 'PRIMARY', action = act.ActivateCopyMode },
+  -- herdr に委譲したため無効化。herdr をやめる場合はコメント解除
+  --[=[
   -- `SECONDARY + f` で画面を最大化
   { key = 'f', mods = 'SECONDARY', action = act.EmitEvent('maximize-window') },
+  --]=]
   -- QuickSelect モード
   { key = 'q', mods = 'SECONDARY', action = act.QuickSelect },
   -- コマンドパレット
@@ -422,12 +453,17 @@ local windows_specific_keys = {
 
 -- macOS 固有キーバインド
 -- Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替のため、物理 Ctrl = Ctrl として届く
+-- 注意: OPT+矢印 を SendString で潰すと herdr の focus_pane (alt+矢印) に
+-- キーが届かなくなるため、単語移動は Ctrl+矢印 に一本化している
 local darwin_specific_keys = {
+  -- herdr に委譲したため無効化。herdr をやめる場合はコメント解除
+  --[=[
   -- Option + 矢印で単語移動（macOS標準の動作）
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'OPT', action = act.SendString('\x1bb') },
   -- selene: allow(bad_string_escape)
   { key = 'RightArrow', mods = 'OPT', action = act.SendString('\x1bf') },
+  --]=]
 }
 
 -- コピーモードのキーテーブル（Vim風操作）

@@ -195,6 +195,9 @@ end
 
 -- https://qiita.com/showchan33/items/c91bb7f6f2b89e9ed57d
 -- 現在のディレクトリ名を取得する
+-- フォルダ名 (cwd) タイトルは herdr のサイドバーが担うため無効化。
+-- herdr をやめる場合はコメント解除
+--[=[
 local function get_cwd_name(pane)
   local cwd_uri = pane and pane:get_current_working_dir()
   if not cwd_uri then
@@ -225,6 +228,7 @@ local function get_cwd_name(pane)
 
   return cwd_name
 end
+--]=]
 
 local function is_claude(pane)
   return is_process(pane, 'claude', true)
@@ -244,13 +248,19 @@ local function get_tab_id(window, pane)
   end
 end
 
+-- フォルダ名 (cwd) タイトルは herdr のサイドバーが担うため無効化。
+-- herdr をやめる場合はコメント解除
+--[=[
 -- 各タブのディレクトリ名を記憶しておくテーブル
 local title_cache = {}
+--]=]
 
 --- イベントハンドラを登録する
 M.apply = function()
-  -- 各タブ（正確にはpane）にディレクトリ名を記憶させる
-  wezterm.on('update-status', function(window, pane)
+  wezterm.on('update-status', function(window, _pane)
+    -- フォルダ名 (cwd) タイトルのキャッシュは herdr のサイドバーが担うため無効化。
+    -- herdr をやめる場合はコメント解除し、引数名を _pane → pane に戻す
+    --[=[
     local title = get_cwd_name(pane)
     local pane_id = pane:pane_id()
 
@@ -270,7 +280,11 @@ M.apply = function()
     end
 
     title_cache[pane_id] = title
+    --]=]
 
+    -- ウィンドウ枠 (window_frame ボーダー) の描画は herdr がペイン枠を持つため無効化。
+    -- herdr をやめる場合はコメント解除
+    --[=[
     local border_color = default_color
     local is_zoomed = false
     for _, p in ipairs(window:active_tab():panes_with_info()) do
@@ -302,6 +316,7 @@ M.apply = function()
       }
       window:set_config_overrides(overrides)
     end
+    --]=]
 
     window:set_left_status(wezterm.format({}))
 
@@ -330,12 +345,16 @@ M.apply = function()
   -- タブのタイトルを変更
   wezterm.on('format-tab-title', function(tab, _, _, _, _, _)
     local pane = tab.active_pane
-    local pane_id = pane.pane_id
 
     local title = tab.active_pane.title
+    -- フォルダ名 (cwd) タイトルは herdr のサイドバーが担うため無効化 (ペインタイトルに委譲)。
+    -- herdr をやめる場合はコメント解除
+    --[=[
+    local pane_id = pane.pane_id
     if title_cache[pane_id] then
       title = title_cache[pane_id]
     end
+    --]=]
 
     -- タイトルの14文字以降を省略
     if #title > 13 then

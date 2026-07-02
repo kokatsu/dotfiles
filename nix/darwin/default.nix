@@ -99,6 +99,12 @@
       CustomUserPreferences = {
         "com.apple.symbolichotkeys" = {
           AppleSymbolicHotKeys = {
+            # 60 = Ctrl+Space (前の入力ソースを選択)
+            # herdr の prefix (ctrl+space) を OS が横取りするため無効化。
+            # IME 切替には未使用 (61 = Ctrl+Opt+Space の入力メニューは残す)
+            "60" = {
+              enabled = false;
+            };
             # 71 = Command+Tab (Move focus to active or next window)
             "71" = {
               enabled = false;

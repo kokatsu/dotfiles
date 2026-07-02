@@ -36,10 +36,10 @@ config.hide_tab_bar_if_only_one_tab = false
 -- https://stackoverflow.com/questions/78738575/how-to-maximize-wezterm-on-startup
 wezterm.on('gui-startup', function(cmd)
   local spawn_cmd = cmd or {}
-  if is_windows and not spawn_cmd.args then
-    -- WSL起動に合わせてherdrを自動起動（明示的にコマンド指定が無い場合のみ）。
+  if (is_windows or is_mac) and not spawn_cmd.args then
+    -- herdr を常時ハブとして自動起動（明示的にコマンド指定が無い場合のみ）。
     -- argsを明示指定するとWezTermのデフォルトログインシェル起動処理がバイパスされるため、
-    -- herdr(~/.nix-profile/bin)のPATHを通すためにzsh -lでラップする
+    -- herdr(nix profile)のPATHを通すためにzsh -lでラップする
     spawn_cmd.args = { '/bin/zsh', '-l', '-c', 'herdr' }
   end
   local _, _, window = wezterm.mux.spawn_window(spawn_cmd)
@@ -174,8 +174,5 @@ if is_windows then
 elseif is_mac then
   require('mac').apply_to_config(config)
 end
-
--- which-key 風 leader メニュー (LEADER = Ctrl+a, LEADER+? でメニュー表示)
-require('wk').apply_to_config(config)
 
 return config

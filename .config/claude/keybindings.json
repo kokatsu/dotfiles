@@ -13,7 +13,7 @@
       "context": "Chat",
       "bindings": {
         "ctrl+s": null,
-        "alt+h": "chat:stash"
+        "alt+shift+h": "chat:stash"
       }
     }
   ]
