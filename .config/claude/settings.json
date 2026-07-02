@@ -15,32 +15,13 @@
     "DISABLE_UPDATES": "1"
   },
   "hooks": {
-    "SessionStart": [
+    "Notification": [
       {
+        "matcher": "permission_prompt",
         "hooks": [
           {
             "type": "command",
-            "command": "cmux claude-hook session-start 2>/dev/null || true"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.config/claude/hooks/notify.sh"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cmux claude-hook prompt-submit 2>/dev/null || true"
+            "command": "~/.config/claude/hooks/notify.sh permission"
           }
         ]
       }
@@ -70,13 +51,42 @@
         ]
       }
     ],
-    "Notification": [
+    "SessionStart": [
       {
-        "matcher": "permission_prompt",
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/notify.sh permission"
+            "command": "cmux claude-hook session-start 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.config/claude/hooks/herdr-agent-state.sh session",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmux claude-hook prompt-submit 2>/dev/null || true"
           }
         ]
       }

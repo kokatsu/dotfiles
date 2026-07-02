@@ -50,6 +50,10 @@ in {
         source = ../../.config/claude/hooks/gh-api-guard.sh;
         executable = true;
       };
+      ".config/claude/hooks/herdr-agent-state.sh" = {
+        source = ../../.config/claude/hooks/herdr-agent-state.sh;
+        executable = true;
+      };
       ".config/claude/hooks/notify.sh" = {
         source = ../../.config/claude/hooks/notify.sh;
         executable = true;
@@ -293,6 +297,78 @@ in {
       ".config/yazi" = {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
         force = true;
+      };
+      # herdr: 組み込みテーマは catppuccin-mocha/catppuccin-latte 等のフレーバー別名で
+      # 用意されている (--default-config のコメントには載っていないが実機で受理を確認済み)。
+      # Ghostty と同じく catppuccin.flavor から導出する。accent はアクティブペイン枠色を
+      # 担うキー (ui.accent)。他ツールと同じ blue で揃える
+      #
+      # [[keys.command]] は tmux の Alt+v/c/g/h ポップアップの herdr 移植版
+      # (.config/herdr/scripts/*.sh)。tmux 版と違い bind 時点での条件分岐が
+      # できないため claude/codex 判定はスクリプト内で実行時に行う。
+      #
+      # [ui.toast] は Claude Code Stop/Notification hook の通知 (tmux DCS
+      # passthrough 依存、herdr 配下では機能しない) の代わりに herdr ネイティブの
+      # 通知機構を使うためのもの。
+      ".config/herdr/config.toml".text = let
+        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
+        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+        scriptsDir = "${config.xdg.configHome}/herdr/scripts";
+      in ''
+        [theme]
+        name = "${names.kebab}"
+
+        [ui]
+        accent = "${p.blue.hex}"
+        show_agent_labels_on_pane_borders = true
+
+        [ui.toast]
+        delivery = "terminal"
+
+        [keys]
+        prefix = "ctrl+space"
+        previous_workspace = "prefix+comma"
+        next_workspace = "prefix+period"
+
+        [[keys.command]]
+        key = "alt+v"
+        type = "pane"
+        command = "${scriptsDir}/prompt-edit.sh"
+        description = "Claude Code: プロンプト編集"
+
+        [[keys.command]]
+        key = "alt+c"
+        type = "pane"
+        command = "${scriptsDir}/path-pick-fzf.sh"
+        description = "パス選択 (fzf)"
+
+        [[keys.command]]
+        key = "alt+g"
+        type = "pane"
+        command = "${scriptsDir}/path-pick-broot.sh"
+        description = "パス選択 (broot)"
+
+        [[keys.command]]
+        key = "alt+h"
+        type = "pane"
+        command = "${scriptsDir}/octorus-history.sh"
+        description = "Octorus Rally 履歴"
+      '';
+      ".config/herdr/scripts/prompt-edit.sh" = {
+        source = ../../.config/herdr/scripts/prompt-edit.sh;
+        executable = true;
+      };
+      ".config/herdr/scripts/path-pick-fzf.sh" = {
+        source = ../../.config/herdr/scripts/path-pick-fzf.sh;
+        executable = true;
+      };
+      ".config/herdr/scripts/path-pick-broot.sh" = {
+        source = ../../.config/herdr/scripts/path-pick-broot.sh;
+        executable = true;
+      };
+      ".config/herdr/scripts/octorus-history.sh" = {
+        source = ../../.config/herdr/scripts/octorus-history.sh;
+        executable = true;
       };
       ".config/octorus/config.toml".text = let
         names = config.catppuccinLib.flavorNames config.catppuccin.flavor;

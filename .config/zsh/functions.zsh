@@ -15,7 +15,7 @@ function _wezterm_set_user_var() {
 
 # Claude Codeをtmux内で起動
 # 引数がある場合: 直接実行（--version等のオプション用）
-# tmux/cmux内の場合: 直接実行（多重化不要）
+# tmux/cmux/herdr内の場合: 直接実行（多重化不要）
 # それ以外: tmuxセッションを作成してclaude起動
 #   - WEZTERM_PANE がある場合: ペインごとに独立したセッション
 #   - それ以外: 共有セッション 'claude'
@@ -23,7 +23,7 @@ function _wezterm_set_user_var() {
 function claude() {
   if [[ $# -gt 0 ]]; then
     command claude "$@"
-  elif [[ -n "$TMUX" ]] || [[ -n "$CMUX_SURFACE_ID" ]]; then
+  elif [[ -n "$TMUX" ]] || [[ -n "$CMUX_SURFACE_ID" ]] || [[ -n "$HERDR_PANE_ID" ]]; then
     _wezterm_set_user_var IS_CLAUDE 1
     command claude
     _wezterm_set_user_var IS_CLAUDE 0
@@ -49,14 +49,14 @@ function claude() {
 # tmux 内で動かす理由: tmux の Alt+c / Alt+g キーバインドから
 # codex-path-pick-{fzf,broot}.sh を display-popup で起動するため
 # 引数がある場合: 直接実行（--version 等のオプション用）
-# tmux/cmux内の場合: 直接実行（多重化不要）
+# tmux/cmux/herdr内の場合: 直接実行（多重化不要）
 # それ以外: tmuxセッションを作成して codex 起動
 #   - WEZTERM_PANE がある場合: ペインごとに独立したセッション
 #   - それ以外: 共有セッション 'codex'
 function codex() {
   if [[ $# -gt 0 ]]; then
     command codex "$@"
-  elif [[ -n "$TMUX" ]] || [[ -n "$CMUX_SURFACE_ID" ]]; then
+  elif [[ -n "$TMUX" ]] || [[ -n "$CMUX_SURFACE_ID" ]] || [[ -n "$HERDR_PANE_ID" ]]; then
     command codex
   else
     local session_name="codex${WEZTERM_PANE:+-$WEZTERM_PANE}"

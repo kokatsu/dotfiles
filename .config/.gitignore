@@ -45,6 +45,10 @@
 !ghostty/
 !ghostty/**
 
+# herdr (https://github.com/ogulcancelik/herdr)
+!herdr/
+!herdr/**
+
 # git (https://git-scm.com/)
 !git/
 !git/**
