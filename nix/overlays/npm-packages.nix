@@ -24,10 +24,17 @@
       npmFlags = ["--legacy-peer-deps"];
       dontNpmBuild = true;
 
+      # Hoisted dependencies must not sit at lib/node_modules top level, or
+      # they collide with other npm packages in Home Manager's buildEnv (e.g.
+      # estree-walker vs vue-language-server). Nest them under vite-plus's own
+      # node_modules instead; Node resolves them there first.
       installPhase = ''
         runHook preInstall
-        mkdir -p $out/lib $out/bin
-        cp -r node_modules $out/lib/node_modules
+        dest=$out/lib/node_modules/vite-plus
+        mkdir -p "$(dirname "$dest")" $out/bin
+        mv node_modules/vite-plus "$dest"
+        mv node_modules "$dest/node_modules"
+        ln -sfn ../../bin/vp "$dest/node_modules/.bin/vp"
         ln -s ../lib/node_modules/vite-plus/bin/vp $out/bin/vp
         runHook postInstall
       '';
