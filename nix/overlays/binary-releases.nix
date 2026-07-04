@@ -229,12 +229,12 @@ in {
   # Renovate: datasource=github-releases depName=atusy/kakehashi
   kakehashi = mkBinaryRelease rec {
     pname = "kakehashi";
-    version = "0.6.0";
+    version = "0.7.0";
     hashes = {
-      "aarch64-darwin" = "sha256-TBYLPSxG091PsX5KaO3C9Br9rxZ3BAnsi6mLRcYu8mo=";
-      "x86_64-darwin" = "sha256-ev9BnfkJIhssO/uF4WQR7MtsC7D6JdeYb2IL0IcQGw4=";
-      "aarch64-linux" = "sha256-zyPXAsr/wiK++LXghEsCSQmqN/QMUXauIajxP1NVxG8=";
-      "x86_64-linux" = "sha256-EXEAEbizAURTUf7Ve4Ke/EgOJqmalJcjqhODsU9/ekg=";
+      "aarch64-darwin" = "sha256-0uQk+PcVEuea2xUz/Xwb0u+7O7BjcAfmCCOK08kLlY8=";
+      "x86_64-darwin" = "sha256-25y2/zAGDpoxcKTbVMBMXW4x3hQHbA6JkoifnKRH/i0=";
+      "aarch64-linux" = "sha256-5lgLC0cQpBVX6zbZ7fqjh6CjSevoZPA+5/uDwWmZSBE=";
+      "x86_64-linux" = "sha256-PeHYDvWwVe8OeyM5ficGs/dq5PNMI99F544RsddQU24=";
     };
     platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/atusy/kakehashi/releases/download/v${version}/kakehashi-v${version}-${platform}.tar.gz";
