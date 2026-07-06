@@ -118,6 +118,14 @@ typos-fix:
 nvim-test:
     nvim --headless --clean -l scripts/test-nvim-config.lua
 
+# Verify pr.yml hash-update sed patterns match overlay structure
+hash-patterns-test:
+    bash scripts/test-hash-patterns.sh
+
+# Verify Renovate regex patterns match overlay files
+renovate-patterns-test:
+    deno run --allow-read scripts/test-renovate-patterns.ts
+
 # Build karabiner.json from karabiner.ts
 karabiner-build:
     cd karabiner-config && deno run --allow-env --allow-read --allow-write ./karabiner.ts
