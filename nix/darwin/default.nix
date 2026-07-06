@@ -17,6 +17,12 @@
   # プライマリユーザー設定 (nix-darwin 最新版で必要)
   system.primaryUser = username;
 
+  # HTML マニュアル生成を無効化。nixpkgs unstable が nixos-render-docs の
+  # --toc-depth を削除したのに nix-darwin が未追従でビルドが壊れるため。
+  # 上流修正 (https://github.com/nix-darwin/nix-darwin/pull/1819) が
+  # マージされたら削除してよい (system.tools.darwin-uninstaller も)。
+  documentation.doc.enable = false;
+
   # システム全体のパッケージ
   environment.systemPackages = with pkgs; [
     # 基本ツール
@@ -63,6 +69,11 @@
 
   # macOS設定
   system = {
+    # darwin-uninstaller は内部で独自の darwin 設定を評価するため
+    # documentation.doc.enable = false が効かず、壊れたマニュアルビルドを
+    # 巻き込む。ツールごと外して回避 (上流修正マージ後に削除してよい)。
+    tools.darwin-uninstaller.enable = false;
+
     # defaults writeの代わり
     defaults = {
       NSGlobalDomain = {

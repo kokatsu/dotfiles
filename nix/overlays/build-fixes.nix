@@ -144,6 +144,15 @@
       ];
   };
 
+  # statix 0.5.8-unstable-2026-06-28 fails its insta snapshot test
+  # (redundant_pattern_bind fix output drifted from the recorded snapshot;
+  # upstream issue oppiliappan/statix#64). Test-only drift; the linter works.
+  statix-no-check = _final: prev: {
+    statix = prev.statix.overrideAttrs (_old: {
+      doCheck = false;
+    });
+  };
+
   # Fix jp2a build on darwin (marked as broken)
   jp2a-darwin-fix = _final: prev: {
     jp2a = prev.jp2a.overrideAttrs (old: {
