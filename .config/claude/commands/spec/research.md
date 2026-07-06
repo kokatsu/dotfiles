@@ -12,7 +12,7 @@ allowed-tools:
 
 Run the **research** phase of the Spec-Driven Development workflow.
 
-Follow the instructions in `skills/spec/references/research.md`:
+Follow the instructions in `~/.config/claude/skills/spec/references/research.md`:
 
 - Launch 3 Explore agents in parallel (architecture, similar features, data flow).
 - Read the union of their recommended files.

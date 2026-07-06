@@ -12,7 +12,7 @@ allowed-tools:
 
 Run the **implement** phase of the Spec-Driven Development workflow.
 
-Follow the instructions in `skills/spec/references/implement.md`:
+Follow the instructions in `~/.config/claude/skills/spec/references/implement.md`:
 
 - Read `plan.md` in full.
 - Implement every Todo in order, marking `- [ ]` → `- [x]` as you go.

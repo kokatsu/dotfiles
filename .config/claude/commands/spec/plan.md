@@ -12,7 +12,7 @@ allowed-tools:
 
 Run the **plan** phase of the Spec-Driven Development workflow.
 
-Follow the instructions in `skills/spec/references/plan.md`:
+Follow the instructions in `~/.config/claude/skills/spec/references/plan.md`:
 
 - Read `research.md` if present.
 - Launch 3 code-architect agents in parallel (minimal / clean / pragmatic).

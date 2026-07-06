@@ -8,7 +8,7 @@ allowed-tools:
 
 Run the **annotate** phase of the Spec-Driven Development workflow.
 
-Follow the instructions in `skills/spec/references/annotate.md`:
+Follow the instructions in `~/.config/claude/skills/spec/references/annotate.md`:
 
 - Read `plan.md` and find every user annotation (`>`, `NOTE:`, `TODO:`, `!!`, HTML comments, etc.).
 - Address each annotation; propagate consequences across the whole plan.
