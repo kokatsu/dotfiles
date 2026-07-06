@@ -33,7 +33,7 @@ return {
     --
     -- See :h blink-cmp-config-keymap for defining your own keymap
     keymap = {
-      ['<C-space>'] = { 'show', 'show_documentation', 'hide_documentation' },
+      ['<C-l>'] = { 'show', 'show_documentation', 'hide_documentation' },
       ['<Up>'] = { 'select_prev', 'fallback' },
       ['<Down>'] = { 'select_next', 'fallback' },
       -- editor.lua の日付挿入 (insert mode <C-k>) を優先するため blink の signature toggle を解除
