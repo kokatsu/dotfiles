@@ -19,18 +19,22 @@ _: {
 
     # Alt+T: ファイル選択 (FZF_CTRL_T_COMMAND / FZF_CTRL_T_OPTS)
     # ※ env var 名は CTRL_T のまま (fzf 仕様)。bindkey は .zshrc で Alt+T にリマップ
-    fileWidgetCommand = "fd --type f --hidden --strip-cwd-prefix --exclude .git";
-    fileWidgetOptions = [
-      "--scheme=path"
-      "--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
-      "--preview-window=right:60%:wrap"
-    ];
+    fileWidget = {
+      command = "fd --type f --hidden --strip-cwd-prefix --exclude .git";
+      options = [
+        "--scheme=path"
+        "--preview 'bat --color=always --style=numbers --line-range=:200 {}'"
+        "--preview-window=right:60%:wrap"
+      ];
+    };
 
     # Alt+C: cd 先選択 (FZF_ALT_C_COMMAND / FZF_ALT_C_OPTS)
-    changeDirWidgetCommand = "fd --type d --hidden --strip-cwd-prefix --exclude .git";
-    changeDirWidgetOptions = [
-      "--scheme=path"
-      "--preview 'eza --tree --color=always --level=2 {} | head -200'"
-    ];
+    changeDirWidget = {
+      command = "fd --type d --hidden --strip-cwd-prefix --exclude .git";
+      options = [
+        "--scheme=path"
+        "--preview 'eza --tree --color=always --level=2 {} | head -200'"
+      ];
+    };
   };
 }
