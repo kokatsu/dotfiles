@@ -19,7 +19,9 @@ return {
       { '[', group = 'prev' },
       { ']', group = 'next' },
       -- Surround group
-      { 's', group = 'surround/flash' },
+      { 's', group = 'surround' },
+      -- FFF group
+      { 'f', group = 'fff' },
       -- Go to group
       { 'g', group = 'goto' },
       -- mini.surround descriptions

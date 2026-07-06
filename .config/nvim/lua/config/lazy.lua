@@ -31,7 +31,7 @@ require('lazy').setup({
     require('plugins.catppuccin'),
     require('plugins.colorizer'),
     require('plugins.difftastic'),
-    require('plugins.flash'),
+    require('plugins.fff'),
     require('plugins.gitsigns'),
     require('plugins.lazydev'),
     require('plugins.lualine'),

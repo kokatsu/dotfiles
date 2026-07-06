@@ -23,6 +23,8 @@ in {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/nvim";
         force = true;
       };
+      # fff.nvim: Nix ビルド版 (Rust バックエンド同梱) を lazy.nvim の dir 参照用に配置
+      ".local/share/nvim/nix-plugins/fff.nvim".source = pkgs.vimPlugins.fff-nvim;
       # settings.json: mkOutOfStoreSymlink でリポジトリを直接リンク
       # これにより /effort などランタイムでの書き込みがリポジトリに反映される
       ".config/claude/settings.json" = {
