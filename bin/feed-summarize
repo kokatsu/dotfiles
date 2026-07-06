@@ -12,6 +12,14 @@ set -euo pipefail
 
 OPML_DIR="$HOME/.config/bulletty"
 
+# agent-browser のデーモンを閉じずに終了すると、systemd (Type=oneshot) が
+# cgroup 残留プロセスの stop-sigterm タイムアウトで unit を failed にするため、
+# 終了時に必ずブラウザを閉じる
+cleanup() {
+  agent-browser close >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
 # 要約対象のフィード名 (status.json の key と一致させる)
 SUMMARIZE_FEEDS=(
   "Facebook Developers"
