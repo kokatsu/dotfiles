@@ -2,17 +2,13 @@
   pkgs,
   lib,
   config,
-  dotfilesDir ? "",
-  isCI ? false,
+  validDotfilesDir,
   ...
 }: let
   inherit (pkgs.stdenv) isDarwin;
-  validDotfilesDir =
-    if isCI
-    then "/tmp/dotfiles"
-    else if dotfilesDir == ""
-    then throw "dotfilesDir is empty. Did you forget --impure flag?"
-    else dotfilesDir;
+  flavor = config.catppuccin.flavor;
+  p = config.catppuccinLib.palettes.${flavor};
+  names = config.catppuccinLib.flavorNames flavor;
 in {
   # .config へのシンボリックリンク
   home.file =
@@ -63,9 +59,7 @@ in {
       # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
       ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
 
-      # Claude Code カスタムテーマ (2.1.118+): 4 flavor を ~/.config/claude/themes/ に生成
-      # 実体は `home.file` ブロック末尾で `// (builtins.listToAttrs ...)` として合流
-      # 起動中もファイルウォッチで反映。`/theme` で "Catppuccin <Flavor>" を選択
+      # Claude Code カスタムテーマは ./themes/claude-code.nix で生成
 
       # Codex: built-in skills (.system) を残すため、共有したい skill だけを個別にリンク
       ".config/codex/skills/browser-research".source = ../../.config/codex/skills/browser-research;
@@ -93,7 +87,6 @@ in {
 
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch/config.jsonc".text = let
-        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
         rgb = c: "${toString c.rgb.r};${toString c.rgb.g};${toString c.rgb.b}";
         staticContent = builtins.readFile ../../.config/fastfetch/config.static.jsonc;
       in
@@ -123,10 +116,7 @@ in {
           (rgb p.teal)
         ]
         staticContent;
-      ".config/git-graph/models/catppuccin-${config.catppuccin.flavor}.toml".text = let
-        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-      in ''
+      ".config/git-graph/models/catppuccin-${flavor}.toml".text = ''
         # ${names.spaced} Theme for git-graph
 
         persistence = [
@@ -162,10 +152,7 @@ in {
         ]
         unknown = ["${p.peach.hex}", "${p.pink.hex}", "${p.sapphire.hex}", "${p.sky.hex}"]
       '';
-      ".config/gomi/config.yaml".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
-      in ''
+      ".config/gomi/config.yaml".text = ''
         core:
           trash:
             strategy: auto
@@ -226,7 +213,6 @@ in {
 
       # WezTerm: 個別ファイルをリンク
       ".config/wezterm/background.lua".text = let
-        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
         staticContent = builtins.readFile ../../.config/wezterm/background.static.lua;
       in
         builtins.replaceStrings
@@ -240,10 +226,7 @@ in {
           )
         ]
         staticContent;
-      ".config/wezterm/colors.lua".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
-      in ''
+      ".config/wezterm/colors.lua".text = ''
         local M = {}
 
         local color_scheme = '${names.spaced}'
@@ -304,7 +287,6 @@ in {
 
       # Ghostty: catppuccin/nix 管理 (ビルトインテーマを利用)
       ".config/ghostty/config".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
         staticConfig = builtins.readFile ../../.config/ghostty/config.static;
       in
         "# テーマ (catppuccin.flavor から導出、ビルトインテーマを利用)\ntheme = ${names.kebab}\n" + staticConfig;
@@ -315,153 +297,17 @@ in {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
         force = true;
       };
-      # herdr: 組み込みテーマは catppuccin-mocha/catppuccin-latte 等のフレーバー別名で
-      # 用意されている (--default-config のコメントには載っていないが実機で受理を確認済み)。
-      # Ghostty と同じく catppuccin.flavor から導出する。accent はアクティブペイン枠色を
-      # 担うキー (ui.accent)。他ツールと同じ blue で揃える
-      #
-      # [[keys.command]] は tmux の Alt+v/c/g/h ポップアップの herdr 移植版
-      # (.config/herdr/scripts/*.sh)。tmux 版と違い bind 時点での条件分岐が
-      # できないため claude/codex 判定はスクリプト内で実行時に行う。
-      #
-      # [ui.toast] は Claude Code Stop/Notification hook の通知 (tmux DCS
-      # passthrough 依存、herdr 配下では機能しない) の代わりに herdr ネイティブの
-      # 通知機構を使うためのもの。
-      #
-      # [keys] は herdr を macOS の常用マルチプレクサとした再構築 (WezTerm は
-      # タブ/ペイン管理を全撤去した薄い GUI シェル) に合わせた配置:
-      # - prefix+t 新タブは旧 WezTerm (ctrl+t) の筋肉記憶
-      # - alt+矢印 focus_pane は tmux/WezTerm 時代の direct キーを踏襲
-      #   (WezTerm 側の OPT+矢印 SendString と Alt 系バインドは撤去済みが前提)
-      # - alt+1..9 focus_agent は左右どちらの Option でも可
-      #   (mac.lua で send_composed_key_* = false)
-      # 明示していないキーは herdr デフォルト (split_vertical=prefix+v,
-      # split_horizontal=prefix+minus, settings=prefix+s, zoom=prefix+z,
-      # close_pane=prefix+x, switch_tab=prefix+1..9, workspace_picker=prefix+w,
-      # new_worktree=prefix+shift+g, edit_scrollback=prefix+e,
-      # open_notification_target=prefix+o 等) を継承。
-      #
-      # [experimental] は日本語 IME 対策: prefix モード中の ASCII 入力ソース切替と、
-      # Claude Code/codex ペインでの IME 候補窓追従。
-      ".config/herdr/config.toml".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
-        scriptsDir = "${config.xdg.configHome}/herdr/scripts";
-      in ''
-        [theme]
-        name = "${names.kebab}"
-
-        [ui]
-        accent = "${p.blue.hex}"
-        show_agent_labels_on_pane_borders = true
-
-        [ui.toast]
-        delivery = "terminal"
-
-        [keys]
-        prefix = "ctrl+space"
-        new_tab = "prefix+t"
-        focus_pane_left = "alt+left"
-        focus_pane_down = "alt+down"
-        focus_pane_up = "alt+up"
-        focus_pane_right = "alt+right"
-        last_pane = "prefix+space"
-        focus_agent = "alt+1..9"
-        previous_workspace = "prefix+comma"
-        next_workspace = "prefix+period"
-
-        [experimental]
-        switch_ascii_input_source_in_prefix = true
-        reveal_hidden_cursor_for_cjk_ime = true
-        cjk_ime_agents = ["claude", "codex"]
-
-        [[keys.command]]
-        key = "alt+v"
-        type = "pane"
-        command = "${scriptsDir}/prompt-edit.sh"
-        description = "Claude Code: プロンプト編集"
-
-        [[keys.command]]
-        key = "alt+c"
-        type = "pane"
-        command = "${scriptsDir}/path-pick-fzf.sh"
-        description = "パス選択 (fzf)"
-
-        [[keys.command]]
-        key = "alt+g"
-        type = "pane"
-        command = "${scriptsDir}/path-pick-broot.sh"
-        description = "パス選択 (broot)"
-
-        [[keys.command]]
-        key = "alt+h"
-        type = "pane"
-        command = "${scriptsDir}/octorus-history.sh"
-        description = "Octorus Rally 履歴"
-
-        # alt+y は WSL では WezTerm windows_specific (PowerShell タブ) が先に
-        # 捕捉するため macOS 専用
-        [[keys.command]]
-        key = "alt+y"
-        type = "pane"
-        command = "${scriptsDir}/yazi-pane.sh"
-        description = "Yazi"
-
-        # alt+l は nvim mini.move (<M-l>) を奪うため prefix 側に置く
-        [[keys.command]]
-        key = "prefix+l"
-        type = "pane"
-        command = "${scriptsDir}/lazygit-pane.sh"
-        description = "Lazygit"
-
-        # 旧 WezTerm Alt+r の移植。feed-watch のデータ生成 (systemd timer) が
-        # WSL 限定のため実質 WSL 専用 (macOS ではデータなしメッセージのみ)
-        [[keys.command]]
-        key = "alt+r"
-        type = "pane"
-        command = "${scriptsDir}/feed-open.sh"
-        description = "未読フィードを開く"
-      '';
-      ".config/herdr/scripts/prompt-edit.sh" = {
-        source = ../../.config/herdr/scripts/prompt-edit.sh;
-        executable = true;
-      };
-      ".config/herdr/scripts/path-pick-fzf.sh" = {
-        source = ../../.config/herdr/scripts/path-pick-fzf.sh;
-        executable = true;
-      };
-      ".config/herdr/scripts/path-pick-broot.sh" = {
-        source = ../../.config/herdr/scripts/path-pick-broot.sh;
-        executable = true;
-      };
-      ".config/herdr/scripts/octorus-history.sh" = {
-        source = ../../.config/herdr/scripts/octorus-history.sh;
-        executable = true;
-      };
-      ".config/herdr/scripts/yazi-pane.sh" = {
-        source = ../../.config/herdr/scripts/yazi-pane.sh;
-        executable = true;
-      };
-      ".config/herdr/scripts/lazygit-pane.sh" = {
-        source = ../../.config/herdr/scripts/lazygit-pane.sh;
-        executable = true;
-      };
-      ".config/herdr/scripts/feed-open.sh" = {
-        source = ../../.config/herdr/scripts/feed-open.sh;
-        executable = true;
-      };
+      # herdr is managed by nix/home/programs/herdr.nix
       ".config/octorus/config.toml".text = let
-        names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
         staticContent = builtins.readFile ../../.config/octorus/config.static.toml;
       in
         builtins.replaceStrings ["__CATPPUCCIN_THEME__"] [names.spaced] staticContent;
-      ".config/octorus/themes/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).spaced}.tmTheme".source =
-        ../../.config/bat/themes + "/${(config.catppuccinLib.flavorNames config.catppuccin.flavor).spaced}.tmTheme";
+      ".config/octorus/themes/${names.spaced}.tmTheme".source =
+        ../../.config/bat/themes + "/${names.spaced}.tmTheme";
       ".config/bulletty/feeds.opml".source = ../../.config/bulletty/feeds.opml;
       ".config/bulletty/feeds-forum.opml".source = ../../.config/bulletty/feeds-forum.opml;
       ".config/biome".source = ../../.config/biome;
       ".config/lazydocker/config.yml".text = let
-        p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
         staticContent = builtins.readFile ../../.config/lazydocker/config.static.yml;
       in
         builtins.replaceStrings
@@ -486,16 +332,12 @@ in {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/bin";
         force = true;
       };
-    }
-    # treemd: ビルトイン UI テーマは CatppuccinMocha のみ。
-    # 他フレーバー対応のため [theme] で全色を上書きする。
-    # コードブロックは bat と同じ tmTheme を流用。
-    // (let
-      names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
-      p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
-      rgb = c: "{ rgb = [${toString c.rgb.r}, ${toString c.rgb.g}, ${toString c.rgb.b}] }";
-    in {
-      ".config/treemd/config.toml".text = ''
+      # treemd: ビルトイン UI テーマは CatppuccinMocha のみ。
+      # 他フレーバー対応のため [theme] で全色を上書きする。
+      # コードブロックは bat と同じ tmTheme を流用。
+      ".config/treemd/config.toml".text = let
+        rgb = c: "{ rgb = [${toString c.rgb.r}, ${toString c.rgb.g}, ${toString c.rgb.b}] }";
+      in ''
         [ui]
         theme = "CatppuccinMocha"
         code_theme = "${names.spaced}"
@@ -536,159 +378,7 @@ in {
       '';
       ".config/treemd/code-themes/${names.spaced}.tmTheme".source =
         ../../.config/bat/themes + "/${names.spaced}.tmTheme";
-    })
-    # Claude Code カスタムテーマ: 4 flavor (latte/frappe/macchiato/mocha) を生成
-    // (let
-      mkClaudeTheme = flavor: let
-        p = config.catppuccinLib.palettes.${flavor};
-        names = config.catppuccinLib.flavorNames flavor;
-        themeBase =
-          if flavor == "latte"
-          then "light"
-          else "dark";
-        # ratio は 0-100 (foreground の比率)
-        # Claude Code は `rgb(r,g,b)` / `#rrggbb` / `ansi256(n)` / `ansi:<name>` を受理する
-        # 注: 2.1.118 時点で diffAdded/diffRemoved(Dimmed) の背景色は override されず
-        #     base defaults が使われるバグがある。ここの値は将来修正された時用
-        blend = fg: bg: ratio: let
-          mix = a: b: (a * ratio + b * (100 - ratio)) / 100;
-        in "rgb(${toString (mix fg.rgb.r bg.rgb.r)},${toString (mix fg.rgb.g bg.rgb.g)},${toString (mix fg.rgb.b bg.rgb.b)})";
-      in
-        builtins.toJSON {
-          name = names.spaced;
-          base = themeBase;
-          overrides = {
-            diffAdded = blend p.green p.base 18;
-            diffRemoved = blend p.red p.base 18;
-            diffAddedDimmed = blend p.green p.base 10;
-            diffRemovedDimmed = blend p.red p.base 10;
-
-            text = p.text.hex;
-            inverseText = p.base.hex;
-            inactive = p.overlay1.hex;
-            inactiveShimmer = p.overlay2.hex;
-            subtle = p.surface1.hex;
-
-            claude = p.peach.hex;
-            claudeShimmer = p.flamingo.hex;
-            claudeBlue_FOR_SYSTEM_SPINNER = p.lavender.hex;
-            claudeBlueShimmer_FOR_SYSTEM_SPINNER = p.sky.hex;
-
-            autoAccept = p.mauve.hex;
-            permission = p.lavender.hex;
-            permissionShimmer = p.sky.hex;
-            suggestion = p.lavender.hex;
-            remember = p.lavender.hex;
-            merged = p.mauve.hex;
-
-            bashBorder = p.pink.hex;
-            promptBorder = p.overlay0.hex;
-            promptBorderShimmer = p.overlay1.hex;
-
-            planMode = p.teal.hex;
-            ide = p.sapphire.hex;
-            fastMode = p.peach.hex;
-            fastModeShimmer = p.flamingo.hex;
-
-            success = p.green.hex;
-            error = p.red.hex;
-            warning = p.yellow.hex;
-            warningShimmer = p.yellow.hex;
-
-            diffAddedWord = p.green.hex;
-            diffRemovedWord = p.maroon.hex;
-
-            userMessageBackground = p.surface0.hex;
-            userMessageBackgroundHover = p.surface1.hex;
-            messageActionsBackground = p.mantle.hex;
-            selectionBg = p.surface1.hex;
-            bashMessageBackgroundColor = p.surface0.hex;
-            memoryBackgroundColor = p.surface0.hex;
-
-            red_FOR_SUBAGENTS_ONLY = p.red.hex;
-            blue_FOR_SUBAGENTS_ONLY = p.blue.hex;
-            green_FOR_SUBAGENTS_ONLY = p.green.hex;
-            yellow_FOR_SUBAGENTS_ONLY = p.yellow.hex;
-            purple_FOR_SUBAGENTS_ONLY = p.mauve.hex;
-            orange_FOR_SUBAGENTS_ONLY = p.peach.hex;
-            pink_FOR_SUBAGENTS_ONLY = p.pink.hex;
-            cyan_FOR_SUBAGENTS_ONLY = p.sky.hex;
-
-            briefLabelYou = p.sapphire.hex;
-            briefLabelClaude = p.peach.hex;
-
-            rate_limit_fill = p.lavender.hex;
-            rate_limit_empty = p.surface1.hex;
-
-            rainbow_red = p.red.hex;
-            rainbow_orange = p.peach.hex;
-            rainbow_yellow = p.yellow.hex;
-            rainbow_green = p.green.hex;
-            rainbow_blue = p.blue.hex;
-            rainbow_indigo = p.lavender.hex;
-            rainbow_violet = p.mauve.hex;
-
-            rainbow_red_shimmer = p.maroon.hex;
-            rainbow_orange_shimmer = p.flamingo.hex;
-            rainbow_yellow_shimmer = p.yellow.hex;
-            rainbow_green_shimmer = p.teal.hex;
-            rainbow_blue_shimmer = p.sapphire.hex;
-            rainbow_indigo_shimmer = p.lavender.hex;
-            rainbow_violet_shimmer = p.pink.hex;
-          };
-        };
-    in
-      builtins.listToAttrs (map (flavor: {
-        name = ".config/claude/themes/catppuccin-${flavor}.json";
-        value = {text = mkClaudeTheme flavor;};
-      }) ["latte" "frappe" "macchiato" "mocha"]))
-    # Hermes Agent カスタムスキン: 4 flavor を生成
-    # YAML は JSON のスーパーセットなので builtins.toJSON 出力をそのまま .yaml として読ませる
-    // (let
-      mkHermesSkin = flavor: let
-        p = config.catppuccinLib.palettes.${flavor};
-        names = config.catppuccinLib.flavorNames flavor;
-      in
-        builtins.toJSON {
-          name = "catppuccin-${flavor}";
-          description = "Catppuccin ${names.capitalized} for Hermes Agent";
-          colors = {
-            banner_border = p.mauve.hex;
-            banner_title = p.yellow.hex;
-            banner_accent = p.teal.hex;
-            banner_dim = p.overlay1.hex;
-            banner_text = p.text.hex;
-            ui_accent = p.mauve.hex;
-            ui_label = p.sapphire.hex;
-            ui_ok = p.green.hex;
-            ui_error = p.red.hex;
-            ui_warn = p.peach.hex;
-            prompt = p.text.hex;
-            input_rule = p.surface1.hex;
-            response_border = p.mauve.hex;
-            status_bar_bg = p.mantle.hex;
-            status_bar_text = p.subtext1.hex;
-            status_bar_strong = p.yellow.hex;
-            status_bar_dim = p.overlay0.hex;
-            status_bar_good = p.green.hex;
-            status_bar_warn = p.yellow.hex;
-            status_bar_bad = p.peach.hex;
-            status_bar_critical = p.red.hex;
-            session_label = p.sapphire.hex;
-            session_border = p.overlay0.hex;
-            voice_status_bg = p.mantle.hex;
-            selection_bg = p.surface1.hex;
-            completion_menu_bg = p.mantle.hex;
-            completion_menu_current_bg = p.surface1.hex;
-            completion_menu_meta_bg = p.mantle.hex;
-            completion_menu_meta_current_bg = p.surface1.hex;
-          };
-        };
-    in
-      builtins.listToAttrs (map (flavor: {
-        name = ".config/hermes/skins/catppuccin-${flavor}.yaml";
-        value = {text = mkHermesSkin flavor;};
-      }) ["latte" "frappe" "macchiato" "mocha"]))
+    }
     # Docker CLI plugins (macOSではOrbStackが管理)
     // lib.optionalAttrs (!isDarwin) {
       ".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";

@@ -4,6 +4,8 @@
   config,
   inputs,
   username ? "user",
+  dotfilesDir ? "",
+  isCI ? false,
   ...
 }: let
   inherit (pkgs.stdenv) isDarwin;
@@ -12,6 +14,15 @@
     then "/Users/${username}"
     else "/home/${username}";
 in {
+  # dotfiles リポジトリの実パス (git 管理外ファイルや out-of-store symlink 用)。
+  # files.nix / activation.nix に module arg として共有する
+  _module.args.validDotfilesDir =
+    if isCI
+    then "/tmp/dotfiles"
+    else if dotfilesDir == ""
+    then throw "dotfilesDir is empty. Did you forget --impure flag?"
+    else dotfilesDir;
+
   imports = [
     ./catppuccin-palette.nix
     ./packages.nix
@@ -24,6 +35,7 @@ in {
     ./programs/fzf.nix
     ./programs/gh.nix
     ./programs/git.nix
+    ./programs/herdr.nix
     ./programs/hunk.nix
     ./programs/lazygit.nix
     ./programs/readline.nix
@@ -32,6 +44,8 @@ in {
     ./programs/zoxide.nix
     ./programs/zsh.nix
     ./services/feed-watch.nix
+    ./themes/claude-code.nix
+    ./themes/hermes.nix
   ];
 
   catppuccin = {

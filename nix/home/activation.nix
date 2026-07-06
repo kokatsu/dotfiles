@@ -2,17 +2,11 @@
   pkgs,
   lib,
   config,
-  dotfilesDir ? "",
+  validDotfilesDir,
   isCI ? false,
   ...
 }: let
   inherit (pkgs.stdenv) isDarwin;
-  validDotfilesDir =
-    if isCI
-    then "/tmp/dotfiles"
-    else if dotfilesDir == ""
-    then throw "dotfilesDir is empty. Did you forget --impure flag?"
-    else dotfilesDir;
 in {
   home.activation = {
     # win32yank.exe を ~/bin/ にコピー (WSL クリップボード連携)
