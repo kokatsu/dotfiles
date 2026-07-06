@@ -61,20 +61,12 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
       - name: Run shellcheck
         # Backstop for the lefthook pre-commit/pre-push gate, which can be bypassed
-        # with --no-verify. Keep the file list aligned with justfile's `sh_files`.
-        run: |
-          shopt -s nullglob
-          files=(
-            .codex/hooks/*.sh
-            .config/claude/file-suggestion.sh
-            .config/claude/hooks/*.sh
-            .config/tmux/scripts/*.sh
-            scripts/test-hash-patterns.sh
-            scripts/sync-flake-inputs.sh
-          )
-          shellcheck "${files[@]}"
+        # with --no-verify. Runs the justfile recipe so `sh_files` stays the single
+        # source of truth; tools are pinned via flake.lock (--inputs-from).
+        run: nix shell --inputs-from . nixpkgs#just nixpkgs#shellcheck --command just shellcheck
 
   deno-check:
     name: Deno check
@@ -85,20 +77,14 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
-      - uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
       - name: Type-check Deno TypeScript
         # Backstop for the Lefthook pre-commit/pre-push gate (bypassable with
         # --no-verify) and for type errors that otherwise surface only when these
-        # hooks run at session runtime. Mirrors the justfile `deno-check` recipe;
-        # keep the dir/file lists aligned with justfile's `deno_dirs`/`deno_files`
-        # (cd-per-dir lets each dir's own deno.json apply, e.g. karabiner-config).
-        run: |
-          for dir in karabiner-config scripts; do
-            (cd "$dir" && find . -name '*.ts' -exec deno check {} +)
-          done
-          for file in .config/zeno/config.ts; do
-            deno check "$file"
-          done
+        # hooks run at session runtime. Runs the justfile recipe so
+        # `deno_dirs`/`deno_files` stay the single source of truth; tools are
+        # pinned via flake.lock (--inputs-from).
+        run: nix shell --inputs-from . nixpkgs#just nixpkgs#deno --command just deno-check
 
   npm-audit:
     name: npm audit
