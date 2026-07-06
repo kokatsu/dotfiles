@@ -1,58 +1,58 @@
 [
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*(sudo\\s+)?rm\\b",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?rm([^[:alnum:]_]|$)",
     "message": "Use gomi instead of rm"
   },
   {
-    "pattern": "(curl|wget)\\s+[^|;&]*\\|\\s*(sudo\\s+)?(bash|sh)\\b",
+    "pattern": "(curl|wget)[[:space:]]+[^|;&]*\\|[[:space:]]*(sudo[[:space:]]+)?(bash|sh)([^[:alnum:]_]|$)",
     "message": "Refuse pipe-to-shell installer pattern (curl|wget … | sh). Download to a file, inspect, then run."
   },
   {
-    "pattern": "base64\\s+(-d|--decode)\\b[^|;&]*\\|\\s*(sudo\\s+)?(bash|sh)\\b",
+    "pattern": "base64[[:space:]]+(-d|--decode)([[:space:]][^|;&]*)?\\|[[:space:]]*(sudo[[:space:]]+)?(bash|sh)([^[:alnum:]_]|$)",
     "message": "Refuse base64-decode-to-shell pattern."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*(sudo\\s+)?eval\\b",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?eval([^[:alnum:]_]|$)",
     "message": "Refuse eval. Review the command and run it directly instead."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*(sudo\\s+)?dd\\b[^|;&]*\\sof=/dev/",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?dd([^|;&[:alnum:]_][^|;&]*)?[[:space:]]of=/dev/",
     "message": "Refuse dd writing to a device. Run manually if intentional."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*(sudo\\s+)?mkfs\\.",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?mkfs\\.",
     "message": "Refuse mkfs. Run manually if intentional."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*(sudo\\s+)?chmod\\s+-R\\s+0?777\\b",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?chmod[[:space:]]+-R[[:space:]]+0?777([^[:alnum:]_]|$)",
     "message": "Refuse chmod -R 777. Use a tighter mode."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*(sudo\\s+)?chmod\\s+0?777\\s+/(\\s|$)",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?chmod[[:space:]]+0?777[[:space:]]+/([[:space:]]|$)",
     "message": "Refuse chmod 777 /. Scope the path."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*git\\s+push\\b[^|;&]*\\s(-f|--force)(\\s|$)",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]]+push([^|;&[:alnum:]_][^|;&]*)?[[:space:]](-f|--force)([[:space:]]|$)",
     "message": "Refuse git push -f/--force. Use --force-with-lease or run manually."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*git\\s+clean\\s+-[a-zA-Z]*(fd|df|fx|xf|dx|xd)[a-zA-Z]*",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]]+clean[[:space:]]+-[a-zA-Z]*(fd|df|fx|xf|dx|xd)[a-zA-Z]*",
     "message": "Refuse git clean -fd (destructive). Inspect untracked files first."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*git\\s+reset\\s+--hard\\s+(origin/|upstream/|HEAD~|HEAD@)",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]]+reset[[:space:]]+--hard[[:space:]]+(origin/|upstream/|HEAD~|HEAD@)",
     "message": "Refuse git reset --hard to a remote/historical ref. Confirm intent and run manually."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*:\\s*>\\s*/",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*:[[:space:]]*>[[:space:]]*/",
     "message": "Refuse truncate-to-absolute-path pattern (: > /...). Scope the path."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*shred\\b",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*shred([^[:alnum:]_]|$)",
     "message": "Refuse shred. Confirm intent and run manually."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()\\s*(e|f)?grep\\b[^|;&]*\\s(-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)(\\s|$)",
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(e|f)?grep([^|;&[:alnum:]_][^|;&]*)?[[:space:]](-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)([[:space:]]|$)",
     "message": "Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.ripgreprc glob excludes."
   }
 ]
