@@ -29,7 +29,6 @@ in {
       };
       ".config/claude/CLAUDE.md".source = ../../.config/claude/.CLAUDE.md;
       ".config/claude/skills".source = ../../.config/claude/skills;
-      ".config/claude/commands".source = ../../.config/claude/commands;
       ".config/claude/rules".source = ../../.config/claude/rules;
       ".config/claude/file-suggestion.sh" = {
         source = ../../.config/claude/file-suggestion.sh;
