@@ -5,9 +5,9 @@ Karabiner-Elements の設定管理。
 
 ## 使い方
 
-`karabiner.ts` を編集したら `home-manager switch` (macOS なら
-`darwin-rebuild switch`) で `~/.config/karabiner/karabiner.json`
-に自動反映される。 activation script が deno 実行と初回スタブ作成を担当する
+`karabiner.ts` を編集したら `home-manager switch` で
+`~/.config/karabiner/karabiner.json` に自動反映される (macOS も同じ)。
+activation script が deno 実行と初回スタブ作成を担当する
 ([nix/home/activation.nix](../nix/home/activation.nix) の
 `buildKarabinerConfig`)。
 

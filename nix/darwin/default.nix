@@ -9,9 +9,6 @@
   # nixpkgsの設定
   nixpkgs.config = {
     allowUnfree = true;
-    # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
-    # nixpkgs が patched pnpm_10 に bump したら削除する。
-    permittedInsecurePackages = ["pnpm-10.34.0"];
   };
 
   # プライマリユーザー設定 (nix-darwin 最新版で必要)
@@ -37,6 +34,9 @@
     onActivation = {
       autoUpdate = true;
       cleanup = "zap";
+      # Homebrew 6.0 以降、auto_updates な cask (Chrome 等) も通常の upgrade で
+      # .app ごと差し替えられる。起動中の Chrome があると新規タブが真っ白に
+      # なるため、darwin-rebuild は Chrome を閉じてから実行すること。
       upgrade = true;
       # Homebrew 5.x は `brew bundle --cleanup` に force 系フラグ必須 (非対話で
       # 未掲載パッケージを zap するため)。これがないと activation が失敗する。

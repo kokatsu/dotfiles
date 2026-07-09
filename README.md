@@ -40,10 +40,10 @@ nix run home-manager -- switch --flake . --impure
 ### Apply Configuration Changes
 
 ```bash
-# Home Manager only
+# User environment (packages / dotfiles) on both Linux and macOS
 home-manager switch --flake ~/dotfiles --impure
 
-# macOS (nix-darwin)
+# macOS system settings + Homebrew (quit Chrome first: casks get upgraded in place)
 sudo HOSTNAME=$(hostname -s) darwin-rebuild switch --flake ~/dotfiles --impure
 ```
 

@@ -210,29 +210,13 @@
       lib.filterAttrs (_: v: v != null)
       (lib.genAttrs binaryNames (n: manifestPkgs.${n}.hashTargets or null));
   in {
-    # macOS (nix-darwin + home-manager)
+    # macOS (nix-darwin: システム設定 + Homebrew のみ)
+    # ユーザー環境 (packages / dotfiles) は Linux と同じく standalone の
+    # homeConfigurations で管理する。darwin-rebuild から分離することで、
+    # Nix パッケージの日常更新に Homebrew の upgrade を巻き込まない。
     darwinConfigurations.${finalHostname} = nix-darwin.lib.darwinSystem {
       system = "aarch64-darwin";
-      modules = [
-        ./nix/darwin
-        home-manager.darwinModules.home-manager
-        {
-          nixpkgs.overlays = commonOverlays ++ darwinOnlyOverlays;
-          home-manager = {
-            useGlobalPkgs = true;
-            useUserPackages = true;
-            backupFileExtension = "backup";
-            sharedModules = [catppuccin.homeModules.catppuccin];
-            users.${finalUsername} = import ./nix/home;
-            extraSpecialArgs = {
-              inherit inputs self dotfilesDir;
-              username = finalUsername;
-              isCI = false;
-              stablePkgs = stablePkgsFor "aarch64-darwin";
-            };
-          };
-        }
-      ];
+      modules = [./nix/darwin];
       specialArgs = {
         inherit inputs;
         username = finalUsername;
