@@ -244,8 +244,11 @@ export LS_COLORS="$(< $ZSH_EVALCACHE_DIR/ls_colors_cache)"
 # WSL の /mnt/c/ PATH スキャンで ~200ms かかるため、キャッシュファイルを直接 source する
 # キャッシュ再生成: rm "$ZSH_EVALCACHE_DIR/starship-init.zsh"
 () {
-  local cache="$ZSH_EVALCACHE_DIR/starship-init.zsh"
-  if [[ ! -f "$cache" ]]; then
+  local cache="$ZSH_EVALCACHE_DIR/starship-init.zsh" bin=
+  # キャッシュには生成時の starship の絶対パスが焼き込まれるため、PROMPT 行から
+  # 抽出して実在確認する (プロファイル構成の変更でパスが死ぬとプロンプトが壊れる)
+  [[ -f "$cache" ]] && bin=${${${(M)${(f)"$(<"$cache")"}:#PROMPT=*}[1]#PROMPT=\'\$\(\'}%%\'*}
+  if [[ ! -x "$bin" ]]; then
     starship init zsh --print-full-init > "$cache"
     zcompile "$cache" 2>/dev/null
   fi
