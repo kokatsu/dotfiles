@@ -85,28 +85,56 @@ in {
       fi
     '';
 
-    # codex: git管理の設定 (tui等) とローカルの [projects] をマージ
+    # codex: git管理の設定 (tui等) と Codex が書き戻すローカル状態をマージ
     mergeCodexConfig = lib.hm.dag.entryAfter ["linkGeneration"] ''
       CODEX_DIR="$HOME/.config/codex"
       BASE="${validDotfilesDir}/.config/codex/config.toml"
       TARGET="$CODEX_DIR/config.toml"
       $DRY_RUN_CMD mkdir -p "$CODEX_DIR"
       if [ -f "$TARGET" ]; then
-        # 既存の [projects] セクションを抽出
-        # 前提: [projects.*] セクションがファイル末尾にあること (後続セクションも含まれる)
-        PROJECTS=$(${pkgs.gnused}/bin/sed -n '/^\[projects[."\[]/,$ p' "$TARGET")
+        # セクション順に依存せず、Codex が管理するローカル状態だけを抽出する。
+        LOCAL_STATE=$(${pkgs.gawk}/bin/awk '
+          /^\[\[?/ {
+            keep = 0
+            if ($0 ~ /^\[\[?projects(\.|\])/) keep = 1
+            if ($0 ~ /^\[\[?tui\.model_availability_nux\]\]?$/) keep = 1
+            if ($0 ~ /^\[\[?notice(\.|\])/) keep = 1
+            if ($0 ~ /^\[\[?hooks\.state(\.|\])/) keep = 1
+          }
+          keep { print }
+        ' "$TARGET")
         $DRY_RUN_CMD cp "$BASE" "$TARGET"
-        if [ -n "$PROJECTS" ]; then
-          printf '\n%s\n' "$PROJECTS" >> "$TARGET"
+        if [ -n "$LOCAL_STATE" ]; then
+          if [ -n "$DRY_RUN_CMD" ]; then
+            echo "Preserving Codex local state in $TARGET"
+          else
+            printf '\n%s\n' "$LOCAL_STATE" >> "$TARGET"
+          fi
         fi
       else
         $DRY_RUN_CMD cp "$BASE" "$TARGET"
       fi
 
       RULES_DIR="$CODEX_DIR/rules"
-      RULES_BASE="${validDotfilesDir}/.config/codex/rules/default.rules"
-      RULES_TARGET="$RULES_DIR/default.rules"
+      RULES_BASE="${validDotfilesDir}/.config/codex/rules/managed.rules"
+      RULES_TARGET="$RULES_DIR/managed.rules"
+      LOCAL_RULES_TARGET="$RULES_DIR/default.rules"
       $DRY_RUN_CMD mkdir -p "$RULES_DIR"
+
+      # 旧構成の管理ルールを default.rules から取り除き、Codex が追記した
+      # 1 行形式のローカル許可だけを初回移行時に残す。
+      if [ -f "$LOCAL_RULES_TARGET" ] && \
+        [ "$(${pkgs.coreutils}/bin/head -n 1 "$LOCAL_RULES_TARGET")" = "# Read-only git inspection commands." ]; then
+        LOCAL_RULES=$(${pkgs.gnugrep}/bin/grep '^prefix_rule(pattern=' "$LOCAL_RULES_TARGET" || true)
+        if [ -n "$DRY_RUN_CMD" ]; then
+          echo "Migrating Codex-local rules in $LOCAL_RULES_TARGET"
+        elif [ -n "$LOCAL_RULES" ]; then
+          printf '%s\n' "$LOCAL_RULES" > "$LOCAL_RULES_TARGET"
+        else
+          ${pkgs.coreutils}/bin/rm -f "$LOCAL_RULES_TARGET"
+        fi
+      fi
+
       $DRY_RUN_CMD cp "$RULES_BASE" "$RULES_TARGET"
     '';
 
