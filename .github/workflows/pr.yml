@@ -410,7 +410,7 @@ jobs:
 
       - name: Setup Deno
         if: steps.detect.outputs.has_karabinerts_deno_lock == 'true'
-        uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
 
       - name: Regenerate karabiner-config deno.lock
         if: steps.detect.outputs.has_karabinerts_deno_lock == 'true'
