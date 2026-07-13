@@ -34,6 +34,9 @@
     hunk = {
       url = "github:modem-dev/hunk/v0.16.0";
       inputs.nixpkgs.follows = "nixpkgs";
+      # bun2nix の既定 systems には、Nixpkgs 26.11 で削除された
+      # x86_64-darwin が含まれる。実際に使用する3環境だけに限定する。
+      inputs.bun2nix.inputs.systems.url = "github:nix-systems/triplet";
     };
 
     # https://github.com/NousResearch/hermes-agent
