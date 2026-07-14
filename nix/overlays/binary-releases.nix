@@ -312,7 +312,7 @@ in {
   # Renovate: datasource=github-releases depName=brevity1swos/rgx
   rgx-cli = mkBinaryRelease rec {
     pname = "rgx-cli";
-    version = "0.14.1";
+    version = "0.14.2";
     hashes = {
       "aarch64-darwin" = "sha256-gdjKojHrjsgE5Ytgjq8ZHqgRpz8yYEXSn+2+qf2vWbw=";
       "x86_64-darwin" = "sha256-XlqyJmuk8sELrQ4ti0W33gi0BnqjzVJJftFA3WRAvLM=";
