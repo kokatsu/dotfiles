@@ -335,7 +335,7 @@ in {
   # Renovate: datasource=github-releases depName=k1LoW/deck
   deck-slides = mkBinaryRelease rec {
     pname = "deck-slides";
-    version = "1.24.0";
+    version = "1.24.1";
     hashes = {
       "aarch64-darwin" = "sha256-fNvfaTb66xqbjd1nUHgnJWQGmtQ0hXf2ngog5jTD1CY=";
       "x86_64-darwin" = "sha256-n6fc2s9D5YR8kEfyeACJ8AdLfNT4AoWN1Fc7veNxtdU=";
