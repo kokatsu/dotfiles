@@ -38,6 +38,7 @@ in {
     ./programs/herdr.nix
     ./programs/hunk.nix
     ./programs/lazygit.nix
+    ./programs/nh.nix
     ./programs/readline.nix
     ./programs/starship.nix
     ./programs/tmux.nix
@@ -156,11 +157,4 @@ in {
 
   xdg.enable = true;
   fonts.fontconfig.enable = true;
-
-  # 不要なNixストアを自動削除 (週1回、7日以上前のものを削除)
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
 }
