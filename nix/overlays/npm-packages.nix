@@ -34,8 +34,10 @@
         mkdir -p "$(dirname "$dest")" $out/bin
         mv node_modules/vite-plus "$dest"
         mv node_modules "$dest/node_modules"
-        ln -sfn ../../bin/vp "$dest/node_modules/.bin/vp"
-        ln -s ../lib/node_modules/vite-plus/bin/vp $out/bin/vp
+        for bin in vp vpr; do
+          ln -sfn ../../bin/$bin "$dest/node_modules/.bin/$bin"
+          ln -s ../lib/node_modules/vite-plus/bin/$bin $out/bin/$bin
+        done
         runHook postInstall
       '';
 
