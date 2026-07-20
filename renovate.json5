@@ -95,5 +95,12 @@
       ],
       minimumReleaseAge: '0 days',
     },
+    {
+      // hermes-agent は 4 パートのタグ (例: v2026.7.7.2) を出すため strict semver では無視される
+      matchPackageNames: [
+        'NousResearch/hermes-agent',
+      ],
+      versioning: 'loose',
+    },
   ],
 }
