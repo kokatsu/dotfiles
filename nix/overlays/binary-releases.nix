@@ -13,7 +13,7 @@ in {
   # Renovate: datasource=github-releases depName=jdx/mise
   mise = mkBinaryRelease rec {
     pname = "mise";
-    version = "2026.7.6";
+    version = "2026.7.7";
     hashes = {
       "aarch64-darwin" = "sha256-5e2431weSrmazkhphxYUtHYX4bsxQjnXPXLn+auoiRU=";
       "aarch64-linux" = "sha256-s2TzBy9K1jJ1jx8lLk/vjXWFj5di2iVRa4CLwR/vPAo=";
