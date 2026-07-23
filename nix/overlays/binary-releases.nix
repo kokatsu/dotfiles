@@ -290,12 +290,12 @@ in {
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = mkBinaryRelease rec {
     pname = "octorus";
-    version = "0.6.6";
+    version = "0.6.7";
     hashes = {
-      "aarch64-darwin" = "sha256-JzjEwUAieepLLrmCVU9EX5Uv6r7dehx/Io75M8RFzYA=";
-      "x86_64-darwin" = "sha256-RVNSxelmOWp8V0NuAGzp4ufnVqz+plb6m2Wa5vwPIIw=";
-      "aarch64-linux" = "sha256-iqitDRQs5PCqHq2VhDweCusrCCz0zT8htCWjnPcxv8U=";
-      "x86_64-linux" = "sha256-G7egRF11bjnJoiQ5uP8Hrb6EKnNHHk4DQ2IYU8P/DDg=";
+      "aarch64-darwin" = "sha256-fsqnB49TnsPG9waafix0ILJHjslGJEmAPc2EiJS0g+Y=";
+      "x86_64-darwin" = "sha256-PVCP3p1xVQTAM/yiJUNHzYsNG5NetlF6kZYlU6GRuG4=";
+      "aarch64-linux" = "sha256-gLo4x5AJbh1dI6sKmwA6ybcYX65pzMO98CroUhepY40=";
+      "x86_64-linux" = "sha256-05KgKIB0oE2f4AYgp4k4GvM5jfIRuVufVZgev8JMVxw=";
     };
     platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/ushironoko/octorus/releases/download/v${version}/octorus-${version}-${platform}.tar.gz";
