@@ -114,9 +114,9 @@ in {
   # また fat static archive (libghostty-vt.a) の作成に Apple libtool を直接 spawn
   # するので cctools の libtool だけを PATH に足す (cctools 全 bin は ld 等が
   # cc-wrapper と衝突しうるため symlink 1 本に絞る)。
-  # upstream herdr v0.18.2 / nixpkgs master 時点で未修正。
+  # upstream herdr v0.7.4 / nixpkgs master 時点で未修正。
   herdr-darwin-fix = _final: prev: {
-    herdr = guardedOverride "herdr" "0.18.2" prev.herdr (old: {
+    herdr = guardedOverride "herdr" "0.7.4" prev.herdr (old: {
       nativeBuildInputs =
         (old.nativeBuildInputs or [])
         ++ [
