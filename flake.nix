@@ -261,38 +261,42 @@
     darwinConfigurations.${finalHostname} = mkDarwinConfig finalUsername;
 
     # home-manager設定
-    homeConfigurations = {
-      # 実際のユーザー用 (自動システム検出、--impure必須)
-      ${finalUsername} = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = currentSystem;
-          config = {
-            allowUnfree = true;
-            # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
-            # nixpkgs が patched pnpm_10 に bump したら削除する。
-            permittedInsecurePackages = ["pnpm-10.34.0"];
+    homeConfigurations =
+      {
+        # CI用 (純粋評価、ビルドテスト用)
+        "ci-linux" = mkCIConfig "x86_64-linux";
+        "ci-darwin" = mkCIConfig "aarch64-darwin";
+      }
+      # 実際のユーザー用 (自動システム検出、--impure必須)。
+      # `builtins.currentSystem` は impure 評価時のみ存在するため、`nix flake check`
+      # などの pure 評価がこの属性を素通りするよう存在チェックで公開を絞る。
+      // lib.optionalAttrs (builtins ? currentSystem) {
+        ${finalUsername} = home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            system = currentSystem;
+            config = {
+              allowUnfree = true;
+              # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
+              # nixpkgs が patched pnpm_10 に bump したら削除する。
+              permittedInsecurePackages = ["pnpm-10.34.0"];
+            };
+            overlays =
+              commonOverlays
+              ++ (
+                if isCurrentDarwin
+                then darwinOnlyOverlays
+                else linuxOnlyOverlays
+              );
           };
-          overlays =
-            commonOverlays
-            ++ (
-              if isCurrentDarwin
-              then darwinOnlyOverlays
-              else linuxOnlyOverlays
-            );
-        };
-        modules = [./nix/home catppuccin.homeModules.catppuccin];
-        extraSpecialArgs = {
-          inherit inputs self dotfilesDir;
-          username = finalUsername;
-          isCI = false;
-          stablePkgs = stablePkgsFor currentSystem;
+          modules = [./nix/home catppuccin.homeModules.catppuccin];
+          extraSpecialArgs = {
+            inherit inputs self dotfilesDir;
+            username = finalUsername;
+            isCI = false;
+            stablePkgs = stablePkgsFor currentSystem;
+          };
         };
       };
-
-      # CI用 (純粋評価、ビルドテスト用)
-      "ci-linux" = mkCIConfig "x86_64-linux";
-      "ci-darwin" = mkCIConfig "aarch64-darwin";
-    };
 
     # `nix flake check`をHome Manager / nix-darwin / Nix静的解析の入口にする。
     checks = {
