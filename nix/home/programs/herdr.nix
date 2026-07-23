@@ -42,6 +42,12 @@ in {
       accent = "${p.blue.hex}"
       show_agent_labels_on_pane_borders = true
 
+      [ui.sidebar.agents]
+      row_gap = 1
+
+      [ui.sidebar.spaces]
+      row_gap = 1
+
       [ui.toast]
       delivery = "terminal"
 
