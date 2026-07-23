@@ -9,19 +9,33 @@
   ...
 }: let
   inherit (pkgs.stdenv) isDarwin;
+  isWSL =
+    !isCI
+    && pkgs.stdenv.isLinux
+    && (
+      builtins.getEnv "WSL_DISTRO_NAME"
+      != ""
+      || builtins.getEnv "WSL_INTEROP" != ""
+    );
+  validDotfilesDir =
+    if isCI
+    then "/tmp/dotfiles"
+    else if dotfilesDir == ""
+    then throw "dotfilesDir is empty. Set DOTFILES_DIR or run from the repository root with --impure."
+    else if !lib.hasPrefix "/" dotfilesDir
+    then throw "dotfilesDir (${dotfilesDir}) must be an absolute path."
+    else if !builtins.pathExists "${dotfilesDir}/flake.nix"
+    then throw "dotfilesDir (${dotfilesDir}) is not the repository root. Set DOTFILES_DIR to the absolute dotfiles path."
+    else dotfilesDir;
   homeDir =
     if isDarwin
     then "/Users/${username}"
     else "/home/${username}";
 in {
-  # dotfiles リポジトリの実パス (git 管理外ファイルや out-of-store symlink 用)。
-  # files.nix / activation.nix に module arg として共有する
-  _module.args.validDotfilesDir =
-    if isCI
-    then "/tmp/dotfiles"
-    else if dotfilesDir == ""
-    then throw "dotfilesDir is empty. Did you forget --impure flag?"
-    else dotfilesDir;
+  # dotfiles の実パスと実行環境を各ツールの module に共有する。
+  _module.args = {
+    inherit isWSL validDotfilesDir;
+  };
 
   imports = [
     ./catppuccin-palette.nix
@@ -31,17 +45,22 @@ in {
     ./programs/bat.nix
     ./programs/broot.nix
     ./programs/btop.nix
+    ./programs/claude-code.nix
+    ./programs/codex.nix
     ./programs/eza.nix
     ./programs/fzf.nix
     ./programs/gh.nix
     ./programs/git.nix
     ./programs/herdr.nix
     ./programs/hunk.nix
+    ./programs/karabiner.nix
     ./programs/lazygit.nix
     ./programs/nh.nix
+    ./programs/playwright.nix
     ./programs/readline.nix
     ./programs/starship.nix
     ./programs/tmux.nix
+    ./programs/wezterm.nix
     ./programs/zoxide.nix
     ./programs/zsh.nix
     ./services/feed-watch.nix

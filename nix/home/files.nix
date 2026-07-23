@@ -3,6 +3,7 @@
   lib,
   config,
   validDotfilesDir,
+  isWSL,
   ...
 }: let
   inherit (pkgs.stdenv) isDarwin;
@@ -21,69 +22,6 @@ in {
       };
       # fff.nvim: Nix ビルド版 (Rust バックエンド同梱) を lazy.nvim の dir 参照用に配置
       ".local/share/nvim/nix-plugins/fff.nvim".source = pkgs.vimPlugins.fff-nvim;
-      # settings.json: mkOutOfStoreSymlink でリポジトリを直接リンク
-      # これにより /effort などランタイムでの書き込みがリポジトリに反映される
-      ".config/claude/settings.json" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/claude/settings.json";
-        force = true;
-      };
-      ".config/claude/CLAUDE.md".source = ../../.config/claude/.CLAUDE.md;
-      ".config/claude/skills".source = ../../.config/claude/skills;
-      ".config/claude/rules".source = ../../.config/claude/rules;
-      ".config/claude/file-suggestion.sh" = {
-        source = ../../.config/claude/file-suggestion.sh;
-        executable = true;
-      };
-      ".config/claude/hooks/banned-commands.json".source = ../../.config/claude/hooks/banned-commands.json;
-      ".config/claude/hooks/check-banned-commands.sh" = {
-        source = ../../.config/claude/hooks/check-banned-commands.sh;
-        executable = true;
-      };
-      ".config/claude/hooks/check-managed-paths.sh" = {
-        source = ../../.config/claude/hooks/check-managed-paths.sh;
-        executable = true;
-      };
-      ".config/claude/hooks/gh-api-guard.sh" = {
-        source = ../../.config/claude/hooks/gh-api-guard.sh;
-        executable = true;
-      };
-      ".config/claude/hooks/herdr-agent-state.sh" = {
-        source = ../../.config/claude/hooks/herdr-agent-state.sh;
-        executable = true;
-      };
-      ".config/claude/hooks/notify.sh" = {
-        source = ../../.config/claude/hooks/notify.sh;
-        executable = true;
-      };
-      # Claude Code キーバインド (CLAUDE_CONFIG_DIR で ~/.config/claude を使用)
-      ".config/claude/keybindings.json".source = ../../.config/claude/keybindings.json;
-
-      # Claude Code カスタムテーマは ./themes/claude-code.nix で生成
-
-      # Codex: built-in skills (.system) を残すため、共有したい skill だけを個別にリンク
-      ".config/codex/skills/browser-research".source = ../../.config/codex/skills/browser-research;
-
-      # Codex: herdr integration (`herdr integration install codex` の生成物を nix 管理化。
-      # integration 更新時は install し直して repo へコピーする。config.toml 側は
-      # [features] の `hooks = true` が対応)
-      ".config/codex/herdr-agent-state.sh" = {
-        source = ../../.config/codex/herdr-agent-state.sh;
-        executable = true;
-      };
-      ".config/codex/hooks.json".text = builtins.toJSON {
-        hooks.SessionStart = [
-          {
-            hooks = [
-              {
-                command = "bash '${config.xdg.configHome}/codex/herdr-agent-state.sh' session";
-                timeout = 10;
-                type = "command";
-              }
-            ];
-          }
-        ];
-      };
-
       ".config/delta".source = ../../.config/delta;
       ".config/fastfetch/config.jsonc".text = let
         rgb = c: "${toString c.rgb.r};${toString c.rgb.g};${toString c.rgb.b}";
@@ -210,80 +148,6 @@ in {
       ".config/pg".source = ../../.config/pg;
       ".config/.ripgreprc".source = ../../.config/.ripgreprc;
 
-      # WezTerm: 個別ファイルをリンク
-      ".config/wezterm/background.lua".text = let
-        staticContent = builtins.readFile ../../.config/wezterm/background.static.lua;
-      in
-        builtins.replaceStrings
-        ["__CATPPUCCIN_BASE__" "__BASE_OPACITY__"]
-        [
-          p.base.hex
-          (
-            if isDarwin
-            then "0.85"
-            else "1.0"
-          )
-        ]
-        staticContent;
-      ".config/wezterm/colors.lua".text = ''
-        local M = {}
-
-        local color_scheme = '${names.spaced}'
-
-        local palette = {
-          rosewater = '${p.rosewater.hex}',
-          flamingo = '${p.flamingo.hex}',
-          pink = '${p.pink.hex}',
-          mauve = '${p.mauve.hex}',
-          red = '${p.red.hex}',
-          maroon = '${p.maroon.hex}',
-          peach = '${p.peach.hex}',
-          yellow = '${p.yellow.hex}',
-          green = '${p.green.hex}',
-          teal = '${p.teal.hex}',
-          sky = '${p.sky.hex}',
-          sapphire = '${p.sapphire.hex}',
-          blue = '${p.blue.hex}',
-          lavender = '${p.lavender.hex}',
-          text = '${p.text.hex}',
-          subtext1 = '${p.subtext1.hex}',
-          subtext0 = '${p.subtext0.hex}',
-          overlay2 = '${p.overlay2.hex}',
-          overlay1 = '${p.overlay1.hex}',
-          overlay0 = '${p.overlay0.hex}',
-          surface2 = '${p.surface2.hex}',
-          surface1 = '${p.surface1.hex}',
-          surface0 = '${p.surface0.hex}',
-          base = '${p.base.hex}',
-          mantle = '${p.mantle.hex}',
-          crust = '${p.crust.hex}',
-        }
-
-        M.palette = palette
-
-        M.apply_to_config = function(config)
-          config.color_scheme = color_scheme
-          config.colors = {
-            cursor_bg = palette.sapphire,
-            cursor_fg = palette.base,
-            cursor_border = palette.sapphire,
-            compose_cursor = palette.peach,
-            split = palette.blue,
-          }
-          config.command_palette_bg_color = palette.surface0
-          config.command_palette_fg_color = palette.text
-        end
-
-        return M
-      '';
-      ".config/wezterm/format.lua".source = ../../.config/wezterm/format.lua;
-      ".config/wezterm/keybinds.lua".source = ../../.config/wezterm/keybinds.lua;
-      ".config/wezterm/mac.lua".source = ../../.config/wezterm/mac.lua;
-      ".config/wezterm/platform.lua".source = ../../.config/wezterm/platform.lua;
-      ".config/wezterm/stylua.toml".source = ../../.config/wezterm/stylua.toml;
-      ".config/wezterm/wezterm.lua".source = ../../.config/wezterm/wezterm.lua;
-      ".config/wezterm/windows.lua".source = ../../.config/wezterm/windows.lua;
-
       # Ghostty: catppuccin/nix 管理 (ビルトインテーマを利用)
       ".config/ghostty/config".text = let
         staticConfig = builtins.readFile ../../.config/ghostty/config.static;
@@ -382,6 +246,8 @@ in {
     // lib.optionalAttrs (!isDarwin) {
       ".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
       ".docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
+    }
+    // lib.optionalAttrs isWSL {
       # lazygit WSL 固有設定 (クリップボード連携)
       ".config/lazygit/config.wsl.yml".source = ../../.config/lazygit/config.wsl.yml;
     }

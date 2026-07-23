@@ -1,4 +1,6 @@
-{
+let
+  inherit (import ./lib.nix) guardEqual;
+in {
   # cssmodules-language-server - CSS Modules LSP
   # Uses buildNpmPackage from GitHub source
   # Renovate: datasource=npm depName=cssmodules-language-server
@@ -41,7 +43,15 @@
 
       vendorHash = "sha256-sjhUfE6bysaSDQb8EkqL5wptdxgtcxt9+K+7Dic3le0=";
 
-      doCheck = false;
+      # v1.2.1のTestFormatSingleValidationErrorはvalidator依存の変化に追従できず、
+      # expected messageに対してnilを返して失敗する。他のGo testは維持する。
+      # version更新時はskipを外して再確認すること。
+      checkFlags =
+        guardEqual
+        "x-api-playground version"
+        "1.2.1"
+        version
+        ["-skip=TestFormatSingleValidationError"];
 
       meta = with prev.lib; {
         description = "Local HTTP server that simulates X API v2 for testing";

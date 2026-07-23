@@ -2,6 +2,7 @@
   config,
   lib,
   pkgs,
+  validDotfilesDir,
   ...
 }: {
   # Home ManagerのZsh管理を無効化し、既存設定を使用
@@ -15,17 +16,24 @@
         $DRY_RUN_CMD mkdir -p "${config.xdg.configHome}/zsh/functions.d"
       '';
 
+      # config.d / functions.d のgit管理外ファイルを作業ツリーからコピーする。
+      setupZshExtraFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
+        for subdir in config.d functions.d; do
+          SOURCE="${validDotfilesDir}/.config/zsh/$subdir"
+          TARGET="${config.xdg.configHome}/zsh/$subdir"
+          if [ -d "$SOURCE" ]; then
+            $DRY_RUN_CMD mkdir -p "$TARGET"
+            for f in "$SOURCE"/*.zsh; do
+              [ -f "$f" ] && $DRY_RUN_CMD cp "$f" "$TARGET/" 2>/dev/null || true
+            done
+          fi
+        done
+      '';
+
       # zimfw モジュールをインストール (.zimrc に定義された未インストールモジュールを取得)
       zimfwInstall = lib.hm.dag.entryAfter ["linkGeneration"] ''
         ZIM_HOME="${config.xdg.configHome}/zsh/.zim"
         ZIM_CONFIG_FILE="${config.xdg.configHome}/zsh/.zimrc"
-
-        # zimfw.zsh が未ダウンロードの場合は取得
-        if [ ! -e "$ZIM_HOME/zimfw.zsh" ]; then
-          $DRY_RUN_CMD mkdir -p "$ZIM_HOME"
-          $DRY_RUN_CMD ${pkgs.curl}/bin/curl -fsSL -o "$ZIM_HOME/zimfw.zsh" \
-            https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
-        fi
 
         # .zimrc の中身が前回と変わった場合のみ install を走らせる。
         # 毎回走らせると zsh 5.9 + macOS の SIGCHLD race で getoutput がハングしやすいため。
@@ -58,6 +66,12 @@
 
     # 既存のzsh設定をシンボリックリンク
     file = {
+      # zimfw本体はflake.lockで固定されたnixpkgsのパッケージを使用する。
+      # .zimrcに定義した各moduleの取得はzimfw自身が管理する。
+      "${config.xdg.configHome}/zsh/.zim/zimfw.zsh" = {
+        source = "${pkgs.zimfw}/zimfw.zsh";
+        force = true;
+      };
       "${config.xdg.configHome}/zsh/.zshrc".source = ../../../.config/zsh/.zshrc;
       "${config.xdg.configHome}/zsh/.zimrc".source = ../../../.config/zsh/.zimrc;
 

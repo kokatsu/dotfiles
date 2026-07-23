@@ -1,4 +1,9 @@
-{config, ...}: let
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: let
   # Hermes Agent カスタムスキン: 4 flavor を生成
   # YAML は JSON のスーパーセットなので builtins.toJSON 出力をそのまま .yaml として読ませる
   mkHermesSkin = flavor: let
@@ -41,8 +46,26 @@
       };
     };
 in {
-  home.file = builtins.listToAttrs (map (flavor: {
-    name = ".config/hermes/skins/catppuccin-${flavor}.yaml";
-    value = {text = mkHermesSkin flavor;};
-  }) ["latte" "frappe" "macchiato" "mocha"]);
+  home = {
+    file = builtins.listToAttrs (map (flavor: {
+      name = ".config/hermes/skins/catppuccin-${flavor}.yaml";
+      value = {text = mkHermesSkin flavor;};
+    }) ["latte" "frappe" "macchiato" "mocha"]);
+
+    # catppuccin.flavorに追従してHermesの現在skinを書き戻す。
+    activation.applyHermesSkin = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      DESIRED="catppuccin-${config.catppuccin.flavor}"
+      CONFIG="${config.xdg.configHome}/hermes/config.yaml"
+      CURRENT=""
+      if [ -f "$CONFIG" ]; then
+        CURRENT=$(${pkgs.gnugrep}/bin/grep -E '^[[:space:]]*skin:[[:space:]]*' "$CONFIG" \
+          | ${pkgs.gnused}/bin/sed -E 's/^[[:space:]]*skin:[[:space:]]*"?([^"#]+)"?.*/\1/' \
+          | tr -d '[:space:]' || true)
+      fi
+      if [ "$CURRENT" != "$DESIRED" ]; then
+        $DRY_RUN_CMD env HERMES_HOME="${config.xdg.configHome}/hermes" \
+          "${pkgs.hermes-agent}/bin/hermes" config set display.skin "$DESIRED" > /dev/null
+      fi
+    '';
+  };
 }

@@ -1,4 +1,11 @@
 {
+  # Workaround guards must fail closed when their pinned version changes so an
+  # upstream update cannot silently preserve a stale override or skipped test.
+  guardEqual = name: expected: actual: value:
+    if actual == expected
+    then value
+    else throw "${name} changed from ${expected} to ${actual}; review or remove its dotfiles workaround";
+
   mkBinaryRelease = {
     pname,
     version,
@@ -36,7 +43,7 @@
       then [prev.unzip]
       else [];
     # CI の hash 更新/検証用メタデータ。host system に依存せず platformMap 全体を
-    # 走査するため、`nix eval .#hashUpdateManifest` から全プラットフォーム分の
+    # 走査するため、`nix eval .#lib.hashUpdateManifest` から全プラットフォーム分の
     # (url, 現在 overlay に書かれている hash) を取り出せる。
     hashTargets = {
       inherit pname version hashSource;

@@ -121,10 +121,8 @@ jobs:
         with:
           name: kokatsu
           authToken: ${{ github.ref == 'refs/heads/main' && secrets.CACHIX_AUTH_TOKEN || '' }}
-      - name: Build devShell
-        run: nix build --fallback .#devShells.x86_64-linux.default
-      - name: Build home-manager config
-        run: nix build --fallback .#homeConfigurations.ci-linux.activationPackage
+      - name: Check flake
+        run: nix flake check --fallback
       - name: Test Neovim custom plugins
         run: nix develop --command nvim --headless --clean -l scripts/test-nvim-config.lua
 
@@ -142,7 +140,5 @@ jobs:
         with:
           name: kokatsu
           authToken: ${{ github.ref == 'refs/heads/main' && secrets.CACHIX_AUTH_TOKEN || '' }}
-      - name: Build devShell
-        run: nix build --fallback .#devShells.aarch64-darwin.default
-      - name: Build home-manager config
-        run: nix build --fallback .#homeConfigurations.ci-darwin.activationPackage
+      - name: Check flake
+        run: nix flake check --fallback

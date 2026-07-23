@@ -10,7 +10,7 @@ default:
     @just --list
 
 # Run all checks
-check: fmt-check lint typos
+check: fmt-check lint typos nix-eval
 
 # Run all formatters
 fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt
@@ -19,7 +19,7 @@ fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt
 fmt-check: lua-fmt-check nix-fmt-check biome-fmt-check deno-fmt-check shfmt-check
 
 # Run all linters
-lint: lua-lint shellcheck deno-lint deno-check biome-lint editorconfig
+lint: nix-lint nix-dead-code lua-lint shellcheck deno-lint deno-check biome-lint editorconfig
 
 # Format Lua files
 lua-fmt:
@@ -43,6 +43,18 @@ nix-fmt:
 # Check Nix formatting (no write)
 nix-fmt-check:
     alejandra -c .
+
+# Lint Nix files
+nix-lint:
+    statix check .
+
+# Find unused Nix declarations
+nix-dead-code:
+    deadnix --fail .
+
+# Evaluate flake outputs and checks without building them
+nix-eval:
+    nix flake check "path:$PWD" --no-build --impure --no-update-lock-file
 
 # Format TypeScript with biome
 biome-fmt:

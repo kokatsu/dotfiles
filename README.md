@@ -32,7 +32,7 @@ git clone https://github.com/kokatsu/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 
 # Build and activate Home Manager configuration
-nix run home-manager -- switch --flake . --impure
+DOTFILES_DIR="$PWD" nix run home-manager -- switch --flake . --impure
 ```
 
 ## Usage
@@ -40,18 +40,19 @@ nix run home-manager -- switch --flake . --impure
 ### Apply Configuration Changes
 
 ```bash
-# User environment (packages / dotfiles) on both Linux and macOS
-home-manager switch --flake ~/dotfiles --impure
+# User environment (packages / dotfiles) on both Linux and macOS.
+# Set this to the actual repository path on each PC.
+DOTFILES_DIR="$HOME/dotfiles" home-manager switch --flake "$HOME/dotfiles" --impure
 
 # macOS system settings + Homebrew (quit Chrome first: casks get upgraded in place)
-sudo HOSTNAME=$(hostname -s) darwin-rebuild switch --flake ~/dotfiles --impure
+sudo HOSTNAME=$(hostname -s) DOTFILES_DIR="$HOME/dotfiles" darwin-rebuild switch --flake "$HOME/dotfiles" --impure
 ```
 
 ### Update Packages
 
 ```bash
 nix flake update
-home-manager switch --flake ~/dotfiles --impure
+DOTFILES_DIR="$HOME/dotfiles" home-manager switch --flake "$HOME/dotfiles" --impure
 ```
 
 ### Development
@@ -66,10 +67,13 @@ nix fmt            # Format Nix files
 
 ```text
 .
-├── flake.nix          # Nix flake definition with Home Manager integration
+├── flake.nix          # Flake outputs and Home Manager/nix-darwin builders
 ├── flake.lock         # Locked dependencies for reproducibility
-├── home.nix           # Home Manager configuration (packages, dotfiles)
-└── .config/           # Dotfile configurations
+├── nix/
+│   ├── home/          # Home Manager modules (packages, files, programs)
+│   ├── darwin/        # macOS system and Homebrew configuration
+│   └── overlays/      # Custom packages and upstream workarounds
+└── .config/           # Dotfile sources linked by Home Manager
     ├── zsh/           # Zsh shell configuration
     ├── nvim/          # Neovim configuration
     ├── git/           # Git configuration

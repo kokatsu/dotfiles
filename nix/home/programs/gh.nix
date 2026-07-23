@@ -1,20 +1,5 @@
 # GitHub CLI (gh) configuration
-{
-  pkgs,
-  isCI ? false,
-  ...
-}: let
-  inherit (pkgs.stdenv) isLinux;
-  # WSL detection (requires --impure; /proc/version is read at Nix eval time)
-  # In pure evaluation mode (CI), /proc/version access is forbidden, so skip WSL detection
-  isWSL =
-    if isCI
-    then false
-    else
-      isLinux
-      && builtins.pathExists /proc/version
-      && builtins.match ".*[Mm]icrosoft.*" (builtins.readFile /proc/version) != null;
-in {
+{isWSL, ...}: {
   programs.gh = {
     enable = true;
     settings = {

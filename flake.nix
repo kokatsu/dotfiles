@@ -80,7 +80,16 @@
     sudoUser = builtins.getEnv "SUDO_USER";
     username = builtins.getEnv "USER";
     hostname = builtins.getEnv "HOSTNAME";
-    dotfilesDir = builtins.getEnv "PWD"; # dotfilesディレクトリ (git管理外ファイル用)
+    # out-of-store symlink 用の実パス。PCごとに配置場所が異なるため
+    # DOTFILES_DIR で明示できるようにし、未指定時だけカレントディレクトリを使う。
+    # 後者は nix/home/default.nix で flake.nix の存在を検証するため、別ディレクトリを
+    # 誤ってリンクすることはない。
+    dotfilesDirOverride = builtins.getEnv "DOTFILES_DIR";
+    workingDirectory = builtins.getEnv "PWD";
+    dotfilesDir =
+      if dotfilesDirOverride != ""
+      then dotfilesDirOverride
+      else workingDirectory;
 
     # サポートするシステム
     # x86_64-darwin (Intel Mac) は不使用のため除外
@@ -116,6 +125,14 @@
 
     # カスタムオーバーレイ
     customOverlays = import ./nix/overlays {inherit inputs;};
+    devPkgs = forAllSystems (system:
+      import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        # statixの現行nixpkgs derivationはsnapshot testだけが壊れているため、
+        # Home Managerと同じ回避策を開発・静的解析環境にも適用する。
+        overlays = [customOverlays.statix-no-check];
+      });
 
     # 共通オーバーレイ (全プラットフォーム)
     commonOverlays = [
@@ -180,6 +197,30 @@
         };
       };
 
+    mkDarwinConfig = username:
+      nix-darwin.lib.darwinSystem {
+        system = "aarch64-darwin";
+        modules = [./nix/darwin];
+        specialArgs = {
+          inherit inputs username;
+        };
+      };
+
+    mkNixStaticCheck = system: let
+      pkgs = devPkgs.${system};
+    in
+      pkgs.runCommand "nix-static-check" {
+        nativeBuildInputs = with pkgs; [alejandra deadnix just statix];
+        src = self;
+      } ''
+        export HOME="$TMPDIR"
+        cp -r "$src" source
+        chmod -R u+w source
+        cd source
+        just nix-fmt-check nix-lint nix-dead-code
+        touch "$out"
+      '';
+
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
       customOverlays.cava-darwin-fix
@@ -197,7 +238,7 @@
     # binary-releases.nix の mkBinaryRelease 製パッケージを attrNames で自動収集し、
     # 各パッケージの passthru.hashTargets (全プラットフォームの url + 現在の hash) を
     # JSON で公開する。`.github/workflows/pr.yml` の verify ステップが
-    # `nix eval --json .#hashUpdateManifest` で読み取り、汎用ループで照合する。
+    # `nix eval --json .#lib.hashUpdateManifest` で読み取り、汎用ループで照合する。
     # 新しい binary ツールを追加しても、ここと CI の編集は不要 (overlay 定義だけで完結)。
     hashUpdateManifest = let
       # binary-releases.nix の overlay 群は nixpkgs (prev) のみに依存し相互依存も
@@ -217,14 +258,7 @@
     # ユーザー環境 (packages / dotfiles) は Linux と同じく standalone の
     # homeConfigurations で管理する。darwin-rebuild から分離することで、
     # Nix パッケージの日常更新に Homebrew の upgrade を巻き込まない。
-    darwinConfigurations.${finalHostname} = nix-darwin.lib.darwinSystem {
-      system = "aarch64-darwin";
-      modules = [./nix/darwin];
-      specialArgs = {
-        inherit inputs;
-        username = finalUsername;
-      };
-    };
+    darwinConfigurations.${finalHostname} = mkDarwinConfig finalUsername;
 
     # home-manager設定
     homeConfigurations = {
@@ -260,14 +294,35 @@
       "ci-darwin" = mkCIConfig "aarch64-darwin";
     };
 
+    # `nix flake check`をHome Manager / nix-darwin / Nix静的解析の入口にする。
+    checks = {
+      x86_64-linux = {
+        home = (mkCIConfig "x86_64-linux").activationPackage;
+        nix-static = mkNixStaticCheck "x86_64-linux";
+        # flake checkはdevShellを通常は評価するだけなので、checksからも参照して
+        # CIで開発環境そのものをビルドする。
+        dev-shell = self.devShells.x86_64-linux.default;
+      };
+      aarch64-darwin = {
+        home = (mkCIConfig "aarch64-darwin").activationPackage;
+        darwin = (mkDarwinConfig "ci").system;
+        dev-shell = self.devShells.aarch64-darwin.default;
+      };
+    };
+
     # 開発シェル
-    devShells = forAllSystems (system: {
-      default = (pkgsFor system).mkShell {
-        packages = with (pkgsFor system); [
+    devShells = forAllSystems (system: let
+      pkgs = devPkgs.${system};
+    in {
+      default = pkgs.mkShell {
+        packages = with pkgs; [
           neovim # Plugin smoke tests
           nil # Nix LSP
           nixd # Alternative Nix LSP
           alejandra # Nix formatter
+          deadnix # Nix dead code finder
+          just # Task runner
+          statix # Nix linter
         ];
       };
     });
@@ -275,7 +330,8 @@
     # フォーマッター
     formatter = forAllSystems (system: (pkgsFor system).alejandra);
 
-    # CI の hash 検証用マニフェスト (上の let で定義)
-    inherit hashUpdateManifest;
+    # CIのhash検証用データ。標準のlib出力配下に置き、flake checkの
+    # unknown-output警告を発生させない。
+    lib = {inherit hashUpdateManifest;};
   };
 }

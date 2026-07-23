@@ -260,7 +260,7 @@ jobs:
         id: update_prefetch
         run: |
           OVERLAY="nix/overlays/binary-releases.nix"
-          MANIFEST=$(nix eval --json .#hashUpdateManifest)
+          MANIFEST=$(nix eval --json .#lib.hashUpdateManifest)
 
           git fetch origin main
           OLDFILE=$(mktemp)
@@ -374,7 +374,7 @@ jobs:
           # fetchurl は生ファイルを hash 化するため、format に依らず nix-prefetch-url
           # (--unpack なし) だけで照合できる。新しい binary ツールを追加しても overlay
           # 定義だけでこのループに自動で乗る (ここは不変)。
-          MANIFEST=$(nix eval --json .#hashUpdateManifest)
+          MANIFEST=$(nix eval --json .#lib.hashUpdateManifest)
           while IFS=$'\t' read -r pkg sys url expected; do
             actual=$(nix-prefetch-url --type sha256 "$url" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
             if [ -z "$actual" ]; then
