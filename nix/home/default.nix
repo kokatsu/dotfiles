@@ -55,6 +55,7 @@ in {
     ./programs/hunk.nix
     ./programs/karabiner.nix
     ./programs/lazygit.nix
+    ./programs/lefthook.nix
     ./programs/nh.nix
     ./programs/playwright.nix
     ./programs/readline.nix
