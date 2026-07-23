@@ -68,6 +68,13 @@ in {
       reveal_hidden_cursor_for_cjk_ime = true
       cjk_ime_agents = ["claude", "codex"]
 
+      # 現在のペインを左上として、左右 1:1、左上下 3:1、右上下 1:1 に分割
+      [[keys.command]]
+      key = "prefix+backslash"
+      type = "shell"
+      command = "${scriptsDir}/four-pane-layout.sh"
+      description = "4ペイン作業レイアウト"
+
       [[keys.command]]
       key = "alt+v"
       type = "pane"
@@ -141,6 +148,10 @@ in {
     };
     ".config/herdr/scripts/feed-open.sh" = {
       source = ../../../.config/herdr/scripts/feed-open.sh;
+      executable = true;
+    };
+    ".config/herdr/scripts/four-pane-layout.sh" = {
+      source = ../../../.config/herdr/scripts/four-pane-layout.sh;
       executable = true;
     };
   };
