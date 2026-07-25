@@ -75,6 +75,24 @@ in {
       else prev.direnv;
   };
 
+  # dtools 2.110.0 の rdmd test は一時コンパイラを TMPDIR にコピーして実行する。
+  # macOS の Nix sandbox が設定する /private/tmp では実行が拒否されるため、
+  # build directory 配下の実行可能な一時ディレクトリを使う。
+  dtools-darwin-tmpdir-fix = _final: prev: {
+    dtools =
+      if prev.stdenv.hostPlatform.isDarwin
+      then
+        guardedOverride "dtools" "2.110.0" prev.dtools (old: {
+          preCheck =
+            (old.preCheck or "")
+            + ''
+              export TMPDIR="$PWD/.tmp"
+              mkdir -p "$TMPDIR"
+            '';
+        })
+      else prev.dtools;
+  };
+
   # Use forked git-graph with:
   # - --current option
   # - ANSI color wrapping fix
@@ -130,18 +148,23 @@ in {
     });
   };
 
-  # pipx 1.14.0 test_package_specifier tests fail with newer `packaging`,
-  # which normalizes PEP 508 direct references to `name @ url` (space around
-  # `@`) while the tests still assert the old `name@ url` form. Test-only
-  # formatting drift; pipx itself works fine. Disable via pythonPackagesExtensions
-  # because top-level `pipx` is `toPythonApplication python3Packages.pipx`,
-  # and the tests run through pytestCheckHook (not the `doCheck` gate).
+  # pipx 1.14.0 tests fail with newer `packaging` and pytest. `packaging`
+  # normalizes PEP 508 direct references to `name @ url` (space around `@`)
+  # while the tests still assert the old `name@ url` form. pytest 9.1 also
+  # rejects the trailing-comma argname in tests/test_inject.py during
+  # collection, before disabledTests (`pytest -k`) can exclude it. Test-only
+  # incompatibilities; pipx itself works fine. Override via
+  # pythonPackagesExtensions because top-level `pipx` is
+  # `toPythonApplication python3Packages.pipx`.
   pipx-no-check = _final: prev: {
     pythonPackagesExtensions =
       (prev.pythonPackagesExtensions or [])
       ++ [
         (_pyfinal: pyprev: {
           pipx = guardedOverride "pipx" "1.14.0" pyprev.pipx (old: {
+            disabledTestPaths =
+              (old.disabledTestPaths or [])
+              ++ ["tests/test_inject.py"];
             disabledTests =
               (old.disabledTests or [])
               ++ [

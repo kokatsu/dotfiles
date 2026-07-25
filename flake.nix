@@ -148,6 +148,7 @@
       customOverlays.deck-slides
       customOverlays.difftastic
       customOverlays.direnv-no-check
+      customOverlays.dtools-darwin-tmpdir-fix
       customOverlays.git-graph-fork
       customOverlays.hermes-agent
       customOverlays.kakehashi
