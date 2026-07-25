@@ -261,43 +261,39 @@
     # Nix パッケージの日常更新に Homebrew の upgrade を巻き込まない。
     darwinConfigurations.${finalHostname} = mkDarwinConfig finalUsername;
 
-    # home-manager設定
-    homeConfigurations =
-      {
-        # CI用 (純粋評価、ビルドテスト用)
-        "ci-linux" = mkCIConfig "x86_64-linux";
-        "ci-darwin" = mkCIConfig "aarch64-darwin";
-      }
-      # 実際のユーザー用 (自動システム検出、--impure必須)。
-      # `builtins.currentSystem` は impure 評価時のみ存在するため、`nix flake check`
-      # などの pure 評価がこの属性を素通りするよう存在チェックで公開を絞る。
-      // lib.optionalAttrs (builtins ? currentSystem) {
-        ${finalUsername} = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            system = currentSystem;
-            config = {
-              allowUnfree = true;
-              # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
-              # nixpkgs が patched pnpm_10 に bump したら削除する。
-              permittedInsecurePackages = ["pnpm-10.34.0"];
-            };
-            overlays =
-              commonOverlays
-              ++ (
-                if isCurrentDarwin
-                then darwinOnlyOverlays
-                else linuxOnlyOverlays
-              );
+    # home-manager設定 (実際のユーザー用。自動システム検出、--impure必須)。
+    # `builtins.currentSystem` は impure 評価時のみ存在するため、`nix flake check`
+    # などの pure 評価がこの属性を素通りするよう存在チェックで公開を絞る。
+    # CI 用の設定はここではなく `checks.<system>.home` で公開する。system 名前空間を
+    # 持たない homeConfigurations に置くと `nix flake check` が他 system 分まで強制
+    # 評価し、catppuccin の IFD (importTOML) が異 platform のビルドを要求して落ちる。
+    homeConfigurations = lib.optionalAttrs (builtins ? currentSystem) {
+      ${finalUsername} = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = currentSystem;
+          config = {
+            allowUnfree = true;
+            # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
+            # nixpkgs が patched pnpm_10 に bump したら削除する。
+            permittedInsecurePackages = ["pnpm-10.34.0"];
           };
-          modules = [./nix/home catppuccin.homeModules.catppuccin];
-          extraSpecialArgs = {
-            inherit inputs self dotfilesDir;
-            username = finalUsername;
-            isCI = false;
-            stablePkgs = stablePkgsFor currentSystem;
-          };
+          overlays =
+            commonOverlays
+            ++ (
+              if isCurrentDarwin
+              then darwinOnlyOverlays
+              else linuxOnlyOverlays
+            );
+        };
+        modules = [./nix/home catppuccin.homeModules.catppuccin];
+        extraSpecialArgs = {
+          inherit inputs self dotfilesDir;
+          username = finalUsername;
+          isCI = false;
+          stablePkgs = stablePkgsFor currentSystem;
         };
       };
+    };
 
     # `nix flake check`をHome Manager / nix-darwin / Nix静的解析の入口にする。
     checks = {
