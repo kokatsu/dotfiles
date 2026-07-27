@@ -63,109 +63,22 @@ agent-browser click "@ref"     # dismiss the banner
 
 Then proceed with the chosen extraction method.
 
-**Stop here if you have enough information.** Steps 2–8 below are only needed for deeper investigation.
-
-### 2. Get detailed content (if needed)
-
-Get text from specific element:
-
-```bash
-agent-browser get text "@ref"
-```
-
-Get page metadata:
-
-```bash
-agent-browser get title && agent-browser get url
-```
-
-Find elements by role, text, or label:
-
-```bash
-agent-browser find role heading
-agent-browser find text "keyword"
-```
-
-### 3. Handle long pages
-
-Scroll to load more content:
-
-```bash
-agent-browser scroll down 500 && agent-browser snapshot -c
-```
-
-Scroll a specific element into view:
-
-```bash
-agent-browser scrollintoview "@ref" && agent-browser snapshot -c
-```
-
-### 4. Observe network traffic (SPAs / API-heavy pages)
-
-When `eval` and `snapshot` cannot reveal dynamically loaded data, watch the underlying network calls to identify the real data source.
-
-Capture HAR while interacting with the page:
-
-```bash
-agent-browser network har start
-# perform navigation / scroll / clicks here
-agent-browser network har stop "/tmp/page.har"
-```
-
-Inspect requests inline (no HAR file needed):
-
-```bash
-agent-browser network requests --type xhr,fetch --status 2xx
-agent-browser network request <requestId>   # full request/response detail
-```
-
-Filter flags: `--type` (e.g. `xhr,fetch`, `document`, `script`), `--method` (e.g. `POST`), `--status` (e.g. `2xx`, `400-499`).
-
-Use this to locate the JSON endpoint behind a SPA list, then `WebFetch` the endpoint directly for the cleanest data extraction.
-
-### 5. Navigate to linked pages
-
-Click a link:
-
-```bash
-agent-browser click "@ref" && agent-browser wait --load networkidle --timeout 15000 && agent-browser snapshot -c
-```
-
-Go back:
-
-```bash
-agent-browser back && agent-browser snapshot -c
-```
-
-### 6. Research additional URLs
-
-Use tabs to research multiple pages without losing previous context:
-
-```bash
-agent-browser tab new && agent-browser open "<next-URL>" && agent-browser wait --load networkidle --timeout 15000 && agent-browser snapshot -c
-```
-
-Switch between tabs or close current tab:
-
-```bash
-agent-browser tab list
-agent-browser tab <n>
-agent-browser tab close
-```
-
-### 7. Save page as PDF (optional)
-
-When the user requests a saved copy:
-
-```bash
-agent-browser pdf "/path/to/output.pdf"
-```
-
-### 8. Close when done
+### 2. Close when done
 
 ```bash
 agent-browser close
 ```
+
+## Deeper investigation
+
+Most research finishes with the steps above. Read `${CLAUDE_SKILL_DIR}/reference.md` when you need any of these:
+
+- Text from a specific element, page metadata, or finding elements by role/text/label
+- Scrolling to load more content on long pages
+- Watching network traffic to locate the JSON endpoint behind a SPA
+- Following links, going back, or researching several URLs in tabs
+- Saving the page as a PDF
+- The full `snapshot` flag reference and other commands
 
 ## Critical Rules
 
@@ -186,23 +99,3 @@ Respond in the same language the user used. Summarize findings in this structure
 4. **Related Links**: Additional resources to reference
 
 When researching multiple URLs or when the user requests it, save results to a file using the Write tool. For a single-URL quick lookup, respond directly in chat.
-
-## Snapshot Options
-
-| Flag | Description |
-|------|-------------|
-| `-i`, `--interactive` | Show only interactive elements |
-| `-c`, `--compact` | Remove empty structural elements |
-| `-u`, `--urls` | Include `href` URLs for link elements |
-| `-d <n>`, `--depth <n>` | Limit DOM tree depth |
-| `-s <sel>`, `--selector <sel>` | Scope to CSS selector |
-
-## Additional Useful Commands
-
-- `screenshot --full` — Capture full page screenshot
-- `screenshot --annotate` — Screenshot with numbered element labels
-- `diff snapshot` — Compare current page state against previous snapshot
-- `console` — View browser console logs (useful for debugging)
-- `errors` — View page errors
-- `get count "<sel>"` — Count matching elements
-- `--max-output <chars>` — Truncate output for large pages
