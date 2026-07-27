@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # feed-summarize: feed-watch が検出した新規エントリを Claude で要約する

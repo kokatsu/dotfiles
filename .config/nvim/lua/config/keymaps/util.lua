@@ -1,4 +1,17 @@
--- 補助系キーマップ (translate / SQL helpers / yank path / diagnostic copy)
+-- 補助系キーマップ (translate / SQL helpers / yank path / diagnostic copy / memo / daily)
+
+-- メモ作成: <leader>m は Snacks の Bookmarks が使用中のため <leader>M 系に置く
+vim.keymap.set('n', '<leader>M', function()
+  require('utils.memo').open()
+end, { noremap = true, desc = 'Create timestamped memo' })
+vim.keymap.set('n', '<leader>ML', function()
+  require('utils.memo').open({ local_memo = true })
+end, { noremap = true, desc = 'Create timestamped local memo' })
+
+-- 日記
+vim.keymap.set('n', '<leader>D', function()
+  require('utils.daily').open()
+end, { noremap = true, desc = 'Open today diary' })
 
 -- 翻訳: <leader>R は normal/visual 共通
 vim.keymap.set('n', '<leader>R', function()

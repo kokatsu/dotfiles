@@ -4,9 +4,8 @@
   buildFixes = import ./build-fixes.nix;
   sourceBuilds = import ./source-builds.nix;
   standalone = import ./standalone.nix;
-  cliTools = import ./cli-tools.nix {inherit inputs;};
   ccStatusline = import ./cc-statusline.nix {inherit inputs;};
   hermesAgent = import ./hermes-agent.nix {inherit inputs;};
   unocssLanguageServer = import ./unocss-language-server.nix {inherit inputs;};
 in
-  binaryReleases // npmPackages // buildFixes // sourceBuilds // standalone // cliTools // ccStatusline // hermesAgent // unocssLanguageServer
+  binaryReleases // npmPackages // buildFixes // sourceBuilds // standalone // ccStatusline // hermesAgent // unocssLanguageServer

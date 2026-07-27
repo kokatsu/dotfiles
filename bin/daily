@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -euo pipefail
+#
+# daily: 本日の日記ファイルを開く。
+#
+# Usage:
+#   daily             エディタで本日の日記を開く
+#   daily --no-edit   エディタを起動せず、日記のパスのみ出力する
+#   daily -h, --help  このヘルプを表示
+#
+# 仕様:
+#   - 保存先は Git リポジトリルート配下の .kokatsu/daily/YYYY/MM/YYYY-MM-DD.md
+#   - ファイルが無ければ `# YYYY-MM-DD` の見出しを書いて作成する
+#   - 日記のパスは常に stdout に 1 行で出力する。進捗メッセージは stderr に出すので、
+#     `daily --no-edit` の stdout はパスのみになり、Neovim など呼び出し側がそのまま開ける
+#   - 色は出力先が tty のときだけ付ける (パイプ経由で ANSI が混入しないようにするため)
+
+# 通知メッセージ用の色 (出力先は stderr)
+color_red=''
+color_green=''
+color_reset=''
+if [[ -t 2 ]]; then
+  color_red=$'\e[0;31m'
+  color_green=$'\e[0;32m'
+  color_reset=$'\e[0m'
+fi
+
+die() {
+  echo "${color_red}エラー: $1${color_reset}" >&2
+  exit 1
+}
+
+show_help() {
+  # ヘルプは stdout に出るので、色の有無は stderr ではなく fd 1 で判定する
+  local green='' yellow='' reset=''
+  if [[ -t 1 ]]; then
+    green=$'\e[0;32m'
+    yellow=$'\e[1;33m'
+    reset=$'\e[0m'
+  fi
+
+  cat <<EOF
+${green}daily${reset} - 本日の日記を開くツール
+
+${yellow}使い方:${reset}
+  daily             エディタで本日の日記を開く
+  daily --no-edit   エディタを起動せず、日記のパスのみ出力する
+  daily -h, --help  このヘルプを表示
+
+${yellow}保存先:${reset}
+  <repo>/.kokatsu/daily/YYYY/MM/YYYY-MM-DD.md
+EOF
+}
+
+no_edit=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+  -h | --help)
+    show_help
+    exit 0
+    ;;
+  --no-edit) no_edit=true ;;
+  *) die "不明なオプションです: $1 (daily -h でヘルプを表示)" ;;
+  esac
+  shift
+done
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || die "Gitリポジトリが見つかりません"
+
+# ディレクトリとファイル名を 1 回の date 呼び出しから組み立てる
+# (別々に呼ぶと日付境界をまたいだときに不整合が出る)
+read -r year month date_part < <(date +'%Y %m %Y-%m-%d')
+
+dir="$repo_root/.kokatsu/daily/$year/$month"
+file="$dir/$date_part.md"
+
+mkdir -p "$dir" || die "ディレクトリの作成に失敗しました"
+
+# noclobber (set -C) 下のリダイレクトは O_EXCL 相当で、存在チェックと作成の間に
+# 別プロセスが割り込んでも既存の日記を切り詰めない
+if (
+  set -C
+  printf '# %s\n' "$date_part" >"$file"
+) 2>/dev/null; then
+  echo "${color_green}✓ 日記を作成しました: $file${color_reset}" >&2
+elif [[ ! -e "$file" ]]; then
+  die "ファイルの作成に失敗しました"
+fi
+
+echo "$file"
+
+if [[ "$no_edit" == false ]]; then
+  "${EDITOR:-vi}" "$file"
+fi

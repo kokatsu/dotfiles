@@ -65,26 +65,6 @@
         "type": "github"
       }
     },
-    "cli-tools": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1778150926,
-        "narHash": "sha256-l9/7N7smmFDYqBrvdvn11Q70jUxkkIS8xA4Q+aN80C0=",
-        "owner": "kokatsu",
-        "repo": "cli-tools",
-        "rev": "6bbef6b4b5d6f256ec4634ea530d01a8f9fc56c4",
-        "type": "github"
-      },
-      "original": {
-        "owner": "kokatsu",
-        "repo": "cli-tools",
-        "type": "github"
-      }
-    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
@@ -419,7 +399,6 @@
       "inputs": {
         "catppuccin": "catppuccin",
         "cc-statusline": "cc-statusline",
-        "cli-tools": "cli-tools",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager",
         "hunk": "hunk",

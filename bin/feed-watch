@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # feed-watch: フィードの更新を監視し、WezTerm ステータスバーに表示する

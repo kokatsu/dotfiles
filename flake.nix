@@ -20,11 +20,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    cli-tools = {
-      url = "github:kokatsu/cli-tools";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     cc-statusline = {
       url = "github:kokatsu/cc-statusline";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -139,7 +134,6 @@
       # upstream overlay (pkgs.moonbit-bin.* を生やす)
       inputs.moonbit-overlay.overlays.default
       customOverlays.biome
-      customOverlays.cli-tools
       customOverlays.cc-statusline
       customOverlays.claude-code
       customOverlays.codex

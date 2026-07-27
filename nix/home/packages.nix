@@ -17,6 +17,14 @@
     exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/feed-summarize" "$@"
   '';
 
+  memo = pkgs.writeShellScriptBin "memo" ''
+    exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/memo" "$@"
+  '';
+
+  daily = pkgs.writeShellScriptBin "daily" ''
+    exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/daily" "$@"
+  '';
+
   cargo-with-openssl = pkgs.writeShellScriptBin "cargo-with-openssl" ''
     export PATH="${lib.makeBinPath [pkgs.pkg-config]}:$PATH"
     export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
@@ -329,12 +337,12 @@ in {
 
       #--- CLI ツール (overlay) ---#
       cc-statusline # 高速 Claude Code statusline (Zig)
-      daily # 日記メモツール (Zig)
-      memo # タイムスタンプ付き単独メモツール (Zig)
 
       #--- ユーザースクリプト ラッパー ---#
       feed-watch # GitHub フィード監視 (bin/feed-watch)
       feed-summarize # GitHub コミット要約 (bin/feed-summarize)
+      memo # タイムスタンプ付き単独メモツール (bin/memo)
+      daily # 日記メモツール (bin/daily)
 
       #--- Language Servers (overlay) ---#
       # https://github.com/antonk52/cssmodules-language-server
