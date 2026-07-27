@@ -1,4 +1,9 @@
-_: {
+{
+  lib,
+  config,
+  isWSL,
+  ...
+}: {
   programs.lazygit = {
     enable = true;
     settings = {
@@ -7,38 +12,63 @@ _: {
         showBottomLine = false;
         showCommandLog = false;
         scrollHeight = 10;
-        scrollPastBottom = true;
-        sidePanelWidth = 0.3333;
         expandFocusedSidePanel = true;
-        mainPanelSplitMode = "flexible";
-        showIcons = true;
         nerdFontsVersion = "3";
+        showNumstatInFilesView = true;
+        showDivergenceFromBaseBranch = "arrowAndNumber";
+        filterMode = "fuzzy";
+        skipNoStagedFilesWarning = true;
+        # 既定は "02 Jan 06" / "3:04PM" (12時間表記)
+        timeFormat = "2006-01-02";
+        shortTimeFormat = "15:04";
+        # 色名はターミナルパレット (= catppuccin) を参照するため flavor 追従する
+        branchColorPatterns = {
+          "^main$" = "green";
+          "^[0-9]{8}$" = "blue";
+          "^renovate/" = "yellow";
+        };
         # theme は catppuccin/nix で管理
       };
       git = {
-        autoFetch = true;
-        autoRefresh = true;
-        branchLogCmd = "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --";
+        # `|` で循環切り替えできる。staging view は常に plain diff (--no-ext-diff)
+        # で取得されるため、difftastic を選んでも行/ハンク単位のステージは壊れない
         pagers = [
-          # difftastic 移行のため delta 連携を無効化 (戻す場合はコメント解除)
-          # {pager = "delta --dark --paging=never";}
           # git config の diff.external = difft を流用 (.gitattributes でファイル型別設定も可)
-          {useExternalDiffGitConfig = true;}
+          {
+            name = "difftastic";
+            useExternalDiffGitConfig = true;
+          }
+          {
+            name = "delta";
+            pager = "delta --dark --paging=never";
+          }
+          # pager なしの素の git diff
+          {name = "plain";}
         ];
       };
-      os = {
-        editPreset = "nvim-remote";
-      };
+      os =
+        {
+          editPreset = "nvim-remote";
+          # lazygit は $SHELL -c でコマンドを実行するため、`:` プロンプトと
+          # customCommands から zsh の関数を呼べるようにする
+          shellFunctionsFile = "${config.xdg.configHome}/zsh/functions.zsh";
+        }
+        // lib.optionalAttrs isWSL {
+          # 本物の clip.exe は UTF-8 を CP932 扱いして文字化けさせるため win32yank に流す
+          copyToClipboardCmd = "printf '%s' {{text}} | win32yank.exe -i";
+          # lazygit は copyToClipboardCmd の有無で貼り付け側も分岐する。
+          # 未設定だと空コマンドを実行してしまうため対で必要
+          readFromClipboardCmd = "win32yank.exe -o --lf";
+          # lazygit の WSL 既定値は powershell.exe を使うが PATH 上に無いため wslview へ
+          open = "wslview {{filename}} >/dev/null";
+          openLink = "wslview {{link}} >/dev/null";
+        };
+      # Nix 管理のため自己更新は不可能
+      update.method = "never";
+      disableStartupPopups = true;
       notARepository = "skip";
       promptToReturnFromSubprocess = false;
       customCommands = [
-        {
-          key = "R";
-          context = "commits";
-          command = "git rebase -i {{.SelectedLocalCommit.Hash}}~1";
-          description = "Interactive rebase from this commit";
-          output = "terminal";
-        }
         {
           key = "F";
           context = "files";
@@ -47,62 +77,41 @@ _: {
           loadingText = "Creating fixup commit...";
         }
         {
-          key = "S";
-          context = "commits";
-          command = "git rebase -i --autosquash {{.SelectedLocalCommit.Hash}}~1";
-          description = "Autosquash fixup commits";
-          output = "terminal";
-        }
-        {
-          key = "O";
-          context = "localBranches";
-          command = "gh pr checkout {{.SelectedLocalBranch.Name}}";
-          description = "Checkout GitHub PR";
-          loadingText = "Checking out PR...";
-        }
-        {
           key = "V";
           context = "localBranches";
           command = "gh pr view --web {{.SelectedLocalBranch.Name}}";
           description = "View PR in browser";
         }
         {
-          key = "Y";
-          context = "localBranches";
-          command = "echo -n {{.SelectedLocalBranch.Name}} | win32yank.exe -i";
-          description = "Copy branch name to clipboard";
-        }
-        {
-          key = "Y";
-          context = "commits";
-          command = "echo -n {{.SelectedLocalCommit.Hash}} | win32yank.exe -i";
-          description = "Copy commit hash to clipboard";
-        }
-        {
-          key = "P";
-          context = "localBranches";
-          command = "git push --force-with-lease origin {{.SelectedLocalBranch.Name}}";
-          description = "Force push with lease";
-          loadingText = "Force pushing...";
-        }
-        {
-          key = "f";
-          context = "remotes";
-          command = "git fetch --prune {{.SelectedRemote.Name}}";
-          description = "Fetch and prune remote";
-          loadingText = "Fetching...";
+          # 組み込みキー (R: reword with editor / O: PR 作成オプション / P: push) を
+          # 奪わないようメニューへ退避。メニュー内は現在の context に合う項目だけ出る
+          key = "<c-g>";
+          description = "Extra commands";
+          commandMenu = [
+            {
+              key = "r";
+              context = "commits";
+              command = "git rebase -i {{.SelectedLocalCommit.Hash}}~1";
+              description = "Interactive rebase from this commit";
+              output = "terminal";
+            }
+            {
+              key = "o";
+              context = "localBranches";
+              command = "gh pr checkout {{.SelectedLocalBranch.Name}}";
+              description = "Checkout GitHub PR";
+              loadingText = "Checking out PR...";
+            }
+            {
+              key = "p";
+              context = "localBranches";
+              command = "git push --force-with-lease origin {{.SelectedLocalBranch.Name}}";
+              description = "Force push with lease";
+              loadingText = "Force pushing...";
+            }
+          ];
         }
       ];
-      keybinding = {
-        universal = {
-          "scrollUpMain-alt1" = "K";
-          "scrollDownMain-alt1" = "J";
-        };
-        commits = {
-          moveDownCommit = "<c-j>";
-          moveUpCommit = "<c-k>";
-        };
-      };
     };
   };
 }

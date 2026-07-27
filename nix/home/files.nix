@@ -3,7 +3,6 @@
   lib,
   config,
   validDotfilesDir,
-  isWSL,
   ...
 }: let
   inherit (pkgs.stdenv) isDarwin;
@@ -246,10 +245,6 @@ in {
     // lib.optionalAttrs (!isDarwin) {
       ".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
       ".docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
-    }
-    // lib.optionalAttrs isWSL {
-      # lazygit WSL 固有設定 (クリップボード連携)
-      ".config/lazygit/config.wsl.yml".source = ../../.config/lazygit/config.wsl.yml;
     }
     # macOS: Biome グローバル設定 (~/Library/Application Support/biome/)
     // lib.optionalAttrs isDarwin {

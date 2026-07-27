@@ -218,10 +218,8 @@ zsh-defer -a +1 +2 -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || 
 
 # lazygit の設定とテーマは catppuccin/nix + programs.lazygit で管理
 # LG_CONFIG_FILE は home.sessionVariables 経由で設定される
-if (( _IS_WSL )); then
-  LG_CONFIG_FILE="${LG_CONFIG_FILE:+$LG_CONFIG_FILE,}$XDG_CONFIG_HOME/lazygit/config.wsl.yml"
-fi
-export LG_CONFIG_FILE
+# (WSL 固有設定も programs.lazygit 側に統合済み。対話シェル以外の起動経路
+#  — herdr のコマンドペイン等 — でも確実に効かせるため)
 
 # ------------------------------------------------------------------------------
 # ls
