@@ -144,9 +144,13 @@ defaultBranch = main
 # difftastic 移行のため delta 連携を無効化 (difftastic はフィルタ非対応, 戻す場合はコメント解除)
 # diffFilter = delta
 
+[merge]
+# コンフリクト時に共通祖先も表示する (diff3 と違い、両側で一致する行は競合領域の外に出る)
+conflictStyle = zdiff3
+
 [pull]
-# プルのデフォルト動作をrebaseに設定し、リモートリポジトリからデータを取得する際、リベースを有効にする
-default = rebase
+# プル時にマージではなくリベースする (rebase.autoStash / updateRefs もこの経路で有効になる)
+rebase = true
 
 [push]
 # プッシュのデフォルト動作をsimpleに設定し、現在のブランチを対応するリモートブランチにプッシュする
@@ -155,12 +159,16 @@ default = simple
 autoSetupRemote = true
 # プッシュ時に、関連するタグも一緒にプッシュする
 followTags = true
+# --force-with-lease 時に、リモートの更新をローカルへ取り込み済みかも検査する
+useForceIfIncludes = true
 
 [rebase]
 # インタラクティブリベース時に、fixup!やsquash!で始まるコミットを自動的に適切な位置に移動
 autoSquash = true
 # リベース前に作業中の変更を一時的にスタッシュし、リベース後に復元する
 autoStash = true
+# インタラクティブリベースで todo の行が消えていたら停止する (意図的に落とす場合は drop を使う)
+missingCommitsCheck = error
 # リベース時に、関連するリファレンスを自動的に更新する
 updateRefs = true
 
@@ -171,5 +179,13 @@ enabled = true
 autoupdate = true
 
 [tag]
-# タグを表示する際、タグを最新のコミット日時順にソートする
-sort = -committerdate
+# タグを表示する際、バージョン番号として降順にソートする (v1.10.0 が v1.9.0 より上にくる)
+sort = -version:refname
+
+[transfer]
+# URL に平文の認証情報が埋め込まれていた場合、警告ではなく失敗させる
+credentialsInUrl = die
+
+[user]
+# user.name / user.email を推測せず、設定ファイルに明示された値だけを使う
+useConfigOnly = true
