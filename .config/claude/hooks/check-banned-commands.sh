@@ -27,14 +27,13 @@ done
 # Between `git` and the subcommand only dash-prefixed global options (and their
 # values, e.g. -C <path>, -c <k=v>, --no-pager) are skipped, so an argument that
 # merely contains "diff" (git commit -m "...diff...") is not matched. difftastic's
-# diff.external mangles captured output unless --no-ext-diff is passed (see
-# CLAUDE.md Git Diffs).
+# diff.external mangles captured output unless --no-ext-diff is passed.
 git_diff_show='^[[:space:]]*git[[:space:]]+(-[^[:space:]]+([[:space:]]+[^-[:space:]][^[:space:]]*)?[[:space:]]+)*(diff|show)([[:space:]]|$)'
 git_log_patch='^[[:space:]]*git[[:space:]]+(-[^[:space:]]+([[:space:]]+[^-[:space:]][^[:space:]]*)?[[:space:]]+)*log[[:space:]]+([^[:space:]]+[[:space:]]+)*(-p|-u|--patch)([[:space:]]|$)'
 while IFS= read -r seg; do
   [[ $seg == *--no-ext-diff* ]] && continue
   if [[ $seg =~ $git_diff_show || $seg =~ $git_log_patch ]]; then
-    echo "Add --no-ext-diff to git diff/show/log -p (difft external diff mangles captured output). See CLAUDE.md Git Diffs." >&2
+    echo "Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out)." >&2
     exit 2
   fi
 done < <(printf '%s\n' "$CMD" | tr ';&|()' '\n')
