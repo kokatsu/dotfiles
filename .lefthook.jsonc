@@ -57,31 +57,14 @@
         "run": "markdownlint {staged_files}"
       },
       "editorconfig": {
-        "exclude": [
-          "*.png",
-          "*.jpg",
-          "*.jpeg",
-          "*.gif",
-          "*.webp",
-          "*.ico",
-          ".config/tmux/plugins/**/*",
-          ".config/claude/plugins/**/*"
-        ],
+        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "editorconfig-checker {staged_files}"
       },
       "gitleaks": {
         "run": "gitleaks protect --staged --no-banner"
       },
       "typos": {
-        "exclude": [
-          "*.png",
-          "*.jpg",
-          "*.jpeg",
-          "*.gif",
-          "*.webp",
-          "*.ico",
-          ".config/tmux/plugins/**/*"
-        ],
+        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "typos {staged_files}"
       }
     }
@@ -133,31 +116,14 @@
         "run": "markdownlint {push_files}"
       },
       "editorconfig": {
-        "exclude": [
-          "*.png",
-          "*.jpg",
-          "*.jpeg",
-          "*.gif",
-          "*.webp",
-          "*.ico",
-          ".config/tmux/plugins/**/*",
-          ".config/claude/plugins/**/*"
-        ],
+        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "editorconfig-checker {push_files}"
       },
       "gitleaks": {
         "run": "gitleaks detect --no-banner --redact"
       },
       "typos": {
-        "exclude": [
-          "*.png",
-          "*.jpg",
-          "*.jpeg",
-          "*.gif",
-          "*.webp",
-          "*.ico",
-          ".config/tmux/plugins/**/*"
-        ],
+        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "typos {push_files}"
       }
     }
