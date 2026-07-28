@@ -1,7 +1,6 @@
 # Dotfiles task runner
 
 lua_dirs := ".config/nvim .config/wezterm"
-sh_files := ".codex/hooks/*.sh .config/claude/file-suggestion.sh .config/claude/hooks/*.sh .config/tmux/scripts/*.sh bin/daily bin/memo scripts/test-hash-patterns.sh scripts/sync-flake-inputs.sh"
 deno_dirs := "karabiner-config scripts"
 deno_files := ".config/zeno/config.ts"
 
@@ -10,16 +9,19 @@ default:
     @just --list
 
 # Run all checks
-check: fmt-check lint typos nix-eval
+check: check-static nix-eval
+
+# Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
+check-static: fmt-check lint typos
 
 # Run all formatters
-fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt
+fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt
 
 # Check all formatting (no write)
-fmt-check: lua-fmt-check nix-fmt-check biome-fmt-check deno-fmt-check shfmt-check
+fmt-check: lua-fmt-check nix-fmt-check biome-fmt-check deno-fmt-check shfmt-check toml-fmt-check yaml-fmt-check
 
 # Run all linters
-lint: nix-lint nix-dead-code lua-lint shellcheck deno-lint deno-check biome-lint editorconfig
+lint: nix-lint nix-dead-code lua-lint shellcheck deno-lint deno-check biome-lint markdownlint toml-check editorconfig
 
 # Format Lua files
 lua-fmt:
@@ -102,17 +104,49 @@ deno-check:
       deno check "$file"; \
     done
 
+# List git-tracked shell scripts (shfmt -f detects them by extension or shebang)
+# 手書きのリストだと拡張子なしの bin/* や新規ディレクトリのスクリプトを取りこぼすため動的に列挙する。
+# 除外: *.zsh は shfmt/shellcheck 非対応 (lefthook の zsh-lint が `zsh -n` で見る)、
+# wezterm-integration.sh は WezTerm 由来の vendored ファイル。
+_sh-files:
+    @git ls-files -z | xargs -0 shfmt -f \
+      | grep -v -e '\.zsh$' -e '^\.config/zsh/wezterm-integration\.sh$'
+
 # Lint shell scripts
 shellcheck:
-    shellcheck {{ sh_files }}
+    @just _sh-files | xargs shellcheck
 
 # Format shell scripts
 shfmt:
-    shfmt -w {{ sh_files }}
+    @just _sh-files | xargs shfmt -w
 
 # Check shell script formatting (no write)
 shfmt-check:
-    shfmt -d {{ sh_files }}
+    @just _sh-files | xargs shfmt -d
+
+# Lint Markdown files (除外は .markdownlintignore が担う)
+markdownlint:
+    @git ls-files -z '*.md' | xargs -0 markdownlint
+
+# Format TOML files
+toml-fmt:
+    @git ls-files -z '*.toml' | xargs -0 taplo format
+
+# Check TOML formatting (no write)
+toml-fmt-check:
+    @git ls-files -z '*.toml' | xargs -0 taplo format --check
+
+# Validate TOML documents
+toml-check:
+    @git ls-files -z '*.toml' | xargs -0 taplo check
+
+# Format YAML files
+yaml-fmt:
+    @git ls-files -z '*.yml' '*.yaml' | xargs -0 yamlfmt
+
+# Check YAML formatting (no write)
+yaml-fmt-check:
+    @git ls-files -z '*.yml' '*.yaml' | xargs -0 yamlfmt -lint
 
 # Check EditorConfig compliance
 editorconfig:

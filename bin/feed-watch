@@ -27,7 +27,7 @@ get_status_dir() {
   for d in /mnt/c/Users/*/; do
     base=$(basename "$d")
     case "$base" in
-      Public|Default|"Default User"|"All Users") continue ;;
+    Public | Default | "Default User" | "All Users") continue ;;
     esac
     echo "${d}.cache/feed-watch"
     return
@@ -36,13 +36,16 @@ get_status_dir() {
   return 1
 }
 
-STATUS_DIR=$(get_status_dir) || { echo "Windows mount not available, skipping." >&2; exit 0; }
+STATUS_DIR=$(get_status_dir) || {
+  echo "Windows mount not available, skipping." >&2
+  exit 0
+}
 STATUS_FILE="$STATUS_DIR/status.json"
 
 ensure_status_file() {
   mkdir -p "$STATUS_DIR"
   if [[ ! -f "$STATUS_FILE" ]]; then
-    echo '{"feeds":{}}' > "$STATUS_FILE"
+    echo '{"feeds":{}}' >"$STATUS_FILE"
   fi
 }
 
@@ -90,9 +93,9 @@ update_feed_status() {
         break
       fi
       ((new_count++))
-    done <<< "$ids"
+    done <<<"$ids"
 
-    local total_unread=$(( prev_unread + new_count ))
+    local total_unread=$((prev_unread + new_count))
 
     echo "$status" | jq \
       --arg name "$name" --arg id "$latest_id" --arg type "$type" --arg url "$url" --arg category "$category" \
@@ -167,7 +170,7 @@ parse_opml() {
 cmd_check() {
   ensure_status_file
 
-  if ! compgen -G "$OPML_DIR/feeds*.opml" > /dev/null; then
+  if ! compgen -G "$OPML_DIR/feeds*.opml" >/dev/null; then
     echo "No OPML files matching $OPML_DIR/feeds*.opml" >&2
     exit 1
   fi
@@ -195,7 +198,7 @@ cmd_check() {
     fi
   done < <(parse_opml)
 
-  echo "$status" | jq --argjson ts "$(date +%s)" '.last_updated = $ts' > "$STATUS_FILE"
+  echo "$status" | jq --argjson ts "$(date +%s)" '.last_updated = $ts' >"$STATUS_FILE"
 }
 
 # --- read サブコマンド ---
@@ -241,7 +244,7 @@ cmd_read() {
     while IFS=$'\t' read -r _count name _category; do
       status=$(echo "$status" | jq --arg name "$name" \
         '.feeds[$name].unread_count = 0')
-    done <<< "$selected"
+    done <<<"$selected"
   else
     # 部分一致で検索
     local matched
@@ -257,15 +260,15 @@ cmd_read() {
       '.feeds[$name].unread_count = 0')
   fi
 
-  echo "$status" | jq . > "$STATUS_FILE"
+  echo "$status" | jq . >"$STATUS_FILE"
 }
 
 # --- メイン ---
 case "${1:-}" in
-  check) cmd_check ;;
-  read)  cmd_read "${2:-}" ;;
-  *)
-    echo "Usage: feed-watch {check|read [--all|<name>]}" >&2
-    exit 1
-    ;;
+check) cmd_check ;;
+read) cmd_read "${2:-}" ;;
+*)
+  echo "Usage: feed-watch {check|read [--all|<name>]}" >&2
+  exit 1
+  ;;
 esac
