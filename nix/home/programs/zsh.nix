@@ -91,6 +91,13 @@
       # $ZDOTDIR/.zshenv - Nix環境とZDOTDIR設定
       # ~/.zshenv は使用せず、$ZDOTDIR/.zshenv に全ての設定を集約
       "${config.xdg.configHome}/zsh/.zshenv".text = ''
+        # PATH/fpath の重複を排除 (先勝ち = 優先度の高い方を残す)
+        # 下の hm-session-vars 再 source と nix-profile prepend、config.d/*.zsh の
+        # 無条件 PATH 追加により、シェルをネストするたび PATH が 1 階層 +16 で
+        # 増殖する (herdr → tmux → Claude Code → シェル で顕著)。
+        # 非対話シェルでも効かせたいので .zshrc ではなく .zshenv の先頭に置く。
+        typeset -gU path fpath PATH
+
         # /etc/zshrcをスキップ (nix-darwinが生成するcompinit呼び出しを回避)
         # Zimfwのcompletionモジュールが補完を管理する
         export NOSYSZSHRC=1
