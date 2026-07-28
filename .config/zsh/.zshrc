@@ -80,6 +80,12 @@ zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-syntax-highlighting/zsh-syntax
 zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-history-substring-search/zsh-history-substring-search.zsh
 zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-autosuggestions/zsh-autosuggestions.zsh
 
+# ↑↓ を substring 検索に割り当てる (プラグイン側は bindkey を一切設定しないため、
+# 未指定だと zim input モジュールの up/down-line-or-history のままロードだけされる)
+# ^[[A/^[[B は通常モード、^[OA/^[OB は application cursor モード (WezTerm)
+zsh-defer -a +1 +2 -c 'bindkey "^[[A" history-substring-search-up; bindkey "^[OA" history-substring-search-up'
+zsh-defer -a +1 +2 -c 'bindkey "^[[B" history-substring-search-down; bindkey "^[OB" history-substring-search-down'
+
 # ------------------------------------------------------------------------------
 # zeno.zsh (https://github.com/yuki-yano/zeno.zsh)
 # ------------------------------------------------------------------------------
@@ -106,6 +112,13 @@ zsh-defer -a +1 +2 -c 'bindkey "^x^m" accept-line'
 
 # Emacs キーバインドを使用（vi モードを無効化）
 bindkey -e
+
+# 単語区切りから / . = を外し、Ctrl+W / Alt+B などをパス構成要素単位で効かせる
+# (デフォルトの WORDCHARS は / を含むため Ctrl+W がパス全体を消してしまう)
+WORDCHARS=${WORDCHARS//[\/.=]}
+
+# Ctrl+S / Ctrl+Q によるフロー制御を無効化 (誤爆でターミナルが固まるのを防ぐ)
+unsetopt flow_control
 
 # ------------------------------------------------------------------------------
 # Zsh
@@ -138,10 +151,10 @@ zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-mise-*.sh(Nom[1]));
 # History file
 export HISTFILE="$ZDOTDIR/.zsh_history"
 # History size
-export HISTSIZE=10000
+export HISTSIZE=50000
 # Save history
-export SAVEHIST=10000
-# Ignore duplicate commands
+export SAVEHIST=50000
+# Ignore duplicate commands (hist_ignore_all_dups に包含されるため実質冗長)
 setopt hist_ignore_dups
 # Ignore all duplicate commands
 setopt hist_ignore_all_dups
@@ -149,6 +162,15 @@ setopt hist_ignore_all_dups
 setopt hist_reduce_blanks
 # Share history
 setopt share_history
+# 履歴に実行時刻と所要時間を記録する (fc -li で参照可能)
+setopt extended_history
+# 保存時にも重複を除去する
+setopt hist_save_no_dups
+# history / fc コマンド自体は履歴に残さない
+setopt hist_no_store
+# 履歴ファイルの読み書きを fcntl でロックする
+# share_history + 多ペイン同時書き込み (herdr / tmux) での破損を防ぐ
+setopt hist_fcntl_lock
 # Disable beep
 setopt no_beep
 
