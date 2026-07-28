@@ -21,10 +21,13 @@ permissions:
   contents: read
 
 jobs:
-  format:
+  lint:
+    # NOTE: name は main の ruleset が required status check の context
+    # (`Check / Format check`) として参照しているため変更しない。実際の中身は
+    # フォーマット確認だけでなく lint / typos まで含む (`just check-static`)。
     name: Format check
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -34,8 +37,14 @@ jobs:
       - uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
         with:
           name: kokatsu
-      - name: Check formatting
-        run: nix fmt -- --check .
+      - name: Run all static checks
+        # Backstop for the lefthook pre-commit/pre-push gate, which can be bypassed
+        # with --no-verify, and for errors that otherwise surface only when the hooks
+        # run at session runtime. Runs the justfile recipe inside the devShell, so the
+        # justfile stays the single source of truth for *what* is checked and the
+        # flake for *which tool versions* do the checking.
+        # nix-eval は含めない (build job の `nix flake check` が同じ評価をするため)。
+        run: nix develop --command just check-static
 
   hash-patterns:
     name: Hash update patterns
@@ -51,40 +60,6 @@ jobs:
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
       - name: Verify Renovate regex patterns match overlay files
         run: deno run --allow-read scripts/test-renovate-patterns.ts
-
-  shellcheck:
-    name: Shellcheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.ref }}
-          persist-credentials: false
-      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
-      - name: Run shellcheck
-        # Backstop for the lefthook pre-commit/pre-push gate, which can be bypassed
-        # with --no-verify. Runs the justfile recipe so `sh_files` stays the single
-        # source of truth; tools are pinned via flake.lock (--inputs-from).
-        run: nix shell --inputs-from . nixpkgs#just nixpkgs#shellcheck --command just shellcheck
-
-  deno-check:
-    name: Deno check
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.ref }}
-          persist-credentials: false
-      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
-      - name: Type-check Deno TypeScript
-        # Backstop for the Lefthook pre-commit/pre-push gate (bypassable with
-        # --no-verify) and for type errors that otherwise surface only when these
-        # hooks run at session runtime. Runs the justfile recipe so
-        # `deno_dirs`/`deno_files` stay the single source of truth; tools are
-        # pinned via flake.lock (--inputs-from).
-        run: nix shell --inputs-from . nixpkgs#just nixpkgs#deno --command just deno-check
 
   npm-audit:
     name: npm audit

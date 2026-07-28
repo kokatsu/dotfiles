@@ -124,9 +124,15 @@
       import nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        # statixの現行nixpkgs derivationはsnapshot testだけが壊れているため、
-        # Home Managerと同じ回避策を開発・静的解析環境にも適用する。
-        overlays = [customOverlays.statix-no-check];
+        overlays = [
+          # statixの現行nixpkgs derivationはsnapshot testだけが壊れているため、
+          # Home Managerと同じ回避策を開発・静的解析環境にも適用する。
+          customOverlays.statix-no-check
+          # biomeはoverlayでリリースをpinしている。nixpkgs版とはバージョンが
+          # ずれるため、devShell(=CIのlint job)でもoverlay版を使い、手元の
+          # Home Manager profileと同じ整形結果になるようにする。
+          customOverlays.biome
+        ];
       });
 
     # 共通オーバーレイ (全プラットフォーム)
@@ -308,15 +314,42 @@
     devShells = forAllSystems (system: let
       pkgs = devPkgs.${system};
     in {
+      # `just check-static` が必要とするツールを全て揃える。CI の lint job は
+      # `nix develop --command just check-static` でこのシェルを使うため、
+      # ここが手元と CI の lint ツールチェーンの single source of truth になる。
       default = pkgs.mkShell {
         packages = with pkgs; [
           neovim # Plugin smoke tests
           nil # Nix LSP
           nixd # Alternative Nix LSP
+          just # Task runner
+          git # just の _sh-files がファイル列挙に使う
+
+          # Nix
           alejandra # Nix formatter
           deadnix # Nix dead code finder
-          just # Task runner
           statix # Nix linter
+
+          # Lua
+          stylua # Lua formatter
+          selene # Lua linter
+
+          # Shell
+          shellcheck # シェルスクリプト linter
+          shfmt # シェルスクリプト formatter
+
+          # Web / TypeScript
+          biome # formatter + linter
+          deno # fmt / lint / check
+
+          # Markup / config
+          markdownlint-cli # Markdown linter
+          taplo # TOML formatter + linter
+          yamlfmt # YAML formatter
+
+          # Cross-cutting
+          editorconfig-checker # EditorConfig 準拠チェッカー
+          typos # タイポ検出
         ];
       };
     });
