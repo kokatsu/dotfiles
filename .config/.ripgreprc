@@ -8,13 +8,31 @@
 --no-ignore
 
 # Exclude directories.
---glob=!{.anyenv,.bun,.bundle,.cache,.cargo,.git,.vite,asset.*,debug,dist,node_modules,public,storybook-static,target,tmp,Trash,vendor}
+--glob=!.anyenv
+--glob=!.bun
+--glob=!.bundle
+--glob=!.cache
+--glob=!.cargo
+--glob=!.git
+--glob=!.vite
+--glob=!asset.*
+--glob=!debug
+--glob=!dist
+--glob=!node_modules
+--glob=!public
+--glob=!result
+--glob=!storybook-static
+--glob=!target
+--glob=!tmp
+--glob=!Trash
+--glob=!vendor
 
 # Exclude file types.
---glob=!*.{lock,log}
+--glob=!*.lock
+--glob=!*.log
 
 # Exclude files.
---glob=!{package-lock.json}
+--glob=!package-lock.json
 
 # Don't print lines longer than this limit.
 --max-columns=10000
