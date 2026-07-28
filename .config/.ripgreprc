@@ -37,11 +37,16 @@
 # Don't print lines longer than this limit.
 --max-columns=10000
 
+# Show a preview of suppressed long lines instead of hiding them entirely.
+--max-columns-preview
+
 # Searches case insensitively.
 --smart-case
 
-# Sort by file path.
---sort=path
+# NOTE: --sort=path はここには置かない。RIPGREP_CONFIG_PATH は Neovim の picker や
+# fzf / zeno から呼ばれる rg にも効き、--sort は常に単一スレッド実行を強制するため
+# (`man rg` の --sort 参照)。picker 側は独自に並べ替えるので恩恵もない。
+# 素の rg でソートしたいときは zsh の `rgs` 関数を使う (.config/zsh/functions.zsh)。
 
 # Configure color settings and styles.
 ## #89b4fa
