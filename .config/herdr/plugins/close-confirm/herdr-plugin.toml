@@ -1,0 +1,18 @@
+# close-pane-confirm.sh から必要時のみ呼び出される確認 UI。
+# plugin link は symlink を実体解決して plugin_root が /nix/store になるため
+# Home Manager では配置せず、初回のみリポジトリのチェックアウト実パスを直接登録する:
+#   herdr plugin link <dotfiles>/.config/herdr/plugins/close-confirm
+id = "kokatsu.close-confirm"
+name = "Close Pane Confirm"
+version = "0.1.0"
+min_herdr_version = "0.7.5"
+description = "エージェント稼働中のペインを閉じる前に確認する"
+platforms = ["linux", "macos"]
+
+[[panes]]
+id = "confirm"
+title = "ペインを閉じる確認"
+command = ["bash", "confirm.sh"]
+placement = "popup"
+width = "50%"
+height = 8

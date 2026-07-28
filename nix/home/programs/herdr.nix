@@ -25,7 +25,7 @@ in {
   #   (mac.lua で send_composed_key_* = false)
   # 明示していないキーは herdr デフォルト (split_vertical=prefix+v,
   # split_horizontal=prefix+minus, settings=prefix+s, zoom=prefix+z,
-  # close_pane=prefix+x, switch_tab=prefix+1..9, workspace_picker=prefix+w,
+  # switch_tab=prefix+1..9, workspace_picker=prefix+w,
   # new_worktree=prefix+shift+g, edit_scrollback=prefix+e,
   # open_notification_target=prefix+o 等) を継承。
   #
@@ -54,6 +54,9 @@ in {
       [keys]
       prefix = "ctrl+space"
       new_tab = "prefix+t"
+      # prefix+x は close-pane-confirm.sh (custom command) に譲る。
+      # 無効化しないとデフォルトの close_pane が勝ち custom command 側が捨てられる
+      close_pane = ""
       focus_pane_left = "alt+left"
       focus_pane_down = "alt+down"
       focus_pane_up = "alt+up"
@@ -67,6 +70,16 @@ in {
       switch_ascii_input_source_in_prefix = true
       reveal_hidden_cursor_for_cjk_ime = true
       cjk_ime_agents = ["claude", "codex"]
+
+      # close_pane の置き換え。エージェントが idle (緑) 以外なら close-confirm
+      # プラグインの popup 確認画面を開く (prefix+z 押し間違いによる稼働中
+      # エージェントの喪失防止)。popup 型 custom command は即閉じパスでも一瞬
+      # 描画されるため、shell 型 + 必要時のみ plugin pane open の構成
+      [[keys.command]]
+      key = "prefix+x"
+      type = "shell"
+      command = "${scriptsDir}/close-pane-confirm.sh"
+      description = "ペインを閉じる (エージェント稼働中は確認)"
 
       # 現在のペインを左上として、左右 1:1、左上下 3:1、右上下 1:1 に分割
       [[keys.command]]
@@ -154,5 +167,13 @@ in {
       source = ../../../.config/herdr/scripts/four-pane-layout.sh;
       executable = true;
     };
+    ".config/herdr/scripts/close-pane-confirm.sh" = {
+      source = ../../../.config/herdr/scripts/close-pane-confirm.sh;
+      executable = true;
+    };
+    # close-confirm プラグイン (.config/herdr/plugins/close-confirm) は
+    # home.file で配置しない: plugin link が symlink を解決して plugin_root が
+    # /nix/store になり confirm.sh を見失うため。初回のみリポジトリの実パスを
+    # `herdr plugin link <dotfiles>/.config/herdr/plugins/close-confirm` で登録する
   };
 }
