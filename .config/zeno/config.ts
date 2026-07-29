@@ -78,10 +78,10 @@ export default defineConfig(({ env }) => {
       snippet: "devcontainer up --workspace-folder .",
     },
     {
-      name: "devcontainer up (recreate)",
+      name: "devcontainer up (rebuild)",
       keyword: "dcur",
       snippet:
-        "devcontainer up --workspace-folder . --remove-existing-container",
+        "devcontainer up --workspace-folder . --remove-existing-container --build-no-cache",
     },
     {
       name: "devcontainer exec",
