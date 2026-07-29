@@ -91,13 +91,14 @@ export default defineConfig(({ env }) => {
     {
       name: "devcontainer claude",
       keyword: "dcc",
-      snippet: "devcontainer exec --workspace-folder . claude",
+      snippet:
+        "HERDR_AGENT=claude devcontainer exec --workspace-folder . claude",
     },
     {
       name: "devcontainer claude (skip permissions)",
       keyword: "dcy",
       snippet:
-        "devcontainer exec --workspace-folder . claude --dangerously-skip-permissions",
+        "HERDR_AGENT=claude devcontainer exec --workspace-folder . claude --dangerously-skip-permissions",
     },
 
     // -------------------------------------------------------------------------
