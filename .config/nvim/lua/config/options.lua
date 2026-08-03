@@ -14,17 +14,21 @@ vim.opt.mouse = 'a'
 -- クリップボードはyank時のみ同期（autocmds.luaで制御）
 vim.opt.clipboard = ''
 
--- WSL2環境でwin32yankを使用（wl-copyのprimary selection問題を回避）
-if os_utils.detect_os() == 'wsl' and vim.fn.executable('win32yank.exe') == 1 then
+-- WSL2環境ではxselを使用。WSLgがXクリップボードとWindowsクリップボードを
+-- 双方向同期するため、win32yank.exeを経由しなくてもWindows側と共有できる。
+-- win32yank.exeはWindowsプロセスの起動コスト(実測462ms)がyank/paste毎にかかり、
+-- xsel(実測6ms)との差がそのまま体感のもたつきになる。
+-- wl-copyはprimary selectionの扱いに問題があるため使わない。
+if os_utils.detect_os() == 'wsl' and vim.fn.executable('xsel') == 1 then
   vim.g.clipboard = {
-    name = 'win32yank-wsl',
+    name = 'xsel-wslg',
     copy = {
-      ['+'] = 'win32yank.exe -i --crlf',
-      ['*'] = 'win32yank.exe -i --crlf',
+      ['+'] = 'xsel -ib',
+      ['*'] = 'xsel -ib',
     },
     paste = {
-      ['+'] = 'win32yank.exe -o --lf',
-      ['*'] = 'win32yank.exe -o --lf',
+      ['+'] = 'xsel -ob',
+      ['*'] = 'xsel -ob',
     },
     cache_enabled = 0,
   }

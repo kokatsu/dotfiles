@@ -220,10 +220,16 @@ local os_utils = require('utils.os')
 -- WSLの場合はInsertモードから離れる時にzenhanを実行
 local os_name = os_utils.detect_os()
 local group = vim.api.nvim_create_augroup('kyoh86-conf-ime', {})
+-- `!zenhan 0` は同期実行でWindowsプロセスの起動を待つため、ESCの度に
+-- 実測212msブロックする。IMEを戻す動作は維持したまま非同期に投げる。
 if os_name == 'wsl' then
   vim.api.nvim_create_autocmd('InsertLeave', {
     group = group,
-    command = 'silent! !zenhan 0',
+    callback = function()
+      if vim.fn.executable('zenhan') == 1 then
+        vim.system({ 'zenhan', '0' }, { detach = true })
+      end
+    end,
   })
 end
 
