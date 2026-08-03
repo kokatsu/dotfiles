@@ -90,6 +90,13 @@ in {
       command = "${scriptsDir}/four-pane-layout.sh"
       description = "4ペイン作業レイアウト"
 
+      # tmux の break-pane (prefix+!) と同じく、現在のペインを新しいタブへ移動
+      [[keys.command]]
+      key = "prefix+!"
+      type = "shell"
+      command = "${scriptsDir}/move-pane-to-new-tab.sh"
+      description = "現在のペインを新しいタブへ移動"
+
       [[keys.command]]
       key = "alt+v"
       type = "pane"
@@ -167,6 +174,10 @@ in {
     };
     ".config/herdr/scripts/four-pane-layout.sh" = {
       source = ../../../.config/herdr/scripts/four-pane-layout.sh;
+      executable = true;
+    };
+    ".config/herdr/scripts/move-pane-to-new-tab.sh" = {
+      source = ../../../.config/herdr/scripts/move-pane-to-new-tab.sh;
       executable = true;
     };
     ".config/herdr/scripts/close-pane-confirm.sh" = {
