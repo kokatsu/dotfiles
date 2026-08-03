@@ -35,6 +35,8 @@ in {
     ".config/herdr/config.toml".text = let
       scriptsDir = "${config.xdg.configHome}/herdr/scripts";
     in ''
+      onboarding = false
+
       [theme]
       name = "${names.kebab}"
 
