@@ -419,6 +419,10 @@ in {
       bubblewrap # サンドボックスツール (Codex CLI 用)
       # https://github.com/inotify-tools/inotify-tools
       inotify-tools # ファイルシステムイベント監視
+      # https://github.com/kfish/xsel
+      # WSLg が X クリップボードと Windows クリップボードを双方向同期するため、
+      # WSL でも win32yank.exe (Windows プロセス起動で実測 462ms) の代わりに使える (実測 9ms)
+      xsel # X セレクション操作
       # https://github.com/strace/strace
       strace # システムコールトレーサ
       # https://valgrind.org

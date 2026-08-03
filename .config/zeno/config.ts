@@ -143,7 +143,9 @@ export default defineConfig(({ env }) => {
     snippets.push({
       name: "copy (WSL)",
       keyword: "copy",
-      snippet: "win32yank.exe -i",
+      // WSLg が X クリップボードと Windows クリップボードを双方向同期するため、
+      // win32yank.exe (Windows プロセス起動で実測 462ms) ではなく xsel (実測 9ms) を使う
+      snippet: "xsel -ib",
     });
   }
 

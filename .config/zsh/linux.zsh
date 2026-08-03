@@ -34,8 +34,10 @@ if (( _IS_WSL )); then
   export WEZTERM_HOSTNAME="$(< /proc/sys/kernel/hostname)"
 
   # fzf: Ctrl+Y で選択行を Windows クリップボードへコピー
+  # WSLg が X クリップボードと Windows クリップボードを双方向同期するため xsel で届く。
+  # win32yank.exe は UTF-8 は扱えるが Windows プロセスの起動に実測 462ms かかる (xsel は 9ms)
   # FZF_DEFAULT_OPTS は fzf 側でシェル風に分割されるため、空白・|・() を含む bind 値はシングルクォート必須
-  export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }--bind='ctrl-y:execute-silent(echo -n {} | win32yank.exe -i)'"
+  export FZF_DEFAULT_OPTS="${FZF_DEFAULT_OPTS:+$FZF_DEFAULT_OPTS }--bind='ctrl-y:execute-silent(echo -n {} | xsel -ib)'"
 
   # https://blog.adglobe.co.jp/entry/2024/07/31/100000
   if [[ ! -f /tmp/.mtu_1400_set ]]; then

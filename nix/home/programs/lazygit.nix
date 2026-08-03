@@ -54,11 +54,14 @@
           shellFunctionsFile = "${config.xdg.configHome}/zsh/functions.zsh";
         }
         // lib.optionalAttrs isWSL {
-          # 本物の clip.exe は UTF-8 を CP932 扱いして文字化けさせるため win32yank に流す
-          copyToClipboardCmd = "printf '%s' {{text}} | win32yank.exe -i";
+          # 本物の clip.exe は UTF-8 を CP932 扱いして文字化けさせるため使わない。
+          # win32yank.exe は UTF-8 を扱えるが Windows プロセスの起動に実測 462ms かかる。
+          # WSLg が X クリップボードと Windows クリップボードを双方向同期するので、
+          # xsel (実測 9ms) でも同じ宛先に UTF-8 のまま届く。
+          copyToClipboardCmd = "printf '%s' {{text}} | xsel -ib";
           # lazygit は copyToClipboardCmd の有無で貼り付け側も分岐する。
           # 未設定だと空コマンドを実行してしまうため対で必要
-          readFromClipboardCmd = "win32yank.exe -o --lf";
+          readFromClipboardCmd = "xsel -ob";
           # lazygit の WSL 既定値は powershell.exe を使うが PATH 上に無いため wslview へ
           open = "wslview {{filename}} >/dev/null";
           openLink = "wslview {{link}} >/dev/null";
