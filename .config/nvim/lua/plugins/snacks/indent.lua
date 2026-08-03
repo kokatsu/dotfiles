@@ -15,8 +15,10 @@ M.opts = {
       'SnacksIndent8',
     },
   },
+  -- インデントガイド自体は残し、スコープが変わる度に走る 200ms の
+  -- アニメーションだけ止める (duration は再度有効にするときのために残す)。
   animate = {
-    enabled = true,
+    enabled = false,
     duration = {
       step = 10,
       total = 200,

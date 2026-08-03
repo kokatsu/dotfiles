@@ -2,6 +2,10 @@ local M = {}
 
 --- @type snacks.scroll.Config
 M.opts = {
+  -- スクロールの度に total=200ms のアニメーションを待つことになり、
+  -- 体感の遅延として積み上がるため無効化。
+  -- 以下の animate / animate_repeat は再度有効にするときのために残す。
+  enabled = false,
   animate = {
     duration = { step = 10, total = 200 },
     easing = 'linear',
