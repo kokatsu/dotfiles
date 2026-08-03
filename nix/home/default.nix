@@ -153,6 +153,10 @@ in {
         CODEX_HOME = "${config.xdg.configHome}/codex";
         HERMES_HOME = "${config.xdg.configHome}/hermes";
         TAPLO_CONFIG = "${config.xdg.configHome}/taplo/taplo.toml";
+        # zeno (@db/sqlite) が実行時に取得する upstream プリビルトの libsqlite3 は
+        # deno 2.9.4 上で segfault し、zeno-server が socket を作れず起動に失敗する。
+        # nixpkgs の libsqlite3 を使わせる。
+        DENO_SQLITE_PATH = "${pkgs.sqlite.out}/lib/libsqlite3${pkgs.stdenv.hostPlatform.extensions.sharedLibrary}";
         CATPPUCCIN_VIVID_THEME = "catppuccin-${config.catppuccin.flavor}";
         CC_STATUSLINE_THEME = "catppuccin-${config.catppuccin.flavor}";
         CATPPUCCIN_NVIM_FLAVOR = config.catppuccin.flavor;
