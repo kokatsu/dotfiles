@@ -184,9 +184,10 @@ in {
       source = ../../../.config/herdr/scripts/close-pane-confirm.sh;
       executable = true;
     };
-    # close-confirm プラグイン (.config/herdr/plugins/close-confirm) は
-    # home.file で配置しない: plugin link が symlink を解決して plugin_root が
-    # /nix/store になり confirm.sh を見失うため。初回のみリポジトリの実パスを
-    # `herdr plugin link <dotfiles>/.config/herdr/plugins/close-confirm` で登録する
+    # .config/herdr/plugins/ 配下のプラグインは home.file で配置しない:
+    # plugin link が symlink を解決して plugin_root が /nix/store になり、
+    # スクリプト本体を見失うため。初回のみリポジトリの実パスを直接登録する:
+    #   herdr plugin link <dotfiles>/.config/herdr/plugins/close-confirm
+    #   herdr plugin link <dotfiles>/.config/herdr/plugins/tab-numbers
   };
 }
