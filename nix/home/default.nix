@@ -42,6 +42,7 @@ in {
     ./packages.nix
     ./files.nix
     ./activation.nix
+    ./nix.nix
     ./programs/bat.nix
     ./programs/broot.nix
     ./programs/btop.nix
