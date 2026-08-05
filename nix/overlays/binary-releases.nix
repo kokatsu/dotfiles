@@ -191,10 +191,10 @@ in {
     # ため汎用 prefetch ループの対象外。更新は pr.yml の個別ステップが担う。
     hashSource = "sha256sums";
     hashes = {
-      "aarch64-darwin" = "sha256-zZYbSA9t/EcDvSRGAfGScjH6MaWHy5BGzN/6bEwp59U=";
-      "x86_64-darwin" = "sha256-9y9atxcp6QuOhjQ+kZnA96fuu8pdax/Ez82vNaPltkE=";
-      "aarch64-linux" = "sha256-xuso7Bm7VhW2DmeHFl7yhIJIHCziYX2lZbg+WRvETBM=";
-      "x86_64-linux" = "sha256-PIkSWvHXyYq+yL61USku+Z2spS4gTlhSqROf6uLEZ+U=";
+      "aarch64-darwin" = "sha256-oL44WXLzjQLoH5tA3h+ELa+DVGNvwpVma4Yw0valrsY=";
+      "x86_64-darwin" = "sha256-W2HkR7qhR0fh6mrRCtj8ofjvDV4R9TyoihRL9SzxLgY=";
+      "aarch64-linux" = "sha256-pysr033Wns539VhKQYvDTs+kso52lycTSh1gS0srjl8=";
+      "x86_64-linux" = "sha256-Fdm2qqR+4CdDJmWB+KuWtgSeOioTqC+9eSB0W6n8NMs=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
