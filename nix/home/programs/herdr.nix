@@ -90,6 +90,45 @@ in {
       command = "${scriptsDir}/four-pane-layout.sh"
       description = "4ペイン作業レイアウト"
 
+      # 新しいペインを全高の左列として追加し、既存ペインを右列で上下 1:1 に分割する。
+      [[keys.command]]
+      key = "prefix+left"
+      type = "shell"
+      command = "${scriptsDir}/three-pane-layout.sh full-left"
+      description = "3ペイン作業レイアウト (左を全高)"
+
+      # 既存ペインを左列で上下 1:1 に配置し、新しいペインを全高の右列にする。
+      [[keys.command]]
+      key = "prefix+right"
+      type = "shell"
+      command = "${scriptsDir}/three-pane-layout.sh full-right"
+      description = "3ペイン作業レイアウト (右を全高)"
+
+      # 選択中のペインを指定方向の隣接ペインと入れ替える。
+      [[keys.command]]
+      key = "prefix+shift+left"
+      type = "shell"
+      command = "${scriptsDir}/swap-pane.sh left"
+      description = "ペインを左と入れ替え"
+
+      [[keys.command]]
+      key = "prefix+shift+down"
+      type = "shell"
+      command = "${scriptsDir}/swap-pane.sh down"
+      description = "ペインを下と入れ替え"
+
+      [[keys.command]]
+      key = "prefix+shift+up"
+      type = "shell"
+      command = "${scriptsDir}/swap-pane.sh up"
+      description = "ペインを上と入れ替え"
+
+      [[keys.command]]
+      key = "prefix+shift+right"
+      type = "shell"
+      command = "${scriptsDir}/swap-pane.sh right"
+      description = "ペインを右と入れ替え"
+
       # tmux の break-pane (prefix+!) と同じく、現在のペインを新しいタブへ移動
       [[keys.command]]
       key = "prefix+!"
@@ -174,6 +213,14 @@ in {
     };
     ".config/herdr/scripts/four-pane-layout.sh" = {
       source = ../../../.config/herdr/scripts/four-pane-layout.sh;
+      executable = true;
+    };
+    ".config/herdr/scripts/three-pane-layout.sh" = {
+      source = ../../../.config/herdr/scripts/three-pane-layout.sh;
+      executable = true;
+    };
+    ".config/herdr/scripts/swap-pane.sh" = {
+      source = ../../../.config/herdr/scripts/swap-pane.sh;
       executable = true;
     };
     ".config/herdr/scripts/move-pane-to-new-tab.sh" = {
