@@ -14,18 +14,35 @@
       source = ../../../.config/codex/herdr-agent-state.sh;
       executable = true;
     };
+    ".config/codex/gh-api-method-required.sh" = {
+      source = ../../../.config/codex/hooks/gh-api-method-required.sh;
+      executable = true;
+    };
     ".config/codex/hooks.json".text = builtins.toJSON {
-      hooks.SessionStart = [
-        {
-          hooks = [
-            {
-              command = "bash '${config.xdg.configHome}/codex/herdr-agent-state.sh' session";
-              timeout = 10;
-              type = "command";
-            }
-          ];
-        }
-      ];
+      hooks = {
+        PreToolUse = [
+          {
+            matcher = "^Bash$";
+            hooks = [
+              {
+                command = "bash '${config.xdg.configHome}/codex/gh-api-method-required.sh'";
+                type = "command";
+              }
+            ];
+          }
+        ];
+        SessionStart = [
+          {
+            hooks = [
+              {
+                command = "bash '${config.xdg.configHome}/codex/herdr-agent-state.sh' session";
+                timeout = 10;
+                type = "command";
+              }
+            ];
+          }
+        ];
+      };
     };
   };
 
