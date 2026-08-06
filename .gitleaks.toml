@@ -1,0 +1,8 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "herdr のキーバインド定義は秘密情報ではない"
+paths = ['''nix/home/programs/herdr\.nix''']
+regexTarget = "line"
+regexes = ['''key = "(prefix|ctrl|alt|shift)\+''']
