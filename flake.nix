@@ -358,6 +358,7 @@
 
           # Cross-cutting
           editorconfig-checker # EditorConfig 準拠チェッカー
+          gitleaks # Secret detection and configuration smoke test
           typos # タイポ検出
         ];
       };

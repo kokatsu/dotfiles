@@ -21,7 +21,7 @@ fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt
 fmt-check: lua-fmt-check nix-fmt-check biome-fmt-check deno-fmt-check shfmt-check toml-fmt-check yaml-fmt-check
 
 # Run all linters
-lint: nix-lint nix-dead-code lua-lint shellcheck deno-lint deno-check biome-lint markdownlint toml-check editorconfig
+lint: nix-lint nix-dead-code lua-lint shellcheck deno-lint deno-check biome-lint markdownlint toml-check editorconfig gitleaks-smoke-test
 
 # Format Lua files
 lua-fmt:
@@ -139,6 +139,19 @@ toml-fmt-check:
 # Validate TOML documents
 toml-check:
     @git ls-files -z '*.toml' | xargs -0 taplo check
+
+# Verify built-in Gitleaks rules remain active through the repository config.
+# Split the synthetic PAT so scanning this file itself does not flag the canary.
+gitleaks-smoke-test:
+    @canary='ghp_0123456789abcdef''0123456789abcdef0123'; \
+      result_code=0; \
+      printf 'token = "%s"\n' "$canary" \
+        | gitleaks stdin --config .gitleaks.toml --no-banner --redact >/dev/null 2>&1 \
+        || result_code=$?; \
+      if [ "$result_code" -ne 1 ]; then \
+        echo "gitleaks smoke test failed: expected leak exit code 1, got $result_code" >&2; \
+        exit 1; \
+      fi
 
 # Format YAML files
 yaml-fmt:

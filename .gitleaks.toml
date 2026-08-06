@@ -3,6 +3,9 @@ useDefault = true
 
 [[allowlists]]
 description = "herdr のキーバインド定義は秘密情報ではない"
+# 既定値の OR では paths の一致だけでファイル全体が除外されるため、
+# herdr.nix 内かつ既知のキーバインド行だけに限定する。
+condition = "AND"
 paths = ['''nix/home/programs/herdr\.nix''']
 regexTarget = "line"
 regexes = ['''key = "(prefix|ctrl|alt|shift)\+''']

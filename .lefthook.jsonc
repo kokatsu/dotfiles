@@ -61,7 +61,7 @@
         "run": "editorconfig-checker {staged_files}"
       },
       "gitleaks": {
-        "run": "gitleaks protect --staged --no-banner"
+        "run": "gitleaks git --pre-commit --staged --no-banner --redact"
       },
       "typos": {
         "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
@@ -120,7 +120,7 @@
         "run": "editorconfig-checker {push_files}"
       },
       "gitleaks": {
-        "run": "gitleaks detect --no-banner --redact"
+        "run": "gitleaks git --no-banner --redact"
       },
       "typos": {
         "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
