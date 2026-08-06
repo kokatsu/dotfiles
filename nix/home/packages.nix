@@ -402,7 +402,7 @@ in {
       octorus # GitHub PR レビュー TUI (overlay)
       # https://github.com/brevity1swos/rgx
       rgx-cli # ターミナル正規表現テスター (regex101 の TUI 版, overlay)
-      # https://github.com/ogulcancelik/herdr
+      # https://github.com/herdrdev/herdr-nix (公式リリースバイナリ、overlay)
       herdr # tmux 的なエージェント対応ターミナルマルチプレクサ
       #--- エディタ ---#
       # https://github.com/neovim/neovim

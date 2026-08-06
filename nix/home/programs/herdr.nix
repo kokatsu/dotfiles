@@ -69,6 +69,7 @@ in {
       next_workspace = "prefix+period"
 
       [experimental]
+      kitty_graphics = true
       switch_ascii_input_source_in_prefix = true
       reveal_hidden_cursor_for_cjk_ime = true
       cjk_ime_agents = ["claude", "codex"]

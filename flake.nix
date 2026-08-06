@@ -34,6 +34,15 @@
       inputs.bun2nix.inputs.systems.url = "github:nix-systems/triplet";
     };
 
+    # Herdr 公式リリースバイナリ。nixpkgs 収録版より安定版への追従が速く、
+    # Rust/Zig ツールチェーンを使ったソースビルドも不要。
+    # 更新: nix flake update herdr-nix
+    # https://github.com/herdrdev/herdr-nix
+    herdr-nix = {
+      url = "github:herdrdev/herdr-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # https://github.com/NousResearch/hermes-agent
     # Renovate: datasource=github-releases depName=NousResearch/hermes-agent
     hermes-agent = {
@@ -150,6 +159,7 @@
       customOverlays.direnv-no-check
       customOverlays.dtools-darwin-tmpdir-fix
       customOverlays.git-graph-fork
+      customOverlays.herdr
       customOverlays.hermes-agent
       customOverlays.kakehashi
       customOverlays.mise
