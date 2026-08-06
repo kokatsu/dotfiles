@@ -154,7 +154,6 @@
       customOverlays.kakehashi
       customOverlays.mise
       customOverlays.octorus
-      customOverlays.pipx-no-check
       customOverlays.rgx-cli
       customOverlays.statix-no-check
       customOverlays.textlint-rule-preset-ai-writing

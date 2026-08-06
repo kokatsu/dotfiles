@@ -124,34 +124,6 @@ in {
     });
   };
 
-  # pipx 1.14.0 tests fail with newer `packaging` and pytest. `packaging`
-  # normalizes PEP 508 direct references to `name @ url` (space around `@`)
-  # while the tests still assert the old `name@ url` form. pytest 9.1 also
-  # rejects the trailing-comma argname in tests/test_inject.py during
-  # collection, before disabledTests (`pytest -k`) can exclude it. Test-only
-  # incompatibilities; pipx itself works fine. Override via
-  # pythonPackagesExtensions because top-level `pipx` is
-  # `toPythonApplication python3Packages.pipx`.
-  pipx-no-check = _final: prev: {
-    pythonPackagesExtensions =
-      (prev.pythonPackagesExtensions or [])
-      ++ [
-        (_pyfinal: pyprev: {
-          pipx = guardedOverride "pipx" "1.14.0" pyprev.pipx (old: {
-            disabledTestPaths =
-              (old.disabledTestPaths or [])
-              ++ ["tests/test_inject.py"];
-            disabledTests =
-              (old.disabledTests or [])
-              ++ [
-                "test_fix_package_name"
-                "test_parse_specifier_for_metadata"
-              ];
-          });
-        })
-      ];
-  };
-
   # statix 0.5.8-unstable-2026-07-17 fails its insta snapshot test
   # (redundant_pattern_bind fix output drifted from the recorded snapshot;
   # upstream issue oppiliappan/statix#64). Test-only drift; the linter works.
