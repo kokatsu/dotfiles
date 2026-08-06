@@ -75,14 +75,22 @@ in {
       else prev.direnv;
   };
 
-  # dtools 2.110.0 の rdmd test は一時コンパイラを TMPDIR にコピーして実行する。
-  # macOS の Nix sandbox が設定する /private/tmp では実行が拒否されるため、
-  # build directory 配下の実行可能な一時ディレクトリを使う。
+  # dtools 2.110.0 の rdmd test は一時ファイルを TMPDIR に作る。
+  # Makefile が osx 向けに TMPDIR を /private/tmp へ強制上書きするため、
+  # sandbox 無効の macOS では全 build が共有 /tmp を使い、別の nixbld user が
+  # 残した rdmd_app_ を sticky bit のせいで上書きできず失敗する。
+  # 上書き行を無効化し、build directory 配下の一時ディレクトリを使う。
   dtools-darwin-tmpdir-fix = _final: prev: {
     dtools =
       if prev.stdenv.hostPlatform.isDarwin
       then
         guardedOverride "dtools" "2.110.0" prev.dtools (old: {
+          postPatch =
+            (old.postPatch or "")
+            + ''
+              substituteInPlace Makefile \
+                --replace-fail 'cd /tmp && pwd -P' 'cd "$$TMPDIR" && pwd -P'
+            '';
           preCheck =
             (old.preCheck or "")
             + ''
