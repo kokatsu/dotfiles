@@ -97,6 +97,8 @@ in {
       carapace # マルチシェル補完エンジン (carapace-bin)
       # https://github.com/hpjansson/chafa
       chafa # 画像→テキスト
+      # https://github.com/cloudflare/cloudflared
+      cloudflared # Cloudflare Tunnel クライアント
       # https://github.com/curl/curl
       curl # データ転送ツール
       # https://github.com/eradman/entr
