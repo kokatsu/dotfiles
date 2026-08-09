@@ -32,18 +32,21 @@
       git = {
         # `|` で循環切り替えできる。staging view は常に plain diff (--no-ext-diff)
         # で取得されるため、difftastic を選んでも行/ハンク単位のステージは壊れない
-        pagers = [
+        diffRenderers = [
           # git config の diff.external = difft を流用 (.gitattributes でファイル型別設定も可)
           {
             name = "difftastic";
-            useExternalDiffGitConfig = true;
+            type = "extDiff";
           }
           {
             name = "delta";
-            pager = "delta --dark --paging=never";
+            command = "delta --dark --paging=never";
           }
           # pager なしの素の git diff
-          {name = "plain";}
+          {
+            name = "plain";
+            type = "rawGit";
+          }
         ];
       };
       os =
