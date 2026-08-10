@@ -116,7 +116,7 @@ in {
       hash = "sha256-i1E6Rxc+LqEetSqlhrHciybm+DQIAYeJfzWGO87G5+I=";
     };
   in {
-    git-graph = guardedOverride "git-graph" "0.7.0" prev.git-graph (old: {
+    git-graph = guardedOverride "git-graph" "0.8.0" prev.git-graph (old: {
       src = forkedSrc;
       cargoDeps = prev.rustPlatform.fetchCargoVendor {
         inherit (old) pname;
