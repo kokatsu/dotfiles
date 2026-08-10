@@ -1,9 +1,10 @@
 -- https://github.com/dmtrKovalenko/fff.nvim
 
 return {
-  'dmtrKovalenko/fff.nvim',
+  name = 'fff.nvim',
   -- Nix ビルド版 (vimPlugins.fff-nvim, Rust バックエンド同梱) を使用。
-  -- files.nix が ~/.local/share/nvim/nix-plugins/fff.nvim に symlink を配置する
+  -- files.nix が ~/.local/share/nvim/nix-plugins/fff.nvim に symlink を配置する。
+  -- URL を指定しないことで、lazy.nvim による Git 更新の対象から除外する
   dir = vim.fn.stdpath('data') .. '/nix-plugins/fff.nvim',
   lazy = false,
   opts = {
