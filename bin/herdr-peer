@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+skill_command="${XDG_CONFIG_HOME:-$HOME/.config}/claude/skills/herdr-peer/scripts/herdr-peer"
+
+# bin/ is linked out of store, so a newly added command can appear in PATH
+# before the matching Home Manager skill link has been activated.
+if [[ ! -x $skill_command ]]; then
+  script_dir=$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+  skill_command="$script_dir/../.config/claude/skills/herdr-peer/scripts/herdr-peer"
+fi
+
+if [[ ! -x $skill_command ]]; then
+  echo "herdr-peer: executable skill script not found: $skill_command" >&2
+  exit 1
+fi
+
+exec "$skill_command" "$@"

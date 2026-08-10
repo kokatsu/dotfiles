@@ -8,6 +8,7 @@
   home.file = {
     # built-in skills (.system) を残すため、共有するskillだけを個別にリンクする。
     ".config/codex/skills/browser-research".source = ../../../.config/codex/skills/browser-research;
+    ".config/codex/skills/herdr-peer".source = ../../../.config/codex/skills/herdr-peer;
 
     # `herdr integration install codex` の生成物をNix管理する。
     ".config/codex/herdr-agent-state.sh" = {
@@ -18,6 +19,10 @@
       source = ../../../.config/codex/hooks/gh-api-method-required.sh;
       executable = true;
     };
+    ".config/codex/herdr-peer-command-guard.sh" = {
+      source = ../../../.config/claude/hooks/herdr-peer-command-guard.sh;
+      executable = true;
+    };
     ".config/codex/hooks.json".text = builtins.toJSON {
       hooks = {
         PreToolUse = [
@@ -26,6 +31,10 @@
             hooks = [
               {
                 command = "bash '${config.xdg.configHome}/codex/gh-api-method-required.sh'";
+                type = "command";
+              }
+              {
+                command = "bash '${config.xdg.configHome}/codex/herdr-peer-command-guard.sh'";
                 type = "command";
               }
             ];

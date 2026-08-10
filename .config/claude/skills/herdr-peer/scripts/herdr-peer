@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+die() {
+  printf 'herdr-peer: %s\n' "$*" >&2
+  exit 1
+}
+
+usage() {
+  cat >&2 <<'EOF'
+Usage:
+  herdr-peer resolve
+  herdr-peer prompt [--timeout MILLISECONDS] [--] "PROMPT"
+  herdr-peer read [--lines COUNT]
+EOF
+  exit 64
+}
+
+require_runtime() {
+  [[ ${HERDR_ENV:-} == 1 ]] || die 'must run inside a Herdr-managed pane (HERDR_ENV=1)'
+  command -v herdr >/dev/null 2>&1 || die 'herdr is not available in PATH'
+  command -v jq >/dev/null 2>&1 || die 'jq is not available in PATH'
+}
+
+opposite_kind() {
+  case $1 in
+  claude) printf '%s\n' codex ;;
+  codex) printf '%s\n' claude ;;
+  *) die "current agent must be claude or codex, got: $1" ;;
+  esac
+}
+
+load_current_context() {
+  local current_json current_fields
+
+  current_json=$(herdr pane current --current) || die 'failed to resolve the current pane'
+  current_fields=$(jq -er '
+    .result.pane |
+    [.pane_id, .tab_id, .workspace_id, .agent] |
+    @tsv
+  ' <<<"$current_json") || die 'current pane response is missing required fields'
+  IFS=$'\t' read -r CURRENT_PANE_ID CURRENT_TAB_ID CURRENT_WORKSPACE_ID CURRENT_KIND <<<"$current_fields"
+  [[ -n $CURRENT_PANE_ID && -n $CURRENT_TAB_ID && -n $CURRENT_WORKSPACE_ID && -n $CURRENT_KIND ]] ||
+    die 'current pane response contains empty required fields'
+}
+
+load_target_context() {
+  local target_json target_fields
+
+  target_json=$(herdr agent get "$PEER_PANE_ID") || die 'the selected peer no longer exists'
+  TARGET_JSON=$(jq -ce '.result.agent' <<<"$target_json") || die 'peer response is missing the agent object'
+  target_fields=$(jq -er '
+    [.pane_id, .tab_id, .workspace_id, .agent, .agent_session.value, .agent_status] |
+    @tsv
+  ' <<<"$TARGET_JSON") || die 'peer response is missing required fields'
+  IFS=$'\t' read -r TARGET_PANE_ID TARGET_TAB_ID TARGET_WORKSPACE_ID TARGET_KIND TARGET_SESSION_ID TARGET_STATUS <<<"$target_fields"
+  [[ -n $TARGET_PANE_ID && -n $TARGET_TAB_ID && -n $TARGET_WORKSPACE_ID && -n $TARGET_KIND && -n $TARGET_SESSION_ID && -n $TARGET_STATUS ]] ||
+    die 'peer response contains empty required fields'
+}
+
+resolve_peer() {
+  local agents_json candidate_json candidate_count peer_fields
+
+  load_current_context
+  PEER_KIND=$(opposite_kind "$CURRENT_KIND")
+
+  agents_json=$(herdr agent list) || die 'failed to list agents'
+  candidate_json=$(jq -c \
+    --arg pane "$CURRENT_PANE_ID" \
+    --arg tab "$CURRENT_TAB_ID" \
+    --arg workspace "$CURRENT_WORKSPACE_ID" \
+    --arg kind "$PEER_KIND" \
+    '[.result.agents[] | select(
+      .pane_id != $pane and
+      .tab_id == $tab and
+      .workspace_id == $workspace and
+      .agent == $kind
+    )]' <<<"$agents_json") || die 'failed to parse the agent list'
+
+  candidate_count=$(jq -r 'length' <<<"$candidate_json")
+  [[ $candidate_count == 1 ]] || die "expected exactly one $PEER_KIND peer in tab $CURRENT_TAB_ID, found $candidate_count"
+
+  PEER_JSON=$(jq -c '.[0]' <<<"$candidate_json")
+  peer_fields=$(jq -er '[.pane_id, .agent_session.value] | @tsv' <<<"$PEER_JSON") ||
+    die 'peer response is missing pane_id or a stable agent session id'
+  IFS=$'\t' read -r PEER_PANE_ID PEER_SESSION_ID <<<"$peer_fields"
+
+  [[ -n $PEER_PANE_ID && -n $PEER_SESSION_ID ]] || die 'peer response contains empty required fields'
+  [[ $PEER_PANE_ID != "$CURRENT_PANE_ID" ]] || die 'refusing to target the current pane'
+}
+
+validate_peer() {
+  local require_ready=$1 expected_kind
+
+  # Best-effort recheck immediately before the next operation. Herdr does not
+  # yet atomically compare an expected session id while submitting a prompt.
+  load_current_context
+  load_target_context
+  expected_kind=$(opposite_kind "$CURRENT_KIND")
+
+  [[ $TARGET_PANE_ID != "$CURRENT_PANE_ID" ]] || die 'refusing to target the current pane'
+  [[ $TARGET_PANE_ID == "$PEER_PANE_ID" ]] || die 'peer pane changed during resolution'
+  [[ $TARGET_TAB_ID == "$CURRENT_TAB_ID" && $TARGET_WORKSPACE_ID == "$CURRENT_WORKSPACE_ID" ]] || die 'peer moved outside the current tab'
+  [[ $TARGET_KIND == "$expected_kind" ]] || die "peer is no longer the expected $expected_kind agent"
+  [[ $TARGET_SESSION_ID == "$PEER_SESSION_ID" ]] || die 'peer agent session changed during resolution'
+
+  if [[ $require_ready == true ]]; then
+    case $TARGET_STATUS in
+    idle | done) ;;
+    *) die "peer $PEER_PANE_ID is not ready (status: $TARGET_STATUS)" ;;
+    esac
+  fi
+}
+
+print_peer() {
+  jq -c '{
+    agent,
+    agent_status,
+    pane_id,
+    tab_id,
+    workspace_id,
+    cwd,
+    agent_session_id: .agent_session.value
+  }' <<<"$TARGET_JSON"
+}
+
+main() {
+  local subcommand=${1:-}
+  [[ -n $subcommand ]] || usage
+  shift
+
+  require_runtime
+
+  case $subcommand in
+  resolve)
+    [[ $# -eq 0 ]] || usage
+    resolve_peer
+    validate_peer false
+    print_peer
+    ;;
+  prompt)
+    local timeout_ms=300000
+    if [[ ${1:-} == --timeout ]]; then
+      [[ $# -ge 2 && ${2:-} =~ ^[1-9][0-9]*$ ]] || usage
+      timeout_ms=$2
+      shift 2
+    fi
+    [[ ${1:-} == -- ]] && shift
+    [[ $# -eq 1 && -n ${1:-} ]] || usage
+
+    resolve_peer
+    validate_peer true
+    herdr agent prompt "$PEER_PANE_ID" "$1" --wait --timeout "$timeout_ms"
+    ;;
+  read)
+    local line_count=120
+    if [[ ${1:-} == --lines ]]; then
+      [[ $# -eq 2 && ${2:-} =~ ^[1-9][0-9]*$ ]] || usage
+      line_count=$2
+      shift 2
+    fi
+    [[ $# -eq 0 ]] || usage
+
+    resolve_peer
+    validate_peer false
+    herdr agent read "$PEER_PANE_ID" --source recent-unwrapped --lines "$line_count"
+    ;;
+  *) usage ;;
+  esac
+}
+
+main "$@"

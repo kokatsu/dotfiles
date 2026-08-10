@@ -1,3 +1,19 @@
+# Guarded Claude/Codex peer collaboration.
+prefix_rule(
+    pattern = ["herdr-peer"],
+    decision = "allow",
+    justification = "Allow the same-tab Claude/Codex peer command, which checks for self-targets and ambiguous or replaced peers.",
+    match = [
+        "herdr-peer resolve",
+        "herdr-peer prompt \"Review the current diff\"",
+        "herdr-peer read --lines 120",
+    ],
+    not_match = [
+        "herdr agent prompt w1:p1 test",
+        "herdr pane send-text w1:p1 test",
+    ],
+)
+
 # Read-only git inspection commands.
 prefix_rule(
     pattern = [

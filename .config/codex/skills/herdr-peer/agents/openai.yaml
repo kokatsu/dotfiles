@@ -1,0 +1,4 @@
+interface:
+  display_name: "Herdr Peer"
+  short_description: "Delegate safely to the opposite agent in the same tab"
+  default_prompt: "Use $herdr-peer to ask the opposite agent in this Herdr tab for a review."

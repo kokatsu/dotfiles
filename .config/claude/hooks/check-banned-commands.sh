@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RULES_FILE="$(dirname "${BASH_SOURCE[0]}")/banned-commands.json"
+HOOKS_DIR="$(dirname "${BASH_SOURCE[0]}")"
+RULES_FILE="$HOOKS_DIR/banned-commands.json"
 INPUT=$(cat)
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command')
+
+# Claude and Codex share this best-effort Herdr command guard. It prevents
+# ordinary bypasses but is not a security boundary for arbitrary Bash access.
+printf '%s' "$INPUT" | bash "$HOOKS_DIR/herdr-peer-command-guard.sh"
 
 # Parse the full ruleset in two jq passes so the per-rule match loop can run
 # entirely in-shell. With ~13 rules this avoids ~26 jq subprocess forks per
