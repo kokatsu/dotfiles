@@ -12,7 +12,7 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos herdr-peer-guard-test
+check-static: fmt-check lint typos banned-commands-test herdr-peer-guard-test
 
 # Run all formatters
 fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt
@@ -180,6 +180,10 @@ nvim-test:
 # Verify pr.yml hash-update sed patterns match overlay structure
 hash-patterns-test:
     bash scripts/test-hash-patterns.sh
+
+# Verify the banned-commands hook blocks shallow git fetch/pull without false positives
+banned-commands-test:
+    bash scripts/test-banned-commands.sh
 
 # Verify raw Herdr input commands cannot bypass the shared peer guard
 herdr-peer-guard-test:
