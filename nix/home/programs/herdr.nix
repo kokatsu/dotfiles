@@ -1,4 +1,10 @@
-{config, ...}: let
+{
+  config,
+  lib,
+  pkgs,
+  validDotfilesDir,
+  ...
+}: let
   flavor = config.catppuccin.flavor;
   p = config.catppuccinLib.palettes.${flavor};
   names = config.catppuccinLib.flavorNames flavor;
@@ -234,8 +240,19 @@ in {
     };
     # .config/herdr/plugins/ 配下のプラグインは home.file で配置しない:
     # plugin link が symlink を解決して plugin_root が /nix/store になり、
-    # スクリプト本体を見失うため。初回のみリポジトリの実パスを直接登録する:
-    #   herdr plugin link <dotfiles>/.config/herdr/plugins/close-confirm
-    #   herdr plugin link <dotfiles>/.config/herdr/plugins/tab-numbers
+    # rebuild のたびに store パスが変わって登録が陳腐化するため。
+    # リポジトリの実パスの登録は下の linkHerdrPlugins が行う
   };
+
+  # plugin link は plugins.json を直接書くだけでサーバ起動を必要とせず、
+  # 登録済み ID の再 link も冪等 (キャッシュされた manifest が更新されるため
+  # herdr-plugin.toml 編集後の再登録を兼ねる)。いずれも 0.8.0 で確認済み。
+  # ただし disable 済みのプラグインは再 link で enabled に戻るので、手で
+  # 無効化して使う運用に変えるならこのリストから外すこと
+  home.activation.linkHerdrPlugins = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    for plugin in close-confirm tab-numbers; do
+      $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
+        "${validDotfilesDir}/.config/herdr/plugins/$plugin" > /dev/null
+    done
+  '';
 }
