@@ -4,6 +4,28 @@ local M = {}
 local explorer = require('plugins.snacks.explorer')
 local picker = require('plugins.snacks.picker')
 
+-- root ごとの common git dir キャッシュ。linked worktree では .git がファイルになり
+-- shallow マーカーは common git dir 側に置かれるため、rev-parse で一度だけ解決する。
+local common_git_dirs = {}
+
+-- shallow 判定。git の起動は root ごとに初回のみで、以降の再評価
+-- (dashboard はリサイズごとにセクションを再解決する) は fs_stat だけで済む。
+local function is_shallow(root)
+  local dir = common_git_dirs[root]
+  if dir == nil then
+    if vim.fn.executable('git') ~= 1 then
+      return true
+    end
+    local result = vim.system({ 'git', '-C', root, 'rev-parse', '--git-common-dir' }, { text = true }):wait()
+    dir = result.code == 0 and vim.trim(result.stdout) or false
+    if dir and not vim.startswith(dir, '/') then
+      dir = root .. '/' .. dir
+    end
+    common_git_dirs[root] = dir
+  end
+  return dir == false or vim.uv.fs_stat(dir .. '/shallow') ~= nil
+end
+
 M.opts = {
   preset = {
     ---@type snacks.dashboard.Item[] | fun(items:snacks.dashboard.Item[]): snacks.dashboard.Item[]?
@@ -68,30 +90,29 @@ M.opts = {
     },
     { section = 'keys', gap = 1, padding = 1 },
     { section = 'startup' },
-    function()
-      local in_git = Snacks.git.get_root() ~= nil
-      local cmds = {
-        {
-          title = 'Git Graph',
-          icon = ' ',
-          -- https://github.com/mlange-42/git-graph (original)
-          -- https://github.com/kokatsu/git-graph (fork, using this)
-          cmd = [[echo -e "$(git-graph --model catppuccin-mocha --style bold --color always --wrap 50 0 8 --format 'oneline' --max-count 30 --local --highlight-head 'bold,black,bg:bright_yellow')"]],
-          indent = 1,
-          height = 35,
-        },
-      }
-      return vim.tbl_map(function(cmd)
-        return vim.tbl_extend('force', {
-          pane = 2,
-          section = 'terminal',
-          enabled = function()
-            return in_git and vim.o.columns > 130
-          end,
-          padding = 1,
-        }, cmd)
-      end, cmds)
-    end,
+    {
+      pane = 2,
+      section = 'terminal',
+      title = 'Git Graph',
+      icon = ' ',
+      -- https://github.com/mlange-42/git-graph (original)
+      -- https://github.com/kokatsu/git-graph (fork, using this)
+      cmd = [[git-graph --model catppuccin-mocha --style bold --color always --wrap 50 0 8 --format 'oneline' --max-count 30 --local --highlight-head 'bold,black,bg:bright_yellow']],
+      indent = 1,
+      height = 35,
+      ttl = 0,
+      padding = 1,
+      enabled = function()
+        -- 幅が足りない画面ではリポジトリ状態の判定自体を省く
+        if vim.o.columns <= 130 or vim.fn.executable('git-graph') ~= 1 then
+          return false
+        end
+        -- git-graph は cwd で走るため、判定の起点も cwd に固定する
+        local root = Snacks.git.get_root(vim.uv.cwd())
+        -- shallow リポジトリでは git-graph が履歴を辿れないため隠す
+        return root ~= nil and not is_shallow(root)
+      end,
+    },
   },
 }
 
