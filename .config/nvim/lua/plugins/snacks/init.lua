@@ -78,8 +78,8 @@ return {
     },
     {
       '<leader>\\',
-      picker.grep_no_regex_action,
-      desc = 'Grep (No Regex)',
+      picker.grep_ft_action,
+      desc = 'Grep (File Type)',
     },
     {
       '<leader>sr',
