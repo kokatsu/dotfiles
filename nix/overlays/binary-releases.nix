@@ -290,7 +290,7 @@ in {
   # Renovate: datasource=github-releases depName=ushironoko/octorus
   octorus = mkBinaryRelease rec {
     pname = "octorus";
-    version = "0.6.7";
+    version = "0.7.2";
     hashes = {
       "aarch64-darwin" = "sha256-fsqnB49TnsPG9waafix0ILJHjslGJEmAPc2EiJS0g+Y=";
       "x86_64-darwin" = "sha256-PVCP3p1xVQTAM/yiJUNHzYsNG5NetlF6kZYlU6GRuG4=";
