@@ -134,7 +134,7 @@ in {
   # Renovate: datasource=github-releases depName=Wilfred/difftastic
   difftastic = mkBinaryRelease rec {
     pname = "difftastic";
-    version = "0.69.0";
+    version = "0.70.0";
     hashes = {
       "aarch64-darwin" = "sha256-yVi4eIWlglo1bFiZrH7N11KnlCCEGZ8r5LwL+MnejjM=";
       "aarch64-linux" = "sha256-q9L0LSr9QkMStIYqp8e7AyBEdnCuIvq8xRWdsD4tzL0=";
