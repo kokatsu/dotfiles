@@ -292,10 +292,10 @@ in {
     pname = "octorus";
     version = "0.7.2";
     hashes = {
-      "aarch64-darwin" = "sha256-fsqnB49TnsPG9waafix0ILJHjslGJEmAPc2EiJS0g+Y=";
-      "x86_64-darwin" = "sha256-PVCP3p1xVQTAM/yiJUNHzYsNG5NetlF6kZYlU6GRuG4=";
-      "aarch64-linux" = "sha256-gLo4x5AJbh1dI6sKmwA6ybcYX65pzMO98CroUhepY40=";
-      "x86_64-linux" = "sha256-05KgKIB0oE2f4AYgp4k4GvM5jfIRuVufVZgev8JMVxw=";
+      "aarch64-darwin" = "sha256-Uv5MKlwgZqG1XaS75yZ5QkVJ8nqlwjWndN9LAv5ZIAI=";
+      "x86_64-darwin" = "sha256-nhpkySav6FiZczOEFdU5z+XWVZA+qxquzRqlycXymi0=";
+      "aarch64-linux" = "sha256-Rk1Qk1PE1IcEixBaLCbzpUPzkfP5NAFAhiVYr7ZRGnc=";
+      "x86_64-linux" = "sha256-Y+LsJQcs0zd/6J8UxDgO7Zy8df6+FBLSu5R3+9jcnDM=";
     };
     platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/ushironoko/octorus/releases/download/v${version}/octorus-${version}-${platform}.tar.gz";
