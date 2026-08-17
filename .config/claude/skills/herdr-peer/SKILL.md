@@ -5,7 +5,7 @@ description: Safely consult the opposite Claude or Codex agent in the same Herdr
 
 # Herdr Peer
 
-Use `herdr-peer`; never call raw Herdr input commands directly. The wrapper resolves exactly one opposite agent in the current tab and rechecks self-targeting, ambiguity, readiness, and agent-session replacement immediately before sending.
+Use `herdr-peer`; never call raw Herdr input commands directly. The wrapper resolves exactly one opposite agent in the current tab and rechecks self-targeting, ambiguity, readiness, and agent-session replacement immediately before sending. A newly opened agent may not have a native session ID until its first prompt; the wrapper permits only that null-to-initialized transition while keeping the pane, tab, workspace, agent-kind, and readiness checks in place. Empty or non-string session IDs are invalid rather than uninitialized.
 
 ## Workflow
 
@@ -41,4 +41,4 @@ Use `herdr-peer`; never call raw Herdr input commands directly. The wrapper reso
 - Do not bypass `herdr-peer` with raw Herdr prompt or pane-input commands.
 - Treat resolution or validation failure as a hard stop. Do not select another tab, workspace, or agent manually.
 
-The deterministic wrapper is installed from `scripts/herdr-peer` as the `herdr-peer` command. Its recheck and the shared command hook are best-effort guardrails, not a security boundary for arbitrary Bash execution. Atomic protection against session replacement requires Herdr to compare an expected agent session ID inside the socket operation that submits the prompt.
+The deterministic wrapper is installed from `scripts/herdr-peer` as the `herdr-peer` command. Its recheck and the shared command hook are best-effort guardrails, not a security boundary for arbitrary Bash execution. When a peer already has a session ID, any change remains a hard failure. When the ID is initially null, the wrapper rechecks that it is still null immediately before prompting and requires a non-null ID afterward. Read-only `resolve` and `read` operations accept a concurrent null-to-initialized transition after the identity checks. If post-prompt initialization fails, the prompt has already been delivered and must not be retried automatically. Atomic protection against replacement during either path requires Herdr to compare an expected agent session ID or pane-occupant generation inside the socket operation that submits the prompt.

@@ -12,7 +12,7 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos banned-commands-test herdr-peer-guard-test
+check-static: fmt-check lint typos banned-commands-test herdr-peer-guard-test herdr-peer-test
 
 # Run all formatters
 fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt
@@ -188,6 +188,10 @@ banned-commands-test:
 # Verify raw Herdr input commands cannot bypass the shared peer guard
 herdr-peer-guard-test:
     bash scripts/test-herdr-peer-command-guard.sh
+
+# Verify peer resolution and session bootstrap behavior
+herdr-peer-test:
+    bash scripts/test-herdr-peer.sh
 
 # Verify Renovate regex patterns match overlay files
 renovate-patterns-test:

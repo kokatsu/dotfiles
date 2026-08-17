@@ -30,6 +30,19 @@ opposite_kind() {
   esac
 }
 
+parse_session_id() {
+  jq -er '
+    .agent_session.value as $value |
+    if $value == null then
+      ""
+    elif ($value | type) == "string" and ($value | length) > 0 then
+      $value
+    else
+      error("agent session id must be null or a non-empty string")
+    end
+  '
+}
+
 load_current_context() {
   local current_json current_fields
 
@@ -50,11 +63,13 @@ load_target_context() {
   target_json=$(herdr agent get "$PEER_PANE_ID") || die 'the selected peer no longer exists'
   TARGET_JSON=$(jq -ce '.result.agent' <<<"$target_json") || die 'peer response is missing the agent object'
   target_fields=$(jq -er '
-    [.pane_id, .tab_id, .workspace_id, .agent, .agent_session.value, .agent_status] |
+    [.pane_id, .tab_id, .workspace_id, .agent, .agent_status] |
     @tsv
   ' <<<"$TARGET_JSON") || die 'peer response is missing required fields'
-  IFS=$'\t' read -r TARGET_PANE_ID TARGET_TAB_ID TARGET_WORKSPACE_ID TARGET_KIND TARGET_SESSION_ID TARGET_STATUS <<<"$target_fields"
-  [[ -n $TARGET_PANE_ID && -n $TARGET_TAB_ID && -n $TARGET_WORKSPACE_ID && -n $TARGET_KIND && -n $TARGET_SESSION_ID && -n $TARGET_STATUS ]] ||
+  IFS=$'\t' read -r TARGET_PANE_ID TARGET_TAB_ID TARGET_WORKSPACE_ID TARGET_KIND TARGET_STATUS <<<"$target_fields"
+  TARGET_SESSION_ID=$(parse_session_id <<<"$TARGET_JSON") ||
+    die 'failed to parse the peer agent session id'
+  [[ -n $TARGET_PANE_ID && -n $TARGET_TAB_ID && -n $TARGET_WORKSPACE_ID && -n $TARGET_KIND && -n $TARGET_STATUS ]] ||
     die 'peer response contains empty required fields'
 }
 
@@ -81,28 +96,41 @@ resolve_peer() {
   [[ $candidate_count == 1 ]] || die "expected exactly one $PEER_KIND peer in tab $CURRENT_TAB_ID, found $candidate_count"
 
   PEER_JSON=$(jq -c '.[0]' <<<"$candidate_json")
-  peer_fields=$(jq -er '[.pane_id, .agent_session.value] | @tsv' <<<"$PEER_JSON") ||
-    die 'peer response is missing pane_id or a stable agent session id'
-  IFS=$'\t' read -r PEER_PANE_ID PEER_SESSION_ID <<<"$peer_fields"
+  peer_fields=$(jq -er '.pane_id' <<<"$PEER_JSON") || die 'peer response is missing pane_id'
+  PEER_PANE_ID=$peer_fields
+  PEER_SESSION_ID=$(parse_session_id <<<"$PEER_JSON") ||
+    die 'failed to parse the peer agent session id'
 
-  [[ -n $PEER_PANE_ID && -n $PEER_SESSION_ID ]] || die 'peer response contains empty required fields'
+  [[ -n $PEER_PANE_ID ]] || die 'peer response contains an empty pane_id'
   [[ $PEER_PANE_ID != "$CURRENT_PANE_ID" ]] || die 'refusing to target the current pane'
 }
 
-validate_peer() {
-  local require_ready=$1 expected_kind
+validate_peer_identity() {
+  local expected_kind
 
-  # Best-effort recheck immediately before the next operation. Herdr does not
-  # yet atomically compare an expected session id while submitting a prompt.
-  load_current_context
-  load_target_context
   expected_kind=$(opposite_kind "$CURRENT_KIND")
 
   [[ $TARGET_PANE_ID != "$CURRENT_PANE_ID" ]] || die 'refusing to target the current pane'
   [[ $TARGET_PANE_ID == "$PEER_PANE_ID" ]] || die 'peer pane changed during resolution'
   [[ $TARGET_TAB_ID == "$CURRENT_TAB_ID" && $TARGET_WORKSPACE_ID == "$CURRENT_WORKSPACE_ID" ]] || die 'peer moved outside the current tab'
   [[ $TARGET_KIND == "$expected_kind" ]] || die "peer is no longer the expected $expected_kind agent"
-  [[ $TARGET_SESSION_ID == "$PEER_SESSION_ID" ]] || die 'peer agent session changed during resolution'
+}
+
+validate_peer() {
+  local require_ready=$1
+  local require_uninitialized_session=$2
+
+  # Best-effort recheck immediately before the next operation. Herdr does not
+  # yet atomically compare an expected session id while submitting a prompt.
+  load_current_context
+  load_target_context
+  validate_peer_identity
+
+  if [[ -n $PEER_SESSION_ID ]]; then
+    [[ $TARGET_SESSION_ID == "$PEER_SESSION_ID" ]] || die 'peer agent session changed during resolution'
+  elif [[ $require_uninitialized_session == true && -n $TARGET_SESSION_ID ]]; then
+    die 'peer agent session initialized during resolution; retry'
+  fi
 
   if [[ $require_ready == true ]]; then
     case $TARGET_STATUS in
@@ -110,6 +138,22 @@ validate_peer() {
     *) die "peer $PEER_PANE_ID is not ready (status: $TARGET_STATUS)" ;;
     esac
   fi
+}
+
+wait_for_initialized_session() {
+  local attempt
+
+  for ((attempt = 0; attempt < 50; attempt++)); do
+    load_current_context
+    load_target_context
+    validate_peer_identity
+    if [[ -n $TARGET_SESSION_ID ]]; then
+      return
+    fi
+    sleep 0.1
+  done
+
+  die 'peer prompt was delivered, but no agent session id was reported; do not retry automatically'
 }
 
 print_peer() {
@@ -120,7 +164,8 @@ print_peer() {
     tab_id,
     workspace_id,
     cwd,
-    agent_session_id: .agent_session.value
+    agent_session_id: .agent_session.value,
+    session_state: (if .agent_session.value == null then "uninitialized" else "initialized" end)
   }' <<<"$TARGET_JSON"
 }
 
@@ -135,11 +180,11 @@ main() {
   resolve)
     [[ $# -eq 0 ]] || usage
     resolve_peer
-    validate_peer false
+    validate_peer false false
     print_peer
     ;;
   prompt)
-    local timeout_ms=300000
+    local prompt_output timeout_ms=300000
     if [[ ${1:-} == --timeout ]]; then
       [[ $# -ge 2 && ${2:-} =~ ^[1-9][0-9]*$ ]] || usage
       timeout_ms=$2
@@ -149,8 +194,12 @@ main() {
     [[ $# -eq 1 && -n ${1:-} ]] || usage
 
     resolve_peer
-    validate_peer true
-    herdr agent prompt "$PEER_PANE_ID" "$1" --wait --timeout "$timeout_ms"
+    validate_peer true true
+    prompt_output=$(herdr agent prompt "$PEER_PANE_ID" "$1" --wait --timeout "$timeout_ms")
+    if [[ -z $PEER_SESSION_ID ]]; then
+      wait_for_initialized_session
+    fi
+    [[ -z $prompt_output ]] || printf '%s\n' "$prompt_output"
     ;;
   read)
     local line_count=120
@@ -162,7 +211,7 @@ main() {
     [[ $# -eq 0 ]] || usage
 
     resolve_peer
-    validate_peer false
+    validate_peer false false
     herdr agent read "$PEER_PANE_ID" --source recent-unwrapped --lines "$line_count"
     ;;
   *) usage ;;
