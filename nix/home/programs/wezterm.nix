@@ -6,7 +6,7 @@
   isCI ? false,
   ...
 }: let
-  inherit (pkgs.stdenv) isDarwin;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
   p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
   names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
 in {

@@ -6,7 +6,7 @@
   isCI ? false,
   ...
 }: let
-  inherit (pkgs.stdenv) isDarwin;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
 
   # ユーザースクリプトのラッパー (bin/ 内の Deno/Bun スクリプトを短い名前で実行)
   feed-watch = pkgs.writeShellScriptBin "feed-watch" ''

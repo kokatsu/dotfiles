@@ -5,7 +5,7 @@
   validDotfilesDir,
   ...
 }: let
-  inherit (pkgs.stdenv) isDarwin;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
   flavor = config.catppuccin.flavor;
   p = config.catppuccinLib.palettes.${flavor};
   names = config.catppuccinLib.flavorNames flavor;

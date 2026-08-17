@@ -8,10 +8,10 @@
   isCI ? false,
   ...
 }: let
-  inherit (pkgs.stdenv) isDarwin;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
   isWSL =
     !isCI
-    && pkgs.stdenv.isLinux
+    && pkgs.stdenv.hostPlatform.isLinux
     && (
       builtins.getEnv "WSL_DISTRO_NAME"
       != ""

@@ -4,7 +4,7 @@
   lib,
   ...
 }: let
-  inherit (pkgs.stdenv) isDarwin;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
 in
   lib.mkIf (!isDarwin) {
     systemd.user.services.feed-watch = {

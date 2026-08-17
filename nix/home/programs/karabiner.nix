@@ -6,7 +6,7 @@
   isCI ? false,
   ...
 }: let
-  inherit (pkgs.stdenv) isDarwin;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
 in {
   # writeToProfile()は既存profileを上書きするため、未作成ならstubを置いてから生成する。
   # CIではdenoのローカルビルドを避けるため実行しない。

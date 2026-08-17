@@ -3,7 +3,7 @@
   lib,
   ...
 }: let
-  inherit (pkgs.stdenv) isDarwin;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
 in {
   # agent-browserがPLAYWRIGHT_BROWSERS_PATHを無視するため、既定cacheへリンクする。
   home.activation.setupPlaywrightBrowsers = lib.hm.dag.entryAfter ["linkGeneration"] ''
