@@ -11,6 +11,11 @@
       # extra- 接頭辞にして、システム側 (Determinate Nix 等) の
       # experimental-features を上書きせず追記する。
       extra-experimental-features = ["nix-command" "flakes"];
+
+      # 独立した derivation を並列化しつつ、12 スレッド環境で
+      # max-jobs * cores が利用可能スレッド数を超えないようにする。
+      max-jobs = 4;
+      cores = 3;
     };
   };
 }
