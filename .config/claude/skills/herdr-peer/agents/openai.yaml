@@ -1,4 +1,4 @@
 interface:
   display_name: "Herdr Peer"
-  short_description: "Delegate safely to the opposite agent in the same tab"
-  default_prompt: "Use $herdr-peer to ask the opposite agent in this Herdr tab for a review."
+  short_description: "Review edits and recheck authorized fixes with a peer"
+  default_prompt: "Use $herdr-peer to request a read-only review of current-task edits, including known non-sensitive gitignored edits, and re-review authorized fixes until both agents agree no actionable findings remain."

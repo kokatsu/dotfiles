@@ -1,6 +1,6 @@
 ---
 name: herdr-peer
-description: Safely consult the opposite Claude or Codex agent in the same Herdr tab through the guarded herdr-peer command. Use when the user explicitly asks Claude and Codex to collaborate, asks one agent to consult or review with the other, or invokes herdr-peer. Do not use for implicit delegation or ordinary background work.
+description: Safely consult the opposite Claude or Codex agent in the same Herdr tab through the guarded herdr-peer command. Use when the user explicitly asks Claude and Codex to collaborate, asks one agent to consult or review with the other, or invokes herdr-peer. When invoked without an additional task, default to a read-only review of the current task's edits, including known non-sensitive gitignored edits. If fixes are authorized, re-review them until both agents agree that no actionable findings remain; otherwise report findings and stop without editing. Do not use for implicit delegation or ordinary background work.
 ---
 
 # Herdr Peer
