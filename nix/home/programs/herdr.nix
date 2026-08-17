@@ -57,7 +57,17 @@ in {
       row_gap = 1
 
       [ui.toast]
-      delivery = "terminal"
+      delivery = "${
+        if pkgs.stdenv.hostPlatform.isLinux
+        then "herdr"
+        else "terminal"
+      }"
+
+      [ui.toast.herdr]
+      position = "bottom-right"
+
+      [ui.sound]
+      enabled = ${lib.boolToString pkgs.stdenv.hostPlatform.isLinux}
 
       [keys]
       prefix = "ctrl+space"
