@@ -89,23 +89,35 @@ in {
       fastBuild = base.buildCatppuccinPort.override {
         whiskers = pkgs.catppuccin-whiskers;
       };
+      # 現在有効な integration が参照する Whiskers 製 port だけを差し替える。
+      # package set 全体の mapAttrs は、未使用 port の derivation まで評価するため避ける。
+      # Catppuccin 対応プログラムを追加した場合は、必要な port をこのリストにも追加する。
+      whiskersPorts = [
+        "bat"
+        "broot"
+        "btop"
+        "eza"
+        "fzf"
+        "glamour"
+        "lazygit"
+      ];
+      overridePort = name: let
+        drv = base.${name};
+      in
+        # pkgs/<port> 由来 (override 可) は引数だけ差し替えて固有設定を維持。
+        if drv ? override
+        then
+          drv.override (old:
+            (lib.optionalAttrs (old ? buildCatppuccinPort) {buildCatppuccinPort = fastBuild;})
+            // (lib.optionalAttrs (old ? whiskers) {whiskers = pkgs.catppuccin-whiskers;}))
+        # sources.json のみ由来 (override なし) は fast 版で同名 port を再生成。
+        else fastBuild {port = name;};
     in
-      base
-      // builtins.mapAttrs (
-        name: drv:
-        # buildCatppuccinPort 製ポートは whiskersTemplates 属性を持つ。
-          if !(lib.isDerivation drv && drv ? whiskersTemplates)
-          then drv
-          # pkgs/<port> 由来 (override 可) は引数だけ差し替えて固有設定を維持。
-          else if drv ? override
-          then
-            drv.override (old:
-              (lib.optionalAttrs (old ? buildCatppuccinPort) {buildCatppuccinPort = fastBuild;})
-              // (lib.optionalAttrs (old ? whiskers) {whiskers = pkgs.catppuccin-whiskers;}))
-          # sources.json のみ由来 (override なし) は fast 版で同名ポートを再生成。
-          else fastBuild {port = name;}
-      )
-      base;
+      builtins.listToAttrs (map (name: {
+          inherit name;
+          value = overridePort name;
+        })
+        whiskersPorts);
     # 既存 symlink と競合するため後の Phase で有効化
     delta.enable = false;
     # 手動管理 or カスタムテンプレートで管理
