@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   validDotfilesDir,
@@ -248,7 +249,7 @@ in {
       source = ../../../.config/herdr/scripts/close-pane-confirm.sh;
       executable = true;
     };
-    # .config/herdr/plugins/ 配下のプラグインは home.file で配置しない:
+    # .config/herdr/plugins/close-confirm は home.file で配置しない:
     # plugin link が symlink を解決して plugin_root が /nix/store になり、
     # rebuild のたびに store パスが変わって登録が陳腐化するため。
     # リポジトリの実パスの登録は下の linkHerdrPlugins が行う
@@ -258,11 +259,16 @@ in {
   # 登録済み ID の再 link も冪等 (キャッシュされた manifest が更新されるため
   # herdr-plugin.toml 編集後の再登録を兼ねる)。いずれも 0.8.0 で確認済み。
   # ただし disable 済みのプラグインは再 link で enabled に戻るので、手で
-  # 無効化して使う運用に変えるならこのリストから外すこと
+  # 無効化して使う運用に変えるならその行を外すこと。
+  #
+  # tab-numbers は kokatsu/herdr-tab-numbers に切り出したので flake input の
+  # store パスを登録する。pin を変えたときだけパスが変わるため陳腐化しない。
+  # close-confirm は close-pane-confirm.sh と対でこのリポジトリに残しているため、
+  # 従来どおりチェックアウトの実パスを登録する
   home.activation.linkHerdrPlugins = lib.hm.dag.entryAfter ["linkGeneration"] ''
-    for plugin in close-confirm tab-numbers; do
-      $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
-        "${validDotfilesDir}/.config/herdr/plugins/$plugin" > /dev/null
-    done
+    $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
+      "${validDotfilesDir}/.config/herdr/plugins/close-confirm" > /dev/null
+    $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
+      "${inputs.herdr-tab-numbers}" > /dev/null
   '';
 }
