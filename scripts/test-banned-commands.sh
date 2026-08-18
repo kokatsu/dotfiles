@@ -165,6 +165,19 @@ assert_blocked "GIT_AUTHOR_EMAIL=foo@example.com git commit -m x"
 assert_blocked "env GIT_COMMITTER_NAME=foo git commit -m x"
 assert_blocked "true && git config user.email foo@example.com"
 assert_blocked "git rebase --root --exec 'git commit --amend --author=\"foo <f@e.com>\"'" 'rebase --exec wrapping an author rewrite'
+# 引用でキーを割ってもクォートを解決してから比較するため素通りしない
+assert_blocked "git config \"user.email\" foo@example.com" "quoted key: git config \"user.email\" ..."
+assert_blocked "git config user'.'email foo@example.com" "split key: a quoted dot inside the key"
+# git 2.46 以降のサブコマンド形式と、キーの大文字小文字違い
+assert_blocked "git config set user.email foo@example.com" "subcommand form: git config set ..."
+assert_blocked "git config unset user.name" "subcommand form: git config unset ..."
+assert_blocked "git config --global User.Email foo@example.com" "case-insensitive key: User.Email"
+# 値を伴わない削除系や追加系のオプションも書き込み
+assert_blocked "git config --unset user.name"
+assert_blocked "git config --add user.email foo@example.com"
+assert_blocked "git config --replace-all user.email foo@example.com"
+assert_blocked "export GIT_AUTHOR_NAME=foo"
+assert_blocked "git --config-env=user.email=EMAIL_VAR commit -m x"
 echo ""
 
 echo "--- git identity guard: 読み取りは通過すること ---"
@@ -174,6 +187,12 @@ assert_allowed "git config --get user.email && echo done" 'read then chained com
 assert_allowed "git config --list"
 assert_allowed "git log --author=kokatsu -5" 'log filter: git log --author=kokatsu'
 assert_allowed "git log --format='%an <%ae>' -1" 'log format showing author'
+assert_allowed "git config get user.email" "subcommand form: git config get ..."
+assert_allowed "git config --get-regexp '^user[.]'" "git config --get-regexp"
+# コミットメッセージは AST 上ただのテキストで、解析対象にならない
+assert_allowed 'git commit -m "docs: describe user.email handling"' 'commit message mentioning the key'
+assert_allowed 'git commit -m "support --author flag"' 'commit message mentioning --author'
+assert_allowed 'printf "%s" "git config user.email x"' 'quoted command text: printf "git config user.email x"'
 echo ""
 
 echo "--- AST command guard: 全経路でブロックされること ---"

@@ -211,8 +211,51 @@ analyze='
           elif $v == "eats_next" then (.[2:] | grep_recursive)
           else (.[1:] | grep_recursive) end)
     else (.[1:] | grep_recursive) end;
+  # Git identity comes from the includeIf entries in ~/.config/git/config.local,
+  # and user.useConfigOnly makes git fail loudly where none matches, so nothing
+  # should set it per repository. Section and key are case-insensitive.
+  def is_identity_key:
+    ascii_downcase | . == "user.email" or . == "user.name";
+  def identity_assignment:
+    ascii_downcase | startswith("user.email=") or startswith("user.name=");
+  # git config options that take a SEPARATE value; their value is data and must
+  # not be mistaken for the key or for the value that makes an invocation a write.
+  def config_operands:
+    if length == 0 then []
+    elif (.[0] as $t | ["-f", "--file", "--blob", "-t", "--type", "--default",
+      "--comment", "--value"] | index($t)) then (.[2:] | config_operands)
+    elif (.[0] | startswith("-")) then (.[1:] | config_operands)
+    else [.[0]] + (.[1:] | config_operands) end;
+  # A write is an identity key with a value after it ("git config user.email x",
+  # "git config set user.email x"), or one named by a removing/adding option.
+  # A key with nothing after it is a read ("git config --get user.email").
+  def config_identity_write:
+    . as $rest
+    | ($rest | config_operands) as $ops
+    | ([$ops | to_entries[] | select(.value | is_identity_key) | .key] | first) as $i
+    | if $i == null then false
+      else ($ops[0] // "" | ascii_downcase) as $head
+      | ($head == "set" or $head == "add" or $head == "unset"
+          or $head == "unset-all" or $head == "replace-all")
+        or ($rest | any(.[]; . == "--unset" or . == "--unset-all"
+          or . == "--replace-all" or . == "--add"))
+        or (($ops | length) > $i + 1)
+      end;
+  # git -c user.email=... and --config-env=user.email=VAR set an identity for one
+  # invocation. Checked before skip_git_globals drops the option and its value.
+  def git_global_identity:
+    if length == 0 then false
+    elif .[0] == "-c" or .[0] == "--config-env" then
+      (((.[1] // "") | identity_assignment) or (.[2:] | git_global_identity))
+    elif (.[0] | ascii_downcase | startswith("-cuser.email=")
+      or startswith("-cuser.name=")) then true
+    elif (.[0] | startswith("--config-env=")) then
+      (((.[0] | .[13:]) | identity_assignment) or (.[1:] | git_global_identity))
+    elif (.[0] | startswith("-")) then (.[1:] | git_global_identity)
+    else false end;
   def git_verdict:
-    (. | skip_git_globals) as $r
+    if git_global_identity then "GIT_IDENTITY"
+    else (. | skip_git_globals) as $r
     | if ($r | length) == 0 then empty
       else $r[0] as $sub
       # After "--" every token is a pathspec/refspec, so flag scans only look
@@ -253,14 +296,44 @@ analyze='
         elif ($sub == "fetch" or $sub == "pull")
           and ($args | has_flag(["--depth", "--shallow-since", "--shallow-exclude", "--update-shallow"]))
         then "SHALLOW"
+        elif $sub == "config" and ($r[1:] | config_identity_write)
+        then "GIT_IDENTITY"
+        # --author only rewrites authorship on the commands that record it;
+        # "git log --author" is a filter and stays allowed.
+        elif ($sub == "commit" or $sub == "am")
+          and ($args | any(.[]; is_abbrev_of("--author"; 4)))
+        then "GIT_IDENTITY"
+        # These run a command given as a single string, which shfmt parses as one
+        # word, so the identity check below never sees it. Match the fragment in
+        # the string instead - nothing legitimate passes an identity key here.
+        elif ($sub == "rebase" or $sub == "filter-branch" or $sub == "bisect")
+          and ($args | any(.[]; test("--author")
+            or (ascii_downcase | test("user\\.(email|name)"))))
+        then "GIT_IDENTITY"
         elif ($sub == "diff" or $sub == "show"
             or ($sub == "log" and ($args | any(.[]; . == "--patch"
               or (test("^-[A-Za-z0-9]") and (.[1:] | cluster_flags("GSOnL") | test("[pu]")))))))
           and (($args | any(.[]; . == "--no-ext-diff")) | not)
         then "EXTDIFF"
         else empty end
-      end;
-  [.. | objects | select(.Type? == "CallExpr") | [.Args[]? | word_text]]
+      end
+    end;
+  # GIT_AUTHOR_* / GIT_COMMITTER_* override identity without touching any config.
+  # They reach a command as an assignment prefix or an export (both Assign nodes
+  # in the AST), or as a plain word when passed through env.
+  # Assign nodes carry no Type field, so they are matched by shape: the exact
+  # variable name that follows is what makes the match meaningful.
+  ([.. | objects | .Name?.Value?]
+    | .[]
+    | select(type == "string")
+    | select(test("^GIT_(AUTHOR|COMMITTER)_(NAME|EMAIL)$"))
+    | "GIT_IDENTITY"),
+  ([.. | objects | select(.Type? == "CallExpr") | [.Args[]? | word_text]]
+    | .[]
+    | .[]
+    | select(test("^GIT_(AUTHOR|COMMITTER)_(NAME|EMAIL)="))
+    | "GIT_IDENTITY"),
+  ([.. | objects | select(.Type? == "CallExpr") | [.Args[]? | word_text]]
   | .[]
   | strip_wrappers
   | select(length > 0)
@@ -283,7 +356,7 @@ analyze='
     elif ($c == "grep" or $c == "egrep" or $c == "fgrep") and ($a | grep_recursive)
     then "GREP_R"
     elif $c == "git" then ($a | git_verdict)
-    else empty end
+    else empty end)
 '
 if ! verdicts=$(printf '%s\n' "$CMD" | shfmt --tojson 2>/dev/null | jq -r "$analyze" 2>/dev/null); then
   echo "banned-commands hook could not parse this command as bash (syntax error, or shfmt/jq unavailable); refusing to run it unchecked. Fix the command and retry." >&2
@@ -304,6 +377,7 @@ if [[ -n $verdicts ]]; then
   GIT_CLEAN) msg="Refuse git clean -fd/-fx (destructive). Inspect untracked files first." ;;
   GIT_RESET_HARD) msg="Refuse git reset --hard to a remote/historical ref. Confirm intent and run manually." ;;
   SHALLOW) msg="Refuse shallow git fetch/pull (--depth/--shallow-*) because it makes the existing repository shallow. Use a temporary shallow clone (git clone --depth), or fetch normally. --deepen/--unshallow remain allowed." ;;
+  GIT_IDENTITY) msg="Don't set or override Git identity. ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes Git fail loudly where no entry matches. Ask the user instead of choosing a value." ;;
   EXTDIFF) msg="Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out)." ;;
   *) msg="banned-commands hook produced an unknown verdict; refusing to run the command unchecked." ;;
   esac

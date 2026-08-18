@@ -10,17 +10,5 @@
   {
     "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*:[[:space:]]*>[[:space:]]*/",
     "message": "Refuse truncate-to-absolute-path pattern (: > /...). Scope the path."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]][^|;&]*user\\.(email|name)([[:space:]]+[^-|;&][^|;&]*|=)",
-    "message": "Don't set or override git identity: ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes git fail loudly when a path is uncovered. Ask the user instead of choosing a value."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(env[[:space:]]+)?GIT_(AUTHOR|COMMITTER)_(NAME|EMAIL)=",
-    "message": "Don't set or override git identity: ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes git fail loudly when a path is uncovered. Ask the user instead of choosing a value."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]]([^|;&]*[[:space:]])?(commit|am)[[:space:]][^|;&]*--author",
-    "message": "Don't set or override git identity: ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes git fail loudly when a path is uncovered. Ask the user instead of choosing a value."
   }
 ]
