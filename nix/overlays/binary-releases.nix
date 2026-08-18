@@ -229,7 +229,7 @@ in {
   # Renovate: datasource=github-releases depName=atusy/kakehashi
   kakehashi = mkBinaryRelease rec {
     pname = "kakehashi";
-    version = "0.9.0";
+    version = "0.10.0";
     hashes = {
       "aarch64-darwin" = "sha256-m6NKN1O+0cVpU4H89c0ep/acd7blWXGpDjw8K6HUTRY=";
       "x86_64-darwin" = "sha256-NlBcjw/5cF2YYfjqRfj3qm6U8jZpOgbr2eND53W9PLA=";
