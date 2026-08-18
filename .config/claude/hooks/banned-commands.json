@@ -1,9 +1,5 @@
 [
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?rm([^[:alnum:]_]|$)",
-    "message": "Use gomi instead of rm"
-  },
-  {
     "pattern": "(curl|wget)[[:space:]]+[^|;&]*\\|[[:space:]]*(sudo[[:space:]]+)?(bash|sh)([^[:alnum:]_]|$)",
     "message": "Refuse pipe-to-shell installer pattern (curl|wget … | sh). Download to a file, inspect, then run."
   },
@@ -12,47 +8,19 @@
     "message": "Refuse base64-decode-to-shell pattern."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?eval([^[:alnum:]_]|$)",
-    "message": "Refuse eval. Review the command and run it directly instead."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?dd([^|;&[:alnum:]_][^|;&]*)?[[:space:]]of=/dev/",
-    "message": "Refuse dd writing to a device. Run manually if intentional."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?mkfs\\.",
-    "message": "Refuse mkfs. Run manually if intentional."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?chmod[[:space:]]+-R[[:space:]]+0?777([^[:alnum:]_]|$)",
-    "message": "Refuse chmod -R 777. Use a tighter mode."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(sudo[[:space:]]+)?chmod[[:space:]]+0?777[[:space:]]+/([[:space:]]|$)",
-    "message": "Refuse chmod 777 /. Scope the path."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]]+push([^|;&[:alnum:]_][^|;&]*)?[[:space:]](-f|--force)([[:space:]]|$)",
-    "message": "Refuse git push -f/--force. Use --force-with-lease or run manually."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]]+clean[[:space:]]+-[a-zA-Z]*(fd|df|fx|xf|dx|xd)[a-zA-Z]*",
-    "message": "Refuse git clean -fd (destructive). Inspect untracked files first."
-  },
-  {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]]+reset[[:space:]]+--hard[[:space:]]+(origin/|upstream/|HEAD~|HEAD@)",
-    "message": "Refuse git reset --hard to a remote/historical ref. Confirm intent and run manually."
-  },
-  {
     "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*:[[:space:]]*>[[:space:]]*/",
     "message": "Refuse truncate-to-absolute-path pattern (: > /...). Scope the path."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*shred([^[:alnum:]_]|$)",
-    "message": "Refuse shred. Confirm intent and run manually."
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]][^|;&]*user\\.(email|name)([[:space:]]+[^-|;&][^|;&]*|=)",
+    "message": "Don't set or override git identity: ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes git fail loudly when a path is uncovered. Ask the user instead of choosing a value."
   },
   {
-    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(e|f)?grep([^|;&[:alnum:]_][^|;&]*)?[[:space:]](-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)([[:space:]]|$)",
-    "message": "Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.ripgreprc glob excludes."
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*(env[[:space:]]+)?GIT_(AUTHOR|COMMITTER)_(NAME|EMAIL)=",
+    "message": "Don't set or override git identity: ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes git fail loudly when a path is uncovered. Ask the user instead of choosing a value."
+  },
+  {
+    "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*git[[:space:]]([^|;&]*[[:space:]])?(commit|am)[[:space:]][^|;&]*--author",
+    "message": "Don't set or override git identity: ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes git fail loudly when a path is uncovered. Ask the user instead of choosing a value."
   }
 ]
