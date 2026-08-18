@@ -134,11 +134,11 @@ in {
   # Renovate: datasource=github-releases depName=Wilfred/difftastic
   difftastic = mkBinaryRelease rec {
     pname = "difftastic";
-    version = "0.69.0";
+    version = "0.70.0";
     hashes = {
-      "aarch64-darwin" = "sha256-yVi4eIWlglo1bFiZrH7N11KnlCCEGZ8r5LwL+MnejjM=";
-      "aarch64-linux" = "sha256-q9L0LSr9QkMStIYqp8e7AyBEdnCuIvq8xRWdsD4tzL0=";
-      "x86_64-linux" = "sha256-A425ag6PzmnyVU4z4E/3X79vlupFy07bntYgOixHUP8=";
+      "aarch64-darwin" = "sha256-GSEmciH8tXedMMTcwLO0Ygq76FH/1VlqRxVXZYFRj1E=";
+      "aarch64-linux" = "sha256-5yloSQfWfRoXJ6CPRDh34Z5A7rLv682Vwbj3/uQoTo4=";
+      "x86_64-linux" = "sha256-KZfSu+YgU07b15sASfAM6E7vP+2xXHgiRW1Y442LBck=";
     };
     platformMap = currentAppleGnuPlatformMap;
     url = platform: "https://github.com/Wilfred/difftastic/releases/download/${version}/difft-${platform}.tar.gz";
