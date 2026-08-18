@@ -2,7 +2,8 @@
 
 approval_policy = "on-request"
 check_for_update_on_startup = false
-model_reasoning_effort = "xhigh"
+file_opener = "none"
+model_reasoning_effort = "medium"
 personality = "pragmatic"
 plan_mode_reasoning_effort = "xhigh"
 project_doc_fallback_filenames = ["CLAUDE.md"]
@@ -28,16 +29,22 @@ min_rate_limit_remaining_percent = 50
 [sandbox_workspace_write]
 network_access = false
 
+[shell_environment_policy]
+ignore_default_excludes = false
+
 [tools]
 web_search = { context_size = "medium", location = { country = "JP", timezone = "Asia/Tokyo" } }
 
 [tui]
 notifications = true
 notification_condition = "always"
+resume_cwd = "session"
 status_line = [
   "model-with-reasoning",
-  "context-remaining",
-  "context-used",
+  # "context-remaining",
+  # "context-used",
+  "current-dir",
+  "git-branch",
   "five-hour-limit",
   "weekly-limit",
   "codex-version",
