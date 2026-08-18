@@ -10,9 +10,12 @@ CMD=$(echo "$INPUT" | jq -r '.tool_input.command')
 # ordinary bypasses but is not a security boundary for arbitrary Bash access.
 printf '%s' "$INPUT" | bash "$HOOKS_DIR/herdr-peer-command-guard.sh"
 
-# Parse the full ruleset in two jq passes so the per-rule match loop can run
-# entirely in-shell. With ~13 rules this avoids ~26 jq subprocess forks per
-# Bash tool call (this hook runs on every Claude Bash invocation).
+# banned-commands.json holds only textual patterns (pipe-to-shell, redirect
+# targets, env-assignment prefixes) that have no single CallExpr to anchor on;
+# command-name rules live in the AST analysis below, which regex separator
+# lists cannot cover (newlines, then/do, wrappers, backticks all bypass them).
+# Parse the ruleset in two jq passes so the per-rule match loop can run
+# entirely in-shell, avoiding two jq subprocess forks per rule per Bash call.
 # while-read instead of mapfile to stay compatible with stock macOS Bash 3.2.
 patterns=()
 messages=()
@@ -26,21 +29,23 @@ for i in "${!patterns[@]}"; do
   fi
 done
 
-# Git-specific guards (external-diff and shallow-fetch). Both are per-command
-# rules, kept out of banned-commands.json: each executed command is taken from
-# the bash AST (shfmt --tojson) and analyzed argument-wise in jq, keeping
-# CallExpr.Args as a JSON array so argument boundaries survive. Words are
-# resolved (quotes, backslashes, ANSI-C \x/\u/\U/octal escapes), wrappers
-# (command/env with their options) are stripped, git global options are skipped
-# to find the subcommand, and flags are compared as whole arguments — quoting
-# can neither hide a flag ("--depth") nor fake one ('--depth 1' as a single
-# argument). Comments and heredoc bodies are plain text in the AST and never
-# analyzed; command substitutions (even inside double quotes or unquoted
-# heredocs) contain real CallExpr nodes and are visited by the recursive walk.
+# Command-name guards (rm/eval/dd/mkfs/chmod/shred/grep -r and the git rules):
+# each executed command is taken from the bash AST (shfmt --tojson) and
+# analyzed argument-wise in jq, keeping CallExpr.Args as a JSON array so
+# argument boundaries survive. Words are resolved (quotes, backslashes, ANSI-C
+# \x/\u/\U/octal escapes), wrappers (command/env/sudo/doas with their options)
+# are stripped, git global options are skipped to find the subcommand, and
+# flags are compared as whole arguments — quoting can neither hide a flag
+# ("--depth") nor fake one ('--depth 1' as a single argument). Matching the
+# first word of every CallExpr covers positions a separator regex cannot:
+# newline-separated commands, then/do bodies, backticks, and wrapper prefixes.
+# Comments and heredoc bodies are plain text in the AST and never analyzed;
+# command substitutions (even inside double quotes or unquoted heredocs)
+# contain real CallExpr nodes and are visited by the recursive walk.
 # If the command cannot be parsed (bash syntax error, shfmt/jq missing), fail
 # closed with exit 2: an unparsed command must not run unchecked.
 # shellcheck disable=SC2016  # $flags etc. are jq variables, not shell expansions
-analyze_git='
+analyze='
   def hexval:
     {"0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,
       "a":10,"b":11,"c":12,"d":13,"e":14,"f":15}[.];
@@ -76,8 +81,23 @@ analyze_git='
         | gsub("\u0027(?<q>[^\u0027]*)\u0027"; "\(.q)")
         | gsub("\\\\(?<c>.)"; "\(.c)")
       );
+  # Short options may be clustered ("sudo -nu root"): scan the cluster left to
+  # right; an argument-taking letter at the end consumes the next word, one in
+  # the middle takes the rest of the token as its attached value.
+  def cluster_eats($argchars):
+    if length == 0 then false
+    else .[0:1] as $c
+    | if ($argchars | contains($c)) then (length == 1)
+      else (.[1:] | cluster_eats($argchars)) end
+    end;
+  # Clusters containing -v/-V make command non-executing, so only pure -p
+  # clusters are stripped. After "--" the next word is the command name even
+  # when it looks like an option, so option stripping stops there.
   def strip_command_opts:
-    if length > 0 and (.[0] == "-p" or .[0] == "--") then (.[1:] | strip_command_opts) else . end;
+    if length == 0 then .
+    elif .[0] == "--" then .[1:]
+    elif (.[0] | test("^-p+$")) then (.[1:] | strip_command_opts)
+    else . end;
   def strip_env_opts:
     if length == 0 then .
     elif .[0] == "-u" or .[0] == "-C" or .[0] == "--unset" or .[0] == "--chdir" then (.[2:] | strip_env_opts)
@@ -91,12 +111,39 @@ analyze_git='
         then (((.[1] // "" | s_split) + .[2:]) | strip_env_opts)
         else ((($value | s_split) + .[1:]) | strip_env_opts)
         end
+    elif (.[0] | test("^-[A-Za-z0]+$")) then
+      (if (.[0] | .[1:] | cluster_eats("uC")) then (.[2:] | strip_env_opts)
+        else (.[1:] | strip_env_opts) end)
     elif (.[0] | test("^-|^[A-Za-z_][A-Za-z0-9_]*=")) then (.[1:] | strip_env_opts)
+    else . end;
+  def strip_sudo_opts:
+    if length == 0 then .
+    elif .[0] == "--" then .[1:]
+    elif .[0] == "--chdir" or .[0] == "--chroot" or .[0] == "--close-from"
+      or .[0] == "--command-timeout" or .[0] == "--group" or .[0] == "--host"
+      or .[0] == "--other-user" or .[0] == "--prompt" or .[0] == "--role"
+      or .[0] == "--type" or .[0] == "--user" then (.[2:] | strip_sudo_opts)
+    elif (.[0] | test("^-[A-Za-z]+$")) then
+      (if (.[0] | .[1:] | cluster_eats("aCDghprRtTuU")) then (.[2:] | strip_sudo_opts)
+        else (.[1:] | strip_sudo_opts) end)
+    elif (.[0] | test("^-|^[A-Za-z_][A-Za-z0-9_]*=")) then (.[1:] | strip_sudo_opts)
+    else . end;
+  def strip_exec_opts:
+    if length == 0 then .
+    elif .[0] == "--" then .[1:]
+    elif (.[0] | test("^-[A-Za-z]+$")) then
+      (if (.[0] | .[1:] | cluster_eats("a")) then (.[2:] | strip_exec_opts)
+        else (.[1:] | strip_exec_opts) end)
+    elif (.[0] | test("^-")) then (.[1:] | strip_exec_opts)
     else . end;
   def strip_wrappers:
     if length == 0 then .
     elif .[0] == "command" then (.[1:] | strip_command_opts | strip_wrappers)
     elif .[0] == "env" then (.[1:] | strip_env_opts | strip_wrappers)
+    elif .[0] == "sudo" or .[0] == "doas" then (.[1:] | strip_sudo_opts | strip_wrappers)
+    elif .[0] == "exec" then (.[1:] | strip_exec_opts | strip_wrappers)
+    elif .[0] == "builtin" then
+      (.[1:] | (if length > 0 and .[0] == "--" then .[1:] else . end) | strip_wrappers)
     else . end;
   def skip_git_globals:
     if length == 0 then .
@@ -106,34 +153,160 @@ analyze_git='
     else . end;
   def has_flag($flags):
     any(.[]; . as $a | any($flags[]; . as $f | $a == $f or ($a | startswith($f + "="))));
+  # Walk a git subcommand argument list up to the pathspec terminator, first
+  # consuming the separate value of any option in $valopts — that value may
+  # itself be the string "--", which must not read as the terminator ("git
+  # clean -e -- -fd"). Values are dropped so they never scan as flags.
+  # Flag letters of a short cluster stop at the first argument-taking letter:
+  # in "git clean -fed" the "d" is the attached value of -e, not a flag. A
+  # non-alphanumeric character also ends the scan, so an attached value with
+  # punctuation ("-fofoo-bar") cannot hide the flags before it.
+  def cluster_flags($argchars):
+    if length == 0 then ""
+    else .[0:1] as $c
+    | if ($argchars | contains($c)) or (($c | test("[A-Za-z0-9]")) | not) then ""
+      else ($c + (.[1:] | cluster_flags($argchars))) end
+    end;
+  def git_opts($valopts; $argchars):
+    if length == 0 then []
+    elif (.[0] as $t | $valopts | index($t)) then ([.[0]] + (.[2:] | git_opts($valopts; $argchars)))
+    elif (.[0] | test("^-[A-Za-z0-9]")) and (.[0] | .[1:] | cluster_eats($argchars))
+    then ([.[0]] + (.[2:] | git_opts($valopts; $argchars)))
+    elif .[0] == "--" then []
+    else [.[0]] + (.[1:] | git_opts($valopts; $argchars)) end;
+  # Option scanning stops at "--"; everything after it is an operand, so a file
+  # literally named "-R" cannot look like a flag.
+  def opts_before_ddash:
+    if length == 0 then [] elif .[0] == "--" then [] else [.[0]] + (.[1:] | opts_before_ddash) end;
+  # GNU getopt_long / git parse-options accept any unambiguous long-option
+  # prefix ("--rec" is --recursive), so flag checks match prefixes down to the
+  # shortest unambiguous length. An attached =value is cut before comparing.
+  def is_abbrev_of($full; $minlen):
+    sub("=.*$"; "") as $t
+    | ($t | length) >= $minlen and ($full | startswith($t));
+  # grep option walk: "--" ends option parsing, and the operand of -e/-f
+  # (pattern / pattern-file) or -d/-D (action) is data whether separate
+  # ("-e -r"), attached ("-eerror", "-dread"), or clustered ("-ner file"),
+  # so only an r/R that appears before any of those letters in a cluster
+  # means recursion. Digits stay in the scan: "-n2r" is a valid recursive
+  # cluster (context count), so the cluster shape allows them.
+  def grep_cluster_verdict:
+    if length == 0 then "plain"
+    elif (.[0:1] | test("[rR]")) then "recursive"
+    elif (.[0:1] | test("[efdD]")) then (if length == 1 then "eats_next" else "plain" end)
+    else (.[1:] | grep_cluster_verdict) end;
+  def grep_recursive:
+    if length == 0 then false
+    elif .[0] == "--" then false
+    elif (.[0] | is_abbrev_of("--recursive"; 5) or is_abbrev_of("--dereference-recursive"; 5))
+    then true
+    elif (.[0]
+      | (contains("=") | not)
+        and (is_abbrev_of("--regexp"; 5) or . == "--file"
+          or is_abbrev_of("--devices"; 5) or is_abbrev_of("--directories"; 5)))
+    then (.[2:] | grep_recursive)
+    elif (.[0] | test("^-[A-Za-z0-9]+$")) then
+      ((.[0] | .[1:] | grep_cluster_verdict) as $v
+        | if $v == "recursive" then true
+          elif $v == "eats_next" then (.[2:] | grep_recursive)
+          else (.[1:] | grep_recursive) end)
+    else (.[1:] | grep_recursive) end;
+  def git_verdict:
+    (. | skip_git_globals) as $r
+    | if ($r | length) == 0 then empty
+      else $r[0] as $sub
+      # After "--" every token is a pathspec/refspec, so flag scans only look
+      # before the terminator — both to keep a path named "--force" from
+      # reading as a flag and to keep a path named "--no-ext-diff" from
+      # defusing the external-diff guard.
+      | (if $sub == "clean" then {opts: ["-e", "--exclude"], chars: "e"}
+          elif $sub == "fetch" or $sub == "pull" then
+            {opts: ["--upload-pack", "-o", "--server-option", "--negotiation-tip", "--refmap",
+              "-j", "--jobs", "--depth", "--shallow-since", "--shallow-exclude"], chars: "jo"}
+          elif $sub == "push" then
+            {opts: ["--receive-pack", "--exec", "--repo", "-o", "--push-option"], chars: "o"}
+          # Verified against the installed git: these accept a SEPARATE value
+          # (bare form errors, "opt value" runs). Options that are bare-valid
+          # (-U, --unified, --pretty, --format) or equals-only (--date,
+          # --max-count, --skip, -l) must NOT be listed — treating them as
+          # consuming would eat a real "--" terminator.
+          elif $sub == "diff" or $sub == "show" or $sub == "log" then
+            {opts: ["-G", "-S", "-O", "-n", "-L", "--since", "--until", "--author",
+              "--committer", "--grep", "--output", "--rotate-to", "--skip-to",
+              "--find-object", "--decorate-refs", "--decorate-refs-exclude"],
+              chars: "GSOnL"}
+          else {opts: [], chars: ""} end) as $vo
+      | ($r[1:] | git_opts($vo.opts; $vo.chars)) as $args
+      | if $sub == "push"
+          and ($args | any(.[]; . == "--force"
+            or (test("^-[A-Za-z0-9]") and (.[1:] | cluster_flags("o") | contains("f")))))
+        then "FORCE_PUSH"
+        elif $sub == "clean"
+          and ((([$args[] | select(test("^-[A-Za-z0-9]")) | .[1:] | cluster_flags("e")] | add // "")
+              + (if ($args | any(.[]; is_abbrev_of("--force"; 3))) then "f" else "" end)) as $f
+            | ($f | contains("f")) and (($f | contains("d")) or ($f | contains("x"))))
+        then "GIT_CLEAN"
+        elif $sub == "reset" and ($args | any(.[]; . == "--hard"))
+          and ($args | any(.[]; startswith("origin/") or startswith("upstream/")
+              or startswith("HEAD~") or startswith("HEAD@")))
+        then "GIT_RESET_HARD"
+        elif ($sub == "fetch" or $sub == "pull")
+          and ($args | has_flag(["--depth", "--shallow-since", "--shallow-exclude", "--update-shallow"]))
+        then "SHALLOW"
+        elif ($sub == "diff" or $sub == "show"
+            or ($sub == "log" and ($args | any(.[]; . == "--patch"
+              or (test("^-[A-Za-z0-9]") and (.[1:] | cluster_flags("GSOnL") | test("[pu]")))))))
+          and (($args | any(.[]; . == "--no-ext-diff")) | not)
+        then "EXTDIFF"
+        else empty end
+      end;
   [.. | objects | select(.Type? == "CallExpr") | [.Args[]? | word_text]]
   | .[]
   | strip_wrappers
-  | select(length > 0 and .[0] == "git")
-  | (.[1:] | skip_git_globals) as $r
-  | select(($r | length) > 0)
-  | $r[0] as $sub
-  | ($r[1:]) as $args
-  | if ($sub == "fetch" or $sub == "pull")
-      and ($args | has_flag(["--depth", "--shallow-since", "--shallow-exclude", "--update-shallow"]))
-    then "SHALLOW"
-    elif ($sub == "diff" or $sub == "show"
-        or ($sub == "log" and ($args | any(.[]; . == "-p" or . == "-u" or . == "--patch"))))
-      and (($args | any(.[]; . == "--no-ext-diff")) | not)
-    then "EXTDIFF"
+  | select(length > 0)
+  | .[0] as $c
+  | .[1:] as $a
+  | if $c == "rm" then "RM"
+    elif $c == "eval" then "EVAL"
+    elif $c == "shred" then "SHRED"
+    elif ($c | startswith("mkfs.")) then "MKFS"
+    elif $c == "dd" and ($a | any(.[]; startswith("of=/dev/"))) then "DD_DEV"
+    elif $c == "chmod" then
+      # In --reference mode there is no numeric mode argument at all: any
+      # "777" is a filename (the reference file or a target path).
+      (if ($a | opts_before_ddash | any(.[]; is_abbrev_of("--reference"; 5))) then empty
+        elif ($a | any(.[]; . == "777" or . == "0777")) | not then empty
+        elif ($a | opts_before_ddash | any(.[]; test("^-[a-zA-Z]*R") or is_abbrev_of("--recursive"; 5)))
+        then "CHMOD_R_777"
+        elif ($a | any(.[]; . == "/")) then "CHMOD_777_ROOT"
+        else empty end)
+    elif ($c == "grep" or $c == "egrep" or $c == "fgrep") and ($a | grep_recursive)
+    then "GREP_R"
+    elif $c == "git" then ($a | git_verdict)
     else empty end
 '
-if ! verdicts=$(printf '%s\n' "$CMD" | shfmt --tojson 2>/dev/null | jq -r "$analyze_git" 2>/dev/null); then
+if ! verdicts=$(printf '%s\n' "$CMD" | shfmt --tojson 2>/dev/null | jq -r "$analyze" 2>/dev/null); then
   echo "banned-commands hook could not parse this command as bash (syntax error, or shfmt/jq unavailable); refusing to run it unchecked. Fix the command and retry." >&2
   exit 2
 fi
 
-if [[ $verdicts == *SHALLOW* ]]; then
-  echo "Refuse shallow git fetch/pull (--depth/--shallow-*) because it makes the existing repository shallow. Use a temporary shallow clone (git clone --depth), or fetch normally. --deepen/--unshallow remain allowed." >&2
-  exit 2
-fi
-
-if [[ $verdicts == *EXTDIFF* ]]; then
-  echo "Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out)." >&2
+if [[ -n $verdicts ]]; then
+  case $(printf '%s\n' "$verdicts" | head -n1) in
+  RM) msg="Use gomi instead of rm" ;;
+  EVAL) msg="Refuse eval. Review the command and run it directly instead." ;;
+  SHRED) msg="Refuse shred. Confirm intent and run manually." ;;
+  MKFS) msg="Refuse mkfs. Run manually if intentional." ;;
+  DD_DEV) msg="Refuse dd writing to a device. Run manually if intentional." ;;
+  CHMOD_R_777) msg="Refuse chmod -R 777. Use a tighter mode." ;;
+  CHMOD_777_ROOT) msg="Refuse chmod 777 /. Scope the path." ;;
+  GREP_R) msg="Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.ripgreprc glob excludes." ;;
+  FORCE_PUSH) msg="Refuse git push -f/--force. Use --force-with-lease or run manually." ;;
+  GIT_CLEAN) msg="Refuse git clean -fd/-fx (destructive). Inspect untracked files first." ;;
+  GIT_RESET_HARD) msg="Refuse git reset --hard to a remote/historical ref. Confirm intent and run manually." ;;
+  SHALLOW) msg="Refuse shallow git fetch/pull (--depth/--shallow-*) because it makes the existing repository shallow. Use a temporary shallow clone (git clone --depth), or fetch normally. --deepen/--unshallow remain allowed." ;;
+  EXTDIFF) msg="Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out)." ;;
+  *) msg="banned-commands hook produced an unknown verdict; refusing to run the command unchecked." ;;
+  esac
+  printf '%s\n' "$msg" >&2
   exit 2
 fi
