@@ -1,10 +1,11 @@
 -- 補助系キーマップ (translate / SQL helpers / yank path / diagnostic copy / memo / daily)
 
--- メモ作成: <leader>m は Snacks の Bookmarks が使用中のため <leader>M 系に置く
+-- メモ作成: <leader>m は Snacks の Bookmarks が使用中のため <leader>M に置く
+-- local メモは <leader>ML だと <leader>M と timeoutlen 待ちで衝突するため <leader>L に分離
 vim.keymap.set('n', '<leader>M', function()
   require('utils.memo').open()
 end, { noremap = true, desc = 'Create timestamped memo' })
-vim.keymap.set('n', '<leader>ML', function()
+vim.keymap.set('n', '<leader>L', function()
   require('utils.memo').open({ local_memo = true })
 end, { noremap = true, desc = 'Create timestamped local memo' })
 
