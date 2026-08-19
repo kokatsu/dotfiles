@@ -227,8 +227,15 @@ for e in entries:
 }
 
 # --- agent-browser で記事本文を取得 ---
+# Chrome を起動しない read を先に試す。read は markdown を返すため見出しや箇条書きが
+# 残り、ナビゲーションも混ざらない。非ブラウザ UA を弾くサイト (403) や JS で本文を
+# 描画するサイトだけ、従来どおり Chrome を起動する経路に落とす。
 fetch_article_text() {
-  local url="$1"
+  local url="$1" text
+  if text=$(agent-browser --max-output 20000 read "$url" 2>/dev/null) && [[ -n "$text" ]]; then
+    printf '%s' "$text"
+    return 0
+  fi
   agent-browser open "$url" >/dev/null 2>&1 || return 1
   agent-browser --max-output 20000 get text body 2>/dev/null || return 1
 }
