@@ -1,10 +1,29 @@
 # Browser Research Reference
 
 Deeper agent-browser operations. Read this only when the quick path in `SKILL.md`
-(open → extract → close) is not enough.
+(read → fall back to open → extract → close) is not enough.
 
-The session opened in `SKILL.md` step 1 is still active — do not re-open. Every
-`open` must still end with a matching `agent-browser close`.
+Commands below that act on a page assume a session opened in `SKILL.md` step 2 —
+do not re-open it, and end it with a matching `agent-browser close`. The `read`
+options in the next section need no session.
+
+## Read options
+
+`read` fetches without launching Chrome, in this order: `Accept: text/markdown`
+→ the same URL with `.md` appended → the nearest ancestor `llms.txt` → readable
+text extracted from the HTML.
+
+```bash
+agent-browser read "<URL>" --raw          # response body as-is, no HTML extraction
+agent-browser read "<URL>" --require-md   # fail unless the server returns text/markdown
+agent-browser read "<URL>" --llms full    # read the nearest ancestor llms-full.txt
+agent-browser read "<URL>" --timeout 15000
+agent-browser read "<URL>" --json
+```
+
+Omit the URL to read the rendered DOM of the active tab instead — this is the
+cheapest way to get markdown out of a page that needed a browser to render.
+`--llms` and `--require-md` with no URL use the active tab's URL.
 
 ## Get detailed content
 
