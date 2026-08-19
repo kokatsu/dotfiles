@@ -224,6 +224,32 @@ in {
     };
   };
 
+  # agent-browser - AI エージェント向けブラウザ自動化 CLI
+  # nixpkgs は 0.27.0 で停滞しているため overlay で上書きする。v0.30.0 で入った
+  # read (Chrome を起動せず markdown を取得する) を browser-research スキルと
+  # feed-summarize が使う。Linux は静的リンクの musl ビルドを選ぶ (mise と同じ方針)。
+  # Renovate: datasource=github-releases depName=vercel-labs/agent-browser
+  agent-browser = mkBinaryRelease rec {
+    pname = "agent-browser";
+    version = "0.34.0";
+    hashes = {
+      "aarch64-darwin" = "sha256-1oCnqWq4bpq50rVxsSkZt2HpNoKtHecUu9WshJyNfJw=";
+      "aarch64-linux" = "sha256-wIZPsgbjIa9IpG+4MxzwiuYLP8wQRiMsHRyELbT8QMo=";
+      "x86_64-linux" = "sha256-3UdSuh3vgcdENQTChLZVnSja2OzQK1+uymyvT8H7lI4=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "darwin-arm64";
+      "aarch64-linux" = "linux-musl-arm64";
+      "x86_64-linux" = "linux-musl-x64";
+    };
+    url = platform: "https://github.com/vercel-labs/agent-browser/releases/download/v${version}/agent-browser-${platform}";
+    meta = {
+      description = "Browser automation CLI for AI agents";
+      homepage = "https://github.com/vercel-labs/agent-browser";
+      license = "asl20";
+    };
+  };
+
   # kakehashi - Tree-sitter Language Server
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=atusy/kakehashi

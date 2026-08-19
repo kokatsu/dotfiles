@@ -158,6 +158,7 @@
     commonOverlays = [
       # upstream overlay (pkgs.moonbit-bin.* を生やす)
       inputs.moonbit-overlay.overlays.default
+      customOverlays.agent-browser
       customOverlays.biome
       customOverlays.cc-statusline
       customOverlays.claude-code

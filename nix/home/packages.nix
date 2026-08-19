@@ -38,7 +38,7 @@ in {
   home.packages = with pkgs;
     [
       # https://github.com/vercel-labs/agent-browser
-      agent-browser # ブラウザ自動化エージェント
+      agent-browser # ブラウザ自動化エージェント (nixpkgs が停滞しているため overlay)
       # https://github.com/NousResearch/hermes-agent
       hermes-agent # 自己改善型 AI エージェント (long-term memory + skill learning, overlay)
 
