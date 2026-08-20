@@ -3,6 +3,7 @@
 # Alt-h でfzfを起動し、選択したファイルパスをClaude Code/Codexに送信する
 # tmux版: .config/tmux/scripts/octorus-history.sh
 
+herdr_bin=${HERDR_BIN_PATH:-herdr}
 RALLY_DIR="$HOME/.cache/octorus/rally"
 
 cd "$HERDR_ACTIVE_PANE_CWD" 2>/dev/null || true
@@ -29,4 +30,4 @@ selected=$(echo "$files" |
     --delimiter '/' \
     --with-nth -3,-2,-1)
 
-[[ -n "$selected" ]] && herdr pane send-text "$HERDR_ACTIVE_PANE_ID" "$selected"
+[[ -n "$selected" ]] && "$herdr_bin" pane send-text "$HERDR_ACTIVE_PANE_ID" "$selected"

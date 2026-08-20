@@ -16,6 +16,8 @@
 
 set -euo pipefail
 
+herdr_bin=${HERDR_BIN_PATH:-herdr}
+
 cd "$HERDR_ACTIVE_PANE_CWD"
 
 CLAUDE_PATH_PICK_FILE=$(mktemp -t claude-path-pick.XXXXXX)
@@ -34,7 +36,7 @@ fi
 [[ ! -s "$CLAUDE_PATH_PICK_FILE" ]] && exit 0
 
 is_codex=false
-if herdr pane process-info --pane "$HERDR_ACTIVE_PANE_ID" |
+if "$herdr_bin" pane process-info --pane "$HERDR_ACTIVE_PANE_ID" |
   jq -e 'any(.result.process_info.foreground_processes[]?; .name == "codex")' >/dev/null 2>&1; then
   is_codex=true
 fi
@@ -59,4 +61,4 @@ while IFS= read -r p || [[ -n "$p" ]]; do
   fi
 done <"$CLAUDE_PATH_PICK_FILE"
 
-herdr pane send-text "$HERDR_ACTIVE_PANE_ID" "$payload"
+"$herdr_bin" pane send-text "$HERDR_ACTIVE_PANE_ID" "$payload"

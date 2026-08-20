@@ -3,6 +3,12 @@
 # Alt-r で fzf を起動し、選択したフィードの URL をブラウザで開く
 # WezTerm 版 Alt+r (keybinds.lua、コメントアウト済み) の herdr 移植。
 # データ生成 (feed-watch systemd timer) が WSL 限定のため実質 WSL 専用
+#
+# `[[ ... ]] && ... && exit 0` は && リストの非末尾コマンドの失敗として扱われる
+# ため set -e では終了しない。fzf キャンセル時は pipefail で assignment が失敗
+# して終了するが、直後の空チェックと結果は同じ
+
+set -euo pipefail
 
 # feed-watch (bin/scripts/feed-watch) と同じ Windows 側出力先の解決
 get_status_dir() {
@@ -27,7 +33,10 @@ get_status_dir() {
   return 1
 }
 
-STATUS_FILE="$(get_status_dir)/status.json"
+# get_status_dir の失敗 (Windows 側ユーザーを解決できない) で set -e により
+# 無言終了しないよう、空パスに倒して下の未検出メッセージへ流す
+status_dir=$(get_status_dir) || status_dir=""
+STATUS_FILE="$status_dir/status.json"
 
 [[ ! -f "$STATUS_FILE" ]] && echo "No feed-watch data found" && read -r && exit 0
 

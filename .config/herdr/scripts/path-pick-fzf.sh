@@ -14,6 +14,8 @@
 
 set -euo pipefail
 
+herdr_bin=${HERDR_BIN_PATH:-herdr}
+
 cd "$HERDR_ACTIVE_PANE_CWD"
 
 selected=$(fd --type f --hidden --no-ignore --exclude .git --exclude node_modules . |
@@ -23,7 +25,7 @@ selected=$(fd --type f --hidden --no-ignore --exclude .git --exclude node_module
 
 [[ -z "$selected" ]] && exit 0
 
-if herdr pane process-info --pane "$HERDR_ACTIVE_PANE_ID" |
+if "$herdr_bin" pane process-info --pane "$HERDR_ACTIVE_PANE_ID" |
   jq -e 'any(.result.process_info.foreground_processes[]?; .name == "codex")' >/dev/null 2>&1; then
   # Codex: "@" を付けずスペース区切り
   payload=$(printf '%s\n' "$selected" | tr '\n' ' ')
@@ -32,4 +34,4 @@ else
   payload=$(printf '%s\n' "$selected" | sed 's|^|@|' | tr '\n' ' ')
 fi
 
-herdr pane send-text "$HERDR_ACTIVE_PANE_ID" "$payload"
+"$herdr_bin" pane send-text "$HERDR_ACTIVE_PANE_ID" "$payload"

@@ -15,6 +15,10 @@ in {
   # Ghostty と同じく catppuccin.flavor から導出する。accent はアクティブペイン枠色を
   # 担うキー (ui.accent)。他ツールと同じ blue で揃える
   #
+  # ui.status_indicators = "symbols" (0.8.2 で追加) はエージェント状態を色付き
+  # ドットではなく blocked/working/done/idle/unknown ごとの静的グリフで描く。
+  # 色だけに依存せず一瞥で判別できる
+  #
   # [[keys.command]] は tmux の Alt+v/c/g/h ポップアップの herdr 移植版
   # (.config/herdr/scripts/*.sh)。tmux 版と違い bind 時点での条件分岐が
   # できないため claude/codex 判定はスクリプト内で実行時に行う。
@@ -30,6 +34,8 @@ in {
   #   (WezTerm 側の OPT+矢印 SendString と Alt 系バインドは撤去済みが前提)
   # - alt+1..9 focus_agent は左右どちらの Option でも可
   #   (mac.lua で send_composed_key_* = false)
+  # - alt+shift+矢印 move_tab_* (0.8.2 で追加) はタブの並べ替え。alt+矢印 と
+  #   違い WezTerm 側に元から binding がないため無効化不要
   # 明示していないキーは herdr デフォルト (split_vertical=prefix+v,
   # split_horizontal=prefix+minus, settings=prefix+s, zoom=prefix+z,
   # switch_tab=prefix+1..9, workspace_picker=prefix+w,
@@ -50,6 +56,7 @@ in {
       [ui]
       accent = "${p.blue.hex}"
       show_agent_labels_on_pane_borders = true
+      status_indicators = "symbols"
 
       [ui.sidebar.agents]
       row_gap = 1
@@ -73,6 +80,8 @@ in {
       [keys]
       prefix = "ctrl+space"
       new_tab = "prefix+t"
+      move_tab_previous = "alt+shift+left"
+      move_tab_next = "alt+shift+right"
       # prefix+x は close-pane-confirm.sh (custom command) に譲る。
       # 無効化しないとデフォルトの close_pane が勝ち custom command 側が捨てられる
       close_pane = ""

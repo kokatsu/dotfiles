@@ -14,7 +14,6 @@ set -euo pipefail
 
 herdr_bin=${HERDR_BIN_PATH:-herdr}
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
-shell_name=${SHELL##*/}
 cwd_args=()
 
 if [[ -n "${HERDR_ACTIVE_PANE_CWD:-}" ]]; then
@@ -44,15 +43,18 @@ start_agent_if_needed() {
   local pane_state
   local process_info
 
+  # 素のシェルかどうかは $SHELL 名ではなく shell_pid との一致で判定する。
+  # terminal.default_shell を設定してもヘルパー側の $SHELL に引きずられない
   process_info=$("$herdr_bin" pane process-info --pane "$pane_id")
   pane_state=$(
-    jq -er --arg agent "$agent" --arg shell "$shell_name" '
-      .result.process_info.foreground_processes as $processes
+    jq -er --arg agent "$agent" '
+      .result.process_info as $info
+      | $info.foreground_processes as $processes
       | select($processes | type == "array")
       | if any($processes[]?; .name == $agent) then
           "running"
         elif ($processes | length) > 0
-          and all($processes[]; .name == $shell)
+          and all($processes[]; .pid == $info.shell_pid)
         then
           "shell"
         else

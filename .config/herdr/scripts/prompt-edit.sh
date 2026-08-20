@@ -6,6 +6,8 @@
 
 set -euo pipefail
 
+herdr_bin=${HERDR_BIN_PATH:-herdr}
+
 # .claude 拡張子で専用設定を適用しつつ、mktemp -d で衝突・漏洩を回避
 TMPDIR_PROMPT=$(mktemp -d -t claude-prompt.XXXXXX)
 TMPFILE="$TMPDIR_PROMPT/prompt.claude"
@@ -19,5 +21,5 @@ if [[ -s "$TMPFILE" ]]; then
   CONTENT=$(cat "$TMPFILE")
 
   # herdrのペインが閉じた後、起動元ペインに内容を送信
-  herdr pane send-text "$HERDR_ACTIVE_PANE_ID" "$CONTENT"
+  "$herdr_bin" pane send-text "$HERDR_ACTIVE_PANE_ID" "$CONTENT"
 fi
