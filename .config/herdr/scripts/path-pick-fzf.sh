@@ -6,8 +6,9 @@
 #
 # tmux版はbind時点でpane_current_commandからagentを判定して別スクリプトに
 # 振り分けていたが、herdrは1キー=1コマンド固定で振り分けができないため、
-# 起動元ペインのforeground processをherdr pane process-infoで調べて
-# このスクリプト内で実行時に判定する。
+# 起動元ペインのエージェントを herdr pane get で調べてこのスクリプト内で
+# 実行時に判定する。foreground process 名の手動マッチではなく herdr 自身の
+# 検出結果 (.result.pane.agent) を使う。エージェントなしのペインは null
 #
 # Codex CLI は入力欄で "@" を打つと内蔵fuzzy pickerが開く仕様のため、
 # "@" prefixを付けずに相対パス文字列だけを送る。
@@ -25,8 +26,11 @@ selected=$(fd --type f --hidden --no-ignore --exclude .git --exclude node_module
 
 [[ -z "$selected" ]] && exit 0
 
-if "$herdr_bin" pane process-info --pane "$HERDR_ACTIVE_PANE_ID" |
-  jq -e 'any(.result.process_info.foreground_processes[]?; .name == "codex")' >/dev/null 2>&1; then
+# 取得に失敗しても中断せず、Claude 形式にフォールバックする
+agent=$("$herdr_bin" pane get "$HERDR_ACTIVE_PANE_ID" |
+  jq -r '.result.pane.agent // ""') || agent=""
+
+if [[ "$agent" == codex ]]; then
   # Codex: "@" を付けずスペース区切り
   payload=$(printf '%s\n' "$selected" | tr '\n' ' ')
 else
