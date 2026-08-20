@@ -14,7 +14,6 @@
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5",
     "CC_STATUSLINE_BAR_WIDTH": "0",
     "CC_STATUSLINE_SHOW_SESSION": "0",
-    "CLAUDE_CODE_DISABLE_MOUSE_CLICKS": "1",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "DISABLE_INSTALLATION_CHECKS": "1",
     "DISABLE_UPDATES": "1"
@@ -94,6 +93,5 @@
     "codex@openai-codex": true
   },
   "language": "japanese",
-  "alwaysThinkingEnabled": true,
-  "tui": "fullscreen"
+  "alwaysThinkingEnabled": true
 }
