@@ -30,16 +30,22 @@ local function file_exists(path)
   return false
 end
 
----@diagnostic disable-next-line: missing-fields
-local base_background = {
-  source = {
-    Color = '__CATPPUCCIN_BASE__',
-  },
-  ---@diagnostic disable-next-line: undefined-global
-  opacity = __BASE_OPACITY__,
-  width = '100%',
-  height = '100%',
-}
+-- base レイヤーの不透明度（画像未選択時の opacity 変更対象）
+---@diagnostic disable-next-line: undefined-global
+local base_opacity = __BASE_OPACITY__ ---@type number
+
+-- base レイヤーを生成（opacity を書き換えるため毎回新しいテーブルを生成）
+local function get_base_background()
+  ---@diagnostic disable-next-line: missing-fields
+  return {
+    source = {
+      Color = '__CATPPUCCIN_BASE__',
+    },
+    opacity = base_opacity,
+    width = '100%',
+    height = '100%',
+  }
+end
 
 local backgrounds_dir = (os.getenv('USERPROFILE') or wezterm.home_dir) .. '/.config/assets/backgrounds'
 
@@ -88,7 +94,7 @@ end
 -- 現在の状態
 local current_image_index = nil ---@type number|nil
 local image_opacity = DEFAULT_OPACITY ---@type number
-local image_opacity_step = 0.05 ---@type number
+local opacity_step = 0.05 ---@type number
 
 -- 背景設定を生成（キャッシュなし、毎回新しいテーブルを生成）
 ---@param background_image string
@@ -105,7 +111,7 @@ local function get_image_background(background_image, opacity)
 end
 
 local default_background = {
-  base_background,
+  get_base_background(),
 }
 
 M.default_background = default_background
@@ -117,53 +123,54 @@ for i, bg in ipairs(background_images) do
   table.insert(selector_choices, { label = label, id = tostring(i) })
 end
 
+-- 現在の状態から背景オーバーライドを再適用する
+---@param window any
+local function refresh_background(window)
+  local layers = { get_base_background() }
+  local bg = current_image_index and background_images[current_image_index]
+  if bg then
+    table.insert(layers, get_image_background(bg.path, image_opacity))
+  end
+  window:set_config_overrides({
+    background = layers,
+  })
+end
+
 -- 背景を適用する共通関数
 ---@param window any
 ---@param index number|nil nil の場合はデフォルト背景
 local function apply_background(window, index)
-  if index == nil then
-    current_image_index = nil
-    window:set_config_overrides({
-      background = default_background,
-    })
-  else
-    local bg = background_images[index]
-    if bg then
-      current_image_index = index
-      image_opacity = bg.opacity
-      window:set_config_overrides({
-        background = {
-          base_background,
-          get_image_background(bg.path, image_opacity),
-        },
-      })
-    end
-  end
-end
-
--- opacity を変更する共通関数
----@param window any
----@param delta number
-local function adjust_opacity(window, delta)
-  if not current_image_index then
+  local bg = index and background_images[index]
+  if index ~= nil and not bg then
     return
   end
 
-  local new_opacity = image_opacity + delta
+  current_image_index = index
+  if bg then
+    image_opacity = bg.opacity
+  end
+  refresh_background(window)
+end
+
+-- opacity を変更する共通関数
+-- 画像選択中は画像レイヤー、未選択時は base レイヤーの opacity を動かす
+---@param window any
+---@param delta number
+local function adjust_opacity(window, delta)
+  local current = current_image_index and image_opacity or base_opacity
+  -- 加算の誤差が累積すると下限 0.0 / 上限 1.0 に到達できなくなるため、
+  -- opacity_step の桁 (0.01 刻み) に丸めてから範囲判定する
+  local new_opacity = math.floor((current + delta) * 100 + 0.5) / 100
   if new_opacity < 0.0 or new_opacity > 1.0 then
     return
   end
 
-  image_opacity = new_opacity
-  local bg = background_images[current_image_index]
-  if bg then
-    window:set_config_overrides({
-      background = {
-        base_background,
-        get_image_background(bg.path, image_opacity),
-      },
-    })
+  if current_image_index then
+    image_opacity = new_opacity
+  else
+    base_opacity = new_opacity
   end
+  refresh_background(window)
 end
 
 -- 後方互換性のためイベントハンドラーは残す
@@ -178,11 +185,11 @@ for i, _ in ipairs(background_images) do
 end
 
 wezterm.on('toggle-opacity-plus', function(window, _)
-  adjust_opacity(window, image_opacity_step)
+  adjust_opacity(window, opacity_step)
 end)
 
 wezterm.on('toggle-opacity-minus', function(window, _)
-  adjust_opacity(window, -image_opacity_step)
+  adjust_opacity(window, -opacity_step)
 end)
 
 -- InputSelector 方式
@@ -209,7 +216,7 @@ M.apply_to_keys = function(keys, background_modifier, opacity_modifier)
     key = 'UpArrow',
     mods = opacity_modifier,
     action = wezterm.action_callback(function(window, _)
-      adjust_opacity(window, image_opacity_step)
+      adjust_opacity(window, opacity_step)
     end),
   })
 
@@ -217,7 +224,7 @@ M.apply_to_keys = function(keys, background_modifier, opacity_modifier)
     key = 'DownArrow',
     mods = opacity_modifier,
     action = wezterm.action_callback(function(window, _)
-      adjust_opacity(window, -image_opacity_step)
+      adjust_opacity(window, -opacity_step)
     end),
   })
 end
