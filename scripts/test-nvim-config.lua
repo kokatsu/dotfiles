@@ -21,6 +21,28 @@ local function assert_true(cond, msg)
   end
 end
 
+-- Test clipboard provider: verifies + / * registers without any OS clipboard tool
+local clipboard_store = { ["+"] = { { "" }, "v" }, ["*"] = { { "" }, "v" } }
+vim.g.clipboard = {
+  name = "test",
+  copy = {
+    ["+"] = function(lines, regtype)
+      clipboard_store["+"] = { lines, regtype }
+    end,
+    ["*"] = function(lines, regtype)
+      clipboard_store["*"] = { lines, regtype }
+    end,
+  },
+  paste = {
+    ["+"] = function()
+      return clipboard_store["+"][1], clipboard_store["+"][2]
+    end,
+    ["*"] = function()
+      return clipboard_store["*"][1], clipboard_store["*"][2]
+    end,
+  },
+}
+
 -- Resolve plugin directory from repo root
 local plugin_dir = vim.fn.getcwd() .. "/.config/nvim/plugin"
 if vim.fn.isdirectory(plugin_dir) == 0 then
