@@ -115,6 +115,75 @@ test("trailing whitespace is NOT trimmed for markdown", function()
   vim.api.nvim_buf_delete(buf, { force = true })
 end)
 
+print("")
+
+-- SQL helpers
+local codeblock = dofile(vim.fn.getcwd() .. "/.config/nvim/lua/utils/codeblock.lua")
+package.loaded["utils.codeblock"] = codeblock
+local sql = dofile(vim.fn.getcwd() .. "/.config/nvim/lua/utils/sql.lua")
+
+local function with_buffer(filetype, lines, cursor_line, fn)
+  local buf = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_set_current_buf(buf)
+  vim.bo.filetype = filetype
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.api.nvim_win_set_cursor(0, { cursor_line, 0 })
+  fn()
+  vim.api.nvim_buf_delete(buf, { force = true })
+end
+
+test("SQL helper finds enclosing Markdown fenced block", function()
+  with_buffer("markdown", { "text", "```sql", "SELECT *", "FROM users;", "```", "text" }, 4, function()
+    local line1, line2 = sql.current_query_range()
+    assert_true(line1 == 3, "expected block to start at line 3")
+    assert_true(line2 == 4, "expected block to end at line 4")
+  end)
+end)
+
+test("SQL helper finds current paragraph in SQL buffer", function()
+  with_buffer("sql", { "SELECT 1;", "", "SELECT *", "FROM users;", "", "SELECT 2;" }, 4, function()
+    local line1, line2 = sql.current_query_range()
+    assert_true(line1 == 3, "expected paragraph to start at line 3")
+    assert_true(line2 == 4, "expected paragraph to end at line 4")
+  end)
+end)
+
+test("SQL helper ignores unmatched fences outside Markdown", function()
+  with_buffer("sql", { "```sql", "example", "", "SELECT 1;" }, 4, function()
+    local line1, line2 = sql.current_query_range()
+    assert_true(line1 == 4 and line2 == 4, "expected SQL paragraph fallback")
+  end)
+end)
+
+test("SQL helper rejects Markdown prose", function()
+  with_buffer("markdown", { "text", "", "more text" }, 1, function()
+    local line1, line2 = sql.current_query_range()
+    assert_true(line1 == nil and line2 == nil, "expected no query range")
+  end)
+end)
+
+test("code block helper yanks contents without fences or language restriction", function()
+  with_buffer("markdown", { "~~~lua", "local value = 1", "print(value)", "~~~" }, 2, function()
+    codeblock.yank_current()
+    assert_true(vim.fn.getreg("+") == "local value = 1\nprint(value)", "unexpected clipboard contents")
+  end)
+end)
+
+test("code block helper rejects backticks in backtick fence info string", function()
+  with_buffer("markdown", { "```foo``` bar", "not a block" }, 2, function()
+    local line1, line2, error_kind = codeblock.current_range()
+    assert_true(line1 == nil and line2 == nil, "expected no code block range")
+    assert_true(error_kind == "not_found", "expected not_found")
+  end)
+end)
+
+test("code block helper includes the closing fence line as a cursor position", function()
+  with_buffer("markdown", { "```json", "{", "}", "```" }, 4, function()
+    local line1, line2 = codeblock.current_range()
+    assert_true(line1 == 2 and line2 == 3, "expected contents inside closing fence")
+  end)
+end)
+
 -- Results
 print("")
 local total = pass_count + #errors

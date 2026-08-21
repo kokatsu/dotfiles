@@ -37,6 +37,40 @@ end
 -- CSV エクスポートの出力先ファイル名 (固定)
 local OUTPUT = 'result.csv'
 
+--- カーソルを囲むクエリの行範囲を返す。
+--- Markdown では fenced code block の fence を除いた中身、それ以外では
+--- 空行で区切られた現在の段落をクエリとして扱う。
+---@return integer? line1 1-based の開始行
+---@return integer? line2 1-based の終了行
+function M.current_query_range()
+  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+
+  local line1, line2, error_kind = require('utils.codeblock').current_range()
+  if line1 then
+    return line1, line2
+  end
+
+  if vim.bo.filetype == 'markdown' then
+    require('utils.codeblock').notify_range_error(error_kind)
+    return
+  end
+
+  if not lines[cursor_line] or lines[cursor_line]:match('^%s*$') then
+    vim.notify('カーソル行が空です', vim.log.levels.WARN)
+    return
+  end
+
+  line1, line2 = cursor_line, cursor_line
+  while line1 > 1 and not lines[line1 - 1]:match('^%s*$') do
+    line1 = line1 - 1
+  end
+  while line2 < #lines and not lines[line2 + 1]:match('^%s*$') do
+    line2 = line2 + 1
+  end
+  return line1, line2
+end
+
 -- 選択範囲を取得し、末尾の空行と末尾セミコロンを取り除いた行配列を返す
 local function query_lines(line1, line2)
   local lines = vim.api.nvim_buf_get_lines(0, line1 - 1, line2, false)
@@ -99,6 +133,22 @@ function M.to_copy_stdout_csv(line1, line2)
   end
   local body = table.concat(lines, '\n')
   yank(("COPY (\n%s\n) TO STDOUT WITH CSV HEADER \\g '%s'"):format(body, OUTPUT))
+end
+
+--- カーソル位置のクエリを `\copy` コマンドへ変換してコピーする。
+function M.current_query_to_copy_csv()
+  local line1, line2 = M.current_query_range()
+  if line1 then
+    M.to_copy_csv(line1, line2)
+  end
+end
+
+--- カーソル位置のクエリを複数行の `COPY ... \g` コマンドへ変換してコピーする。
+function M.current_query_to_copy_stdout_csv()
+  local line1, line2 = M.current_query_range()
+  if line1 then
+    M.to_copy_stdout_csv(line1, line2)
+  end
 end
 
 return M

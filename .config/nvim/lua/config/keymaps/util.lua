@@ -41,11 +41,22 @@ end, { noremap = true, desc = 'Quote UUIDs as SQL IN list' })
 vim.keymap.set('x', '<leader>yc', function()
   require('utils.sql').to_copy_csv(visual_line_range())
 end, { noremap = true, desc = 'Yank query as psql \\copy CSV command' })
+vim.keymap.set('n', '<leader>yc', function()
+  require('utils.sql').current_query_to_copy_csv()
+end, { noremap = true, desc = 'Yank current query as psql \\copy CSV command' })
 
 -- 選択クエリを COPY (...) TO STDOUT WITH CSV HEADER \g 'result.csv' へ変換しコピー
 vim.keymap.set('x', '<leader>yg', function()
   require('utils.sql').to_copy_stdout_csv(visual_line_range())
 end, { noremap = true, desc = 'Yank query as COPY ... TO STDOUT \\g CSV command' })
+vim.keymap.set('n', '<leader>yg', function()
+  require('utils.sql').current_query_to_copy_stdout_csv()
+end, { noremap = true, desc = 'Yank current query as COPY ... TO STDOUT \\g CSV command' })
+
+-- カーソル位置の fenced code block から fence を除いた中身をそのままコピー
+vim.keymap.set('n', '<leader>yb', function()
+  require('utils.codeblock').yank_current()
+end, { noremap = true, desc = 'Yank current code block contents' })
 
 -- カレントファイルパス (cwd 相対) をクリップボードへ
 vim.keymap.set('n', '<leader>yp', function()
