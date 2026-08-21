@@ -75,32 +75,6 @@ in {
       else prev.direnv;
   };
 
-  # dtools 2.110.0 の rdmd test は一時ファイルを TMPDIR に作る。
-  # Makefile が osx 向けに TMPDIR を /private/tmp へ強制上書きするため、
-  # sandbox 無効の macOS では全 build が共有 /tmp を使い、別の nixbld user が
-  # 残した rdmd_app_ を sticky bit のせいで上書きできず失敗する。
-  # 上書き行を無効化し、build directory 配下の一時ディレクトリを使う。
-  dtools-darwin-tmpdir-fix = _final: prev: {
-    dtools =
-      if prev.stdenv.hostPlatform.isDarwin
-      then
-        guardedOverride "dtools" "2.110.0" prev.dtools (old: {
-          postPatch =
-            (old.postPatch or "")
-            + ''
-              substituteInPlace Makefile \
-                --replace-fail 'cd /tmp && pwd -P' 'cd "$$TMPDIR" && pwd -P'
-            '';
-          preCheck =
-            (old.preCheck or "")
-            + ''
-              export TMPDIR="$PWD/.tmp"
-              mkdir -p "$TMPDIR"
-            '';
-        })
-      else prev.dtools;
-  };
-
   # Use forked git-graph with:
   # - --current option
   # - ANSI color wrapping fix
@@ -145,22 +119,6 @@ in {
   jp2a-darwin-fix = _final: prev: {
     jp2a = guardedOverride "jp2a" "1.3.3" prev.jp2a (old: {
       meta = old.meta // {broken = false;};
-    });
-  };
-
-  # Fix LDC on macOS 26+ (Darwin 25+)
-  # The ldc2.conf references a non-existent compiler-rt directory
-  # and the target triple conflicts with Nix cc-wrapper
-  ldc-darwin-fix = _final: prev: {
-    ldc = guardedOverride "ldc" "1.41.0" prev.ldc (old: {
-      postInstall =
-        (old.postInstall or "")
-        + prev.lib.optionalString prev.stdenv.hostPlatform.isDarwin ''
-          # Remove non-existent compiler-rt directory from lib-dirs
-          if [ -f "$out/etc/ldc2.conf" ]; then
-            sed -i.bak 's|"[^"]*lib/clang/[0-9]*/lib/darwin".*||' "$out/etc/ldc2.conf"
-          fi
-        '';
     });
   };
 

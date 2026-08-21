@@ -168,7 +168,6 @@
       customOverlays.deck-slides
       customOverlays.difftastic
       customOverlays.direnv-no-check
-      customOverlays.dtools-darwin-tmpdir-fix
       customOverlays.git-graph-fork
       customOverlays.herdr
       customOverlays.hermes-agent
@@ -246,7 +245,6 @@
     darwinOnlyOverlays = [
       customOverlays.cava-darwin-fix
       customOverlays.jp2a-darwin-fix
-      customOverlays.ldc-darwin-fix
     ];
 
     # Linux専用オーバーレイ (WSL等)
