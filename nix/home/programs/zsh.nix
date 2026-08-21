@@ -61,6 +61,12 @@
             install -m 644 "$ZIM_CONFIG_FILE" "$LAST_ZIMRC"
           fi
         fi
+
+        # zeno の互換性パッチと Deno cache を冪等に準備する。
+        # cache の取得失敗だけで Home Manager 全体を中断せず、次回に再試行する。
+        if ! $DRY_RUN_CMD "${config.xdg.configHome}/zsh/scripts/prepare-zeno" "$ZIM_HOME" "${pkgs.deno}/bin/deno"; then
+          echo "warning: failed to prepare zeno; retry with zimfw init" >&2
+        fi
       '';
     };
 
@@ -74,6 +80,10 @@
       };
       "${config.xdg.configHome}/zsh/.zshrc".source = ../../../.config/zsh/.zshrc;
       "${config.xdg.configHome}/zsh/.zimrc".source = ../../../.config/zsh/.zimrc;
+      "${config.xdg.configHome}/zsh/scripts/prepare-zeno" = {
+        source = ../../../.config/zsh/scripts/prepare-zeno;
+        executable = true;
+      };
 
       # Catppuccin palette 由来の色変数 (fzf / zoxide 等で利用)
       "${config.xdg.configHome}/zsh/catppuccin-colors.zsh".text = let

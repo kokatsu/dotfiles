@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+
+set -eu
+
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ] || [ -z "$1" ]; then
+  echo "usage: prepare-zeno <zim-home> [deno-command]" >&2
+  exit 2
+fi
+
+zim_home=$1
+deno_command=${2:-deno}
+completion_file="$zim_home/modules/zeno.zsh/shells/zsh/widgets/zeno-completion"
+cli_file="$zim_home/modules/zeno.zsh/src/cli.ts"
+
+# zeno-completion の local 変数 options が zsh/parameter の $options を
+# シャドウする問題を修正する。パッチ済みなら何もしない。
+if [ -f "$completion_file" ] && grep -q 'local.*expect_key options ' "$completion_file"; then
+  temporary_file=$(mktemp "${completion_file}.tmp.XXXXXX")
+  trap 'rm -f "$temporary_file"' EXIT HUP INT TERM
+
+  # 元ファイルの permission を一時ファイルへ引き継ぎ、置換後も維持する。
+  cp -p "$completion_file" "$temporary_file"
+
+  # Zsh parameter expressions below are sed literals.
+  # shellcheck disable=SC2016
+  sed \
+    -e 's/expect_key options /expect_key fzf_options /' \
+    -e 's/^options=/fzf_options=/' \
+    -e 's/${options}/${fzf_options}/g' \
+    -e 's/${(z)options}/${(z)fzf_options}/g' \
+    "$completion_file" >"$temporary_file"
+
+  mv -f "$temporary_file" "$completion_file"
+  trap - EXIT HUP INT TERM
+fi
+
+# zeno.zsh で毎シェル実行せず、モジュールの導入・更新時に準備する。
+[ -f "$cli_file" ] || exit 0
+"$deno_command" cache --node-modules-dir=auto --no-lock --no-check -- "$cli_file"

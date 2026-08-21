@@ -21,27 +21,19 @@ if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
   fi
 fi
 
-# zeno-completion の local 変数 options が zsh/parameter の $options をシャドウし
-# _zsh_highlight で "bad set of key/value pairs" エラーになる問題を修正する。
-# sed -i のバックアップ指定は GNU(-i)/BSD(-i '') で非互換なため、-i を使わず
-# stdout へ出力して書き戻す可搬な形にする。
-_patch_zeno_completion() {
-  local _f=${ZIM_HOME}/modules/zeno.zsh/shells/zsh/widgets/zeno-completion
-  [[ -f $_f ]] && grep -q 'local.*expect_key options ' $_f || return
-  local _patched
-  _patched=$(sed \
-    -e 's/expect_key options /expect_key fzf_options /' \
-    -e 's/^options=/fzf_options=/' \
-    -e 's/${options}/${fzf_options}/g' \
-    -e 's/${(z)options}/${(z)fzf_options}/g' \
-    $_f) && print -r -- "$_patched" >| $_f
+# zeno の互換性パッチと Deno cache は activation / zimfw更新後だけ適用する。
+_prepare_zeno() {
+  local preparer=$ZDOTDIR/scripts/prepare-zeno
+  [[ -x $preparer ]] && "$preparer" "$ZIM_HOME"
 }
 
 # zimfw() 関数の定義（zimfw コマンド用）
 if [[ -e ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]] zimfw() {
   source ${ZIM_HOME}/zimfw.zsh "${@}"
-  # モジュール再インストール直後にも同セッションでパッチを当てる
-  _patch_zeno_completion
+  # モジュール再インストール直後にも同セッションで準備する
+  case ${1:-} in
+    init|install|update|reinstall) _prepare_zeno ;;
+  esac
 }
 
 # fpath 設定（autoload 用、コスト: ~0ms）
@@ -64,7 +56,9 @@ source ${ZIM_HOME}/modules/input/init.zsh
 
 # zimfwの初期化（init.zshが古い場合は遅延で再生成）
 if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
-  zsh-defer -a +1 +2 source ${ZIM_HOME}/zimfw.zsh init -q
+  zsh-defer -a +1 +2 -c 'source ${ZIM_HOME}/zimfw.zsh init -q && typeset -g _PREPARE_ZENO_AFTER_INIT=1'
+  # init と別タスクにし、Deno cache の開始前にもキー入力を確認できるようにする。
+  zsh-defer -a +1 +2 -c '(( ${_PREPARE_ZENO_AFTER_INIT:-0} )) && { unset _PREPARE_ZENO_AFTER_INIT; _prepare_zeno; }'
 fi
 
 # 遅延読み込み（初回プロンプト後に読み込み）
@@ -93,9 +87,8 @@ zsh-defer -a +1 +2 -c 'bindkey "^[[B" history-substring-search-down; bindkey "^[
 export ZENO_HOME="${XDG_CONFIG_HOME}/zeno"
 export ZENO_GIT_CAT="bat --color=always"
 export ZENO_GIT_TREE="eza --tree"
-
-# 起動時にパッチ（zeno モジュール再インストール時の取りこぼし対策）
-_patch_zeno_completion
+# Deno cache は _prepare_zeno でモジュール導入・更新時に生成する。
+export ZENO_DISABLE_EXECUTE_CACHE_COMMAND=1
 
 # fzf key bindings (Ctrl+T, Alt+C) — zeno より先に読み込み、Tab/Ctrl+R は zeno が上書き
 zsh-defer -a +1 +2 -c 'source <(fzf --zsh)'
@@ -124,9 +117,13 @@ unsetopt flow_control
 # Zsh
 # ------------------------------------------------------------------------------
 
-# OS依存の設定
-local os=$(uname | tr '[:upper:]' '[:lower:]')
-[ -f $ZDOTDIR/"$os".zsh ] && . $ZDOTDIR/"$os".zsh
+# OS依存の設定（外部コマンドを起動せず Zsh 組み込み値から判定）
+local os
+case $OSTYPE in
+  darwin*) os=darwin ;;
+  linux*) os=linux ;;
+esac
+[[ -n $os && -f $ZDOTDIR/"$os".zsh ]] && . $ZDOTDIR/"$os".zsh
 
 # 分離された設定ファイルを読み込む (ディレクトリがなければ作成)
 [ -d "$ZDOTDIR/config.d" ] || mkdir -p "$ZDOTDIR/config.d"
