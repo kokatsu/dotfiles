@@ -1,0 +1,6 @@
+{
+  "id": "kometa-cli",
+  "displayName": "Kometa (CLI)",
+  "description": "A CLI-compatible Kometa using the nine standard animation rows.",
+  "spritesheetPath": "spritesheet.png"
+}

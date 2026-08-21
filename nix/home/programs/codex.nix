@@ -6,6 +6,16 @@
   ...
 }: {
   home.file = {
+    # Codex CLI 0.149.0向けの9行スプライト版。
+    ".config/codex/pets/kometa-cli" = {
+      source = ../../../.config/codex/pets/kometa-cli;
+    };
+
+    # Codex CLI とデスクトップアプリで共有するカスタムペット。
+    ".config/codex/pets/kometa" = {
+      source = ../../../.config/codex/pets/kometa;
+    };
+
     # built-in skills (.system) を残すため、共有するskillだけを個別にリンクする。
     ".config/codex/skills/browser-research".source = ../../../.config/codex/skills/browser-research;
     ".config/codex/skills/herdr-peer".source = ../../../.config/codex/skills/herdr-peer;
