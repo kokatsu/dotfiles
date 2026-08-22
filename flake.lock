@@ -232,16 +232,16 @@
         "systems": "systems_3"
       },
       "locked": {
-        "lastModified": 1785286542,
-        "narHash": "sha256-0i1k5ktVfhmN30gOSAFZrrjzGW61vwTOZ3gw5aS+fd8=",
+        "lastModified": 1786743519,
+        "narHash": "sha256-u6W4ejvn/NeK/n29P2J6e8YLrFD4eV5ei1PV8sRGCqI=",
         "owner": "modem-dev",
         "repo": "hunk",
-        "rev": "7c9099c91abef443e1da64e63668960cec0a2e06",
+        "rev": "d990d40f48177e0cc57685dc9dd42516d44b073c",
         "type": "github"
       },
       "original": {
         "owner": "modem-dev",
-        "ref": "v0.17.7",
+        "ref": "v0.18.2",
         "repo": "hunk",
         "type": "github"
       }
