@@ -85,7 +85,7 @@ in {
   # Renovate: datasource=github-releases depName=sxyazi/yazi
   yazi = mkBinaryRelease rec {
     pname = "yazi";
-    version = "26.5.6";
+    version = "26.8.15";
     hashes = {
       "aarch64-darwin" = "sha256-er1xcl4v4nvtA2vsv2znn6F5ZOtoSR00GQARyUuMfKg=";
       "aarch64-linux" = "sha256-w4sHlh5/xMdlA/0PShtL0LN5qZg1uBjNiZsDFcco4eE=";
