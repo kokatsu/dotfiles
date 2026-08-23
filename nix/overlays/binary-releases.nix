@@ -85,11 +85,11 @@ in {
   # Renovate: datasource=github-releases depName=sxyazi/yazi
   yazi = mkBinaryRelease rec {
     pname = "yazi";
-    version = "26.5.6";
+    version = "26.8.15";
     hashes = {
-      "aarch64-darwin" = "sha256-er1xcl4v4nvtA2vsv2znn6F5ZOtoSR00GQARyUuMfKg=";
-      "aarch64-linux" = "sha256-w4sHlh5/xMdlA/0PShtL0LN5qZg1uBjNiZsDFcco4eE=";
-      "x86_64-linux" = "sha256-HJCW8Kg7gQLBlDhfZEze/5PMgmlCYWPJ0DMEHr1Te9I=";
+      "aarch64-darwin" = "sha256-P1SQfqCKvpZQb0siI5NA7Ykjpq6urnjzPVm85X2spM0=";
+      "aarch64-linux" = "sha256-9ahXcfBrsOjEiBNq4K7a7I00GnzumVVJ3zkdfYUv6NE=";
+      "x86_64-linux" = "sha256-zGfreZFVDC+UB82lLT9a8JN2J6pohOfemaBPzwWYB+A=";
     };
     platformMap = currentAppleGnuPlatformMap;
     url = platform: "https://github.com/sxyazi/yazi/releases/download/v${version}/yazi-${platform}.zip";
