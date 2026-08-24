@@ -40,6 +40,7 @@ notifications = true
 notification_condition = "always"
 pet = "custom:kometa-cli"
 resume_cwd = "session"
+terminal_title = ["thread"]
 status_line = [
   "model-with-reasoning",
   # "context-remaining",

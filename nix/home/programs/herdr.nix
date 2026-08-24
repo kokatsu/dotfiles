@@ -29,10 +29,6 @@ in {
   # Ghostty と同じく catppuccin.flavor から導出する。accent はアクティブペイン枠色を
   # 担うキー (ui.accent)。他ツールと同じ blue で揃える
   #
-  # ui.status_indicators = "symbols" (0.8.2 で追加) はエージェント状態を色付き
-  # ドットではなく blocked/working/done/idle/unknown ごとの静的グリフで描く。
-  # 色だけに依存せず一瞥で判別できる
-  #
   # [[keys.command]] は tmux の Alt+v/c/g/h ポップアップの herdr 移植版
   # (.config/herdr/scripts/*.sh)。tmux 版と違い bind 時点での条件分岐が
   # できないため claude/codex 判定はスクリプト内で実行時に行う。
@@ -71,10 +67,25 @@ in {
         [ui]
         accent = "${p.blue.hex}"
         show_agent_labels_on_pane_borders = true
-        status_indicators = "symbols"
 
         [ui.sidebar.agents]
         row_gap = 1
+
+        # Claude Code は OSC タイトルにセッション要約を書き、Codex は
+        # tui.terminal_title の thread にセッション名を書くので、その行を
+        # デフォルトレイアウトに挟んで表示する。override は rows を丸ごと
+        # 置き換えるため全行を明示
+        [ui.sidebar.agents.rows_by_agent]
+        claude = [
+          ["state_icon", "workspace", "tab"],
+          ["agent"],
+          ["terminal_title_stripped"],
+        ]
+        codex = [
+          ["state_icon", "workspace", "tab"],
+          ["agent"],
+          ["terminal_title_stripped"],
+        ]
 
         [ui.sidebar.spaces]
         row_gap = 1
