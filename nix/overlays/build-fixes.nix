@@ -144,9 +144,9 @@ in {
   # c->session->curw->window when handling a FocusIn/FocusOut escape sequence,
   # with no NULL guard on c->session. If a focus event arrives while the client
   # has no current session (e.g. mid-detach, with focus-events + destroy-unattached),
-  # the server segfaults and every session dies. Unfixed upstream as of 3.7b.
+  # the server segfaults and every session dies. Unfixed upstream as of 3.7c.
   tmux-focus-crash-fix = _final: prev: {
-    tmux = guardedOverride "tmux" "3.7b" prev.tmux (old: {
+    tmux = guardedOverride "tmux" "3.7c" prev.tmux (old: {
       patches = (old.patches or []) ++ [./tmux-focus-null-guard.patch];
     });
   };
