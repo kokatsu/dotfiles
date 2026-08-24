@@ -145,9 +145,14 @@ in {
   # with no NULL guard on c->session. If a focus event arrives while the client
   # has no current session (e.g. mid-detach, with focus-events + destroy-unattached),
   # the server segfaults and every session dies. Unfixed upstream as of 3.7c.
+  # 3.7c の configure は Darwin で --enable-jemalloc / --disable-jemalloc の
+  # 明示指定を必須にした (calloc(3) のゼロ初期化不具合対策)。nixpkgs master の
+  # "tmux: fix darwin build" (56d4d710bd) と同じ修正で、channel に届いたら削除する。
   tmux-focus-crash-fix = _final: prev: {
     tmux = guardedOverride "tmux" "3.7c" prev.tmux (old: {
       patches = (old.patches or []) ++ [./tmux-focus-null-guard.patch];
+      buildInputs = (old.buildInputs or []) ++ prev.lib.optionals prev.stdenv.hostPlatform.isDarwin [prev.jemalloc];
+      configureFlags = (old.configureFlags or []) ++ prev.lib.optionals prev.stdenv.hostPlatform.isDarwin ["--enable-jemalloc"];
     });
   };
 }
