@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   ...
@@ -13,24 +12,20 @@ in
       };
       Service = {
         Type = "oneshot";
-        # systemd user unit は home.sessionVariables を引き継がないため、
-        # claude -p が ~/.claude を config dir と誤認して認証に失敗する
-        Environment = "CLAUDE_CONFIG_DIR=${config.xdg.configHome}/claude";
         ExecStart = toString (pkgs.writeShellScript "feed-watch-check" ''
-          # bash は feed-watch / feed-summarize の shebang (#!/usr/bin/env bash) 解決に必要
-          export PATH="${lib.makeBinPath (with pkgs; [bash gh jq curl coreutils gnused gnugrep gawk python3 agent-browser claude-code])}"
-          "$HOME/.local/bin/scripts/feed-watch" check
-          exec "$HOME/.local/bin/scripts/feed-summarize"
+          # bash は feed-watch の shebang (#!/usr/bin/env bash) 解決に必要
+          export PATH="${lib.makeBinPath (with pkgs; [bash gh jq curl coreutils gnused gnugrep gawk])}"
+          exec "$HOME/.local/bin/scripts/feed-watch" check
         '');
       };
     };
 
     systemd.user.timers.feed-watch = {
       Unit = {
-        Description = "Check GitHub feeds every hour";
+        Description = "Check GitHub feeds every 5 minutes";
       };
       Timer = {
-        OnCalendar = "hourly";
+        OnCalendar = "*:0/5";
         Persistent = true;
       };
       Install = {
