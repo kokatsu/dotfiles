@@ -65,6 +65,7 @@ in {
     ./programs/wezterm.nix
     ./programs/zoxide.nix
     ./programs/zsh.nix
+    ./services/disk-watch.nix
     ./services/feed-watch.nix
     ./themes/claude-code.nix
     ./themes/hermes.nix

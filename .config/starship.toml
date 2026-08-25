@@ -11,7 +11,6 @@ $git_branch\
 $git_metrics\
 $git_status\
 $fill\
-${custom.disk}\
 $cmd_duration\
 $time\
 $line_break\
@@ -102,12 +101,6 @@ style = "bold yellow"
 [[battery.display]]
 threshold = 20
 style = "bold red"
-
-[custom.disk]
-command = "df -P /mnt/c | awk 'NR == 2 { usage = $5; sub(/%$/, \"\", usage); if (usage + 0 > 80) { print \"󰋊 \" $5; exit 0 } exit 1 }'"
-when = "test -d /mnt/c"
-style = "bold red"
-format = "([$output]($style) )"
 
 [character]
 success_symbol = "[](bold green)" # nf-fa-check

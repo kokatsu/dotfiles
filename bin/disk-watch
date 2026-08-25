@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# disk-watch: WSL / Windows の空き容量を監視し、WezTerm が読む JSON を更新する
+
+WARNING_USED_PERCENT=${DISK_WATCH_WARNING_USED_PERCENT:-85}
+WARNING_AVAILABLE_GIB=${DISK_WATCH_WARNING_AVAILABLE_GIB:-50}
+CRITICAL_USED_PERCENT=${DISK_WATCH_CRITICAL_USED_PERCENT:-95}
+CRITICAL_AVAILABLE_GIB=${DISK_WATCH_CRITICAL_AVAILABLE_GIB:-15}
+
+get_status_dir() {
+  if [[ -n "${DISK_WATCH_STATUS_DIR:-}" ]]; then
+    echo "$DISK_WATCH_STATUS_DIR"
+    return
+  fi
+
+  local winuser
+  # systemd user service では WSL interop が無効な場合があるため、失敗時は
+  # /mnt/c/Users からシステム用以外のユーザーディレクトリを探す。
+  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
+  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
+    echo "/mnt/c/Users/$winuser/.cache/disk-watch"
+    return
+  fi
+
+  local dir base
+  for dir in /mnt/c/Users/*/; do
+    [[ -d "$dir" ]] || continue
+    base=$(basename "$dir")
+    case "$base" in
+    Public | Default | "Default User" | "All Users") continue ;;
+    esac
+    echo "${dir}.cache/disk-watch"
+    return
+  done
+
+  return 1
+}
+
+filesystem_status() {
+  local label=$1 path=$2 available_kib used_percent available_gib level
+
+  read -r available_kib used_percent < <(
+    df -Pk -- "$path" | awk 'NR == 2 { usage = $5; sub(/%$/, "", usage); print $4, usage + 0 }'
+  )
+  [[ -n "$available_kib" && -n "$used_percent" ]] || return 1
+
+  available_gib=$((available_kib / 1024 / 1024))
+  if ((used_percent >= CRITICAL_USED_PERCENT || available_gib <= CRITICAL_AVAILABLE_GIB)); then
+    level=critical
+  elif ((used_percent >= WARNING_USED_PERCENT || available_gib <= WARNING_AVAILABLE_GIB)); then
+    level=warning
+  else
+    level=ok
+  fi
+
+  jq -n \
+    --arg label "$label" \
+    --arg path "$path" \
+    --arg level "$level" \
+    --argjson used_percent "$used_percent" \
+    --argjson available_gib "$available_gib" \
+    '{
+      label: $label,
+      path: $path,
+      level: $level,
+      used_percent: $used_percent,
+      available_gib: $available_gib
+    }'
+}
+
+cmd_check() {
+  local status_dir status_file temp_file windows_status wsl_status
+  status_dir=$(get_status_dir) || {
+    echo "Windows mount not available, skipping." >&2
+    return 0
+  }
+  status_file="$status_dir/status.json"
+
+  windows_status=$(filesystem_status "C:" /mnt/c)
+  wsl_status=$(filesystem_status WSL /)
+
+  mkdir -p "$status_dir"
+  temp_file=$(mktemp "$status_dir/.status.json.XXXXXX")
+  trap 'rm -f "${temp_file:-}"' EXIT
+
+  jq -n \
+    --argjson windows "$windows_status" \
+    --argjson wsl "$wsl_status" \
+    --argjson last_updated "$(date +%s)" \
+    '{filesystems: {windows: $windows, wsl: $wsl}, last_updated: $last_updated}' \
+    >"$temp_file"
+  mv -f "$temp_file" "$status_file"
+  trap - EXIT
+}
+
+case "${1:-check}" in
+check) cmd_check ;;
+*)
+  echo "Usage: disk-watch [check]" >&2
+  exit 1
+  ;;
+esac

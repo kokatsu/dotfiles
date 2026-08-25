@@ -126,13 +126,80 @@ local function format_feed_status()
     end
   end
 
-  -- 末尾に最終チェック時刻を表示
-  if data.last_updated then
-    if #elements > 0 then
-      table.insert(elements, { Text = '  ' })
+  return elements
+end
+
+local function format_feed_last_updated()
+  local data = read_feed_status()
+  if not data or not data.last_updated then
+    return {}
+  end
+
+  return {
+    { Foreground = { Color = colors.palette.overlay1 } },
+    { Text = nf.md_clock_outline .. ' ' .. os.date('%H:%M', data.last_updated) .. ' ' },
+  }
+end
+
+-- disk-watch: WSL / Windows のディスク容量警告
+local disk_status_cache = nil
+local disk_status_last_check = 0
+local DISK_STATUS_CHECK_INTERVAL = 30 -- seconds
+
+local function read_disk_status()
+  local now = os.time()
+  if disk_status_cache ~= nil and (now - disk_status_last_check) < DISK_STATUS_CHECK_INTERVAL then
+    return disk_status_cache
+  end
+  disk_status_last_check = now
+
+  local userprofile = os.getenv('USERPROFILE')
+  if not userprofile then
+    disk_status_cache = false
+    return false
+  end
+
+  local path = userprofile .. '\\.cache\\disk-watch\\status.json'
+  local file = io.open(path, 'r')
+  if not file then
+    disk_status_cache = false
+    return false
+  end
+
+  local content = file:read('*a')
+  file:close()
+
+  local ok, data = pcall(wezterm.json_parse, content)
+  if not ok or not data or not data.filesystems then
+    disk_status_cache = false
+    return false
+  end
+
+  disk_status_cache = data
+  return data
+end
+
+local function format_disk_status()
+  local data = read_disk_status()
+  if not data or not data.filesystems then
+    return {}
+  end
+
+  local elements = {}
+  for _, name in ipairs({ 'windows', 'wsl' }) do
+    local info = data.filesystems[name]
+    if info and info.level and info.level ~= 'ok' then
+      if #elements > 0 then
+        table.insert(elements, { Text = '  ' })
+      end
+      local color = info.level == 'critical' and colors.palette.red or colors.palette.yellow
+      table.insert(elements, { Foreground = { Color = color } })
+      table.insert(elements, { Text = '󰋊 ' })
+      table.insert(elements, { Foreground = { Color = colors.palette.text } })
+      table.insert(elements, {
+        Text = info.label .. ' ' .. tostring(info.used_percent) .. '% / ' .. tostring(info.available_gib) .. 'G free ',
+      })
     end
-    table.insert(elements, { Foreground = { Color = colors.palette.overlay1 } })
-    table.insert(elements, { Text = nf.md_clock_outline .. ' ' .. os.date('%H:%M', data.last_updated) .. ' ' })
   end
 
   return elements
@@ -338,6 +405,20 @@ M.apply = function()
       end
     else
       local feed_elements = format_feed_status()
+      local disk_elements = format_disk_status()
+      local updated_elements = format_feed_last_updated()
+      if #feed_elements > 0 and #disk_elements > 0 then
+        table.insert(feed_elements, { Text = '  ' })
+      end
+      for _, element in ipairs(disk_elements) do
+        table.insert(feed_elements, element)
+      end
+      if #feed_elements > 0 and #updated_elements > 0 then
+        table.insert(feed_elements, { Text = '  ' })
+      end
+      for _, element in ipairs(updated_elements) do
+        table.insert(feed_elements, element)
+      end
       window:set_right_status(wezterm.format(feed_elements))
     end
   end)
