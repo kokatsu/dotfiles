@@ -67,6 +67,9 @@ in {
         [ui]
         accent = "${p.blue.hex}"
         show_agent_labels_on_pane_borders = true
+        # tab-numbers プラグインが付ける [N] プレフィックスの分を確保する
+        # (デフォルト 26)
+        sidebar_width = 30
 
         [ui.sidebar.agents]
         row_gap = 1
@@ -77,12 +80,12 @@ in {
         # 置き換えるため全行を明示
         [ui.sidebar.agents.rows_by_agent]
         claude = [
-          ["state_icon", "workspace", "tab"],
+          ["state_icon", "workspace", { token = "tab", fg = "${p.yellow.hex}", bold = true }],
           ["agent"],
           ["terminal_title_stripped"],
         ]
         codex = [
-          ["state_icon", "workspace", "tab"],
+          ["state_icon", "workspace", { token = "tab", fg = "${p.yellow.hex}", bold = true }],
           ["agent"],
           ["terminal_title_stripped"],
         ]
