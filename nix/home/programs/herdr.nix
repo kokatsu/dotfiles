@@ -119,6 +119,17 @@ in {
         focus_agent = "alt+1..9"
         previous_workspace = "prefix+comma"
         next_workspace = "prefix+period"
+        # デフォルトの prefix+b を下の custom command に譲り、使用頻度の低い
+        # サイドバー切替を別キーへ移す
+        toggle_sidebar = "prefix+shift+b"
+
+        # Herdr の agent list 順で次の blocked エージェントへ移動する。末尾では先頭へ
+        # 折り返し、該当エージェントがいなければ通知する
+        [[keys.command]]
+        key = "prefix+b"
+        type = "shell"
+        command = "${scriptsDir}/focus-next-blocked-agent.sh"
+        description = "次の blocked エージェントへ移動"
 
         [experimental]
         kitty_graphics = true
