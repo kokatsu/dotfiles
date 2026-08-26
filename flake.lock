@@ -164,11 +164,11 @@
     "herdr-tab-numbers": {
       "flake": false,
       "locked": {
-        "lastModified": 1787673676,
-        "narHash": "sha256-nBe2kU26aW2Bf2gktQQmr2qJJ/c4fQzGEreSXpXrO8s=",
+        "lastModified": 1787755497,
+        "narHash": "sha256-FVxrYe03UxsDuaddKwnQxGXqkTN+aT4UCRTxxMNTBCo=",
         "owner": "kokatsu",
         "repo": "herdr-tab-numbers",
-        "rev": "b51802180b08c9291aa330ea8907639fe10c30a4",
+        "rev": "d352bede5af61addc5bea2d2fe5ae667b72bafab",
         "type": "github"
       },
       "original": {
