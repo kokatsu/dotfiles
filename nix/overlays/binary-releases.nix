@@ -186,15 +186,15 @@ in {
   # Renovate: datasource=github-releases depName=openai/codex
   codex = mkBinaryRelease rec {
     pname = "codex";
-    version = "0.149.1";
+    version = "0.150.0";
     # hash は release の codex-package_SHA256SUMS (publisher 公開 checksum) から取得する
     # ため汎用 prefetch ループの対象外。更新は pr.yml の個別ステップが担う。
     hashSource = "sha256sums";
     hashes = {
-      "aarch64-darwin" = "sha256-TLsXRotdhrSxgqKMAW1i6dJzokHOwEiFzPrnbmmDrj8=";
-      "x86_64-darwin" = "sha256-TFD7krsjikBnAJ1KmcEzUTJciEDake3Qzk5beiHVO8M=";
-      "aarch64-linux" = "sha256-Vwlfn0ztNtjhc/Z+JsXBQtWz4eGYS7yuNWhCCe0japs=";
-      "x86_64-linux" = "sha256-HoUxrl9t6jxuEeU+dMxayBvxull/mylvsRLW6jD9r10=";
+      "aarch64-darwin" = "sha256-SpWQX8nOSrY1u2rXmoCiXCsBytUsN6gmak04Oh1AXIk=";
+      "x86_64-darwin" = "sha256-Ew8RknGiiMDWFA4iI/wiFDgocjLvixYe/LkEEHboP8I=";
+      "aarch64-linux" = "sha256-g0oVoBEuZVIMVucWJQmS8TCkhAecebypPZEjLYpotk0=";
+      "x86_64-linux" = "sha256-LSe4VpynYO6yvyH6Er0x9ZrEK4FhezQM+JWOmzjXQ9U=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
