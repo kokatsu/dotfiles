@@ -79,18 +79,23 @@ in {
         # デフォルトレイアウトに挟んで表示する。override は rows を丸ごと
         # 置き換えるため全行を明示
         [ui.sidebar.agents.rows_by_agent]
+        # $wsnum はカスタムトークンのデフォルト (overlay0 + dim) だと薄すぎるので、
+        # ワークスペース名の非アクティブ時スタイル (subtext0 + bold) に合わせる
         claude = [
-          ["state_icon", "workspace", { token = "tab", fg = "${p.yellow.hex}", bold = true }],
+          ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace", { token = "tab", fg = "${p.yellow.hex}", bold = true }],
           ["agent"],
           ["terminal_title_stripped"],
         ]
         codex = [
-          ["state_icon", "workspace", { token = "tab", fg = "${p.yellow.hex}", bold = true }],
+          ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace", { token = "tab", fg = "${p.yellow.hex}", bold = true }],
           ["agent"],
           ["terminal_title_stripped"],
         ]
 
         [ui.sidebar.spaces]
+        # tab-numbers プラグインが報告する $number トークンで番号を表示する
+        # (デフォルト行構成に $number を挿し込んだもの)
+        rows = [["state_icon", "$number", "workspace"], ["branch", "git_status"]]
         row_gap = 1
 
         [ui.toast]
