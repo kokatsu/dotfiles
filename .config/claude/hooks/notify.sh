@@ -34,8 +34,8 @@ fi
 
 if [ "$(uname)" = "Darwin" ]; then
   case "$event" in
-  permission) alerter --title 'Claude Code' --message '権限の承認が必要です' --sound Glass >/dev/null 2>&1 || true ;;
-  *) alerter --title 'Claude Code' --message 'タスクが完了しました' --sound Glass --timeout 10 >/dev/null 2>&1 || true ;;
+  permission) alerter --title 'Claude Code' --message '権限の承認が必要です' --sound Glass </dev/null >/dev/null 2>&1 & ;;
+  *) alerter --title 'Claude Code' --message 'タスクが完了しました' --sound Glass --timeout 10 </dev/null >/dev/null 2>&1 & ;;
   esac
   exit 0
 fi

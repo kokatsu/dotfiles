@@ -29,6 +29,10 @@
       source = ../../../.config/codex/hooks/gh-api-method-required.sh;
       executable = true;
     };
+    ".config/codex/check-ai-writing.sh" = {
+      source = ../../../.config/claude/hooks/check-ai-writing.sh;
+      executable = true;
+    };
     ".config/codex/herdr-peer-command-guard.sh" = {
       source = ../../../.config/claude/hooks/herdr-peer-command-guard.sh;
       executable = true;
@@ -56,6 +60,17 @@
               {
                 command = "bash '${config.xdg.configHome}/codex/herdr-agent-state.sh' session";
                 timeout = 10;
+                type = "command";
+              }
+            ];
+          }
+        ];
+        Stop = [
+          {
+            hooks = [
+              {
+                command = "bash '${config.xdg.configHome}/codex/check-ai-writing.sh'";
+                timeout = 15;
                 type = "command";
               }
             ];

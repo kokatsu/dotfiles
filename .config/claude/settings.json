@@ -72,7 +72,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/notify.sh"
+            "command": "~/.config/claude/hooks/check-ai-writing.sh ~/.config/claude/hooks/notify.sh",
+            "timeout": 15
           }
         ]
       }
