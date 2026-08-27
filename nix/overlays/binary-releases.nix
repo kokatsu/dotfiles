@@ -81,6 +81,32 @@ in {
     };
   };
 
+  # Pkl - configuration as code language
+  # nixpkgs の更新から独立して、セキュリティ修正を含む最新 patch release を使用する。
+  # Renovate: datasource=github-releases depName=apple/pkl
+  pkl = mkBinaryRelease rec {
+    pname = "pkl";
+    version = "0.32.1";
+    hashes = {
+      "aarch64-darwin" = "sha256-Vj61HJogsWo2JUZO10XGde2XUDgfISZyJpag18rB2dM=";
+      "x86_64-darwin" = "sha256-W3S5AyNAR5YBRPZvLOvdEtJn2bmOgVXtkdKuXtJ+LR8=";
+      "aarch64-linux" = "sha256-p20t1H2kNaj5EbA0c3P0fH5Z6lT7df+EbSC43xDboFg=";
+      "x86_64-linux" = "sha256-MYC2LalcDK0dkE6btsX0qPkDJBPCHlMZS7kf8e5fMhE=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "macos-aarch64";
+      "x86_64-darwin" = "macos-amd64";
+      "aarch64-linux" = "linux-aarch64";
+      "x86_64-linux" = "linux-amd64";
+    };
+    url = platform: "https://github.com/apple/pkl/releases/download/${version}/pkl-${platform}";
+    meta = {
+      description = "Configuration-as-code language with rich validation and tooling";
+      homepage = "https://pkl-lang.org";
+      license = "asl20";
+    };
+  };
+
   # Yazi - terminal file manager
   # Renovate: datasource=github-releases depName=sxyazi/yazi
   yazi = mkBinaryRelease rec {

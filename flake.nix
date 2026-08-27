@@ -174,6 +174,7 @@
       customOverlays.kakehashi
       customOverlays.mise
       customOverlays.octorus
+      customOverlays.pkl
       customOverlays.rgx-cli
       customOverlays.statix-no-check
       customOverlays.textlint-rule-preset-ai-writing
