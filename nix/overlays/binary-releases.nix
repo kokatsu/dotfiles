@@ -281,12 +281,12 @@ in {
   # Renovate: datasource=github-releases depName=atusy/kakehashi
   kakehashi = mkBinaryRelease rec {
     pname = "kakehashi";
-    version = "0.11.0";
+    version = "1.0.0";
     hashes = {
-      "aarch64-darwin" = "sha256-Rc/4IsK3kyAq6b0BlzGwEKe//Li2S1hteiIabPN9nFw=";
-      "x86_64-darwin" = "sha256-ivCxaDeuYCGzVQuN579uLrtEOMl1QU9I7K8vADa8lew=";
-      "aarch64-linux" = "sha256-/EPpP2ssXuyRsZEfyCYUbqPZYGKePPnE4GUxdVt0vGg=";
-      "x86_64-linux" = "sha256-Ph263Kz2vl5PPkkNjo0843GmMCX6RoKa59TJndxNzTs=";
+      "aarch64-darwin" = "sha256-RCHuPqtaIrO2f/6bQqMD5TNZuZUf3zGfjJWHw2uvSxc=";
+      "x86_64-darwin" = "sha256-DTikSmXr6UU2hKe/xXsbM2i7+7sy2BLa4lvpUn0b5O0=";
+      "aarch64-linux" = "sha256-xoUOspVDg4A4b3EcqFHtmnRzEOPmdz08YLNceU6brzQ=";
+      "x86_64-linux" = "sha256-R9QLFm85h0QqnGJP+j1QU3t7e5SiOmfNZjhX8y2mPtA=";
     };
     platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/atusy/kakehashi/releases/download/v${version}/kakehashi-v${version}-${platform}.tar.gz";
