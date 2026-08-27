@@ -53,6 +53,56 @@ function rgs() {
 }
 
 # ------------------------------------------------------------------------------
+# curl
+# ------------------------------------------------------------------------------
+
+# Bearer Token を非表示で読み取り、コマンド履歴と curl の引数に載せずに渡す。
+# 例: curl-bearer https://api.example.com/resource
+#     curl-bearer -X POST --json '{"name":"example"}' https://api.example.com/resource
+function curl-bearer() {
+  emulate -L zsh
+  unsetopt xtrace
+
+  if (( $# == 0 )); then
+    print -u2 'usage: curl-bearer [curl options] <url>'
+    return 2
+  fi
+
+  local token rc tty_fd
+  if ! { exec {tty_fd}</dev/tty } 2>/dev/null; then
+    print -u2 'curl-bearer: cannot read token from /dev/tty'
+    return 1
+  fi
+
+  local read_rc
+  {
+    read -rs 'token?Bearer Token (input hidden): ' <&$tty_fd
+    read_rc=$?
+  } always {
+    exec {tty_fd}<&-
+  }
+
+  if (( read_rc != 0 )); then
+    print -u2
+    print -u2 'curl-bearer: failed to read token'
+    return 1
+  fi
+  print -u2
+
+  if [[ -z $token ]]; then
+    print -u2 'curl-bearer: token must not be empty'
+    return 2
+  fi
+  print -u2 'curl-bearer: ✓ Bearer Token received'
+
+  # process substitution でヘッダーだけを別ファイルディスクリプタから渡し、
+  # curl の標準入力は --data-binary @- 等に使える状態を保つ。
+  command curl --header @<(print -r -- "Authorization: Bearer $token") "$@"
+  rc=$?
+  return $rc
+}
+
+# ------------------------------------------------------------------------------
 # Pkl (https://pkl-lang.org)
 # ------------------------------------------------------------------------------
 

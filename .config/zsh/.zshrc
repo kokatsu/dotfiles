@@ -151,6 +151,8 @@ export HISTFILE="$ZDOTDIR/.zsh_history"
 export HISTSIZE=50000
 # Save history
 export SAVEHIST=50000
+# 先頭にスペースを付けたコマンドは履歴に残さない
+setopt hist_ignore_space
 # Ignore duplicate commands (hist_ignore_all_dups に包含されるため実質冗長)
 setopt hist_ignore_dups
 # Ignore all duplicate commands
