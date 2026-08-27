@@ -126,6 +126,8 @@ in {
       just # コマンドランナー
       # https://github.com/jqlang/jq
       jq # JSON プロセッサ
+      # https://github.com/johnkerl/miller
+      miller # CSV/TSV/JSON 処理
       # https://github.com/mikefarah/yq
       yq-go # YAML/JSON/XML プロセッサ (yq コマンド)
       # https://github.com/jesseduffield/lazydocker
