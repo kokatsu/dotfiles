@@ -113,6 +113,8 @@ in {
 
         [keys]
         prefix = "ctrl+space"
+        # デタッチは押し間違えると作業中のセッションから抜けてしまうので shift 必須にする
+        detach = "prefix+shift+q"
         new_tab = "prefix+t"
         move_tab_previous = "alt+shift+left"
         move_tab_next = "alt+shift+right"
