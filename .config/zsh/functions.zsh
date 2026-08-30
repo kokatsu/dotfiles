@@ -74,26 +74,54 @@ function curl-bearer() {
     return 1
   fi
 
-  local read_rc
+  local prompt='Bearer Token (input hidden): ' ch saved read_rc=0
+  token=''
+  # 端末状態を保存できなければ入力を始めない (fail-closed)。
+  if ! saved=$(stty -g <&$tty_fd); then
+    print -u2 'curl-bearer: cannot save terminal state'
+    exec {tty_fd}<&-
+    return 1
+  fi
+  # 中断時に -echo を残さないため INT だけでなく QUIT/TERM/HUP も捕捉する。
+  # 復元のみで return しないとシグナル後もループが継続し、echo が戻った状態で
+  # 後続入力が端末に表示されてトークンが露出する。
+  trap 'stty $saved <&$tty_fd; print -u2; return 130' INT QUIT TERM HUP
+  if ! stty -icanon -echo min 1 time 0 <&$tty_fd; then
+    print -u2 'curl-bearer: cannot disable terminal echo'
+    stty $saved <&$tty_fd
+    exec {tty_fd}<&-
+    return 1
+  fi
+  # 1 文字ずつ読み、入力が入った時点で行頭のマーカーを · から ✓ に切り替える。
   {
-    read -rs 'token?Bearer Token (input hidden): ' <&$tty_fd
-    read_rc=$?
+    print -n -u2 -- $'\r\e[2K'"· $prompt"
+    while :; do
+      read -k 1 -u $tty_fd ch || { read_rc=1; break }
+      case $ch in
+        $'\n'|$'\r')   break ;;
+        $'\177'|$'\b') token=${token%?} ;;                                             # Backspace
+        $'\x15')       token='' ;;                                                     # Ctrl-U
+        $'\e')         while read -k 1 -t 0.01 -u $tty_fd ch; do :; done; continue ;;  # 矢印キー等の ESC シーケンスを捨てる
+        [[:cntrl:]])   continue ;;
+        *)             token+=$ch ;;
+      esac
+      print -n -u2 -- $'\r\e[2K'"${${token:+✓}:-·} $prompt"
+    done
   } always {
+    stty $saved <&$tty_fd
     exec {tty_fd}<&-
   }
+  print -u2
 
   if (( read_rc != 0 )); then
-    print -u2
     print -u2 'curl-bearer: failed to read token'
     return 1
   fi
-  print -u2
 
   if [[ -z $token ]]; then
     print -u2 'curl-bearer: token must not be empty'
     return 2
   fi
-  print -u2 'curl-bearer: ✓ Bearer Token received'
 
   # process substitution でヘッダーだけを別ファイルディスクリプタから渡し、
   # curl の標準入力は --data-binary @- 等に使える状態を保つ。
