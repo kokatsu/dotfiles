@@ -16,6 +16,14 @@ in {
     };
   };
 
+  # Home Manager の nh モジュールは systemd unit に PATH を設定しない。NixOS なら
+  # user manager の PATH に /run/current-system/sw/bin が入るが、standalone HM では
+  # distro 既定の PATH のままなので nh が nix を見つけられず毎回失敗する。
+  # nixpkgs の nix ではなく実際に使っている profile の nix を指す
+  systemd.user.services.nh-clean.Service.Environment = [
+    "PATH=${config.home.homeDirectory}/.nix-profile/bin"
+  ];
+
   # Home Manager の nh モジュールは launchd に extraArgs 全体を argv の 1 要素として
   # 渡すため、macOS では毎回パースエラー (exit 2) で失敗する。フラグを個別要素に
   # 分割して上書きする (launchd は macOS のみ有効なので Linux には影響しない)
