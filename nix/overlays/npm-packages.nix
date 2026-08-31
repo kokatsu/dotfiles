@@ -6,7 +6,7 @@
   # vite-plus@<version>, then expose node_modules/vite-plus/bin/vp as $out/bin/vp.
   # Renovate: datasource=npm depName=vite-plus
   vite-plus = _final: prev: let
-    version = "0.2.9";
+    version = "0.3.0";
     packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/vite-plus/package.json);
     packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/vite-plus/package-lock.json);
   in {
@@ -20,7 +20,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-Zw1xMLIhJSvZdkxXQjMKc/8IQ/xvZRbIubKd5SZbZOM=";
+      npmDepsHash = "sha256-zC5yvalHmum6+GluTMNZExxaIDQd7uBU3T29u9rW3dU=";
       npmFlags = ["--legacy-peer-deps"];
       dontNpmBuild = true;
 
