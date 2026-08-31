@@ -20,7 +20,7 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-Zw1xMLIhJSvZdkxXQjMKc/8IQ/xvZRbIubKd5SZbZOM=";
+      npmDepsHash = "sha256-zC5yvalHmum6+GluTMNZExxaIDQd7uBU3T29u9rW3dU=";
       npmFlags = ["--legacy-peer-deps"];
       dontNpmBuild = true;
 
