@@ -177,6 +177,195 @@ test("SQL helper ignores unmatched fences outside Markdown", function()
   end)
 end)
 
+test("SQL helper removes a terminator before an inline comment", function()
+  with_buffer("sql", { "SELECT 1; -- note" }, 1, function()
+    sql.to_copy_stdout_csv(1, 1)
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT 1 -- note\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "unexpected COPY output"
+    )
+  end)
+end)
+
+test("SQL helper removes a terminator before later comment lines", function()
+  with_buffer("sql", { "SELECT 1;", "-- trailing note" }, 1, function()
+    sql.to_copy_stdout_csv(1, 2)
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT 1\n-- trailing note\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "unexpected COPY output"
+    )
+  end)
+end)
+
+test("SQL helper trims whitespace around the removed terminator", function()
+  with_buffer("sql", { "", "", "SELECT 1 ;   " }, 1, function()
+    sql.to_copy_stdout_csv(1, 3)
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT 1\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "unexpected whitespace in COPY output"
+    )
+  end)
+end)
+
+test("SQL helper keeps semicolons inside PostgreSQL lexical constructs", function()
+  for _, query in ipairs({
+    [[SELECT 'one'';two';]],
+    [[SELECT E'one\';two';]],
+    [[SELECT $tag$body;still$tag$;]],
+    [[SELECT $日本語$本文;続き$日本語$;]],
+    [[SELECT /* outer ; /* inner ; */ still ; */ 1;]],
+    [[SELECT "one"";two";]],
+    [[SELECT $1;]],
+  }) do
+    with_buffer("sql", { query }, 1, function()
+      sql.to_copy_stdout_csv(1, 1)
+      local expected_body = query:sub(1, -2)
+      assert_true(
+        vim.fn.getreg("+") == "COPY (\n" .. expected_body .. "\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+        "unexpected COPY output for " .. query
+      )
+    end)
+  end
+end)
+
+test("SQL helper copies a blank-line-formatted CTE as one statement", function()
+  local query = {
+    "WITH a AS (",
+    "  SELECT 1",
+    "",
+    "), b AS (",
+    "  SELECT 2",
+    ")",
+    "SELECT * FROM a JOIN b ON true;",
+  }
+  with_buffer("sql", query, 2, function()
+    sql.current_query_to_copy_stdout_csv()
+    local expected_body = table.concat(query, "\n"):sub(1, -2)
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\n" .. expected_body .. "\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "unexpected CTE output"
+    )
+  end)
+end)
+
+test("SQL helper selects one statement when multiple statements share a line", function()
+  with_buffer("sql", { "SELECT 1; SELECT 2;" }, 1, function()
+    vim.api.nvim_win_set_cursor(0, { 1, 15 })
+    sql.current_query_to_copy_stdout_csv()
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT 2\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "unexpected statement output"
+    )
+  end)
+end)
+
+test("SQL helper keeps the preceding statement selected on its inline comment", function()
+  with_buffer("sql", { "SELECT 1; -- first", "SELECT 2;" }, 1, function()
+    vim.api.nvim_win_set_cursor(0, { 1, 14 })
+    sql.current_query_to_copy_stdout_csv()
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT 1 -- first\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "unexpected statement output"
+    )
+  end)
+end)
+
+test("SQL helper does not attach a previous inline comment to the next statement", function()
+  with_buffer("sql", { "SELECT 1; -- first", "SELECT 2;" }, 2, function()
+    sql.current_query_to_copy_stdout_csv()
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT 2\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "previous inline comment leaked into the next statement"
+    )
+  end)
+end)
+
+test("SQL helper treats psql meta-command lines as statement boundaries", function()
+  with_buffer("sql", { "SELECT 0;", "\\timing", "SELECT 1;" }, 3, function()
+    sql.current_query_to_copy_stdout_csv()
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT 1\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "psql meta-command blocked a later statement"
+    )
+  end)
+end)
+
+test("SQL helper preserves clipboard for unsafe explicit ranges", function()
+  for _, lines in ipairs({
+    { "SELECT 1;", "SELECT 2;" },
+    { "SELECT 1; SELECT 2" },
+    { "SELECT 'unterminated;" },
+    { "SELECT $tag$unterminated;" },
+    { "SELECT /* unterminated;" },
+    { "SELECT 1$$unterminated;" },
+    { "; -- no query" },
+    { "\\set value 1", "SELECT 1" },
+    { "SELECT 1 \\g" },
+    { "COPY (", "SELECT 1", ") TO STDOUT WITH CSV HEADER \\g 'result.csv'" },
+  }) do
+    with_buffer("sql", lines, 1, function()
+      vim.fn.setreg("+", "sentinel")
+      sql.to_copy_stdout_csv(1, #lines)
+      assert_true(vim.fn.getreg("+") == "sentinel", "clipboard changed for unsafe input")
+    end)
+  end
+end)
+
+test("SQL helper keeps dollar signs in unquoted identifiers", function()
+  with_buffer("sql", { "SELECT col1$$value;" }, 1, function()
+    sql.to_copy_stdout_csv(1, 1)
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT col1$$value\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "identifier dollar signs were treated as a dollar quote"
+    )
+  end)
+end)
+
+test("SQL helper requires a terminator for normal-mode SQL range detection", function()
+  with_buffer("sql", { "SELECT 1" }, 1, function()
+    vim.fn.setreg("+", "sentinel")
+    sql.current_query_to_copy_stdout_csv()
+    assert_true(vim.fn.getreg("+") == "sentinel", "clipboard changed for an ambiguous SQL range")
+  end)
+end)
+
+test("SQL helper preserves clipboard after the final statement and in an empty SQL buffer", function()
+  for _, lines in ipairs({ { "SELECT 1;", "" }, { "" } }) do
+    with_buffer("sql", lines, #lines, function()
+      vim.fn.setreg("+", "sentinel")
+      sql.current_query_to_copy_stdout_csv()
+      assert_true(vim.fn.getreg("+") == "sentinel", "clipboard changed outside a complete SQL statement")
+    end)
+  end
+end)
+
+test("SQL helper keeps the psql copy mapping behavior unchanged", function()
+  with_buffer("sql", { "SELECT 1;" }, 1, function()
+    sql.current_query_to_copy_csv()
+    assert_true(vim.fn.getreg("+") == "\\copy (SELECT 1) TO 'result.csv' WITH CSV HEADER", "unexpected \\copy output")
+  end)
+end)
+
+test("SQL helper converts the current Markdown fenced block", function()
+  with_buffer("markdown", { "```sql", "SELECT 1;", "```" }, 2, function()
+    sql.current_query_to_copy_stdout_csv()
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT 1\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "unexpected Markdown fenced-block output"
+    )
+  end)
+end)
+
+test("SQL helper retains paragraph fallback outside SQL and Markdown", function()
+  with_buffer("python", { "SELECT 1;", "", "ignored" }, 1, function()
+    sql.current_query_to_copy_stdout_csv()
+    assert_true(
+      vim.fn.getreg("+") == "COPY (\nSELECT 1\n) TO STDOUT WITH CSV HEADER \\g 'result.csv'",
+      "unexpected non-SQL fallback output"
+    )
+  end)
+end)
+
 test("SQL helper rejects Markdown prose", function()
   with_buffer("markdown", { "text", "", "more text" }, 1, function()
     local line1, line2 = sql.current_query_range()
