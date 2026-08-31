@@ -437,9 +437,13 @@ M.apply = function()
     end
     --]=]
 
-    -- タイトルの14文字以降を省略
-    if #title > 13 then
-      title = title:sub(1, 13) .. '…'
+    -- タブ幅 (wezterm.lua の tab_max_width = 32) に収まるよう省略記号込み
+    -- 26 セルへ丸める。装飾は ' ' + アイコン + ' ' + 末尾 ' ' の 4 セル分
+    -- (アイコンが 2 セル幅で描画される環境では 5 セル分) なので 26 + 5 = 31。
+    -- バイト数 (#title) ではなく表示幅で測るのは、日本語タイトルが UTF-8 の
+    -- 途中で切れて壊れるのを防ぐため
+    if wezterm.column_width(title) > 26 then
+      title = wezterm.truncate_right(title, 25) .. '…'
     end
 
     -- プロセスに応じたアイコンと色を取得

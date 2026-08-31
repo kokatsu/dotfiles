@@ -67,6 +67,10 @@ in {
         [ui]
         accent = "${p.blue.hex}"
         show_agent_labels_on_pane_borders = true
+        # デフォルトの "{hostname}: {workspace}" だと WezTerm 側のタブタイトル
+        # (format.lua が表示幅で省略) が長いホスト名だけで埋まり実質固定表示に
+        # なるため workspace/tab に差し替える
+        window_title = "{workspace}: {tab}"
         # tab-numbers プラグインが付ける [N] プレフィックスの分を確保する
         # (デフォルト 26)
         sidebar_width = 30
