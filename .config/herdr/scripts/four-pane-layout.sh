@@ -1,6 +1,6 @@
 #!/bin/bash
-# 現在のペインを左上として、4 ペインの作業レイアウトを作成する。
-# 右上で Claude Code、右下で Codex が起動していなければ起動する。
+# 1 ペインなら、現在のペインを左上として 4 ペインの作業レイアウトを作成する。
+# すでに 4 ペインなら、右上で Claude Code、右下で Codex が起動していなければ起動する。
 #
 # ┌─────────┬─────────┐
 # │         │         │
@@ -113,7 +113,4 @@ right_pane_id=$(split_pane "$active_pane_id" right 0.5)
 
 # 元の左ペインは上 3:下 1、右ペインは上 1:下 1 に分割する。
 split_pane "$active_pane_id" down 0.75 >/dev/null
-right_bottom_pane_id=$(split_pane "$right_pane_id" down 0.5)
-
-"$herdr_bin" pane run "$right_pane_id" claude >/dev/null
-"$herdr_bin" pane run "$right_bottom_pane_id" codex >/dev/null
+split_pane "$right_pane_id" down 0.5 >/dev/null
