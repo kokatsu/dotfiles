@@ -82,7 +82,6 @@ return {
     local servers = {
       'bashls',
       'biome',
-      'copilot',
       'cssmodules_ls',
       'denols',
       'dockerls',

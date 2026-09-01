@@ -295,8 +295,6 @@ in {
       bash-language-server # Bash/Sh LSP (ShellCheck + shfmt 統合)
       # https://github.com/withastro/language-tools
       astro-language-server # Astro LSP
-      # https://github.com/github/copilot-language-server-release
-      copilot-language-server # GitHub Copilot LSP
       # https://github.com/rcjsuen/dockerfile-language-server-nodejs
       dockerfile-language-server # Dockerfile LSP
       # https://github.com/LuaLS/lua-language-server

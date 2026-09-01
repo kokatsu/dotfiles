@@ -40,31 +40,6 @@ return {
       ['<C-k>'] = {},
       -- 補完確定は <C-y> 専用。CR は nvim-autopairs の括弧改行に委譲する
       ['<CR>'] = { 'fallback' },
-      -- <Tab> is reserved for Copilot inline completion only.
-      -- blink.cmp menu is accepted with <C-y> (default preset).
-      ['<Tab>'] = {
-        function()
-          if
-            vim.lsp.inline_completion.get({
-              on_accept = function(item)
-                -- Clamp end_col to actual line length (Neovim bug workaround)
-                -- https://github.com/neovim/neovim/issues/35971
-                if item.range then
-                  local end_row = item.range.end_row
-                  local line = vim.api.nvim_buf_get_lines(0, end_row, end_row + 1, false)[1]
-                  if line and item.range.end_col > #line then
-                    item.range[4] = #line
-                  end
-                end
-                return item
-              end,
-            })
-          then
-            return true
-          end
-        end,
-        'fallback',
-      },
     },
 
     appearance = {

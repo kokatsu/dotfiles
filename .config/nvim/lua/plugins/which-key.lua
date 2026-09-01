@@ -7,7 +7,6 @@ return {
     preset = 'helix',
     spec = {
       -- Leader groups
-      { '<leader>a', group = 'ai (copilot)' },
       { '<leader>c', group = 'code/lsp' },
       { '<leader>g', group = 'git' },
       { '<leader>l', group = 'language' },
