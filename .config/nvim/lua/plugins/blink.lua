@@ -33,12 +33,13 @@ return {
     --
     -- See :h blink-cmp-config-keymap for defining your own keymap
     keymap = {
+      preset = 'super-tab',
       ['<C-l>'] = { 'show', 'show_documentation', 'hide_documentation' },
       ['<Up>'] = { 'select_prev', 'fallback' },
       ['<Down>'] = { 'select_next', 'fallback' },
       -- editor.lua の日付挿入 (insert mode <C-k>) を優先するため blink の signature toggle を解除
       ['<C-k>'] = {},
-      -- 補完確定は <C-y> 専用。CR は nvim-autopairs の括弧改行に委譲する
+      -- 補完確定は <Tab> (super-tab) と <C-y>。CR は nvim-autopairs の括弧改行に委譲する
       ['<CR>'] = { 'fallback' },
     },
 
