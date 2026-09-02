@@ -12,6 +12,12 @@ set -euo pipefail
 
 OPML_DIR="$HOME/.config/bulletty"
 
+# XML/JSONL の変換を担う Deno ヘルパー。
+# PATH 上の ~/.local/bin/scripts は dotfiles/bin への symlink なので readlink で
+# 実体へ辿る (bin/md2html と同じ手順)。
+script_path="$(readlink -f "$0" 2>/dev/null || echo "$0")"
+HELPER="$(cd "$(dirname "$script_path")/.." && pwd)/scripts/feed-summarize-helper.ts"
+
 # agent-browser のデーモンを閉じずに終了すると、systemd (Type=oneshot) が
 # cgroup 残留プロセスの stop-sigterm タイムアウトで unit を failed にするため、
 # 終了時に必ずブラウザを閉じる
@@ -189,41 +195,12 @@ parse_feed_entries() {
   local content
   content=$(curl -sfL "$url") || return 1
 
-  echo "$content" | python3 -c '
-import sys, json
-import xml.etree.ElementTree as ET
-
-raw = sys.stdin.buffer.read().decode("utf-8", errors="replace")
-try:
-    root = ET.fromstring(raw)
-except ET.ParseError:
-    sys.exit(0)
-
-def localname(t):
-    return t.split("}", 1)[1] if "}" in t else t
-
-entries = [el for el in root.iter() if localname(el.tag) in ("entry", "item")]
-
-for e in entries:
-    eid = title = link = pub = ""
-    for child in e:
-        n = localname(child.tag)
-        text = (child.text or "").strip() if child.text else ""
-        if n == "id" and not eid:
-            eid = text
-        elif n == "guid" and not eid:
-            eid = text
-        elif n == "title" and not title:
-            title = text
-        elif n == "link" and not link:
-            href = child.get("href")
-            link = href if href else text
-        elif n in ("published", "updated", "pubDate") and not pub:
-            pub = text
-    if not eid:
-        eid = link
-    print(json.dumps({"id": eid, "title": title, "link": link, "date": pub}, ensure_ascii=False))
-'
+  # yq は XML パーサーとしてだけ使い、entry/item の抽出はヘルパー側に置く。
+  # ElementTree と違い &nbsp; のような未定義実体を許すため、以前はフィードごと
+  # 取りこぼしていたものも読める。整形式でない XML では yq が非ゼロで終了し、
+  # 呼び出し元の "Failed to parse feed" 経路に入る。
+  printf '%s' "$content" | yq -p=xml -o=json '.' |
+    deno run --no-prompt "$HELPER" normalize-feed
 }
 
 # --- agent-browser で記事本文を取得 ---
@@ -327,20 +304,10 @@ summarize_article_feed() {
 
   # 新規分のみを古い順で取り出す (last_summarized_id まで)
   local new_entries
-  new_entries=$(echo "$entries_jsonl" | python3 -c "
-import sys, json
-last = '''$last_summarized_id'''
-lines = [l for l in sys.stdin.read().splitlines() if l.strip()]
-new = []
-for line in lines:
-    obj = json.loads(line)
-    if obj.get('id') == last:
-        break
-    new.append(line)
-# 古い順に出力
-for line in reversed(new):
-    print(line)
-")
+  # ID は argv で渡す。旧実装は Python ソースへ直接展開していたため、
+  # フィード由来の ID にコードを混ぜられる余地があった。
+  new_entries=$(echo "$entries_jsonl" |
+    deno run --no-prompt "$HELPER" pending-entries "$last_summarized_id")
 
   if [[ -z "$new_entries" ]]; then
     return
