@@ -66,6 +66,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/claude/hooks/herdr-cache-token.sh session",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [
@@ -73,8 +83,28 @@
         "hooks": [
           {
             "type": "command",
+            "command": "~/.config/claude/hooks/herdr-cache-token.sh stop",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
             "command": "~/.config/claude/hooks/check-ai-writing.sh ~/.config/claude/hooks/notify.sh",
             "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/claude/hooks/herdr-cache-token.sh compact",
+            "timeout": 10
           }
         ]
       }

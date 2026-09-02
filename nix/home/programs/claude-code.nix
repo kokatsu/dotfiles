@@ -37,6 +37,11 @@
       source = ../../../.config/claude/hooks/herdr-agent-state.sh;
       executable = true;
     };
+    ".config/claude/hooks/herdr-cache-token.sh" = {
+      source = ../../../.config/claude/hooks/herdr-cache-token.sh;
+      executable = true;
+    };
+    ".config/claude/hooks/herdr-cache-token.ts".source = ../../../.config/claude/hooks/herdr-cache-token.ts;
     ".config/claude/hooks/herdr-peer-command-guard.sh" = {
       source = ../../../.config/claude/hooks/herdr-peer-command-guard.sh;
       executable = true;

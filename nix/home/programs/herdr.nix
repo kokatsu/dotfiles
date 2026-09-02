@@ -87,7 +87,9 @@ in {
         # ワークスペース名の非アクティブ時スタイル (subtext0 + bold) に合わせる
         claude = [
           ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace", { token = "tab", fg = "${p.yellow.hex}", bold = true }],
-          ["agent"],
+          # $cache は herdr-cache-token.ts が報告する prompt cache の失効時刻。
+          # --ttl-ms で失効と同時に消えるため、無表示 = キャッシュ切れを意味する
+          ["agent", "$cache"],
           ["terminal_title_stripped"],
         ]
         codex = [
