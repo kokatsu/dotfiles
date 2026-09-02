@@ -20,11 +20,6 @@
     ".config/codex/skills/browser-research".source = ../../../.config/codex/skills/browser-research;
     ".config/codex/skills/herdr-peer".source = ../../../.config/codex/skills/herdr-peer;
 
-    # `herdr integration install codex` の生成物をNix管理する。
-    ".config/codex/herdr-agent-state.sh" = {
-      source = ../../../.config/codex/herdr-agent-state.sh;
-      executable = true;
-    };
     ".config/codex/gh-api-method-required.sh" = {
       source = ../../../.config/codex/hooks/gh-api-method-required.sh;
       executable = true;
@@ -58,7 +53,8 @@
           {
             hooks = [
               {
-                command = "bash '${config.xdg.configHome}/codex/herdr-agent-state.sh' session";
+                # herdr.nix が配置する共有フック (Claude Code 側と同じ実装)。
+                command = "bash '${config.xdg.configHome}/herdr/hooks/report-agent-session.sh' session codex";
                 timeout = 10;
                 type = "command";
               }

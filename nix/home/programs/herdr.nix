@@ -263,6 +263,17 @@ in {
         command = "${scriptsDir}/feed-open.sh"
         description = "未読フィードを開く"
       '';
+      # Claude Code / Codex の SessionStart から呼ぶ agent session 報告フック。
+      # `herdr integration install` が生成していた埋め込み Python のスクリプト
+      # 2 本 (上流の更新で上書きされる生成物) を自前の 1 本に置き換えたもの。
+      # 両エージェントで共有するため、配置はこのファイルだけが持つ
+      # (claude-code.nix / codex.nix 側では扱わない)
+      ".config/herdr/hooks/report-agent-session.sh" = {
+        source = ../../../.config/herdr/hooks/report-agent-session.sh;
+        executable = true;
+      };
+      ".config/herdr/hooks/report-agent-session.ts".source = ../../../.config/herdr/hooks/report-agent-session.ts;
+
       # .config/herdr/plugins/close-confirm は home.file で配置しない:
       # plugin link が symlink を解決して plugin_root が /nix/store になり、
       # rebuild のたびに store パスが変わって登録が陳腐化するため。

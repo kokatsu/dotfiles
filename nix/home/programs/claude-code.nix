@@ -33,10 +33,6 @@
       source = ../../../.config/claude/hooks/gh-api-guard.sh;
       executable = true;
     };
-    ".config/claude/hooks/herdr-agent-state.sh" = {
-      source = ../../../.config/claude/hooks/herdr-agent-state.sh;
-      executable = true;
-    };
     ".config/claude/hooks/herdr-cache-token.sh" = {
       source = ../../../.config/claude/hooks/herdr-cache-token.sh;
       executable = true;

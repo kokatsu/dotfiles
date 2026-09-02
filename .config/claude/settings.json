@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ~/.config/claude/hooks/herdr-agent-state.sh session",
+            "command": "bash ~/.config/herdr/hooks/report-agent-session.sh session claude",
             "timeout": 10
           }
         ]

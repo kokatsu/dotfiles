@@ -2,7 +2,7 @@
 
 lua_dirs := ".config/nvim .config/wezterm"
 deno_dirs := "karabiner-config scripts"
-deno_files := ".config/zeno/config.ts .config/claude/hooks/herdr-cache-token.ts"
+deno_files := ".config/zeno/config.ts .config/claude/hooks/herdr-cache-token.ts .config/herdr/hooks/report-agent-session.ts"
 
 # List available recipes
 default:
