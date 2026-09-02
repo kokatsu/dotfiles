@@ -139,6 +139,12 @@ jobs:
             echo "has_karabinerts_deno_lock=true" >> $GITHUB_OUTPUT
           fi
 
+          # flake.nix の変更は sync-flake-inputs.sh が実際に走る条件そのもので、
+          # そのスクリプトが Deno ヘルパーで input を抽出する
+          if ! git diff --quiet origin/main -- flake.nix; then
+            echo "has_flake_nix=true" >> $GITHUB_OUTPUT
+          fi
+
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
 
       # === Pre-built binary packages ===
@@ -397,6 +403,14 @@ jobs:
           fi
           echo "All hashes verified successfully."
 
+      # Deno は下の 2 ステップで使う: Sync が flake.nix の input 抽出に呼ぶ
+      # scripts/list-flake-input-urls.ts と、karabiner-config の deno.lock 再生成。
+      # ハッシュ更新だけの PR にステップを増やさないよう、どちらかが要るときだけ
+      # setup する
+      - name: Setup Deno
+        if: steps.detect.outputs.has_flake_nix == 'true' || steps.detect.outputs.has_karabinerts_deno_lock == 'true'
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
+
       - name: Sync flake.lock for flake.nix tag pins
         id: sync-flake
         run: bash scripts/sync-flake-inputs.sh "$GITHUB_OUTPUT"
@@ -407,10 +421,6 @@ jobs:
       # Regenerate the lockfile here so it can be committed in the same push as
       # the nix-hash updates below — a separate push would race against
       # concurrency.cancel-in-progress when the first push fires synchronize.
-
-      - name: Setup Deno
-        if: steps.detect.outputs.has_karabinerts_deno_lock == 'true'
-        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
 
       - name: Regenerate karabiner-config deno.lock
         if: steps.detect.outputs.has_karabinerts_deno_lock == 'true'

@@ -19,14 +19,11 @@ if git diff --quiet origin/main -- flake.nix; then
   exit 0
 fi
 
+HELPER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/list-flake-input-urls.ts"
+
 parse_inputs() {
-  # ファイルパスを引数で受ける (heredoc が stdin を奪うため pipe では渡せない)
-  python3 - "$1" <<'PYEOF'
-import re, sys
-src = open(sys.argv[1]).read()
-for m in re.finditer(r"^\s+([\w-]+)\s*=\s*\{\s*\n\s+url\s*=\s*\"([^\"]+)\"", src, re.MULTILINE):
-    print(m.group(1), m.group(2))
-PYEOF
+  # ヘルパーは stdin しか読まないので Deno の権限フラグは不要
+  deno run --no-prompt "$HELPER" <"$1"
 }
 
 OLD_FLAKE=$(mktemp)
