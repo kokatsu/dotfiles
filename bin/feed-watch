@@ -177,6 +177,21 @@ cmd_check() {
     exit 1
   fi
 
+  # パース結果を先に確定させる。compgen はファイルの存在しか見ないので、OPML が
+  # 空だったり壊れていれば 0 件になりうる。その名前一覧で prune すると全エントリを
+  # 消してしまうため、0 件なら status.json を触らずに終わる
+  local entries
+  entries=$(parse_opml | grep -v '^$') || true
+  if [[ -z "$entries" ]]; then
+    echo "No feeds parsed from $OPML_DIR/feeds*.opml" >&2
+    exit 1
+  fi
+
+  # prune の基準は「OPML に書かれている名前」。取得に失敗したフィードも OPML には
+  # 残っているので、一時的なネットワーク障害でエントリを失わない
+  local configured_names
+  configured_names=$(cut -d'|' -f2 <<<"$entries" | jq -R . | jq -s .)
+
   local status
   status=$(cat "$STATUS_FILE")
 
@@ -198,7 +213,12 @@ cmd_check() {
       }
       status=$(update_feed_status "$status" "$name" "$ids" "feed" "$html_url" "$category")
     fi
-  done < <(parse_opml)
+  done <<<"$entries"
+
+  # OPML から消えたフィードのエントリを落とす。残しておくと、未読を抱えたまま
+  # 設定から外れたフィードがステータスバーに出続ける
+  status=$(echo "$status" | jq --argjson names "$configured_names" \
+    '.feeds |= with_entries(select(.key as $k | ($names | index($k)) != null))')
 
   echo "$status" | jq --argjson ts "$(date +%s)" '.last_updated = $ts' >"$STATUS_FILE"
 }
