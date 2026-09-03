@@ -62,11 +62,11 @@ in {
   # Renovate: datasource=github-releases depName=biomejs/biome
   biome = mkBinaryRelease rec {
     pname = "biome";
-    version = "2.5.9";
+    version = "2.5.11";
     hashes = {
-      "aarch64-darwin" = "sha256-fYtR3shX/6iqNc5eqjpEds1ivtATrcKJa/Q8rApnp5s=";
-      "aarch64-linux" = "sha256-v1k/eVXjpDf7gFayVRQrUIcrqj6BNxzaLD/OkjmvGJA=";
-      "x86_64-linux" = "sha256-AT61FYueUyNdu/MSVcs7d2+5M4sy+m/0pE7hzu1l7mM=";
+      "aarch64-darwin" = "sha256-egZ7AP347u+39fXyR7fawbsjrf6uo4CpEpM1O44uuis=";
+      "aarch64-linux" = "sha256-seQixM9d54hVP2ErOVLerdbLdmmzVlkZevFMSx92P6s=";
+      "x86_64-linux" = "sha256-Yppy0w5bYltwcjplHFEMDC1K3HybczSmkK/oSLpEJs4=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
