@@ -259,9 +259,9 @@ in {
     pname = "agent-browser";
     version = "0.35.1";
     hashes = {
-      "aarch64-darwin" = "sha256-1oCnqWq4bpq50rVxsSkZt2HpNoKtHecUu9WshJyNfJw=";
-      "aarch64-linux" = "sha256-wIZPsgbjIa9IpG+4MxzwiuYLP8wQRiMsHRyELbT8QMo=";
-      "x86_64-linux" = "sha256-3UdSuh3vgcdENQTChLZVnSja2OzQK1+uymyvT8H7lI4=";
+      "aarch64-darwin" = "sha256-Er4zE+xth42P2mLKXGK3ATwbaTG/V90meHiGVLAf/pU=";
+      "aarch64-linux" = "sha256-r+AJq+bqowzraoXFkwWumeoWzbttoqUCtYe71zs7its=";
+      "x86_64-linux" = "sha256-WT+DCRwTJOhBTaCDfTWMStH3AH3jXF/fhWKo1MHm4VA=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
