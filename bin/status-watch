@@ -14,10 +14,18 @@ CLAUDE_SUMMARY_URL=${STATUS_WATCH_CLAUDE_URL:-${STATUS_WATCH_URL:-https://status
 OPENAI_SUMMARY_URL=${STATUS_WATCH_OPENAI_URL:-https://status.openai.com/api/v2/summary.json}
 GITHUB_SUMMARY_URL=${STATUS_WATCH_GITHUB_URL:-https://www.githubstatus.com/api/v2/summary.json}
 
-# --- Windows 側の出力先を決定 ---
+# --- 出力先を決定 ---
 get_status_dir() {
   if [[ -n "${STATUS_WATCH_STATUS_DIR:-}" ]]; then
     echo "$STATUS_WATCH_STATUS_DIR"
+    return
+  fi
+
+  # macOS は WezTerm とこのスクリプトが同じマシンにいるので Windows プロファイルを
+  # 探さない。XDG_CACHE_HOME は見ない: feed-watch / disk-watch も .cache 直下の固定
+  # パスで、読み手 (format.lua / status-open.sh) と揃わなくなるのを避ける
+  if [[ $(uname -s) == Darwin ]]; then
+    echo "$HOME/.cache/status-watch"
     return
   fi
 

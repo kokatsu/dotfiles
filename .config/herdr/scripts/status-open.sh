@@ -16,10 +16,15 @@ notify() {
   "$herdr_bin" notification show "$1" --sound none >/dev/null 2>&1 || true
 }
 
-# status-watch と同じ Windows 側出力先の解決
+# status-watch の get_status_dir と同じ解決
 get_status_dir() {
   if [[ -n "${STATUS_WATCH_STATUS_DIR:-}" ]]; then
     echo "$STATUS_WATCH_STATUS_DIR"
+    return
+  fi
+
+  if [[ $(uname -s) == Darwin ]]; then
+    echo "$HOME/.cache/status-watch"
     return
   fi
 
@@ -34,9 +39,13 @@ get_status_dir() {
 }
 
 # bin/wsl-open は PowerShell の Constrained Language Mode を避けるため wslview を
-# 置き換えたもの。PATH 経由で見つからない場合は配置先の絶対パスへ倒す
+# 置き換えたもの。PATH 経由で見つからない場合は配置先の絶対パスへ倒す。
+# macOS を先に分けるのは、bin/ が macOS でも PATH に入るため wsl-open が必ず
+# 見つかってしまい、中の cmd.exe 実行で落ちて後段まで来ないから
 open_url() {
-  if command -v wsl-open >/dev/null 2>&1; then
+  if [[ $(uname -s) == Darwin ]]; then
+    /usr/bin/open "$1"
+  elif command -v wsl-open >/dev/null 2>&1; then
     wsl-open "$1"
   elif [[ -x "$HOME/.local/bin/scripts/wsl-open" ]]; then
     "$HOME/.local/bin/scripts/wsl-open" "$1"
@@ -46,7 +55,7 @@ open_url() {
 }
 
 status_dir=$(get_status_dir) || {
-  notify "Windows 側のキャッシュディレクトリを解決できませんでした"
+  notify "キャッシュディレクトリを解決できませんでした"
   exit 1
 }
 

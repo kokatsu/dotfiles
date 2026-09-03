@@ -213,6 +213,19 @@ local SERVICE_STATUS_CHECK_INTERVAL = 30 -- seconds
 -- いるとみなして描画しない (復旧済みの障害が残り続けるのを防ぐ)
 local SERVICE_STATUS_TTL = 900 -- seconds
 
+--- status-watch のキャッシュディレクトリを末尾のセパレータ込みで返す。
+--- Windows 版 WezTerm は WSL 側から書かれた Windows プロファイル配下を読み、
+--- macOS は同じマシンの ~/.cache を読む (bin/status-watch の get_status_dir と対)
+local function service_status_dir()
+  if platform.is_windows then
+    local userprofile = os.getenv('USERPROFILE')
+    return userprofile and (userprofile .. '\\.cache\\status-watch\\')
+  end
+
+  local home = os.getenv('HOME')
+  return home and (home .. '/.cache/status-watch/')
+end
+
 local function read_service_status(filename)
   local now = os.time()
   local cached = service_status_cache[filename]
@@ -220,13 +233,13 @@ local function read_service_status(filename)
     return cached.data
   end
 
-  local userprofile = os.getenv('USERPROFILE')
-  if not userprofile then
+  local dir = service_status_dir()
+  if not dir then
     service_status_cache[filename] = { data = false, last_check = now }
     return false
   end
 
-  local path = userprofile .. '\\.cache\\status-watch\\' .. filename
+  local path = dir .. filename
   local file = io.open(path, 'r')
   if not file then
     service_status_cache[filename] = { data = false, last_check = now }
@@ -314,9 +327,9 @@ end
 --- サービス状態をアイコン 1 つの色で表す。正常でも出し続けるので、
 --- 監視が止まっている状態を正常と取り違えないよう、TTL 超過だけは灰色にする
 local function format_service_status(filename, icon)
-  -- status-watch は WSL 限定なので、Windows 版 WezTerm 以外ではキャッシュが
-  -- 存在せず、常に「監視停止」の灰色になってしまう。そこでは何も出さない
-  if not platform.is_windows then
+  -- status-watch が動くのは WSL (Windows 版 WezTerm が読む) と macOS だけ。
+  -- それ以外ではキャッシュが存在せず常に「監視停止」の灰色になるので何も出さない
+  if not (platform.is_windows or platform.is_mac) then
     return {}
   end
 
