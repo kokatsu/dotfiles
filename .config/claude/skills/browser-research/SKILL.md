@@ -116,16 +116,8 @@ Most research finishes with the steps above. Read `${CLAUDE_SKILL_DIR}/reference
 - **Read-only by default** — never submit forms or enter data. Clicking is allowed only for passive navigation: dismissing cookie/consent banners, following links, expanding collapsed sections, or switching tabs. Do not click buttons that trigger writes, purchases, or state changes.
 - **No guessing** — do not fabricate or assume page content; only report what `read`/`snapshot`/`get`/`eval` return.
 - **Authentication pages** — if a page requires login, report it immediately and stop. Do not attempt to authenticate.
-- **Prefer command chaining** — use `&&` to combine related commands in a single bash call for efficiency.
 - **Minimize tokens** — prefer `read` (or `read --filter`) over full-page extraction, and use `--max-output` for large pages.
 
-## Output Format
+## Output
 
-Respond in the same language the user used. Summarize findings in this structure:
-
-1. **Overview**: Main topic and purpose of the page
-2. **Key Points**: Important information as bullet points
-3. **Details**: Detailed explanations as needed
-4. **Related Links**: Additional resources to reference
-
-When researching multiple URLs or when the user requests it, save results to a file using the Write tool. For a single-URL quick lookup, respond directly in chat.
+Lead with the answer to the research question, then the supporting points and the source URLs the reader may want to follow. For a single-URL quick lookup, respond directly in chat; when researching multiple URLs or when the user asks, save results to a file with the Write tool.

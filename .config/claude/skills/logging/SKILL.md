@@ -25,8 +25,6 @@ allowed-tools:
 
 Review or implement proper application logging based on established guidelines.
 
-**Respond to the user in the same language they use.**
-
 ## Usage
 
 ```text
@@ -40,20 +38,14 @@ Review or implement proper application logging based on established guidelines.
 
 ## Workflow
 
-1. **Read guidelines** — Load `${CLAUDE_SKILL_DIR}/guidelines.md`
-2. **Detect existing setup** — Identify the project's logging library, format, and conventions. Existing project conventions take precedence over guidelines — never introduce a new logging style that conflicts with what the project already uses.
-3. **Identify target** — Determine which files/modules to analyze based on `$ARGUMENTS`
-4. **Analyze** — Check logging against guidelines (5W1H, level appropriateness, security)
-5. **Determine mode**:
-   - **Review mode**: User asks to "review", "check", "audit", or phrases the request as a question (e.g., "ログ大丈夫？", "logging issues?"). Default when intent is unclear.
-   - **Implement mode**: User explicitly asks to "add", "fix", "implement", "improve", or "replace" logging.
-6. **Act** — Report issues (review) or add/fix logging (implement)
+Load `${CLAUDE_SKILL_DIR}/guidelines.md`, then check the target named by `$ARGUMENTS` against it (5W1H, level appropriateness, security). Existing project conventions take precedence over the guidelines: adapt to the project's language, logging library, and style, and do not introduce a different library or format without the user's explicit approval.
 
-## Critical Rules
+Two modes:
 
-- **Security findings are highest priority** — Sensitive data leaks (passwords, tokens, PII) must be flagged before any other issue
-- **Review mode does not modify code** — Report findings only; never edit files unless explicitly asked to implement
-- **Respect existing conventions** — Adapt guidelines to the project's language, logging library, and style. Do not introduce a different library or format without the user's explicit approval
+- **Review** (default when intent is unclear, and whenever the request is phrased as a question such as "ログ大丈夫？" or "logging issues?"): report findings only; do not edit files.
+- **Implement** (only when the user explicitly asks to add, fix, implement, improve, or replace logging): make the changes.
+
+Sensitive-data leaks (passwords, tokens, PII) are reported before any other finding.
 
 ## Output
 

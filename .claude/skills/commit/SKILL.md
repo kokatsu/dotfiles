@@ -42,5 +42,5 @@ Project-specific guidelines:
 - **Commit messages must be in English** — both subject and body
 - **Use HEREDOC format to pass messages** — avoids shell escaping issues
 - **Never use `--no-verify`** — if a hook fails, investigate and fix the root cause
-- **Always get user approval before committing** — present the message and do not commit without confirmation
+- **Get user approval for each commit** — show the final subject and body, wait for an explicit go, and commit only that one. Agreeing on a split plan, or approving one message, authorizes nothing beyond that single commit
 - **Only amend when the user explicitly requests it**
