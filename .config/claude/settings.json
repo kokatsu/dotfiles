@@ -6,9 +6,6 @@
   },
   "respectGitignore": false,
   "cleanupPeriodDays": 60,
-  "attribution": {
-    "sessionUrl": false
-  },
   "env": {
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-sonnet-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5",
@@ -18,6 +15,9 @@
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "DISABLE_INSTALLATION_CHECKS": "1",
     "DISABLE_UPDATES": "1"
+  },
+  "attribution": {
+    "sessionUrl": false
   },
   "hooks": {
     "Notification": [
@@ -125,5 +125,14 @@
     "codex@openai-codex": true
   },
   "language": "japanese",
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "modelSettings": {
+    "claude-opus-5": {
+      "effortLevel": "xhigh"
+    },
+    "claude-fable-5-1": {
+      "effortLevel": "medium"
+    }
+  },
+  "agentPushNotifEnabled": true
 }
