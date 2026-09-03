@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# status-watch: status.claude.com の障害情報を取得し、WezTerm ステータスバーが
+# 読む JSON を更新する
+#
+# Usage:
+#   status-watch check - summary.json を取得して status.json を更新する
+#
+# Statuspage の summary.json は全体の indicator、コンポーネント別の状態、
+# 進行中のインシデント、予定されたメンテナンスをまとめて返すので、
+# リクエストは 1 回で足りる
+
+SUMMARY_URL=${STATUS_WATCH_URL:-https://status.claude.com/api/v2/summary.json}
+
+# --- Windows 側の出力先を決定 ---
+get_status_dir() {
+  if [[ -n "${STATUS_WATCH_STATUS_DIR:-}" ]]; then
+    echo "$STATUS_WATCH_STATUS_DIR"
+    return
+  fi
+
+  local winuser
+  # 対話シェルでも systemd user unit の中でも cmd.exe は解決に使える
+  # (systemd-run --user 経由で実測)
+  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
+  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
+    echo "/mnt/c/Users/$winuser/.cache/status-watch"
+    return
+  fi
+
+  # feed-watch / disk-watch が持つ /mnt/c/Users/* の推測 fallback は置かない。
+  # このホストには非システムの Windows プロファイルが複数あり、最初の 1 件を
+  # 選ぶと別ユーザーのディレクトリへ書き込む
+  return 1
+}
+
+# --- check サブコマンド ---
+cmd_check() {
+  local status_dir status_file summary payload temp_file
+
+  status_dir=$(get_status_dir) || {
+    echo "Could not resolve the Windows profile directory." >&2
+    exit 1
+  }
+  status_file="$status_dir/status.json"
+
+  # 取得に失敗しても status.json は更新せず前回の内容を残す。exit 1 で unit を
+  # failed にして journal に理由を残し、次の周期で再試行する
+  summary=$(curl -sfL --max-time 10 "$SUMMARY_URL") || {
+    echo "Failed to fetch $SUMMARY_URL" >&2
+    exit 1
+  }
+
+  # operational 以外のコンポーネントと、未解決のインシデントだけを残す。
+  # 全部入りのまま WezTerm 側へ渡すと Lua で絞り込むことになる。
+  # scheduled_maintenances は載せない。summary には来週の予定 (status=scheduled) も
+  # 混ざるうえ、バーは「今おかしいか」を出す場所であり、影響のある実施中の
+  # メンテナンスは component が under_maintenance になれば components 側で拾える
+  payload=$(jq -c --argjson ts "$(date +%s)" '
+    {
+      indicator: .status.indicator,
+      description: .status.description,
+      components: [
+        .components[]
+        | select(.status != "operational")
+        | {name, status}
+      ],
+      incidents: [.incidents[] | {name, impact, status}],
+      last_updated: $ts,
+    }
+  ' <<<"$summary") || {
+    echo "Failed to parse the status summary" >&2
+    exit 1
+  }
+
+  # WezTerm は 1 秒ごとにこのファイルを読む。書き込み途中を読ませると
+  # json_parse が失敗して表示が飛ぶため、一時ファイルに書いてから rename する
+  mkdir -p "$status_dir"
+  temp_file=$(mktemp "$status_dir/.status.json.XXXXXX")
+  trap 'rm -f "${temp_file:-}"' EXIT
+
+  printf '%s\n' "$payload" >"$temp_file"
+  mv -f "$temp_file" "$status_file"
+  trap - EXIT
+}
+
+# --- メイン ---
+case "${1:-check}" in
+check) cmd_check ;;
+*)
+  echo "Usage: status-watch [check]" >&2
+  exit 1
+  ;;
+esac

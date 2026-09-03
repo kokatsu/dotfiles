@@ -67,6 +67,7 @@ in {
     ./programs/zsh.nix
     ./services/disk-watch.nix
     ./services/feed-watch.nix
+    ./services/status-watch.nix
     ./themes/claude-code.nix
     ./themes/hermes.nix
   ];

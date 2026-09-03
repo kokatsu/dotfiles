@@ -2,6 +2,7 @@
 local wezterm = require('wezterm') ---@type Wezterm
 
 local colors = require('colors')
+local platform = require('platform')
 
 local M = {}
 
@@ -205,6 +206,144 @@ local function format_disk_status()
   return elements
 end
 
+-- status-watch: status.claude.com の障害情報
+local claude_status_cache = nil
+local claude_status_last_check = 0
+local CLAUDE_STATUS_CHECK_INTERVAL = 30 -- seconds
+-- status-watch は 5 分ごとに更新する。3 周期分を過ぎたデータは取得が止まって
+-- いるとみなして描画しない (復旧済みの障害が残り続けるのを防ぐ)
+local CLAUDE_STATUS_TTL = 900 -- seconds
+
+local function read_claude_status()
+  local now = os.time()
+  if claude_status_cache ~= nil and (now - claude_status_last_check) < CLAUDE_STATUS_CHECK_INTERVAL then
+    return claude_status_cache
+  end
+  claude_status_last_check = now
+
+  local userprofile = os.getenv('USERPROFILE')
+  if not userprofile then
+    claude_status_cache = false
+    return false
+  end
+
+  local path = userprofile .. '\\.cache\\status-watch\\status.json'
+  local file = io.open(path, 'r')
+  if not file then
+    claude_status_cache = false
+    return false
+  end
+
+  local content = file:read('*a')
+  file:close()
+
+  local ok, data = pcall(wezterm.json_parse, content)
+  if not ok or not data or not data.indicator then
+    claude_status_cache = false
+    return false
+  end
+
+  claude_status_cache = data
+  return data
+end
+
+-- Nerd Fonts の cod-claude (U+EC82)。wezterm.nerdfonts のテーブルは WezTerm の
+-- バージョンに依存するので、コードポイントを直接指定する。WezTerm の fallback に
+-- 並ぶ 4 フォントのうち、このグリフを持つのは PlemolJP35 Console NF だけ
+local claude_icon = utf8.char(0xec82)
+
+-- indicator は none / minor / major / critical の 4 値しかない。メンテナンスは
+-- indicator ではなく component の under_maintenance として現れる
+local claude_status_colors = {
+  none = colors.palette.green,
+  minor = colors.palette.yellow,
+  major = colors.palette.peach,
+  critical = colors.palette.red,
+}
+
+local claude_component_colors = {
+  degraded_performance = colors.palette.yellow,
+  partial_outage = colors.palette.peach,
+  major_outage = colors.palette.red,
+  under_maintenance = colors.palette.sky,
+}
+
+local claude_impact_colors = {
+  none = colors.palette.yellow,
+  minor = colors.palette.yellow,
+  major = colors.palette.peach,
+  critical = colors.palette.red,
+}
+
+-- Statuspage の配列順は severity 順ではないので、代表要素は rank で選ぶ
+local claude_impact_rank = {
+  none = 1,
+  minor = 2,
+  major = 3,
+  critical = 4,
+}
+
+local claude_component_rank = {
+  under_maintenance = 1,
+  degraded_performance = 2,
+  partial_outage = 3,
+  major_outage = 4,
+}
+
+--- rank が最大の要素を返す (同率なら先に現れたもの)
+---@param items table[]
+---@param key string
+---@param ranks table<string, integer>
+---@return table
+local function most_severe(items, key, ranks)
+  local worst = items[1]
+  local worst_rank = ranks[worst[key]] or 0
+  for i = 2, #items do
+    local rank = ranks[items[i][key]] or 0
+    if rank > worst_rank then
+      worst = items[i]
+      worst_rank = rank
+    end
+  end
+  return worst
+end
+
+--- Claude のサービス状態をアイコン 1 つの色で表す。正常でも出し続けるので、
+--- 監視が止まっている状態を正常と取り違えないよう、TTL 超過だけは灰色にする
+local function format_claude_status()
+  -- status-watch は WSL 限定なので、Windows 版 WezTerm 以外では status.json が
+  -- 存在せず、常に「監視停止」の灰色になってしまう。そこでは何も出さない
+  if not platform.is_windows then
+    return {}
+  end
+
+  local data = read_claude_status()
+  local color
+
+  if not data or not data.last_updated or os.time() - data.last_updated > CLAUDE_STATUS_TTL then
+    color = colors.palette.overlay1
+  else
+    local components = data.components or {}
+    local incidents = data.incidents or {}
+    local indicator = data.indicator or 'none'
+
+    if indicator ~= 'none' then
+      color = claude_status_colors[indicator]
+    elseif #incidents > 0 then
+      color = claude_impact_colors[most_severe(incidents, 'impact', claude_impact_rank).impact]
+    elseif #components > 0 then
+      color = claude_component_colors[most_severe(components, 'status', claude_component_rank).status]
+    else
+      color = claude_status_colors.none
+    end
+  end
+
+  return {
+    { Foreground = { Color = color or colors.palette.yellow } },
+    { Text = claude_icon .. ' ' },
+  }
+end
+
 --- WSLを考慮して実際のプロセス名を取得する
 --- WSL上のプロセスはwslhost.exeとして見えるため、WEZTERM_PROGユーザー変数を使用
 ---@param pane any
@@ -404,22 +543,24 @@ M.apply = function()
         }))
       end
     else
-      local feed_elements = format_feed_status()
-      local disk_elements = format_disk_status()
-      local updated_elements = format_feed_last_updated()
-      if #feed_elements > 0 and #disk_elements > 0 then
-        table.insert(feed_elements, { Text = '  ' })
+      -- 右ステータスは複数セクションの連結。空のセクションは飛ばす
+      local right_elements = {}
+      for _, section in ipairs({
+        format_feed_status(),
+        format_claude_status(),
+        format_disk_status(),
+        format_feed_last_updated(),
+      }) do
+        if #section > 0 then
+          if #right_elements > 0 then
+            table.insert(right_elements, { Text = '  ' })
+          end
+          for _, element in ipairs(section) do
+            table.insert(right_elements, element)
+          end
+        end
       end
-      for _, element in ipairs(disk_elements) do
-        table.insert(feed_elements, element)
-      end
-      if #feed_elements > 0 and #updated_elements > 0 then
-        table.insert(feed_elements, { Text = '  ' })
-      end
-      for _, element in ipairs(updated_elements) do
-        table.insert(feed_elements, element)
-      end
-      window:set_right_status(wezterm.format(feed_elements))
+      window:set_right_status(wezterm.format(right_elements))
     end
   end)
 

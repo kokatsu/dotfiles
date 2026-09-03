@@ -1,2 +1,2 @@
-std = "wezterm"
+std = "lua53+wezterm"
 exclude = ["background.static.lua"]
