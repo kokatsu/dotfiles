@@ -110,7 +110,9 @@ update_feed_status() {
 fetch_feed_ids() {
   local url="$1"
   local content
-  content=$(curl -sfL "$url") || return 1
+  # --max-time は status-watch と揃えた 10 秒。timer は 5 分間隔なので、応答の
+  # 無いフィードが 1 つあるだけで次の起動と重なるのを防ぐ
+  content=$(curl -sfL --max-time 10 "$url") || return 1
 
   # Atom: <id> タグ (先頭のフィード自体の id はスキップ)
   local atom_ids
