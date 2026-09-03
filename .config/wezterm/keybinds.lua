@@ -402,6 +402,29 @@ local unified_keys = {
 
 -- Windows 固有キーバインド
 local windows_specific_keys = {
+  -- `Ctrl + Space` (herdr prefix) で日本語 IME をオフにしてから prefix を送る。
+  -- herdr の switch_ascii_input_source_in_prefix は WSL 内の Linux プロセスからは
+  -- Windows の IME に届かないため、Windows 側で動く WezTerm が代行する。
+  -- Windows 側の zenhan.exe はグループポリシー (os error 1260) で起動を拒否される
+  -- ため、Neovim の InsertLeave と同じく WSL 内の zenhan を wsl.exe 経由で起こす。
+  -- 起動失敗で callback が中断すると prefix 自体が届かなくなるので pcall で保護する。
+  -- 非同期起動 (実測 0.3〜0.4 秒) のため、IME が ON の状態で prefix 直後 0.3 秒以内に
+  -- 打った次のキーは食われうる。同期待ちは prefix 転送自体を遅らせるので採らない。
+  -- prefix 終了を WezTerm は検知できないため IME はオフのまま残る
+  {
+    key = 'Space',
+    mods = 'CTRL',
+    action = wezterm.action_callback(function(window, pane)
+      -- PowerShell など WSL 以外のペインでは IME を触らない
+      if is_wsl_domain(pane) then
+        local ok, err = pcall(wezterm.background_child_process, { 'wsl.exe', '-e', 'zenhan', '0' })
+        if not ok then
+          wezterm.log_error('zenhan: ' .. tostring(err))
+        end
+      end
+      window:perform_action(act.SendKey({ key = 'Space', mods = 'CTRL' }), pane)
+    end),
+  },
   -- `Alt + y` で新しいタブで PowerShell を起動
   {
     key = 'y',
