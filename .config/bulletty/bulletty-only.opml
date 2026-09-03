@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!--
+  bulletty へ import するためだけの OPML。bin/feed-watch は $OPML_DIR/feeds*.opml
+  を glob で読むので、feeds で始まらないこのファイルは未読カウントの対象外になる。
+
+  Status カテゴリ: 現在の状態は status-watch が WezTerm バーへ色で出すため、同じ
+  情報をフィードの未読としても数えると二重になる。過去のインシデント履歴は bulletty
+  で読めるよう購読自体は残す。
+
+  GitHub カテゴリ: リリースノートは更新のたびに未読が増えるが、バーで急かされる
+  類の情報ではない。読みたいときに bulletty でまとめて追う。
+-->
+<opml version="1.0">
+    <head>
+        <title>Generated from bulletty</title>
+        <url>https://github.com/CrociDB/bulletty</url>
+    </head>
+    <body>
+        <outline text="GitHub" title="GitHub">
+            <outline text="Claude Release Notes" title="Claude Release Notes" description="Claude Release Notes" xmlUrl="https://github.com/anthropics/claude-code/releases.atom" htmlUrl="https://github.com/anthropics/claude-code/releases" type="rss" />
+            <outline text="Codex Release Notes" title="Codex Release Notes" description="Codex Release Notes" xmlUrl="https://github.com/openai/codex/releases.atom" htmlUrl="https://github.com/openai/codex/releases" type="rss" />
+        </outline>
+        <outline text="Status" title="Status">
+            <outline text="Claude Status - Incident History" title="Claude Status - Incident History" description="Claude Status - Incident History" xmlUrl="https://status.anthropic.com/history.atom" htmlUrl="https://status.anthropic.com/" type="rss" />
+            <outline text="OpenAI Status - Incident History" title="OpenAI Status - Incident History" description="OpenAI Status - Incident History" xmlUrl="https://status.openai.com/feed.atom" htmlUrl="https://status.openai.com/" type="rss" />
+        </outline>
+    </body>
+</opml>

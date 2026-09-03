@@ -168,6 +168,9 @@ in {
         ../../.config/bat/themes + "/${names.spaced}.tmTheme";
       ".config/bulletty/feeds.opml".source = ../../.config/bulletty/feeds.opml;
       ".config/bulletty/feeds-forum.opml".source = ../../.config/bulletty/feeds-forum.opml;
+      # feeds*.opml だけを bin/feed-watch が読む。bulletty へ import したいが
+      # 未読カウントには出したくないフィードはこちらへ置く
+      ".config/bulletty/bulletty-only.opml".source = ../../.config/bulletty/bulletty-only.opml;
       ".config/biome".source = ../../.config/biome;
       ".config/lazydocker/config.yml".text = let
         staticContent = builtins.readFile ../../.config/lazydocker/config.static.yml;

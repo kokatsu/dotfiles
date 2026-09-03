@@ -126,6 +126,8 @@ fetch_feed_ids() {
 
 # --- OPML パース: "category|name|xmlUrl|htmlUrl" 行を出力 ---
 parse_opml() {
+  # feeds*.opml だけを対象にする。bulletty-only.opml は bulletty への import 元
+  # として残しつつ、未読カウントからは外すためのファイル
   local files=()
   local f
   for f in "$OPML_DIR"/feeds*.opml; do
