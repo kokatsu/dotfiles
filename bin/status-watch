@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# status-watch: Claude / OpenAI の障害情報を取得し、WezTerm ステータスバーが
+# status-watch: Claude / OpenAI / GitHub の障害情報を取得し、WezTerm ステータスバーが
 # 読む JSON を更新する
 #
 # Usage:
@@ -12,6 +12,7 @@ set -euo pipefail
 
 CLAUDE_SUMMARY_URL=${STATUS_WATCH_CLAUDE_URL:-${STATUS_WATCH_URL:-https://status.claude.com/api/v2/summary.json}}
 OPENAI_SUMMARY_URL=${STATUS_WATCH_OPENAI_URL:-https://status.openai.com/api/v2/summary.json}
+GITHUB_SUMMARY_URL=${STATUS_WATCH_GITHUB_URL:-https://www.githubstatus.com/api/v2/summary.json}
 
 # --- Windows 側の出力先を決定 ---
 get_status_dir() {
@@ -93,10 +94,11 @@ cmd_check() {
     exit 1
   }
 
-  # 片方の取得に失敗しても、もう片方の更新は試みる。status.json は既存の
-  # Claude キャッシュ名を維持し、OpenAI は openai.json へ分離する
+  # 1 つの取得に失敗しても残りの更新は試みる。status.json は既存の Claude
+  # キャッシュ名を維持し、他のサービスはサービス名のファイルへ分離する
   fetch_status "$status_dir" status.json "$CLAUDE_SUMMARY_URL" || failed=1
   fetch_status "$status_dir" openai.json "$OPENAI_SUMMARY_URL" || failed=1
+  fetch_status "$status_dir" github.json "$GITHUB_SUMMARY_URL" || failed=1
   return "$failed"
 }
 

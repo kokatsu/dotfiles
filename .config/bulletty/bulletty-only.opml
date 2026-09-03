@@ -23,6 +23,7 @@
         <outline text="Status" title="Status">
             <outline text="Claude Status - Incident History" title="Claude Status - Incident History" description="Claude Status - Incident History" xmlUrl="https://status.anthropic.com/history.atom" htmlUrl="https://status.anthropic.com/" type="rss" />
             <outline text="OpenAI Status - Incident History" title="OpenAI Status - Incident History" description="OpenAI Status - Incident History" xmlUrl="https://status.openai.com/feed.atom" htmlUrl="https://status.openai.com/" type="rss" />
+            <outline text="GitHub Status - Incident History" title="GitHub Status - Incident History" description="GitHub Status - Incident History" xmlUrl="https://www.githubstatus.com/history.atom" htmlUrl="https://www.githubstatus.com/" type="rss" />
         </outline>
     </body>
 </opml>

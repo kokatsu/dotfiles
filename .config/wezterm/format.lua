@@ -246,12 +246,14 @@ local function read_service_status(filename)
   return data
 end
 
--- Nerd Fonts の cod-claude (U+EC82) / cod-openai (U+EC81)。
--- wezterm.nerdfonts のテーブルは WezTerm の
--- バージョンに依存するので、コードポイントを直接指定する。WezTerm の fallback に
--- 並ぶ 4 フォントのうち、このグリフを持つのは PlemolJP35 Console NF だけ
+-- Nerd Fonts の cod-claude (U+EC82) / cod-openai (U+EC81) / cod-github (U+EA84)。
+-- wezterm.nerdfonts のテーブルは WezTerm のバージョンに依存するので、コード
+-- ポイントを直接指定する。Claude と OpenAI のグリフは WezTerm の fallback に並ぶ
+-- 4 フォントのうち PlemolJP35 Console NF にしかない (cod-github は先頭の
+-- UDEV Gothic にもある)
 local claude_icon = utf8.char(0xec82)
 local openai_icon = utf8.char(0xec81)
+local github_icon = utf8.char(0xea84)
 
 -- indicator は none / minor / major / critical の 4 値しかない。メンテナンスは
 -- indicator ではなく component の under_maintenance として現れる
@@ -550,6 +552,7 @@ M.apply = function()
         format_feed_status(),
         format_service_status('status.json', claude_icon),
         format_service_status('openai.json', openai_icon),
+        format_service_status('github.json', github_icon),
         format_disk_status(),
         format_feed_last_updated(),
       }) do

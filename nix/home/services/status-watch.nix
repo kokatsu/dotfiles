@@ -7,7 +7,7 @@
 lib.mkIf isWSL {
   systemd.user.services.status-watch = {
     Unit = {
-      Description = "Check Claude and OpenAI status for the WezTerm status bar";
+      Description = "Check Claude, OpenAI, and GitHub status for the WezTerm status bar";
     };
     Service = {
       Type = "oneshot";
@@ -20,7 +20,7 @@ lib.mkIf isWSL {
 
   systemd.user.timers.status-watch = {
     Unit = {
-      Description = "Check Claude and OpenAI status every 5 minutes";
+      Description = "Check Claude, OpenAI, and GitHub status every 5 minutes";
     };
     Timer = {
       OnCalendar = "*:0/5";
