@@ -421,6 +421,8 @@ in {
       udev-gothic-nf # UDEV Gothic + Nerd Fonts (35NFLG等、日本語対応)
       # https://github.com/yuru7/HackGen
       hackgen-nf-font # HackGen + Nerd Fonts (日本語対応)
+      # https://github.com/yuru7/PlemolJP
+      plemoljp-nf # PlemolJP + Nerd Fonts (WezTerm の主フォント)
     ]
     ++ lib.optionals (!isDarwin) [
       # Linux/WSL専用
