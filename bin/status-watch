@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# status-watch: status.claude.com の障害情報を取得し、WezTerm ステータスバーが
+# status-watch: Claude / OpenAI の障害情報を取得し、WezTerm ステータスバーが
 # 読む JSON を更新する
 #
 # Usage:
-#   status-watch check - summary.json を取得して status.json を更新する
+#   status-watch check - 各サービスの summary.json を取得してキャッシュを更新する
 #
-# Statuspage の summary.json は全体の indicator、コンポーネント別の状態、
-# 進行中のインシデント、予定されたメンテナンスをまとめて返すので、
-# リクエストは 1 回で足りる
+# 各 Statuspage の summary.json は全体の indicator、コンポーネント別の状態、
+# 進行中のインシデント、予定されたメンテナンスをまとめて返す
 
-SUMMARY_URL=${STATUS_WATCH_URL:-https://status.claude.com/api/v2/summary.json}
+CLAUDE_SUMMARY_URL=${STATUS_WATCH_CLAUDE_URL:-${STATUS_WATCH_URL:-https://status.claude.com/api/v2/summary.json}}
+OPENAI_SUMMARY_URL=${STATUS_WATCH_OPENAI_URL:-https://status.openai.com/api/v2/summary.json}
 
 # --- Windows 側の出力先を決定 ---
 get_status_dir() {
@@ -35,21 +35,19 @@ get_status_dir() {
   return 1
 }
 
-# --- check サブコマンド ---
-cmd_check() {
-  local status_dir status_file summary payload temp_file
+fetch_status() (
+  local status_dir=$1
+  local filename=$2
+  local summary_url=$3
+  local status_file summary payload temp_file
 
-  status_dir=$(get_status_dir) || {
-    echo "Could not resolve the Windows profile directory." >&2
-    exit 1
-  }
-  status_file="$status_dir/status.json"
+  status_file="$status_dir/$filename"
 
-  # 取得に失敗しても status.json は更新せず前回の内容を残す。exit 1 で unit を
+  # 取得に失敗してもキャッシュは更新せず前回の内容を残す。呼び出し元が unit を
   # failed にして journal に理由を残し、次の周期で再試行する
-  summary=$(curl -sfL --max-time 10 "$SUMMARY_URL") || {
-    echo "Failed to fetch $SUMMARY_URL" >&2
-    exit 1
+  summary=$(curl -sfL --max-time 10 "$summary_url") || {
+    echo "Failed to fetch $summary_url" >&2
+    return 1
   }
 
   # operational 以外のコンポーネントと、未解決のインシデントだけを残す。
@@ -62,27 +60,44 @@ cmd_check() {
       indicator: .status.indicator,
       description: .status.description,
       components: [
-        .components[]
+        (.components // [])[]
         | select(.status != "operational")
         | {name, status}
       ],
-      incidents: [.incidents[] | {name, impact, status}],
+      incidents: [(.incidents // [])[] | {name, impact, status}],
       last_updated: $ts,
     }
   ' <<<"$summary") || {
     echo "Failed to parse the status summary" >&2
-    exit 1
+    return 1
   }
 
   # WezTerm は 1 秒ごとにこのファイルを読む。書き込み途中を読ませると
   # json_parse が失敗して表示が飛ぶため、一時ファイルに書いてから rename する
-  mkdir -p "$status_dir"
-  temp_file=$(mktemp "$status_dir/.status.json.XXXXXX")
+  mkdir -p "$status_dir" || return 1
+  temp_file=$(mktemp "$status_dir/.$filename.XXXXXX") || return 1
   trap 'rm -f "${temp_file:-}"' EXIT
 
-  printf '%s\n' "$payload" >"$temp_file"
-  mv -f "$temp_file" "$status_file"
+  printf '%s\n' "$payload" >"$temp_file" || return 1
+  mv -f "$temp_file" "$status_file" || return 1
   trap - EXIT
+)
+
+# --- check サブコマンド ---
+cmd_check() {
+  local status_dir
+  local failed=0
+
+  status_dir=$(get_status_dir) || {
+    echo "Could not resolve the Windows profile directory." >&2
+    exit 1
+  }
+
+  # 片方の取得に失敗しても、もう片方の更新は試みる。status.json は既存の
+  # Claude キャッシュ名を維持し、OpenAI は openai.json へ分離する
+  fetch_status "$status_dir" status.json "$CLAUDE_SUMMARY_URL" || failed=1
+  fetch_status "$status_dir" openai.json "$OPENAI_SUMMARY_URL" || failed=1
+  return "$failed"
 }
 
 # --- メイン ---

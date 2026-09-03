@@ -206,31 +206,30 @@ local function format_disk_status()
   return elements
 end
 
--- status-watch: status.claude.com の障害情報
-local claude_status_cache = nil
-local claude_status_last_check = 0
-local CLAUDE_STATUS_CHECK_INTERVAL = 30 -- seconds
+-- status-watch: Claude / OpenAI の障害情報
+local service_status_cache = {}
+local SERVICE_STATUS_CHECK_INTERVAL = 30 -- seconds
 -- status-watch は 5 分ごとに更新する。3 周期分を過ぎたデータは取得が止まって
 -- いるとみなして描画しない (復旧済みの障害が残り続けるのを防ぐ)
-local CLAUDE_STATUS_TTL = 900 -- seconds
+local SERVICE_STATUS_TTL = 900 -- seconds
 
-local function read_claude_status()
+local function read_service_status(filename)
   local now = os.time()
-  if claude_status_cache ~= nil and (now - claude_status_last_check) < CLAUDE_STATUS_CHECK_INTERVAL then
-    return claude_status_cache
+  local cached = service_status_cache[filename]
+  if cached and (now - cached.last_check) < SERVICE_STATUS_CHECK_INTERVAL then
+    return cached.data
   end
-  claude_status_last_check = now
 
   local userprofile = os.getenv('USERPROFILE')
   if not userprofile then
-    claude_status_cache = false
+    service_status_cache[filename] = { data = false, last_check = now }
     return false
   end
 
-  local path = userprofile .. '\\.cache\\status-watch\\status.json'
+  local path = userprofile .. '\\.cache\\status-watch\\' .. filename
   local file = io.open(path, 'r')
   if not file then
-    claude_status_cache = false
+    service_status_cache[filename] = { data = false, last_check = now }
     return false
   end
 
@@ -239,36 +238,38 @@ local function read_claude_status()
 
   local ok, data = pcall(wezterm.json_parse, content)
   if not ok or not data or not data.indicator then
-    claude_status_cache = false
+    service_status_cache[filename] = { data = false, last_check = now }
     return false
   end
 
-  claude_status_cache = data
+  service_status_cache[filename] = { data = data, last_check = now }
   return data
 end
 
--- Nerd Fonts の cod-claude (U+EC82)。wezterm.nerdfonts のテーブルは WezTerm の
+-- Nerd Fonts の cod-claude (U+EC82) / cod-openai (U+EC81)。
+-- wezterm.nerdfonts のテーブルは WezTerm の
 -- バージョンに依存するので、コードポイントを直接指定する。WezTerm の fallback に
 -- 並ぶ 4 フォントのうち、このグリフを持つのは PlemolJP35 Console NF だけ
 local claude_icon = utf8.char(0xec82)
+local openai_icon = utf8.char(0xec81)
 
 -- indicator は none / minor / major / critical の 4 値しかない。メンテナンスは
 -- indicator ではなく component の under_maintenance として現れる
-local claude_status_colors = {
+local service_status_colors = {
   none = colors.palette.green,
   minor = colors.palette.yellow,
   major = colors.palette.peach,
   critical = colors.palette.red,
 }
 
-local claude_component_colors = {
+local service_component_colors = {
   degraded_performance = colors.palette.yellow,
   partial_outage = colors.palette.peach,
   major_outage = colors.palette.red,
   under_maintenance = colors.palette.sky,
 }
 
-local claude_impact_colors = {
+local service_impact_colors = {
   none = colors.palette.yellow,
   minor = colors.palette.yellow,
   major = colors.palette.peach,
@@ -276,14 +277,14 @@ local claude_impact_colors = {
 }
 
 -- Statuspage の配列順は severity 順ではないので、代表要素は rank で選ぶ
-local claude_impact_rank = {
+local service_impact_rank = {
   none = 1,
   minor = 2,
   major = 3,
   critical = 4,
 }
 
-local claude_component_rank = {
+local service_component_rank = {
   under_maintenance = 1,
   degraded_performance = 2,
   partial_outage = 3,
@@ -308,19 +309,19 @@ local function most_severe(items, key, ranks)
   return worst
 end
 
---- Claude のサービス状態をアイコン 1 つの色で表す。正常でも出し続けるので、
+--- サービス状態をアイコン 1 つの色で表す。正常でも出し続けるので、
 --- 監視が止まっている状態を正常と取り違えないよう、TTL 超過だけは灰色にする
-local function format_claude_status()
-  -- status-watch は WSL 限定なので、Windows 版 WezTerm 以外では status.json が
+local function format_service_status(filename, icon)
+  -- status-watch は WSL 限定なので、Windows 版 WezTerm 以外ではキャッシュが
   -- 存在せず、常に「監視停止」の灰色になってしまう。そこでは何も出さない
   if not platform.is_windows then
     return {}
   end
 
-  local data = read_claude_status()
+  local data = read_service_status(filename)
   local color
 
-  if not data or not data.last_updated or os.time() - data.last_updated > CLAUDE_STATUS_TTL then
+  if not data or not data.last_updated or os.time() - data.last_updated > SERVICE_STATUS_TTL then
     color = colors.palette.overlay1
   else
     local components = data.components or {}
@@ -328,19 +329,19 @@ local function format_claude_status()
     local indicator = data.indicator or 'none'
 
     if indicator ~= 'none' then
-      color = claude_status_colors[indicator]
+      color = service_status_colors[indicator]
     elseif #incidents > 0 then
-      color = claude_impact_colors[most_severe(incidents, 'impact', claude_impact_rank).impact]
+      color = service_impact_colors[most_severe(incidents, 'impact', service_impact_rank).impact]
     elseif #components > 0 then
-      color = claude_component_colors[most_severe(components, 'status', claude_component_rank).status]
+      color = service_component_colors[most_severe(components, 'status', service_component_rank).status]
     else
-      color = claude_status_colors.none
+      color = service_status_colors.none
     end
   end
 
   return {
     { Foreground = { Color = color or colors.palette.yellow } },
-    { Text = claude_icon .. ' ' },
+    { Text = icon .. ' ' },
   }
 end
 
@@ -547,7 +548,8 @@ M.apply = function()
       local right_elements = {}
       for _, section in ipairs({
         format_feed_status(),
-        format_claude_status(),
+        format_service_status('status.json', claude_icon),
+        format_service_status('openai.json', openai_icon),
         format_disk_status(),
         format_feed_last_updated(),
       }) do
