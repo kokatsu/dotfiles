@@ -19,11 +19,17 @@ config.notification_handling = 'AlwaysShow'
 config.automatically_reload_config = true
 config.disable_default_key_bindings = true
 config.scrollback_lines = 10000
+-- PlemolJP を先頭に置くのは、ステータスバーのアイコンを 1 つのフォントから揃えて
+-- 取るため。cod-claude / cod-openai は Nerd Fonts 3.5.1 で入ったグリフで、
+-- インストール済みの日本語 Nerd Font のうち対応しているのは PlemolJP だけ。
+-- UDEV Gothic を先頭にするとこの 2 つだけが後方の PlemolJP まで落ち、フォール
+-- バックの自動スケーリングで一段小さくなって cod-github と大きさが揃わない。
+-- 3:5 幅で日本語も持つのでセル幅は変わらない (実測: ASCII 8、日本語 14)
 config.font = wezterm.font_with_fallback({
+  'PlemolJP35 Console NF',
   'UDEV Gothic 35NFLG',
   'Firge35Nerd Console',
   'HackGen35 Console NF',
-  'PlemolJP35 Console NF',
 })
 config.tab_bar_at_bottom = true
 config.tab_max_width = 32

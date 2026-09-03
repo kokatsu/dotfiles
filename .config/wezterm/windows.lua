@@ -6,7 +6,8 @@ local M = {}
 M.apply_to_config = function(config)
   config.front_end = 'WebGpu' -- GPU アクセラレーションで描画高速化
   config.window_background_opacity = 1.0
-  config.font_size = 10.5
+  -- PlemolJP は UDEV Gothic より字面が大きく見えるので 10.5 から少し下げている
+  config.font_size = 10.25
   -- 非アクティブなペインを薄く表示（本家 WezTerm の標準機能）
   config.inactive_pane_hsb = { saturation = 1.0, brightness = 0.6 }
 
