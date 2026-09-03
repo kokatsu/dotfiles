@@ -262,6 +262,15 @@ in {
         type = "pane"
         command = "${scriptsDir}/feed-open.sh"
         description = "未読フィードを開く"
+
+        # ステータスバーのアイコンは色でしか状態を示さないので、詳細を見る動線を
+        # キーに割り当てる。fzf を挟まないので type は shell (pane だと一時的な
+        # 分割が開くだけ無駄になる)。alt+s は WezTerm 側の SSH タブが取っている
+        [[keys.command]]
+        key = "alt+i"
+        type = "shell"
+        command = "${scriptsDir}/status-open.sh"
+        description = "異常のあるサービスの Statuspage を開く"
       '';
       # Claude Code / Codex の SessionStart から呼ぶ agent session 報告フック。
       # `herdr integration install` が生成していた埋め込み Python のスクリプト
