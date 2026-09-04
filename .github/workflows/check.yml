@@ -64,21 +64,36 @@ jobs:
   npm-audit:
     name: npm audit
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # 通常は数秒で終わるが、registry の advisories/bulk endpoint は応答に
+    # 数分かかることがある (下の fetch-timeout 10 分 + 起動分を見込む)
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
       - name: Audit npm lockfiles
+        # bulk endpoint の応答が npm 既定の fetch-timeout (5 分) を超えると、
+        # 廃止済みの audits/quick endpoint に fallback して 400 で失敗する。
+        # timeout を伸ばして bulk の応答を待ち、lockfile ごとに並列で走らせて
+        # 遅延が直列に積み上がらないようにする。
         run: |
-          failed=0
+          pids=()
+          dirs=()
           for dir in nix/npm-locks/*/; do
             if [ -f "$dir/package-lock.json" ]; then
-              echo "::group::Auditing $dir"
-              (cd "$dir" && npm audit --audit-level=high) || failed=1
-              echo "::endgroup::"
+              (cd "$dir" && npm audit --audit-level=high --fetch-timeout=600000) \
+                >"$RUNNER_TEMP/$(basename "$dir").log" 2>&1 &
+              pids+=("$!")
+              dirs+=("$dir")
             fi
+          done
+          failed=0
+          for i in "${!pids[@]}"; do
+            echo "::group::Auditing ${dirs[$i]}"
+            wait "${pids[$i]}" || failed=1
+            cat "$RUNNER_TEMP/$(basename "${dirs[$i]}").log"
+            echo "::endgroup::"
           done
           exit $failed
 
