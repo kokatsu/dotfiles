@@ -65,25 +65,43 @@ jobs:
     name: npm audit
     runs-on: ubuntu-latest
     # 通常は数秒で終わるが、registry の advisories/bulk endpoint は応答に
-    # 数分かかることがある (下の fetch-timeout 10 分 + 起動分を見込む)
-    timeout-minutes: 15
+    # 数分かかったり 5xx を返したりすることがある (下の fetch-timeout と
+    # 再試行の合計を見込む)
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
       - name: Audit npm lockfiles
-        # bulk endpoint の応答が npm 既定の fetch-timeout (5 分) を超えると、
-        # 廃止済みの audits/quick endpoint に fallback して 400 で失敗する。
-        # timeout を伸ばして bulk の応答を待ち、lockfile ごとに並列で走らせて
+        # bulk endpoint の応答が npm 既定の fetch-timeout (5 分) を超えるか
+        # 5xx を返すと、廃止済みの audits/quick endpoint に fallback して
+        # 400/503 で失敗する。timeout を伸ばして bulk の応答を待ち、endpoint
+        # 側のエラーだけ間隔を空けて試し直す。lockfile ごとに並列で走らせて
         # 遅延が直列に積み上がらないようにする。
         run: |
+          audit() {
+            local attempt out
+            for attempt in 1 2 3; do
+              if [ "$attempt" -gt 1 ]; then
+                echo "--- audit endpoint error, retrying in 30s ($attempt/3) ---"
+                sleep 30
+              fi
+              if out=$(npm audit --audit-level=high --fetch-timeout=600000 2>&1); then
+                echo "$out"
+                return 0
+              fi
+              echo "$out"
+              # 脆弱性の検出など endpoint 以外の理由の失敗は試し直さない
+              grep -q 'audit endpoint returned an error' <<<"$out" || return 1
+            done
+            return 1
+          }
           pids=()
           dirs=()
           for dir in nix/npm-locks/*/; do
             if [ -f "$dir/package-lock.json" ]; then
-              (cd "$dir" && npm audit --audit-level=high --fetch-timeout=600000) \
-                >"$RUNNER_TEMP/$(basename "$dir").log" 2>&1 &
+              (cd "$dir" && audit) >"$RUNNER_TEMP/$(basename "$dir").log" 2>&1 &
               pids+=("$!")
               dirs+=("$dir")
             fi
