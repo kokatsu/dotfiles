@@ -105,9 +105,15 @@ in {
     # Dockから起動できるようNix storeのapp bundleを/Applicationsへリンクする。
     activation.linkWezTermApp = lib.mkIf (isDarwin && !isCI) (lib.hm.dag.entryAfter ["linkGeneration"] ''
       WEZTERM_APP="${pkgs.wezterm}/Applications/WezTerm.app"
+      LINK=/Applications/WezTerm.app
       if [ -d "$WEZTERM_APP" ]; then
-        $DRY_RUN_CMD rm -f /Applications/WezTerm.app
-        $DRY_RUN_CMD ln -sf "$WEZTERM_APP" /Applications/WezTerm.app
+        if [ -e "$LINK" ] && [ ! -L "$LINK" ]; then
+          # 手動/Homebrew 版の実体 .app は消さない (ln -sf だとその中にリンクが入れ子になる)
+          echo "warning: $LINK is not a symlink; leaving it untouched" >&2
+        else
+          $DRY_RUN_CMD rm -f "$LINK"
+          $DRY_RUN_CMD ln -s "$WEZTERM_APP" "$LINK"
+        fi
       fi
     '');
   };

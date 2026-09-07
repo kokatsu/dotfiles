@@ -17,10 +17,9 @@ in {
     for browser in "$PLAYWRIGHT_BROWSERS"/*; do
       name=$(basename "$browser")
       target="$PLAYWRIGHT_CACHE/$name"
-      if [ -L "$target" ]; then
-        $DRY_RUN_CMD rm "$target"
-      fi
-      $DRY_RUN_CMD ln -sf "$browser" "$target"
+      # 実ディレクトリが残っていると ln -sf はその中にリンクを作るため先に消す
+      $DRY_RUN_CMD rm -rf "$target"
+      $DRY_RUN_CMD ln -s "$browser" "$target"
     done
   '';
 }
