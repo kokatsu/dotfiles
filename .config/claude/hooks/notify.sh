@@ -8,10 +8,10 @@
 #   permission     — toast body is a fixed string, emitted 0.5s after the
 #     permission prompt appears (no transcript read, smaller redraw).
 #
-# WSL branch resolves the Claude Code main process pts and writes a
-# tmux-DCS-wrapped OSC 1337 SetUserVar=CLAUDE_LAST_MSG to it. WezTerm's
-# user-var-changed handler in .config/wezterm/format.lua shows the toast.
-# The OSC 1337 + tmux DCS construction mirrors _wezterm_set_user_var in
+# WSL branch resolves the Claude Code main process pts and writes a plain
+# OSC 1337 SetUserVar=CLAUDE_LAST_MSG to it. WezTerm's user-var-changed
+# handler in .config/wezterm/format.lua shows the toast. The OSC
+# construction mirrors the non-tmux branch of _wezterm_set_user_var in
 # .config/zsh/functions.zsh — kept in sync by hand since that helper is a
 # zsh function unreachable from this sh subprocess.
 #
@@ -104,5 +104,5 @@ setsid sh -c '
   # 千切れて不正な UTF-8 になりうる。iconv -c で末尾の不完全シーケンスを落とす。
   msg=$(printf "%s" "$msg" | tr -d "[:cntrl:]" | head -c 200 | iconv -f UTF-8 -t UTF-8 -c)
   b64=$(printf "%s" "$msg" | base64 | tr -d "\n")
-  printf "\033Ptmux;\033\033]1337;SetUserVar=CLAUDE_LAST_MSG=%s\007\033\\\\" "$b64" >"$tty" 2>/dev/null
+  printf "\033]1337;SetUserVar=CLAUDE_LAST_MSG=%s\007" "$b64" >"$tty" 2>/dev/null
 ' _ "$claude_tty" "$transcript" "$fixed_msg" "$delay" </dev/null >/dev/null 2>&1 &
