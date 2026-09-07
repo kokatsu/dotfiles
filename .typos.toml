@@ -5,3 +5,6 @@ extend-ignore-identifiers-re = [
 extend-ignore-re = [
   "sha256-.+", # Nix SRI hashes
 ]
+
+[default.extend-words]
+noice = "noice" # noice.nvim (Neovim プラグイン名)
