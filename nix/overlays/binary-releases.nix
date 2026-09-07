@@ -58,29 +58,6 @@ in {
     };
   };
 
-  # Biome - formatter and linter for web projects
-  # Renovate: datasource=github-releases depName=biomejs/biome
-  biome = mkBinaryRelease rec {
-    pname = "biome";
-    version = "2.5.9";
-    hashes = {
-      "aarch64-darwin" = "sha256-fYtR3shX/6iqNc5eqjpEds1ivtATrcKJa/Q8rApnp5s=";
-      "aarch64-linux" = "sha256-v1k/eVXjpDf7gFayVRQrUIcrqj6BNxzaLD/OkjmvGJA=";
-      "x86_64-linux" = "sha256-AT61FYueUyNdu/MSVcs7d2+5M4sy+m/0pE7hzu1l7mM=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "darwin-arm64";
-      "aarch64-linux" = "linux-arm64";
-      "x86_64-linux" = "linux-x64";
-    };
-    url = platform: "https://github.com/biomejs/biome/releases/download/%40biomejs%2Fbiome%40${version}/biome-${platform}";
-    meta = {
-      description = "Formatter and linter for web projects";
-      homepage = "https://github.com/biomejs/biome";
-      license = "mit";
-    };
-  };
-
   # Pkl - configuration as code language
   # nixpkgs の更新から独立して、セキュリティ修正を含む最新 patch release を使用する。
   # Renovate: datasource=github-releases depName=apple/pkl
@@ -102,78 +79,6 @@ in {
       description = "Configuration-as-code language with rich validation and tooling";
       homepage = "https://pkl-lang.org";
       license = "asl20";
-    };
-  };
-
-  # Yazi - terminal file manager
-  # Renovate: datasource=github-releases depName=sxyazi/yazi
-  yazi = mkBinaryRelease rec {
-    pname = "yazi";
-    version = "26.8.15";
-    hashes = {
-      "aarch64-darwin" = "sha256-P1SQfqCKvpZQb0siI5NA7Ykjpq6urnjzPVm85X2spM0=";
-      "aarch64-linux" = "sha256-9ahXcfBrsOjEiBNq4K7a7I00GnzumVVJ3zkdfYUv6NE=";
-      "x86_64-linux" = "sha256-zGfreZFVDC+UB82lLT9a8JN2J6pohOfemaBPzwWYB+A=";
-    };
-    platformMap = currentAppleGnuPlatformMap;
-    url = platform: "https://github.com/sxyazi/yazi/releases/download/v${version}/yazi-${platform}.zip";
-    format = "zip";
-    extraAttrs = prev: {
-      nativeBuildInputs = [prev.makeWrapper];
-      sourceRoot = ".";
-      installPhase = ''
-        runHook preInstall
-        mkdir -p $out/bin $out/libexec/yazi-bin
-        find . -type f -name yazi -exec cp {} $out/libexec/yazi-bin/yazi \; -quit
-        find . -type f -name ya -exec cp {} $out/libexec/yazi-bin/ya \; -quit
-        chmod +x $out/libexec/yazi-bin/yazi $out/libexec/yazi-bin/ya
-        makeWrapper $out/libexec/yazi-bin/yazi $out/bin/yazi \
-          --prefix PATH : ${
-          prev.lib.makeBinPath [
-            prev._7zz
-            prev.chafa
-            prev.fd
-            prev.ffmpeg-headless
-            prev.file
-            prev.fzf
-            prev.imagemagick
-            prev.jq
-            prev.poppler-utils
-            prev.resvg
-            prev.ripgrep
-            prev.zoxide
-          ]
-        }
-        ln -s $out/libexec/yazi-bin/ya $out/bin/ya
-        runHook postInstall
-      '';
-    };
-    meta = {
-      description = "Blazing fast terminal file manager";
-      homepage = "https://github.com/sxyazi/yazi";
-    };
-  };
-
-  # Difftastic - structural diff tool
-  # Renovate: datasource=github-releases depName=Wilfred/difftastic
-  difftastic = mkBinaryRelease rec {
-    pname = "difftastic";
-    version = "0.70.0";
-    hashes = {
-      "aarch64-darwin" = "sha256-GSEmciH8tXedMMTcwLO0Ygq76FH/1VlqRxVXZYFRj1E=";
-      "aarch64-linux" = "sha256-5yloSQfWfRoXJ6CPRDh34Z5A7rLv682Vwbj3/uQoTo4=";
-      "x86_64-linux" = "sha256-KZfSu+YgU07b15sASfAM6E7vP+2xXHgiRW1Y442LBck=";
-    };
-    platformMap = currentAppleGnuPlatformMap;
-    url = platform: "https://github.com/Wilfred/difftastic/releases/download/${version}/difft-${platform}.tar.gz";
-    format = "tar";
-    binName = "difft";
-    extraAttrs = {
-      sourceRoot = ".";
-    };
-    meta = {
-      description = "Structural diff tool that understands syntax";
-      homepage = "https://github.com/Wilfred/difftastic";
     };
   };
 

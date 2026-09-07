@@ -147,10 +147,6 @@
           # statixの現行nixpkgs derivationはsnapshot testだけが壊れているため、
           # Home Managerと同じ回避策を開発・静的解析環境にも適用する。
           customOverlays.statix-no-check
-          # biomeはoverlayでリリースをpinしている。nixpkgs版とはバージョンが
-          # ずれるため、devShell(=CIのlint job)でもoverlay版を使い、手元の
-          # Home Manager profileと同じ整形結果になるようにする。
-          customOverlays.biome
         ];
       });
 
@@ -159,14 +155,12 @@
       # upstream overlay (pkgs.moonbit-bin.* を生やす)
       inputs.moonbit-overlay.overlays.default
       customOverlays.agent-browser
-      customOverlays.biome
       customOverlays.cc-statusline
       customOverlays.claude-code
       customOverlays.codex
       customOverlays.cssmodules-language-server
       customOverlays.dcd
       customOverlays.deck-slides
-      customOverlays.difftastic
       customOverlays.direnv-no-check
       customOverlays.git-graph-fork
       customOverlays.herdr
@@ -184,7 +178,6 @@
       customOverlays.vscode-langservers-detect-module-fix
       customOverlays.vue-language-server-pin
       customOverlays.x-api-playground
-      customOverlays.yazi
     ];
 
     # CI用ヘルパー
