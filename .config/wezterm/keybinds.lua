@@ -147,9 +147,7 @@ local common_keys = {
       window:copy_to_clipboard(txt)
     end),
   },
-  -- `Alt + e` でプロンプトエディタを開く（tmux display-popup使用）
-  -- tmux内: tmuxがAlt+eを捕捉してdisplay-popupを開く
-  -- tmux外: シェルにキーが送られるだけ（何も起きない）
+  -- `Alt + e` をそのままペインへ送る (旧 tmux 版プロンプトエディタ用。無効化済み)
   {
     key = 'e',
     mods = 'ALT',

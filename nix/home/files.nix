@@ -190,7 +190,6 @@ in {
         ]
         staticContent;
       ".config/taplo".source = ../../.config/taplo;
-      # tmux is managed by programs.tmux (nix/home/programs/tmux.nix)
       # bin: ユーザースクリプト (Deno/Bun/Shell)
       # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
       ".local/bin/scripts" = {

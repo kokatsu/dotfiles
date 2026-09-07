@@ -6,7 +6,6 @@
 #   - Space: staging 切替 (複数選択)
 #   - Ctrl+a: staged をまとめて確定
 # 選択したパス (単一/複数) を Claude Code / Codex CLI に送信する
-# tmux版: .config/tmux/scripts/claude-path-pick-broot.sh, codex-path-pick-broot.sh
 #
 # broot の from_shell verb は outcmd にシェルコマンドを書くだけで
 # 本来は br 関数が eval する必要があるため、このスクリプトが同じ処理を行う

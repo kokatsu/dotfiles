@@ -167,7 +167,7 @@ config.mouse_bindings = {
       end
     end),
   },
-  -- Shift+ダブルクリック: tmux のマウスキャプチャをバイパスしてリンクを開く（Claude Code 内で使用）
+  -- Shift+ダブルクリック: アプリ側のマウスキャプチャをバイパスしてリンクを開く（Claude Code 内で使用）
   {
     event = { Up = { streak = 2, button = 'Left' } },
     mods = 'SHIFT',

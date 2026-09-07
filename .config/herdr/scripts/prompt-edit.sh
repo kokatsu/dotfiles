@@ -1,7 +1,6 @@
 #!/bin/bash
 # Claude Code用プロンプト編集スクリプト (herdr版)
 # Alt-v でNeovimを起動し、編集後に内容をClaude Codeに送信する
-# tmux版: .config/tmux/scripts/claude-prompt-edit.sh
 # https://zenn.dev/shisashi/articles/0ba22e272d6f2f
 
 set -euo pipefail

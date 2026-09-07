@@ -61,7 +61,6 @@ in {
     ./programs/playwright.nix
     ./programs/readline.nix
     ./programs/starship.nix
-    ./programs/tmux.nix
     ./programs/wezterm.nix
     ./programs/zoxide.nix
     ./programs/zsh.nix

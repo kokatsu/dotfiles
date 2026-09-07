@@ -1,7 +1,6 @@
 #!/bin/bash
 # octorus rally履歴ブラウザ (herdr版)
 # Alt-h でfzfを起動し、選択したファイルパスをClaude Code/Codexに送信する
-# tmux版: .config/tmux/scripts/octorus-history.sh
 
 herdr_bin=${HERDR_BIN_PATH:-herdr}
 RALLY_DIR="$HOME/.cache/octorus/rally"

@@ -245,7 +245,7 @@ vim.api.nvim_create_autocmd('FocusLost', {
 })
 
 -- Claude Code用プロンプト編集設定
--- tmux popup (M-v) → claude-prompt-edit.sh → /tmp/claude-prompt-*.claude を nvim で開く
+-- herdr の alt+v → .config/herdr/scripts/prompt-edit.sh → 一時ファイル *.claude を nvim で開く
 -- ftdetect/claude.lua で markdown filetype に割り当てているため
 -- after/ftplugin/claude.lua は発火しない。本 autocmd で @ キーマップを登録する。
 -- Claude Code では @ファイルパス でファイルを参照できる

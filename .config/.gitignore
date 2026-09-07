@@ -85,10 +85,6 @@
 !taplo/
 !taplo/**
 
-# tmux (https://github.com/tmux/tmux)
-!tmux/
-!tmux/**
-
 # treemd (https://github.com/Epistates/treemd)
 !treemd/
 !treemd/**

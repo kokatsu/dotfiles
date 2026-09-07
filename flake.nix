@@ -172,7 +172,6 @@
       customOverlays.rgx-cli
       customOverlays.statix-no-check
       customOverlays.textlint-rule-preset-ai-writing
-      customOverlays.tmux-focus-crash-fix
       customOverlays.unocss-language-server
       customOverlays.vite-plus
       customOverlays.vscode-langservers-detect-module-fix
