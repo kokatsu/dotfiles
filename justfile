@@ -23,13 +23,18 @@ fmt-check: lua-fmt-check nix-fmt-check biome-fmt-check deno-fmt-check shfmt-chec
 # Run all linters
 lint: nix-lint nix-dead-code lua-lint shellcheck deno-lint deno-check biome-lint markdownlint toml-check editorconfig gitleaks-smoke-test
 
+# List git-tracked Lua files (vendored yazi plugins are excluded)
+# lua_dirs だけだと .config/yazi/init.lua や scripts/*.lua を取りこぼすため動的に列挙する。
+_lua-files:
+    @git ls-files '*.lua' | grep -v '^\.config/yazi/plugins/'
+
 # Format Lua files
 lua-fmt:
-    stylua {{ lua_dirs }}
+    @just _lua-files | xargs stylua
 
 # Check Lua formatting (no write)
 lua-fmt-check:
-    stylua --check {{ lua_dirs }}
+    @just _lua-files | xargs stylua --check
 
 # Lint Lua files with selene
 lua-lint:
