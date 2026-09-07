@@ -85,23 +85,29 @@ in {
         [ui.sidebar.agents.rows_by_agent]
         # $wsnum はカスタムトークンのデフォルト (overlay0 + dim) だと薄すぎるので、
         # ワークスペース名の非アクティブ時スタイル (subtext0 + bold) に合わせる
+        # agent と terminal_title_stripped は非アクティブのワークスペース名と
+        # 同じ subtext0、$cache は sapphire にして dim を無効化する
+        # tab は見切れにくいよう専用の 2 行目へ置き、subtext0 + 通常にする。
+        # 番号と workspace は主情報として Spaces / Agents の両方で太字に揃える
         claude = [
-          ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace", { token = "tab", fg = "${p.yellow.hex}", bold = true }],
+          ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
+          [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
           # $cache は herdr-cache-token.ts が報告する prompt cache の失効時刻。
           # --ttl-ms で失効と同時に消えるため、無表示 = キャッシュ切れを意味する
-          ["agent", "$cache"],
-          ["terminal_title_stripped"],
+          [{ token = "agent", fg = "${p.subtext0.hex}", bold = false, dim = false }, { token = "$cache", fg = "${p.sapphire.hex}", bold = false, dim = false }],
+          [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
         ]
         codex = [
-          ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace", { token = "tab", fg = "${p.yellow.hex}", bold = true }],
-          ["agent"],
-          ["terminal_title_stripped"],
+          ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
+          [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
+          [{ token = "agent", fg = "${p.subtext0.hex}", bold = false, dim = false }],
+          [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
         ]
 
         [ui.sidebar.spaces]
         # tab-numbers プラグインが報告する $number トークンで番号を表示する
         # (デフォルト行構成に $number を挿し込んだもの)
-        rows = [["state_icon", "$number", "workspace"], ["branch", "git_status"]]
+        rows = [["state_icon", { token = "$number", fg = "${p.subtext0.hex}", bold = true, dim = false }, { token = "workspace", bold = true }], ["branch", "git_status"]]
         row_gap = 1
 
         [ui.toast]
