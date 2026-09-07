@@ -15,10 +15,6 @@
         name = "herdr-linux-aarch64";
         hash = "sha256-9VYQZY4cLg0qrvcwtLKriF9/i6AChas3K/sU8uPVtA0=";
       };
-      x86_64-darwin = {
-        name = "herdr-macos-x86_64";
-        hash = "sha256-q1AmLIGQzXqpBW0knSVcCMMow+hxbenPop208TG44sE=";
-      };
       aarch64-darwin = {
         name = "herdr-macos-aarch64";
         hash = "sha256-pdT01QTYswnJH4EQUFWTAPq6MSWEJfU8UIUvyW9q5XQ=";

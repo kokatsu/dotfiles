@@ -89,13 +89,11 @@ in {
     version = "0.32.1";
     hashes = {
       "aarch64-darwin" = "sha256-Vj61HJogsWo2JUZO10XGde2XUDgfISZyJpag18rB2dM=";
-      "x86_64-darwin" = "sha256-W3S5AyNAR5YBRPZvLOvdEtJn2bmOgVXtkdKuXtJ+LR8=";
       "aarch64-linux" = "sha256-p20t1H2kNaj5EbA0c3P0fH5Z6lT7df+EbSC43xDboFg=";
       "x86_64-linux" = "sha256-MYC2LalcDK0dkE6btsX0qPkDJBPCHlMZS7kf8e5fMhE=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-aarch64";
-      "x86_64-darwin" = "macos-amd64";
       "aarch64-linux" = "linux-aarch64";
       "x86_64-linux" = "linux-amd64";
     };
@@ -189,13 +187,11 @@ in {
     hashSource = "manifest";
     hashes = {
       "aarch64-darwin" = "sha256-710pCcivSfMattVIfpAxZ3e8L6wXCt/oFgcWyqiq9Pk=";
-      "x86_64-darwin" = "sha256-qUqLIp+oXDoxbGtKNeCqIr7BqrvT0UIoJs4dEN3Ih1E=";
       "aarch64-linux" = "sha256-fSXXyK5sbgCcx9rk6Bf2dBef0x+3dhvNVv7kwpArTAM=";
       "x86_64-linux" = "sha256-JtAgNR6BEvQAZ5Dzz85DtMnfDBux0OVCNk1kFRuB1bo=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
-      "x86_64-darwin" = "darwin-x64";
       "aarch64-linux" = "linux-arm64";
       "x86_64-linux" = "linux-x64";
     };
@@ -218,13 +214,11 @@ in {
     hashSource = "sha256sums";
     hashes = {
       "aarch64-darwin" = "sha256-NUONofv3ptt92zvOyERI+mAVuhiEYUcql9nR2n2cQ1M=";
-      "x86_64-darwin" = "sha256-PuY41xVchW7zHz9Khcshld4ZOZYtOSTJNbJPBRRWSj0=";
       "aarch64-linux" = "sha256-/DlcsEOhCTqw2zT0Sroxmb+qnOZAzZvn/ViPRLDaZKQ=";
       "x86_64-linux" = "sha256-qCIYfhokIMYcWSZyG/vYeHAe2VVHybsNTeRJiha6GCE=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
-      "x86_64-darwin" = "x86_64-apple-darwin";
       "aarch64-linux" = "aarch64-unknown-linux-musl";
       "x86_64-linux" = "x86_64-unknown-linux-musl";
     };
@@ -284,11 +278,10 @@ in {
     version = "1.0.0";
     hashes = {
       "aarch64-darwin" = "sha256-RCHuPqtaIrO2f/6bQqMD5TNZuZUf3zGfjJWHw2uvSxc=";
-      "x86_64-darwin" = "sha256-DTikSmXr6UU2hKe/xXsbM2i7+7sy2BLa4lvpUn0b5O0=";
       "aarch64-linux" = "sha256-xoUOspVDg4A4b3EcqFHtmnRzEOPmdz08YLNceU6brzQ=";
       "x86_64-linux" = "sha256-R9QLFm85h0QqnGJP+j1QU3t7e5SiOmfNZjhX8y2mPtA=";
     };
-    platformMap = appleGnuPlatformMap;
+    platformMap = currentAppleGnuPlatformMap;
     url = platform: "https://github.com/atusy/kakehashi/releases/download/v${version}/kakehashi-v${version}-${platform}.tar.gz";
     format = "tar";
     extraAttrs = {sourceRoot = ".";};
@@ -307,13 +300,11 @@ in {
     version = "0.16.3";
     hashes = {
       "aarch64-darwin" = "sha256-q+EQtXnehXgVKhtmKrPtMDfnNn5JoCWbgo+LTM1KoPk=";
-      "x86_64-darwin" = "sha256-ALLzZ332AifhEPBhtYkNUBswSogn5fMZ8PbufmuZAeY=";
       "aarch64-linux" = "sha256-KqKYocMSlhGDEsHvOhmdRugNNvftp8nngzkPoI1ml6E=";
       "x86_64-linux" = "sha256-fGyzS7jdCTs1OsyGbyrGRCQ2mkhiFJPCVdnwA/Yg8hY=";
     };
     platformMap = {
       "aarch64-darwin" = "osx-aarch64";
-      "x86_64-darwin" = "osx-x86_64";
       "aarch64-linux" = "linux-aarch64";
       "x86_64-linux" = "linux-x86_64";
     };
@@ -345,11 +336,10 @@ in {
     version = "0.7.2";
     hashes = {
       "aarch64-darwin" = "sha256-Uv5MKlwgZqG1XaS75yZ5QkVJ8nqlwjWndN9LAv5ZIAI=";
-      "x86_64-darwin" = "sha256-nhpkySav6FiZczOEFdU5z+XWVZA+qxquzRqlycXymi0=";
       "aarch64-linux" = "sha256-Rk1Qk1PE1IcEixBaLCbzpUPzkfP5NAFAhiVYr7ZRGnc=";
       "x86_64-linux" = "sha256-Y+LsJQcs0zd/6J8UxDgO7Zy8df6+FBLSu5R3+9jcnDM=";
     };
-    platformMap = appleGnuPlatformMap;
+    platformMap = currentAppleGnuPlatformMap;
     url = platform: "https://github.com/ushironoko/octorus/releases/download/v${version}/octorus-${version}-${platform}.tar.gz";
     format = "tar";
     binName = "or";
@@ -367,11 +357,10 @@ in {
     version = "0.14.2";
     hashes = {
       "aarch64-darwin" = "sha256-UiIj6w2Q6CQrOJG2VJfhdz3da6KLnuak+pTfG/QnHgM=";
-      "x86_64-darwin" = "sha256-1U5+OABp3b+fRd1/D2iLVsaQyMnelnzpcljNtzexfek=";
       "aarch64-linux" = "sha256-5Wwsave4c+Ybw6ZSkt4B83SOfkIUxxMtjZVtEdffHF4=";
       "x86_64-linux" = "sha256-pbOiSykZBZFVS8R9Fb/711X/WV9s5l17F4+dv3lHSzc=";
     };
-    platformMap = appleGnuPlatformMap;
+    platformMap = currentAppleGnuPlatformMap;
     url = platform: "https://github.com/brevity1swos/rgx/releases/download/v${version}/rgx-cli-${platform}.tar.xz";
     format = "tar";
     binName = "rgx";
@@ -390,19 +379,16 @@ in {
     version = "1.24.1";
     hashes = {
       "aarch64-darwin" = "sha256-0+CgaPZe1LUYQ41aAZivRXrX/G4N8A4tIBIRoZviAa4=";
-      "x86_64-darwin" = "sha256-f3HaLmrdzY2/FcwMYa0HHKpgj+rkGW0H9/Alg4G+UYI=";
       "aarch64-linux" = "sha256-o++kGQaOtuHknDzzGMxgNb/fjzkwXgnUPIpfzaMzWSg=";
       "x86_64-linux" = "sha256-1+ORW0ZHy8qZSULt92mecgctotUaIZSUzakNYfOJaVY=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin_arm64.zip";
-      "x86_64-darwin" = "darwin_amd64.zip";
       "aarch64-linux" = "linux_arm64.tar.gz";
       "x86_64-linux" = "linux_amd64.tar.gz";
     };
     format = {
       "aarch64-darwin" = "zip";
-      "x86_64-darwin" = "zip";
       "aarch64-linux" = "tar";
       "x86_64-linux" = "tar";
     };

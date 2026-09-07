@@ -166,14 +166,12 @@ jobs:
           }
 
           HASH_DARWIN_ARM64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["darwin-arm64"].checksum')")
-          HASH_DARWIN_X64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["darwin-x64"].checksum')")
           HASH_LINUX_ARM64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["linux-arm64"].checksum')")
           HASH_LINUX_X64=$(hex_to_sri "$(echo "$MANIFEST" | jq -r '.platforms["linux-x64"].checksum')")
 
           # Update claude-code section only
           sed -i '/# Claude Code - agentic coding tool/,/^  };/{
             s|"aarch64-darwin" = "sha256-[^"]*"|"aarch64-darwin" = "'"${HASH_DARWIN_ARM64}"'"|
-            s|"x86_64-darwin" = "sha256-[^"]*"|"x86_64-darwin" = "'"${HASH_DARWIN_X64}"'"|
             s|"aarch64-linux" = "sha256-[^"]*"|"aarch64-linux" = "'"${HASH_LINUX_ARM64}"'"|
             s|"x86_64-linux" = "sha256-[^"]*"|"x86_64-linux" = "'"${HASH_LINUX_X64}"'"|
           }' "$OVERLAY"
@@ -313,7 +311,7 @@ jobs:
           OVERLAY="nix/overlays/binary-releases.nix"
           SUMS=$(curl -fsSL "https://github.com/openai/codex/releases/download/rust-v${VERSION}/codex-package_SHA256SUMS")
 
-          for platform in "aarch64-apple-darwin:aarch64-darwin" "x86_64-apple-darwin:x86_64-darwin" \
+          for platform in "aarch64-apple-darwin:aarch64-darwin" \
                           "aarch64-unknown-linux-musl:aarch64-linux" "x86_64-unknown-linux-musl:x86_64-linux"; do
             PLAT_NAME="${platform%%:*}"
             NIX_SYSTEM="${platform##*:}"
