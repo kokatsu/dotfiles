@@ -318,6 +318,7 @@
 
             # Shell
             bash # Shell regression tests
+            zsh # `just zsh-lint` (zsh -n)
             jq # Feed state regression tests
             shellcheck # シェルスクリプト linter
             shfmt # シェルスクリプト formatter

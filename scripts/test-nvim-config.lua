@@ -46,6 +46,7 @@ vim.g.clipboard = {
 -- Resolve plugin directory from repo root
 local plugin_dir = vim.fn.getcwd() .. '/.config/nvim/plugin'
 if vim.fn.isdirectory(plugin_dir) == 0 then
+  -- selene: allow(incorrect_standard_library_use)
   io.stderr:write('ERROR: Run from the dotfiles repository root\n')
   os.exit(1)
 end

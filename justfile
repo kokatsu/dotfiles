@@ -2,7 +2,8 @@
 
 lua_dirs := ".config/nvim .config/wezterm"
 deno_dirs := "karabiner-config scripts"
-deno_files := ".config/zeno/config.ts .config/claude/hooks/herdr-cache-token.ts .config/herdr/hooks/report-agent-session.ts"
+# deno_dirs の外にある .ts は全て単体の Deno スクリプトなので、手書きせず git から列挙する
+deno_files := `git ls-files '*.ts' | grep -vE '^(karabiner-config|scripts)/' | tr '\n' ' '`
 
 # List available recipes
 default:
@@ -17,11 +18,11 @@ check-static: fmt-check lint typos banned-commands-test herdr-peer-guard-test he
 # Run all formatters
 fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt
 
-# Check all formatting (no write)
-fmt-check: lua-fmt-check nix-fmt-check biome-fmt-check deno-fmt-check shfmt-check toml-fmt-check yaml-fmt-check
+# Check all formatting (no write)。biome は format と lint をまとめて `biome-ci` (lint 側) で見る
+fmt-check: lua-fmt-check nix-fmt-check deno-fmt-check shfmt-check toml-fmt-check yaml-fmt-check
 
 # Run all linters
-lint: nix-lint nix-dead-code lua-lint shellcheck deno-lint deno-check biome-lint markdownlint toml-check editorconfig gitleaks-smoke-test
+lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint deno-lint deno-check biome-ci markdownlint toml-check editorconfig gitleaks-smoke-test
 
 # List git-tracked Lua files (vendored yazi plugins are excluded)
 # lua_dirs だけだと .config/yazi/init.lua や scripts/*.lua を取りこぼすため動的に列挙する。
@@ -37,11 +38,17 @@ lua-fmt-check:
     @just _lua-files | xargs stylua --check
 
 # Lint Lua files with selene
+# lua_dirs 以外の Lua も見る: scripts/test-nvim-config.lua は vim グローバルを使うので
+# nvim の設定、.config/yazi/init.lua は素の Lua なのでリポジトリ直下の selene.toml で検査する
 lua-lint:
     @for dir in {{ lua_dirs }}; do \
       echo "selene: $dir"; \
       (cd "$dir" && selene .) || exit $?; \
     done
+    @echo "selene: scripts/test-nvim-config.lua"
+    @selene --config .config/nvim/selene.toml scripts/test-nvim-config.lua
+    @echo "selene: .config/yazi/init.lua"
+    @selene .config/yazi/init.lua
 
 # Format Nix files
 nix-fmt:
@@ -63,17 +70,13 @@ nix-dead-code:
 nix-eval:
     nix flake check "path:$PWD" --no-build --impure --no-update-lock-file
 
-# Format TypeScript with biome
+# Format JSON with biome (リポジトリの .ts は全て Deno 管理で biome の対象外)
 biome-fmt:
     biome format --write .
 
-# Check TypeScript formatting with biome (no write)
-biome-fmt-check:
-    biome format .
-
-# Lint TypeScript with biome
-biome-lint:
-    biome lint .
+# Check formatting, lint, and assists with biome (lefthook の `biome check` と同じ範囲)
+biome-ci:
+    biome ci .
 
 # Run a deno subcommand over all configured Deno dirs and files
 _deno-each cmd:
@@ -98,11 +101,11 @@ deno-fmt-check:
 deno-lint:
     @just _deno-each lint
 
-# Type-check Deno TypeScript files
+# Type-check Deno TypeScript files (git 管理下のものだけ。find だと untracked も拾う)
 deno-check:
     @for dir in {{ deno_dirs }}; do \
       echo "deno check: $dir"; \
-      (cd "$dir" && find . -name '*.ts' -exec deno check {} +) || exit $?; \
+      (cd "$dir" && git ls-files -z '*.ts' | xargs -0 deno check) || exit $?; \
     done
     @for file in {{ deno_files }}; do \
       echo "deno check: $file"; \
@@ -120,6 +123,10 @@ _sh-files:
 # Lint shell scripts
 shellcheck:
     @just _sh-files | xargs shellcheck -x
+
+# Syntax-check Zsh startup files (shellcheck / shfmt は zsh を解釈しない)
+zsh-lint:
+    @git ls-files -z '*.zsh' .config/zsh/.zshrc .config/zsh/.zimrc | xargs -0 -n1 zsh -n
 
 # Format shell scripts
 shfmt:
@@ -182,9 +189,10 @@ typos-fix:
 nvim-test:
     nvim --headless --clean -l scripts/test-nvim-config.lua
 
-# Verify pr.yml hash-update sed patterns match overlay structure
+# Verify pr.yml hash-update sed patterns match overlay structure, and the detect script against fixtures
 hash-patterns-test:
     bash scripts/test-hash-patterns.sh
+    bash scripts/test-detect-hash-updates.sh
 
 # Verify the banned-commands hook blocks shallow git fetch/pull without false positives
 banned-commands-test:

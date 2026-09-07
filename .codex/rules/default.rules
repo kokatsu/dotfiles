@@ -1,10 +1,11 @@
 # Dotfiles repository-local commands.
 prefix_rule(
-    pattern = ["just", ["check", "fmt", "nvim-test"]],
+    pattern = ["just", ["check", "check-static", "fmt", "nvim-test"]],
     decision = "allow",
     justification = "Allow this trusted repository's standard check, format, and Neovim test recipes without prompting.",
     match = [
         "just check",
+        "just check-static",
         "just fmt",
         "just nvim-test",
     ],

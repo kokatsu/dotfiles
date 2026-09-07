@@ -82,12 +82,9 @@ extract_attr_keys() {
 # あるプラットフォームの hash 行が削除/改名/形式崩れしたケースを取りこぼさず検出する
 # (workflow は platformMap (= manifest) のキーで update/verify を回すため、それと一致させる)。
 APPLE_KEYS=$(sed -n '/^  appleGnuPlatformMap = {/,/^  };/p' "$BINARY" | extract_attr_keys || true)
-# currentAppleGnuPlatformMap = builtins.removeAttrs appleGnuPlatformMap ["x86_64-darwin"]; の除外リスト
-CURRENT_REMOVED=$(grep -E '^  currentAppleGnuPlatformMap = ' "$BINARY" | grep -oE '\[[^]]*\]' | grep -oE '"[a-z0-9_-]+"' | sed -E 's/"([a-z0-9_-]+)"/\1/' || true)
-APPLE_CURRENT_KEYS=$(comm -23 <(printf '%s\n' "$APPLE_KEYS" | sort) <(printf '%s\n' "$CURRENT_REMOVED" | sort))
 
 # セクション ($3=開始パターン, $2=ファイル) の platformMap が宣言する「期待プラットフォーム集合」を返す。
-# インライン { ... } / appleGnuPlatformMap / currentAppleGnuPlatformMap を解決する。
+# インライン { ... } / appleGnuPlatformMap を解決する。
 # 未知の参照形式は __UNRESOLVED__ を返し、呼び出し側で loud fail させる (silent pass を避ける)。
 expected_platforms() {
   local file="$1" start="$2" section pm_line
@@ -95,8 +92,6 @@ expected_platforms() {
   pm_line=$(printf '%s\n' "$section" | grep -E 'platformMap = ' | head -1 || true)
   if printf '%s\n' "$pm_line" | grep -q 'platformMap = {'; then
     printf '%s\n' "$section" | sed -n '/platformMap = {/,/};/p' | extract_attr_keys
-  elif printf '%s\n' "$pm_line" | grep -q 'platformMap = currentAppleGnuPlatformMap'; then
-    printf '%s\n' "$APPLE_CURRENT_KEYS"
   elif printf '%s\n' "$pm_line" | grep -q 'platformMap = appleGnuPlatformMap'; then
     printf '%s\n' "$APPLE_KEYS"
   else

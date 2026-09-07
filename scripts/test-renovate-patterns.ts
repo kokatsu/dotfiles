@@ -1,15 +1,20 @@
 #!/usr/bin/env -S deno run --allow-read
-// test-renovate-patterns.ts — renovate.json5 の matchStrings が overlay の全 # Renovate: コメントにマッチするか検証する
+// test-renovate-patterns.ts — renovate.json5 の regex manager が # Renovate: コメントを
+// 全て拾えるか検証する。overlay (nix/overlays/*.nix) 用と flake.nix のタグ pin 用の
+// 2 つの customManagers を、それぞれの managerFilePatterns が指すファイルで検査する。
 //
 // 検証項目:
-//   1. managerFilePatterns が # Renovate: コメントを含む全ファイルにマッチすること
-//   2. 各 # Renovate: コメントが matchStrings のいずれかにマッチすること
-//   3. マッチから datasource, depName, currentValue が抽出できること
+//   1. # Renovate: コメントを含む各ファイルが、いずれかの manager の
+//      managerFilePatterns にマッチすること
+//   2. その manager の matchStrings のいずれかがコメント位置にマッチすること
+//   3. マッチから currentValue が抽出できること
 
 import { join } from "node:path";
 
 const OVERLAY_DIR = Deno.args[0] || "nix/overlays";
 const RENOVATE_CONFIG = "renovate.json5";
+// overlay 以外で # Renovate: コメントを持つファイル
+const EXTRA_FILES = ["flake.nix"];
 
 const RED = "\x1b[0;31m";
 const GREEN = "\x1b[0;32m";
@@ -35,6 +40,11 @@ interface RenovateComment {
   line: number;
 }
 
+interface RegexManager {
+  filePatterns: string[];
+  matchStrings: string[];
+}
+
 function decodeJson5Escapes(s: string): string {
   let result = "";
   for (let i = 0; i < s.length; i++) {
@@ -52,9 +62,16 @@ function decodeJson5Escapes(s: string): string {
   return result;
 }
 
-function extractBracketBlock(content: string, key: string): string | null {
-  const match = content.match(new RegExp(`${key}:\\s*\\[`));
-  if (!match || match.index === undefined) return null;
+/** `key: [` から対応する `]` までの中身を返す。from 以降の最初の出現を探す */
+function extractBracketBlock(
+  content: string,
+  key: string,
+  from = 0,
+): { body: string; end: number } | null {
+  const re = new RegExp(`${key}:\\s*\\[`, "g");
+  re.lastIndex = from;
+  const match = re.exec(content);
+  if (!match) return null;
   const start = match.index + match[0].length;
   let depth = 1;
   let inString: string | false = false;
@@ -75,33 +92,47 @@ function extractBracketBlock(content: string, key: string): string | null {
       if (c === "[") depth++;
       else if (c === "]") {
         depth--;
-        if (depth === 0) return content.slice(start, i);
+        if (depth === 0) return { body: content.slice(start, i), end: i };
       }
     }
   }
   return null;
 }
 
-function extractMatchStrings(): string[] {
-  const content = Deno.readTextFileSync(RENOVATE_CONFIG);
-  const block = extractBracketBlock(content, "matchStrings");
-  if (!block) {
-    console.error("ERROR: matchStrings not found in renovate.json5");
-    Deno.exit(1);
-  }
+function stringLiterals(block: string): string[] {
   return [...block.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map((m) =>
     decodeJson5Escapes(m[1])
   );
 }
 
-function extractFilePatterns(): string[] {
+/** customManagers の各 regex manager を、出現順に (managerFilePatterns, matchStrings) の組で返す */
+function extractRegexManagers(): RegexManager[] {
   const content = Deno.readTextFileSync(RENOVATE_CONFIG);
-  const block = extractBracketBlock(content, "managerFilePatterns");
-  if (!block) return [];
-  return [...block.matchAll(/'((?:[^'\\]|\\.)*)'/g)].map((m) => {
-    const s = decodeJson5Escapes(m[1]);
-    return s.startsWith("/") && s.endsWith("/") ? s.slice(1, -1) : s;
-  });
+  const managers: RegexManager[] = [];
+  let cursor = 0;
+  for (;;) {
+    const files = extractBracketBlock(content, "managerFilePatterns", cursor);
+    if (!files) break;
+    const strings = extractBracketBlock(content, "matchStrings", files.end);
+    if (!strings) {
+      console.error(
+        "ERROR: managerFilePatterns without matchStrings in renovate.json5",
+      );
+      Deno.exit(1);
+    }
+    managers.push({
+      filePatterns: stringLiterals(files.body).map((s) =>
+        s.startsWith("/") && s.endsWith("/") ? s.slice(1, -1) : s
+      ),
+      matchStrings: stringLiterals(strings.body),
+    });
+    cursor = strings.end;
+  }
+  if (managers.length === 0) {
+    console.error("ERROR: no regex manager found in renovate.json5");
+    Deno.exit(1);
+  }
+  return managers;
 }
 
 function findRenovateComments(content: string): RenovateComment[] {
@@ -115,9 +146,10 @@ function findRenovateComments(content: string): RenovateComment[] {
 
 // --- Main ---
 
-const patterns = extractMatchStrings();
-const filePatterns = extractFilePatterns();
-console.log(`Loaded ${patterns.length} matchStrings from ${RENOVATE_CONFIG}`);
+const managers = extractRegexManagers();
+console.log(
+  `Loaded ${managers.length} regex managers from ${RENOVATE_CONFIG}`,
+);
 console.log();
 
 const overlayFiles = [...Deno.readDirSync(OVERLAY_DIR)]
@@ -128,42 +160,43 @@ const overlayFiles = [...Deno.readDirSync(OVERLAY_DIR)]
       e.name !== "lib.nix" &&
       e.name !== "default.nix",
   )
-  .map((e) => e.name)
+  .map((e) => join(OVERLAY_DIR, e.name))
   .sort();
+const targetFiles = [...overlayFiles, ...EXTRA_FILES];
 
-// Test 1: managerFilePatterns
-console.log("=== Test: managerFilePatterns ===");
-console.log();
-for (const file of overlayFiles) {
-  const filepath = join(OVERLAY_DIR, file);
+for (const filepath of targetFiles) {
   const content = Deno.readTextFileSync(filepath);
   const comments = findRenovateComments(content);
   if (comments.length === 0) continue;
-  const matched = filePatterns.some((p) => new RegExp(p).test(filepath));
-  if (matched) pass(file);
-  else fail(`${file} not matched (has ${comments.length} packages)`);
-}
-console.log();
+  console.log(`[${filepath}]`);
 
-// Test 2: matchStrings
-console.log("=== Test: matchStrings ===");
-console.log();
-for (const file of overlayFiles) {
-  const filepath = join(OVERLAY_DIR, file);
-  const content = Deno.readTextFileSync(filepath);
-  const comments = findRenovateComments(content);
-  if (comments.length === 0) continue;
-  console.log(`[${file}]`);
+  // Test 1: どの manager がこのファイルを担当するか
+  const owners = managers.filter((m) =>
+    m.filePatterns.some((p) => new RegExp(p).test(filepath))
+  );
+  if (owners.length === 0) {
+    fail(
+      `no managerFilePatterns match (has ${comments.length} packages)`,
+    );
+    console.log();
+    continue;
+  }
+  pass(`matched by ${owners.length} manager(s)`);
+
+  // Test 2: 各コメントがその manager の matchStrings にマッチする
   for (const comment of comments) {
     let matched = false;
-    for (const pattern of patterns) {
-      const re = new RegExp(pattern, "g");
-      for (const m of content.matchAll(re)) {
-        if (m.index === comment.pos) {
-          pass(`${comment.depName}: version=${m.groups?.currentValue}`);
-          matched = true;
-          break;
+    for (const owner of owners) {
+      for (const pattern of owner.matchStrings) {
+        const re = new RegExp(pattern, "g");
+        for (const m of content.matchAll(re)) {
+          if (m.index === comment.pos) {
+            pass(`${comment.depName}: version=${m.groups?.currentValue}`);
+            matched = true;
+            break;
+          }
         }
+        if (matched) break;
       }
       if (matched) break;
     }
@@ -181,7 +214,7 @@ if (errors) {
     "ERROR: Renovate matchStrings do not cover all # Renovate: comments.",
   );
   console.log(
-    "       Update matchStrings in renovate.json5 or overlay file structure.",
+    "       Update matchStrings in renovate.json5 or the file structure.",
   );
   Deno.exit(1);
 }

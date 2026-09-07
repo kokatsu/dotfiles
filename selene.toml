@@ -1,0 +1,3 @@
+# リポジトリ直下の selene 設定 (.config/yazi/init.lua など素の Lua 用)。
+# nvim / wezterm は各ディレクトリの selene.toml が std を上書きする
+std = "lua53"

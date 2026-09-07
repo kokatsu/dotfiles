@@ -46,8 +46,10 @@
   ],
   packageRules: [
     {
+      // overlay と flake.nix のタグ pin はどちらも依存更新なので同じ type にする
       matchFileNames: [
         'nix/overlays/*.nix',
+        'flake.nix',
       ],
       semanticCommitType: 'build',
       semanticCommitScope: 'deps',
