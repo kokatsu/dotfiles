@@ -4,10 +4,12 @@ Nix + Home Manager (with Flakes) で macOS/Linux のシェル・ツール設定�
 
 ## Layout
 
-- `nix/home/` — Home Manager 設定 (packages, dotfile symlinks の source of truth)
+- `nix/home/` — Home Manager 設定 (packages.nix が packages、files.nix と programs/*.nix が dotfile symlinks の source of truth)
 - `nix/darwin/` — nix-darwin 設定 (macOS のみ)
 - `nix/overlays/` — カスタムパッケージ・ビルド修正
 - `.config/` — 各ツールの設定ファイル (Home Manager が symlink で配置)
+- `bin/` — ユーザースクリプト (`~/.local/bin/scripts` に symlink され PATH に入る)
+- `scripts/` — CI と `just` が使うテスト・補助スクリプト
 - `.codex/rules/*.rules` — このリポジトリ専用の Codex コマンド承認ルール
 
 ## Apply Changes
@@ -27,5 +29,5 @@ nix flake update
 
 ## Local Checks
 
-`just check` で fmt-check / lint / typos を一括実行、`just fmt` で整形。
-commit 時は lefthook が自動で整形・lint・gitleaks を走らせる。
+`just check` で fmt-check / lint / typos、各テスト (`scripts/test-*`)、flake の評価 (`nix-eval`) を一括実行する。CI は同じ内容を `just check-static` と `nix flake check` で分担する。`just fmt` で整形。
+commit 時は Lefthook が自動で整形・lint・gitleaks を走らせる。

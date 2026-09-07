@@ -10,7 +10,7 @@ Dotfiles repository for managing shell and tool configurations across macOS and 
 ## Features
 
 - 🔄 **Declarative & Reproducible** - All configurations managed through Nix Flakes
-- 🖥️ **Multi-platform** - Supports Linux (x86_64) and macOS ARM (Apple Silicon)
+- 🖥️ **Multi-platform** - Supports Linux (x86_64, aarch64) and macOS ARM (Apple Silicon)
 - 📦 **Unified Package Management** - All CLI tools installed via Home Manager
 - 🔗 **Automated Symlinks** - Dotfiles automatically linked to `~/.config/`
 
@@ -18,7 +18,7 @@ Dotfiles repository for managing shell and tool configurations across macOS and 
 
 ### Prerequisites
 
-- macOS (arm64) or Linux (x86_64)
+- macOS (arm64) or Linux (x86_64 / aarch64)
 - curl (for Nix installer)
 
 ### Installation
@@ -58,10 +58,13 @@ DOTFILES_DIR="$HOME/dotfiles" home-manager switch --flake "$HOME/dotfiles" --imp
 ### Development
 
 ```bash
-nix develop        # Enter development shell
-nix flake check    # Check flake configuration
-nix fmt            # Format Nix files
+nix develop        # Enter development shell with every linter / formatter
+just check         # Format check, lint, typos, script tests, and flake evaluation
+just fmt           # Format everything (Nix, Lua, shell, TOML, YAML, JSON, TypeScript)
+just               # List all recipes
 ```
+
+Lefthook runs a subset of these on commit and push (formatters, linters, gitleaks, commitlint); the script tests and flake evaluation only run through `just check` and CI.
 
 ## Directory Structure
 
@@ -69,15 +72,20 @@ nix fmt            # Format Nix files
 .
 ├── flake.nix          # Flake outputs and Home Manager/nix-darwin builders
 ├── flake.lock         # Locked dependencies for reproducibility
+├── justfile           # Task runner: checks, formatters, tests
 ├── nix/
-│   ├── home/          # Home Manager modules (packages, files, programs)
+│   ├── home/          # Home Manager modules (packages, files, programs, services)
 │   ├── darwin/        # macOS system and Homebrew configuration
 │   └── overlays/      # Custom packages and upstream workarounds
+├── bin/               # User scripts, linked to ~/.local/bin/scripts and on PATH
+├── scripts/           # Test and helper scripts used by just and CI
+├── karabiner-config/  # Karabiner-Elements rules written with karabiner.ts
 └── .config/           # Dotfile sources linked by Home Manager
     ├── zsh/           # Zsh shell configuration
     ├── nvim/          # Neovim configuration
     ├── git/           # Git configuration
     ├── wezterm/       # WezTerm terminal configuration
+    ├── claude/        # Claude Code settings, hooks, and skills
     └── ...            # Other tool configurations
 ```
 

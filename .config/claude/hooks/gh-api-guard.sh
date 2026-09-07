@@ -45,9 +45,10 @@ CMD=$(echo "$INPUT" | jq -r '.tool_input.command')
 # Defensive re-check that a `gh api` token is actually present. The `if` gate
 # already guarantees this for parseable commands; this also covers the
 # "too complex to parse" fallback, where the gate fires without a confirmed match.
-# POSIX classes only (no \s / \b) so BSD/macOS grep matches identically; an
-# over-broad match here is harmless (the analysis below still gates the decision),
-# whereas an under-match would skip the guard entirely.
+# POSIX classes for whitespace (no \s) so BSD/macOS grep matches identically;
+# \b is accepted by both GNU and BSD grep -E and is used below. An over-broad
+# match here is harmless (the analysis below still gates the decision), whereas
+# an under-match would skip the guard entirely.
 if ! echo "$CMD" | grep -qE 'gh[[:space:]]+api'; then
   exit 0
 fi

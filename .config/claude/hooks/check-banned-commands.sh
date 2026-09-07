@@ -6,8 +6,10 @@ RULES_FILE="$HOOKS_DIR/banned-commands.json"
 INPUT=$(cat)
 CMD=$(echo "$INPUT" | jq -r '.tool_input.command')
 
-# Claude and Codex share this best-effort Herdr command guard. It prevents
-# ordinary bypasses but is not a security boundary for arbitrary Bash access.
+# Best-effort Herdr command guard, shared with Codex (which registers
+# herdr-peer-command-guard.sh directly from nix/home/programs/codex.nix instead
+# of running this script). It prevents ordinary bypasses but is not a security
+# boundary for arbitrary Bash access.
 printf '%s' "$INPUT" | bash "$HOOKS_DIR/herdr-peer-command-guard.sh"
 
 # banned-commands.json holds only textual patterns (pipe-to-shell, redirect
