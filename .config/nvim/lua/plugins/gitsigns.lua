@@ -30,31 +30,23 @@ return {
         -- Navigation
         map('n', ']g', function()
           if vim.wo.diff then
-            return vim.cmd.normal({ ']g', bang = true })
+            return vim.cmd.normal({ ']c', bang = true })
           else
             gitsigns.nav_hunk('next')
           end
         end, { desc = 'Next Git Hunk' })
         map('n', '[g', function()
           if vim.wo.diff then
-            return vim.cmd.normal({ '[g', bang = true })
+            return vim.cmd.normal({ '[c', bang = true })
           else
             gitsigns.nav_hunk('prev')
           end
         end, { desc = 'Previous Git Hunk' })
         map('n', ']G', function()
-          if vim.wo.diff then
-            return vim.cmd.normal({ ']G', bang = true })
-          else
-            gitsigns.nav_hunk('last')
-          end
+          gitsigns.nav_hunk('last')
         end, { desc = 'Last Git Hunk' })
         map('n', '[G', function()
-          if vim.wo.diff then
-            return vim.cmd.normal({ '[G', bang = true })
-          else
-            gitsigns.nav_hunk('first')
-          end
+          gitsigns.nav_hunk('first')
         end, { desc = 'First Git Hunk' })
 
         -- Actions

@@ -23,28 +23,28 @@ return {
   },
   keys = {
     {
-      'ff',
+      '<leader>Ff',
       function()
         require('fff').find_files()
       end,
       desc = 'FFF Find Files',
     },
     {
-      'fg',
+      '<leader>Fg',
       function()
         require('fff').live_grep()
       end,
       desc = 'FFF Live Grep',
     },
     {
-      'fz',
+      '<leader>Fz',
       function()
         require('fff').live_grep({ grep = { modes = { 'fuzzy', 'plain' } } })
       end,
       desc = 'FFF Live Fuzzy Grep',
     },
     {
-      'fw',
+      '<leader>Fw',
       function()
         require('fff').live_grep({ query = vim.fn.expand('<cword>') })
       end,

@@ -20,7 +20,7 @@ return {
       -- Surround group
       { 's', group = 'surround' },
       -- FFF group
-      { 'f', group = 'fff' },
+      { '<leader>F', group = 'fff' },
       -- Go to group
       { 'g', group = 'goto' },
       -- mini.surround descriptions
