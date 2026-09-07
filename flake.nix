@@ -125,7 +125,6 @@
 
     # 現在のシステムを検出 (--impure 必須)
     inherit (builtins) currentSystem;
-    isCurrentDarwin = builtins.elem currentSystem darwinSystems;
 
     # システムごとにpkgsを取得するヘルパー
     inherit (nixpkgs) lib;
@@ -179,10 +178,15 @@
       customOverlays.x-api-playground
     ];
 
-    # CI用ヘルパー
-    mkCIConfig = system: let
-      isDarwin = builtins.elem system darwinSystems;
-    in
+    # Home Manager 構成の共通ビルダー (CI と実ユーザーの両方が使う)。
+    # system は必ず引数で受け取り、内部で builtins.currentSystem を参照しない。
+    # pure な `nix flake check` が checks.<system>.home を評価できるようにするため。
+    mkHomeConfig = {
+      system,
+      username,
+      isCI,
+      dotfilesDir,
+    }:
       home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           inherit system;
@@ -192,16 +196,22 @@
             # nixpkgs が patched pnpm_10 に bump したら削除する。
             permittedInsecurePackages = ["pnpm-10.34.0"];
           };
-          overlays = commonOverlays ++ lib.optionals isDarwin darwinOnlyOverlays;
+          overlays = commonOverlays ++ lib.optionals (builtins.elem system darwinSystems) darwinOnlyOverlays;
         };
         modules = [./nix/home catppuccin.homeModules.catppuccin];
         extraSpecialArgs = {
-          inherit inputs self;
-          username = "ci";
-          isCI = true;
-          dotfilesDir = "/tmp/dotfiles";
+          inherit inputs self username isCI dotfilesDir;
           stablePkgs = stablePkgsFor system;
         };
+      };
+
+    # CI用ヘルパー
+    mkCIConfig = system:
+      mkHomeConfig {
+        inherit system;
+        username = "ci";
+        isCI = true;
+        dotfilesDir = "/tmp/dotfiles";
       };
 
     mkDarwinConfig = username:
@@ -267,24 +277,11 @@
     # 持たない homeConfigurations に置くと `nix flake check` が他 system 分まで強制
     # 評価し、catppuccin の IFD (importTOML) が異 platform のビルドを要求して落ちる。
     homeConfigurations = lib.optionalAttrs (builtins ? currentSystem) {
-      ${finalUsername} = home-manager.lib.homeManagerConfiguration {
-        pkgs = import nixpkgs {
-          system = currentSystem;
-          config = {
-            allowUnfree = true;
-            # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
-            # nixpkgs が patched pnpm_10 に bump したら削除する。
-            permittedInsecurePackages = ["pnpm-10.34.0"];
-          };
-          overlays = commonOverlays ++ lib.optionals isCurrentDarwin darwinOnlyOverlays;
-        };
-        modules = [./nix/home catppuccin.homeModules.catppuccin];
-        extraSpecialArgs = {
-          inherit inputs self dotfilesDir;
-          username = finalUsername;
-          isCI = false;
-          stablePkgs = stablePkgsFor currentSystem;
-        };
+      ${finalUsername} = mkHomeConfig {
+        system = currentSystem;
+        username = finalUsername;
+        isCI = false;
+        inherit dotfilesDir;
       };
     };
 
