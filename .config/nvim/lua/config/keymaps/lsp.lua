@@ -38,10 +38,6 @@ end, { desc = 'Toggle Inlay Hints' })
 -- Signature help (insert mode)
 vim.keymap.set('i', '<C-h>', vim.lsp.buf.signature_help, { desc = 'Signature help' })
 
--- Neovim 0.11+ デフォルトの <C-s> → signature_help を無効化 (WezTerm の Ctrl+S と競合)
+-- Neovim 0.11+ デフォルトの <C-s> → signature_help を無効化 (Ghostty の ctrl+s と競合)
+-- 既定マップはグローバルのみで LspAttach でバッファローカルには張られない
 pcall(vim.keymap.del, { 'i', 's' }, '<C-s>')
-vim.api.nvim_create_autocmd('LspAttach', {
-  callback = function(args)
-    pcall(vim.keymap.del, { 'i', 's' }, '<C-s>', { buffer = args.buf })
-  end,
-})

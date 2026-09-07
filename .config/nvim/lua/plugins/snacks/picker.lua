@@ -159,13 +159,4 @@ function M.grep_ft_action()
   end)
 end
 
--- Grep (no regex) action
-function M.grep_no_regex_action()
-  Snacks.picker.grep({
-    cmd = 'rg',
-    hidden = true,
-    regex = false,
-  })
-end
-
 return M

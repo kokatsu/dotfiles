@@ -15,7 +15,6 @@ M.opts = {
       conceallevel = 0,
     })
     vim.b.completion = false
-    vim.b.minianimate_disable = true
     vim.schedule(function()
       if vim.api.nvim_buf_is_valid(ctx.buf) then
         vim.bo[ctx.buf].syntax = ctx.ft

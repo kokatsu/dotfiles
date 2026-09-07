@@ -1,5 +1,6 @@
 
-# フォント（WezTermと同様のフォールバック設定）
+# フォント (WezTerm は PlemolJP35 Console NF を先頭にしているが、Ghostty は
+# UDEV Gothic から始める。以降の fallback は WezTerm と同じ順)
 font-family = "UDEV Gothic 35NFLG"
 font-family = "Firge35Nerd Console"
 font-family = "HackGen35 Console"

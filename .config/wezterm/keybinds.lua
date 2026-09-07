@@ -147,12 +147,6 @@ local common_keys = {
       window:copy_to_clipboard(txt)
     end),
   },
-  -- `Alt + e` をそのままペインへ送る (旧 tmux 版プロンプトエディタ用。無効化済み)
-  {
-    key = 'e',
-    mods = 'ALT',
-    action = act.SendKey({ key = 'e', mods = 'ALT' }),
-  },
   --]=]
   -- `Shift + Enter` で 改行を送信
   -- https://zenn.dev/glaucus03/articles/070589323cb450
@@ -558,21 +552,7 @@ local search_mode = {
   { key = 'u', mods = 'CTRL', action = act.CopyMode('ClearPattern') },
 }
 
---- 統一キーバインドを取得する
----@param mods_map table 修飾子マッピング { PRIMARY = 'CTRL', SECONDARY = 'ALT' }
----@return table[] 変換後のキーバインドテーブル
-local function get_unified_keys(mods_map)
-  return convert_keys(unified_keys, mods_map)
-end
-
 return {
-  -- 新しいAPI: 修飾子マッピングを渡して統一キーを取得
-  get_unified_keys = get_unified_keys,
-  common_keys = common_keys,
-  windows_specific_keys = windows_specific_keys,
-  darwin_specific_keys = darwin_specific_keys,
-  merge_keys = merge_keys,
-  -- 後方互換性のため残す
   windows_keys = merge_keys(
     common_keys,
     convert_keys(unified_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),

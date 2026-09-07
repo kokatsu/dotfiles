@@ -64,30 +64,22 @@ return {
     require('mini.sessions').setup({
       -- 自動的に読み込むかどうか（最後に使用したセッションを自動読み込み）
       autoread = false,
-      -- Neovim終了時に自動保存するかどうか
-      autowrite = true,
+      -- 終了時の保存は下の VimLeavePre で cwd 名のセッションに行う
+      -- (mini の autowrite は v:this_session が設定済みのときしか書かない)
       -- セッションの保存先ディレクトリ
       directory = vim.fn.stdpath('data') .. '/sessions',
       -- セッションファイル名の形式
       file = '',
     })
 
-    -- カレントディレクトリベースの自動セッション保存
-    local function get_session_name()
-      -- カレントディレクトリのパスをセッション名として使用（スラッシュをアンダースコアに変換）
-      local cwd = vim.fn.getcwd()
-      return cwd:gsub('/', '_'):gsub('^_', '')
-    end
-
-    -- 自動セッション保存（VimLeavePre時）
+    -- カレントディレクトリベースの自動セッション保存（VimLeavePre時）
     vim.api.nvim_create_autocmd('VimLeavePre', {
       group = vim.api.nvim_create_augroup('AutoSaveSession', { clear = true }),
       callback = function()
         -- バッファが開かれている場合のみ保存
         local bufs = vim.fn.getbufinfo({ buflisted = 1 })
         if #bufs > 0 then
-          local session_name = get_session_name()
-          require('mini.sessions').write(session_name, { force = true })
+          require('mini.sessions').write(require('utils.session').name(), { force = true })
         end
       end,
     })

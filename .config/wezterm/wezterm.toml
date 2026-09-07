@@ -1,5 +1,6 @@
 [selene]
-base = "lua51"
+# selene 0.31 に lua54 の定義は無いため lua53 を使う (utf8 は 5.3 で導入済み)
+base = "lua53"
 name = "wezterm"
 
 [wezterm]

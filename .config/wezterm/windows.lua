@@ -21,8 +21,6 @@ M.apply_to_config = function(config)
   config.set_environment_variables = {
     WSLENV = 'WEZTERM_PANE',
   }
-  wezterm.home_dir = '~'
-
   local keybinds = require('keybinds')
   local keys = keybinds.windows_keys
   config.keys = keys

@@ -1,6 +1,5 @@
--- vue_ls は hybridMode = false で独自に TypeScript を処理するため、
--- vtsls は vue ファイルタイプを除外
--- Svelte は svelte-language-server が TypeScript を処理
+-- vue ファイルの TypeScript は typescript-tools が担当する (vue_ls は hybridMode = true で
+-- テンプレート/CSS のみ) ため vtsls は vue を持たない。svelte だけ vtsls に任せる
 local tsserver_filetypes = {
   'svelte',
 }

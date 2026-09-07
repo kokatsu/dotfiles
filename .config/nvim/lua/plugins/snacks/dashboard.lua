@@ -47,13 +47,12 @@ M.opts = {
         key = 's',
         desc = 'Restore Session',
         action = function()
-          local cwd = vim.fn.getcwd()
-          local session_name = cwd:gsub('/', '_'):gsub('^_', '')
+          local session_name = require('utils.session').name()
           local sessions = require('mini.sessions')
           if sessions.detected[session_name] then
             sessions.read(session_name)
           else
-            vim.notify('No session found for: ' .. cwd, vim.log.levels.WARN)
+            vim.notify('No session found for: ' .. vim.fn.getcwd(), vim.log.levels.WARN)
           end
         end,
       },

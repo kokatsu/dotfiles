@@ -4,7 +4,7 @@
 return {
   'kokatsu/gitsigns.nvim',
   branch = 'fix/blame-nil-repo-race',
-  event = { 'BufReadPre', 'BufNewFile' },
+  -- barbar (lazy = false) の dependency として起動時に読み込まれるため event は指定しない
   config = function()
     require('gitsigns').setup({
       signs = {

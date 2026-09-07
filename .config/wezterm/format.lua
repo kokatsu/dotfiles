@@ -61,43 +61,64 @@ local process_icons = {
 
 local default_icon = { icon = nf.md_folder_marker, color = colors.palette.text }
 
--- feed-watch: GitHub フィード未読表示
-local feed_status_cache = nil
-local feed_status_last_check = 0
-local FEED_STATUS_CHECK_INTERVAL = 30 -- seconds
+-- *-watch スクリプトが書く JSON キャッシュの読み込み。
+-- 読み手は status bar の更新ごとに呼ばれるので、ファイル I/O は 30 秒に 1 回に抑える
+local STATUS_CHECK_INTERVAL = 30 -- seconds
 
-local function read_feed_status()
-  local now = os.time()
-  if feed_status_cache ~= nil and (now - feed_status_last_check) < FEED_STATUS_CHECK_INTERVAL then
-    return feed_status_cache
-  end
-  feed_status_last_check = now
-
-  local userprofile = os.getenv('USERPROFILE')
-  if not userprofile then
-    feed_status_cache = false
-    return false
+--- *-watch のキャッシュディレクトリを末尾のセパレータ込みで返す。
+--- Windows 版 WezTerm は WSL 側から書かれた Windows プロファイル配下を読み、
+--- macOS は同じマシンの ~/.cache を読む (各 bin/*-watch の get_status_dir と対)
+---@param name string 'feed-watch' | 'disk-watch' | 'status-watch'
+---@return string|nil
+local function cache_dir(name)
+  if platform.is_windows then
+    local userprofile = os.getenv('USERPROFILE')
+    return userprofile and (userprofile .. '\\.cache\\' .. name .. '\\')
   end
 
-  local path = userprofile .. '\\.cache\\feed-watch\\status.json'
-  local file = io.open(path, 'r')
-  if not file then
-    feed_status_cache = false
-    return false
-  end
-
-  local content = file:read('*a')
-  file:close()
-
-  local ok, data = pcall(wezterm.json_parse, content)
-  if not ok or not data or not data.feeds then
-    feed_status_cache = false
-    return false
-  end
-
-  feed_status_cache = data
-  return data
+  local home = os.getenv('HOME')
+  return home and (home .. '/.cache/' .. name .. '/')
 end
+
+--- JSON ファイルをキャッシュ付きで読む関数を作る。
+--- validate(data) が偽なら false をキャッシュし、次の間隔まで再読込しない
+---@param name string cache_dir に渡す名前
+---@param filename string
+---@param validate fun(data: table): boolean
+---@return fun(): table|false
+local function cached_json_reader(name, filename, validate)
+  local cache = nil
+  local last_check = 0
+
+  return function()
+    local now = os.time()
+    if cache ~= nil and (now - last_check) < STATUS_CHECK_INTERVAL then
+      return cache
+    end
+    last_check = now
+    cache = false
+
+    local dir = cache_dir(name)
+    local file = dir and io.open(dir .. filename, 'r')
+    if not file then
+      return false
+    end
+
+    local content = file:read('*a')
+    file:close()
+
+    local ok, data = pcall(wezterm.json_parse, content)
+    if ok and data and validate(data) then
+      cache = data
+    end
+    return cache
+  end
+end
+
+-- feed-watch: GitHub フィード未読表示
+local read_feed_status = cached_json_reader('feed-watch', 'status.json', function(data)
+  return data.feeds ~= nil
+end)
 
 local function format_feed_status()
   local data = read_feed_status()
@@ -143,42 +164,9 @@ local function format_feed_last_updated()
 end
 
 -- disk-watch: WSL / Windows のディスク容量警告
-local disk_status_cache = nil
-local disk_status_last_check = 0
-local DISK_STATUS_CHECK_INTERVAL = 30 -- seconds
-
-local function read_disk_status()
-  local now = os.time()
-  if disk_status_cache ~= nil and (now - disk_status_last_check) < DISK_STATUS_CHECK_INTERVAL then
-    return disk_status_cache
-  end
-  disk_status_last_check = now
-
-  local userprofile = os.getenv('USERPROFILE')
-  if not userprofile then
-    disk_status_cache = false
-    return false
-  end
-
-  local path = userprofile .. '\\.cache\\disk-watch\\status.json'
-  local file = io.open(path, 'r')
-  if not file then
-    disk_status_cache = false
-    return false
-  end
-
-  local content = file:read('*a')
-  file:close()
-
-  local ok, data = pcall(wezterm.json_parse, content)
-  if not ok or not data or not data.filesystems then
-    disk_status_cache = false
-    return false
-  end
-
-  disk_status_cache = data
-  return data
-end
+local read_disk_status = cached_json_reader('disk-watch', 'status.json', function(data)
+  return data.filesystems ~= nil
+end)
 
 local function format_disk_status()
   local data = read_disk_status()
@@ -206,57 +194,23 @@ local function format_disk_status()
   return elements
 end
 
--- status-watch: Claude / OpenAI の障害情報
-local service_status_cache = {}
-local SERVICE_STATUS_CHECK_INTERVAL = 30 -- seconds
+-- status-watch: Claude / OpenAI / GitHub の障害情報
 -- status-watch は 5 分ごとに更新する。3 周期分を過ぎたデータは取得が止まって
 -- いるとみなして描画しない (復旧済みの障害が残り続けるのを防ぐ)
 local SERVICE_STATUS_TTL = 900 -- seconds
 
---- status-watch のキャッシュディレクトリを末尾のセパレータ込みで返す。
---- Windows 版 WezTerm は WSL 側から書かれた Windows プロファイル配下を読み、
---- macOS は同じマシンの ~/.cache を読む (bin/status-watch の get_status_dir と対)
-local function service_status_dir()
-  if platform.is_windows then
-    local userprofile = os.getenv('USERPROFILE')
-    return userprofile and (userprofile .. '\\.cache\\status-watch\\')
-  end
-
-  local home = os.getenv('HOME')
-  return home and (home .. '/.cache/status-watch/')
-end
+-- サービスごと (ファイルごと) に reader を持つ
+local service_status_readers = {}
 
 local function read_service_status(filename)
-  local now = os.time()
-  local cached = service_status_cache[filename]
-  if cached and (now - cached.last_check) < SERVICE_STATUS_CHECK_INTERVAL then
-    return cached.data
+  local reader = service_status_readers[filename]
+  if not reader then
+    reader = cached_json_reader('status-watch', filename, function(data)
+      return data.indicator ~= nil
+    end)
+    service_status_readers[filename] = reader
   end
-
-  local dir = service_status_dir()
-  if not dir then
-    service_status_cache[filename] = { data = false, last_check = now }
-    return false
-  end
-
-  local path = dir .. filename
-  local file = io.open(path, 'r')
-  if not file then
-    service_status_cache[filename] = { data = false, last_check = now }
-    return false
-  end
-
-  local content = file:read('*a')
-  file:close()
-
-  local ok, data = pcall(wezterm.json_parse, content)
-  if not ok or not data or not data.indicator then
-    service_status_cache[filename] = { data = false, last_check = now }
-    return false
-  end
-
-  service_status_cache[filename] = { data = data, last_check = now }
-  return data
+  return reader()
 end
 
 -- Nerd Fonts の cod-claude (U+EC82) / cod-openai (U+EC81) / cod-github (U+EA84)。

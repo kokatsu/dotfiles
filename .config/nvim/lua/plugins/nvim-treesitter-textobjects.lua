@@ -7,7 +7,7 @@ return {
   event = { 'BufReadPre', 'BufNewFile' },
   config = function()
     -- textobjects クエリ (queries/<lang>/textobjects.scm) を rtp に供給する。
-    -- これにより editor.lua の ]f/[f/]c/[c (move モジュール) と
+    -- これにより editor.lua の ]f/[f/]C/[C (move モジュール) と
     -- mini.ai の af/ac/ap/ao (gen_spec.treesitter) が動作する。
     require('nvim-treesitter-textobjects').setup({
       move = {

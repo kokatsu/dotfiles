@@ -14,13 +14,13 @@ local denols_config = {
       'deno.json',
       'deno.jsonc',
     }
-    local tsgo_root_markers = {
+    local ts_root_markers = {
       'tsconfig.json',
       'jsconfig.json',
       'package.json',
     }
     local project_root = vim.fs.root(bufnr, deno_root_markers)
-    if not project_root or vim.fs.root(bufnr, tsgo_root_markers) then
+    if not project_root or vim.fs.root(bufnr, ts_root_markers) then
       return
     end
     on_dir(project_root)

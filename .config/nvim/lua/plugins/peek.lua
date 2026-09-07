@@ -22,7 +22,8 @@ end
 return {
   'kokatsu/peek.nvim',
   branch = 'fix/deprecated-nvim-api',
-  event = { 'VeryLazy' },
+  -- コマンド経由でしか使わないので、lazy.nvim のスタブコマンドで初回呼び出し時に読み込む
+  cmd = { 'PeekOpen', 'PeekClose' },
   build = function(plugin)
     vim.system({ 'git', 'update-index', '--no-skip-worktree', 'public/index.html' }, { cwd = plugin.dir }):wait()
     vim.system({ 'git', 'checkout', '--', 'public/index.html' }, { cwd = plugin.dir }):wait()

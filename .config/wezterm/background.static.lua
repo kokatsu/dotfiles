@@ -173,25 +173,6 @@ local function adjust_opacity(window, delta)
   refresh_background(window)
 end
 
--- 後方互換性のためイベントハンドラーは残す
-wezterm.on('toggle-default-background', function(window, _)
-  apply_background(window, nil)
-end)
-
-for i, _ in ipairs(background_images) do
-  wezterm.on('toggle-background' .. i, function(window, _)
-    apply_background(window, i)
-  end)
-end
-
-wezterm.on('toggle-opacity-plus', function(window, _)
-  adjust_opacity(window, opacity_step)
-end)
-
-wezterm.on('toggle-opacity-minus', function(window, _)
-  adjust_opacity(window, -opacity_step)
-end)
-
 -- InputSelector 方式
 M.apply_to_keys = function(keys, background_modifier, opacity_modifier)
   table.insert(keys, {

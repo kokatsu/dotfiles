@@ -203,6 +203,7 @@ reliability-test:
     bash scripts/test-check-failures.sh
     bash scripts/test-feed-status.sh
     bash scripts/test-zimfw-activation.sh
+    bash scripts/test-daily.sh
 
 # Verify Renovate regex patterns match overlay files
 renovate-patterns-test:

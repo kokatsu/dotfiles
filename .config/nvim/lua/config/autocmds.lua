@@ -215,14 +215,11 @@ vim.api.nvim_create_autocmd('FileChangedShellPost', {
   end,
 })
 
-local os_utils = require('utils.os')
-
 -- WSLの場合はInsertモードから離れる時にzenhanを実行
-local os_name = os_utils.detect_os()
 local group = vim.api.nvim_create_augroup('kyoh86-conf-ime', {})
 -- `!zenhan 0` は同期実行でWindowsプロセスの起動を待つため、ESCの度に
 -- 実測212msブロックする。IMEを戻す動作は維持したまま非同期に投げる。
-if os_name == 'wsl' then
+if vim.fn.has('wsl') == 1 then
   vim.api.nvim_create_autocmd('InsertLeave', {
     group = group,
     callback = function()
@@ -276,57 +273,6 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
     end, { buffer = true, noremap = true, desc = 'Claude Code: Insert @filepath reference' })
   end,
 })
-
--- Daily note コマンド (直接ファイルを開く)
-do
-  local function daily(input)
-    if not input or input == '' then
-      input = 'today'
-    end
-
-    local time = os.time()
-    if input == 'tomorrow' then
-      time = time + 86400
-    elseif input == 'yesterday' then
-      time = time - 86400
-    elseif input:match('^[+-]?%d+$') then
-      time = time + tonumber(input) * 86400
-    elseif input ~= 'today' then
-      vim.notify('Invalid input: ' .. input, vim.log.levels.WARN)
-      return
-    end
-
-    local git_root = vim.trim(vim.fn.system('git rev-parse --show-toplevel'))
-    if vim.v.shell_error ~= 0 then
-      vim.notify('Not in a git repository', vim.log.levels.ERROR)
-      return
-    end
-
-    local path = git_root .. '/.kokatsu/daily/' .. os.date('%Y/%m/%Y-%m-%d', time) .. '.md'
-    vim.fn.mkdir(vim.fn.fnamemodify(path, ':h'), 'p')
-    if vim.fn.filereadable(path) == 0 then
-      local f = io.open(path, 'w')
-      if f then
-        f:write('# ' .. os.date('%Y-%m-%d', time) .. '\n')
-        f:close()
-      end
-    end
-    vim.cmd.edit(path)
-  end
-
-  vim.api.nvim_create_user_command('Daily', function(args)
-    daily(args.args)
-  end, { desc = 'Open daily note', nargs = '*' })
-  vim.api.nvim_create_user_command('Today', function()
-    daily('today')
-  end, { desc = "Open today's daily note" })
-  vim.api.nvim_create_user_command('Tomorrow', function()
-    daily('tomorrow')
-  end, { desc = "Open tomorrow's daily note" })
-  vim.api.nvim_create_user_command('Yesterday', function()
-    daily('yesterday')
-  end, { desc = "Open yesterday's daily note" })
-end
 
 -- ターミナルバッファでは重い表示系を無効化して描画を軽くする
 vim.api.nvim_create_autocmd('TermOpen', {

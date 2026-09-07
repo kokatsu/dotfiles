@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 #
-# daily: 本日の日記ファイルを開く。
+# daily: 日記ファイルを開く。
 #
 # Usage:
-#   daily             エディタで本日の日記を開く
-#   daily --no-edit   エディタを起動せず、日記のパスのみ出力する
-#   daily -h, --help  このヘルプを表示
+#   daily               エディタで本日の日記を開く
+#   daily --offset N    N 日後 (負数なら N 日前) の日記を開く
+#   daily --no-edit     エディタを起動せず、日記のパスのみ出力する
+#   daily -h, --help    このヘルプを表示
 #
 # 仕様:
 #   - 保存先は Git リポジトリルート配下の .kokatsu/daily/YYYY/MM/YYYY-MM-DD.md
@@ -40,12 +41,13 @@ show_help() {
   fi
 
   cat <<EOF
-${green}daily${reset} - 本日の日記を開くツール
+${green}daily${reset} - 日記を開くツール
 
 ${yellow}使い方:${reset}
-  daily             エディタで本日の日記を開く
-  daily --no-edit   エディタを起動せず、日記のパスのみ出力する
-  daily -h, --help  このヘルプを表示
+  daily               エディタで本日の日記を開く
+  daily --offset N    N 日後 (負数なら N 日前) の日記を開く
+  daily --no-edit     エディタを起動せず、日記のパスのみ出力する
+  daily -h, --help    このヘルプを表示
 
 ${yellow}保存先:${reset}
   <repo>/.kokatsu/daily/YYYY/MM/YYYY-MM-DD.md
@@ -53,6 +55,7 @@ EOF
 }
 
 no_edit=false
+offset=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -61,16 +64,33 @@ while [[ $# -gt 0 ]]; do
     exit 0
     ;;
   --no-edit) no_edit=true ;;
+  --offset)
+    [[ $# -ge 2 ]] || die "--offset には日数を指定してください"
+    offset=$2
+    shift
+    ;;
+  --offset=*) offset=${1#--offset=} ;;
   *) die "不明なオプションです: $1 (daily -h でヘルプを表示)" ;;
   esac
   shift
 done
 
+[[ "$offset" =~ ^[+-]?[0-9]+$ ]] || die "--offset は整数で指定してください: $offset"
+
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || die "Gitリポジトリが見つかりません"
+
+# 日付の加減算は BSD date (macOS) と GNU date (Linux) で構文が違う。
+# BSD の -v は符号なしだと「設定」になるため、必ず符号を付ける
+if date -v+0d >/dev/null 2>&1; then
+  [[ "$offset" == -* ]] || offset="+${offset#+}"
+  date_cmd=(date -v "${offset}d")
+else
+  date_cmd=(date -d "${offset} day")
+fi
 
 # ディレクトリとファイル名を 1 回の date 呼び出しから組み立てる
 # (別々に呼ぶと日付境界をまたいだときに不整合が出る)
-read -r year month date_part < <(date +'%Y %m %Y-%m-%d')
+read -r year month date_part < <("${date_cmd[@]}" +'%Y %m %Y-%m-%d')
 
 dir="$repo_root/.kokatsu/daily/$year/$month"
 file="$dir/$date_part.md"

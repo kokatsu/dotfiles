@@ -1,6 +1,6 @@
 -- Neovim オプション設定
 
-local os_utils = require('utils.os')
+local is_wsl = vim.fn.has('wsl') == 1
 
 -- 行末の1文字先までカーソルを移動できる
 vim.o.virtualedit = 'onemore'
@@ -19,7 +19,7 @@ vim.opt.clipboard = ''
 -- win32yank.exeはWindowsプロセスの起動コスト(実測462ms)がyank/paste毎にかかり、
 -- xsel(実測6ms)との差がそのまま体感のもたつきになる。
 -- wl-copyはprimary selectionの扱いに問題があるため使わない。
-if os_utils.detect_os() == 'wsl' and vim.fn.executable('xsel') == 1 then
+if is_wsl and vim.fn.executable('xsel') == 1 then
   vim.g.clipboard = {
     name = 'xsel-wslg',
     copy = {
@@ -35,12 +35,10 @@ if os_utils.detect_os() == 'wsl' and vim.fn.executable('xsel') == 1 then
 end
 
 -- WSL環境でgxコマンドでWindowsブラウザを開く
-if os_utils.detect_os() == 'wsl' then
+if is_wsl then
   vim.g.netrw_nogx = 1
   vim.keymap.set('n', 'gx', function()
-    local url = vim.fn.expand('<cfile>')
-    -- gsub は置換回数も返すため括弧で 1 値に絞る (cmd.exe に余分な引数を渡さない)
-    vim.fn.jobstart({ 'cmd.exe', '/c', 'start', (url:gsub('&', '^&')) }, { detach = true })
+    require('utils.windows').open_url(vim.fn.expand('<cfile>'))
   end, { desc = 'Open URL in Windows browser' })
   vim.keymap.set('n', 'gX', function()
     vim.fn.jobstart({ 'wslview', vim.fn.expand('%:p') }, { detach = true })
@@ -58,8 +56,6 @@ vim.opt.expandtab = true
 vim.opt.cursorline = true
 -- ターミナルのカラーを有効にする
 vim.opt.termguicolors = true
--- 補完候補の表示
-vim.opt.wildoptions = 'pum'
 -- フローティングウィンドウの境界線の透明度
 vim.opt.pumblend = 30
 -- 背景色 (APPEARANCE 環境変数で dark/light を切替; シェルが OS 設定から検出)
@@ -78,10 +74,6 @@ vim.opt.smartcase = true
 -- スワップファイルを作成しない
 vim.opt.swapfile = false
 
--- ファイル変更を自動で読み込む
--- https://x.com/ryoppippi/status/1996135164938760291
-vim.opt.autoread = true
-
 -- 永続的なundo履歴
 vim.opt.undofile = true
 
@@ -98,7 +90,7 @@ vim.opt.updatetime = 300
 
 -- Treesitter非同期パースのタイムアウト（デフォルト2000ms）
 -- Markdownなどインジェクションが多いファイルでハイライトが途切れるのを防ぐ
--- 大きすぎるとUI全体がブロックされるため控えめに設定（復旧は<leader>tS）
+-- 大きすぎるとUI全体がブロックされるため控えめに設定
 vim.o.redrawtime = 3000
 
 -- プロジェクトローカルの .nvim.lua / .nvimrc / .exrc を読み込む

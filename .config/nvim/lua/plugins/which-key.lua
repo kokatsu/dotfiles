@@ -31,11 +31,6 @@ return {
       { 'sF', desc = 'Find left surrounding' },
       { 'sh', desc = 'Highlight surrounding' },
       { 'sn', desc = 'Update n_lines' },
-      -- mini.move descriptions
-      { '<M-h>', desc = 'Move line/selection left', mode = { 'n', 'x' } },
-      { '<M-j>', desc = 'Move line/selection down', mode = { 'n', 'x' } },
-      { '<M-k>', desc = 'Move line/selection up', mode = { 'n', 'x' } },
-      { '<M-l>', desc = 'Move line/selection right', mode = { 'n', 'x' } },
     },
   },
   keys = {

@@ -50,5 +50,3 @@ end
 vim.api.nvim_create_user_command('SwaggerPreview', start, {})
 vim.api.nvim_create_user_command('SwaggerPreviewStop', stop, {})
 vim.api.nvim_create_user_command('SwaggerPreviewToggle', toggle, {})
-
-return {}
