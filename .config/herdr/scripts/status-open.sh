@@ -35,6 +35,13 @@ get_status_dir() {
     return
   fi
 
+  # cmd.exe が使えないときは WSL ユーザー名と同名のプロファイルだけを候補にする
+  # (status-watch と同じ規則)
+  if [[ -d "/mnt/c/Users/$USER" ]]; then
+    echo "/mnt/c/Users/$USER/.cache/status-watch"
+    return
+  fi
+
   return 1
 }
 

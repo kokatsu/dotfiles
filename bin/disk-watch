@@ -15,24 +15,20 @@ get_status_dir() {
   fi
 
   local winuser
-  # systemd user service では WSL interop が無効な場合があるため、失敗時は
-  # /mnt/c/Users からシステム用以外のユーザーディレクトリを探す。
+  # systemd user unit 内では WSL interop が無効で cmd.exe が使えないことがある
   winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
   if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
     echo "/mnt/c/Users/$winuser/.cache/disk-watch"
     return
   fi
 
-  local dir base
-  for dir in /mnt/c/Users/*/; do
-    [[ -d "$dir" ]] || continue
-    base=$(basename "$dir")
-    case "$base" in
-    Public | Default | "Default User" | "All Users") continue ;;
-    esac
-    echo "${dir}.cache/disk-watch"
+  # cmd.exe が使えないときは、linux.zsh の USERPROFILE と同じ前提 (Windows ユーザー名 =
+  # WSL ユーザー名) で同名プロファイルだけを候補にする。/mnt/c/Users/* の先頭を拾う
+  # 推測はしない: このホストには非システムのプロファイルが複数あり、別ユーザーへ書き込む
+  if [[ -d "/mnt/c/Users/$USER" ]]; then
+    echo "/mnt/c/Users/$USER/.cache/disk-watch"
     return
-  done
+  fi
 
   return 1
 }

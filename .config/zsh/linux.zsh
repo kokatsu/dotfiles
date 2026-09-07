@@ -47,7 +47,8 @@ fi
 # https://github.com/wezterm/wezterm/issues/5503#issuecomment-2600490028
 function precmd_wsl() {
   if (( _IS_WSL )); then
-    printf "\033]7;file://%s%s\033\\" "${HOSTNAME}" "${PWD}"
+    # zsh は HOSTNAME を設定しない (HOST のみ) ため、上で求めた WEZTERM_HOSTNAME を使う
+    printf "\033]7;file://%s%s\033\\" "${WEZTERM_HOSTNAME}" "${PWD}"
   fi
 }
 

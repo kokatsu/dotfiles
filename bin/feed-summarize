@@ -50,10 +50,19 @@ get_status_dir() {
   fi
   local winuser
   winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
-  if [[ -z "$winuser" || ! -d "/mnt/c/Users/$winuser" ]]; then
-    return 1
+  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
+    echo "/mnt/c/Users/$winuser/.cache/feed-watch"
+    return
   fi
-  echo "/mnt/c/Users/$winuser/.cache/feed-watch"
+
+  # cmd.exe が使えないときは WSL ユーザー名と同名のプロファイルだけを候補にする
+  # (feed-watch と同じ規則。/mnt/c/Users/* の先頭を拾う推測はしない)
+  if [[ -d "/mnt/c/Users/$USER" ]]; then
+    echo "/mnt/c/Users/$USER/.cache/feed-watch"
+    return
+  fi
+
+  return 1
 }
 
 STATUS_DIR=$(get_status_dir) || {

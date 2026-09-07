@@ -1,7 +1,6 @@
 #!/bin/bash
-# 未読フィードをブラウザで開く (herdr版)
+# 未読フィードをブラウザで開く
 # Alt-r で fzf を起動し、選択したフィードの URL をブラウザで開く
-# WezTerm 版 Alt+r (keybinds.lua、コメントアウト済み) の herdr 移植。
 # データ生成 (feed-watch systemd timer) が WSL 限定のため実質 WSL 専用
 #
 # `[[ ... ]] && ... && exit 0` は && リストの非末尾コマンドの失敗として扱われる
@@ -10,7 +9,7 @@
 
 set -euo pipefail
 
-# feed-watch (bin/scripts/feed-watch) と同じ Windows 側出力先の解決
+# feed-watch (bin/feed-watch) と同じ Windows 側出力先の解決
 get_status_dir() {
   local winuser
   winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
@@ -19,18 +18,28 @@ get_status_dir() {
     return
   fi
 
-  # Fallback: /mnt/c/Users からシステム以外のディレクトリを探す
-  local d base
-  for d in /mnt/c/Users/*/; do
-    base=$(basename "$d")
-    case "$base" in
-    Public | Default | "Default User" | "All Users") continue ;;
-    esac
-    echo "${d}.cache/feed-watch"
+  # cmd.exe が使えないときは WSL ユーザー名と同名のプロファイルだけを候補にする
+  # (feed-watch と同じ規則。/mnt/c/Users/* の先頭を拾う推測はしない)
+  if [[ -d "/mnt/c/Users/$USER" ]]; then
+    echo "/mnt/c/Users/$USER/.cache/feed-watch"
     return
-  done
+  fi
 
   return 1
+}
+
+# bin/wsl-open は PowerShell の Constrained Language Mode を避けるため wslview を
+# 置き換えたもの (status-open.sh と同じ解決順)。
+open_url() {
+  if [[ $(uname -s) == Darwin ]]; then
+    /usr/bin/open "$1"
+  elif command -v wsl-open >/dev/null 2>&1; then
+    wsl-open "$1"
+  elif [[ -x "$HOME/.local/bin/scripts/wsl-open" ]]; then
+    "$HOME/.local/bin/scripts/wsl-open" "$1"
+  else
+    xdg-open "$1" >/dev/null 2>&1 || open "$1" >/dev/null 2>&1
+  fi
 }
 
 # get_status_dir の失敗 (Windows 側ユーザーを解決できない) で set -e により
@@ -56,8 +65,4 @@ selected=$(echo "$entries" |
 
 [[ -z "$selected" ]] && exit 0
 
-if command -v wslview >/dev/null 2>&1; then
-  wslview "$selected"
-else
-  open "$selected" 2>/dev/null || xdg-open "$selected"
-fi
+open_url "$selected"

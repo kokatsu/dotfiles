@@ -30,17 +30,22 @@ get_status_dir() {
   fi
 
   local winuser
-  # 対話シェルでも systemd user unit の中でも cmd.exe は解決に使える
-  # (systemd-run --user 経由で実測)
+  # systemd user unit 内では WSL interop が無効で cmd.exe が使えないことがある
+  # (systemd-run --user では解決できたが、feed-watch では timer 内での失敗実績がある)
   winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
   if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
     echo "/mnt/c/Users/$winuser/.cache/status-watch"
     return
   fi
 
-  # feed-watch / disk-watch が持つ /mnt/c/Users/* の推測 fallback は置かない。
-  # このホストには非システムの Windows プロファイルが複数あり、最初の 1 件を
-  # 選ぶと別ユーザーのディレクトリへ書き込む
+  # cmd.exe が使えないときは、linux.zsh の USERPROFILE と同じ前提 (Windows ユーザー名 =
+  # WSL ユーザー名) で同名プロファイルだけを候補にする。/mnt/c/Users/* の先頭を拾う
+  # 推測はしない: このホストには非システムのプロファイルが複数あり、別ユーザーへ書き込む
+  if [[ -d "/mnt/c/Users/$USER" ]]; then
+    echo "/mnt/c/Users/$USER/.cache/status-watch"
+    return
+  fi
+
   return 1
 }
 
