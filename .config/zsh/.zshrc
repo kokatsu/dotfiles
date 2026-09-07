@@ -8,18 +8,9 @@
 # Zim (https://github.com/zimfw/zimfw)
 # ------------------------------------------------------------------------------
 
+# zimfw.zsh 本体は Home Manager が nixpkgs 版を $ZIM_HOME に symlink する (programs/zsh.nix)
 ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim
 ZIM_CONFIG_FILE=${ZDOTDIR:-${HOME}}/.zimrc
-# Download zimfw plugin manager if missing.
-if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
-  if command -v curl >/dev/null 2>&1; then
-    curl -fsSL --create-dirs -o ${ZIM_HOME}/zimfw.zsh \
-      https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
-  else
-    mkdir -p ${ZIM_HOME} && wget -nv -O ${ZIM_HOME}/zimfw.zsh \
-      https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
-  fi
-fi
 
 # zeno の互換性パッチと Deno cache は activation / zimfw更新後だけ適用する。
 _prepare_zeno() {
@@ -151,8 +142,6 @@ export HISTSIZE=50000
 export SAVEHIST=50000
 # 先頭にスペースを付けたコマンドは履歴に残さない
 setopt hist_ignore_space
-# Ignore duplicate commands (hist_ignore_all_dups に包含されるため実質冗長)
-setopt hist_ignore_dups
 # Ignore all duplicate commands
 setopt hist_ignore_all_dups
 # Reduce duplicate commands
@@ -166,7 +155,7 @@ setopt hist_save_no_dups
 # history / fc コマンド自体は履歴に残さない
 setopt hist_no_store
 # 履歴ファイルの読み書きを fcntl でロックする
-# share_history + 多ペイン同時書き込み (herdr / tmux) での破損を防ぐ
+# share_history + herdr の多ペイン同時書き込みでの破損を防ぐ
 setopt hist_fcntl_lock
 # Disable beep
 setopt no_beep
@@ -209,8 +198,9 @@ export CLAUDE_CODE_TERMINAL=0
 export TERM_PROGRAM="${TERM_PROGRAM:-unknown}"
 export CURSOR_TERMINAL="${CURSOR_TERMINAL:-0}"
 
-# Cursor環境でのみ追加設定を適用
-if [[ "$TERM_PROGRAM" == "vscode" ]] || [[ -n "$CURSOR_TERMINAL" ]]; then
+# Cursor / VS Code 環境でのみ追加設定を適用
+# (CURSOR_TERMINAL は上で "0" に初期化するため、空判定ではなく値で比較する)
+if [[ "$TERM_PROGRAM" == "vscode" ]] || [[ "$CURSOR_TERMINAL" == 1 ]]; then
   # Shell integrationを無効化（競合回避）
   export VSCODE_SHELL_INTEGRATION=0
 fi

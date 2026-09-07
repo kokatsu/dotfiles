@@ -51,7 +51,11 @@ format_file() {
   *.lua)
     stylua "$file" 2>/dev/null || true
     ;;
-  *.js | *.ts | *.json | *.jsonc)
+  *.ts)
+    # このリポジトリの .ts は全て Deno 管理 (.biome.jsonc で除外) のため deno fmt を使う
+    deno fmt "$file" >/dev/null 2>&1 || true
+    ;;
+  *.js | *.json | *.jsonc)
     biome check --write "$file" >/dev/null 2>&1 || true
     ;;
   *.yaml | *.yml)

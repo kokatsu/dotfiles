@@ -11,15 +11,14 @@
 # WSL branch resolves the Claude Code main process pts and writes a plain
 # OSC 1337 SetUserVar=CLAUDE_LAST_MSG to it. WezTerm's user-var-changed
 # handler in .config/wezterm/format.lua shows the toast. The OSC
-# construction mirrors the non-tmux branch of _wezterm_set_user_var in
-# .config/zsh/functions.zsh — kept in sync by hand since that helper is a
-# zsh function unreachable from this sh subprocess.
+# construction mirrors _wezterm_set_user_var in .config/zsh/functions.zsh —
+# kept in sync by hand since that helper is a zsh function unreachable from
+# this sh subprocess.
 #
 # The pts write is deferred: the hook has no controlling terminal and its
 # $PPID is an intermediate shell whose fd/1 is a pipe (not re-openable).
-# terminalSequence JSON is not used: claude only wraps it in tmux DCS
-# passthrough when its internal wR1() returns "tmux", which depends on the
-# daemon/attacher caps and is unreliable here.
+# terminalSequence JSON is not used: claude does not write it to the pts
+# directly, so the sequence would never reach WezTerm.
 
 set -euo pipefail
 

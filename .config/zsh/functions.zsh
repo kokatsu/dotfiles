@@ -3,19 +3,12 @@
 # ------------------------------------------------------------------------------
 
 # WezTerm User Variable を設定（OSC 1337）
-# tmux内の場合はDCSパススルーでWezTermに転送
 # 注: 同じ OSC 1337 構築を .config/claude/hooks/notify.sh が複製（手動同期）
 function _wezterm_set_user_var() {
-  if [[ -n "$TMUX" ]]; then
-    printf "\033Ptmux;\033\033]1337;SetUserVar=%s=%s\007\033\\" "$1" "$(printf '%s' "$2" | base64)"
-  else
-    printf "\033]1337;SetUserVar=%s=%s\007" "$1" "$(printf '%s' "$2" | base64)"
-  fi
+  printf "\033]1337;SetUserVar=%s=%s\007" "$1" "$(printf '%s' "$2" | base64)"
 }
 
 # Claude Code を起動
-# マルチプレクサは herdr が常時ハブ (WezTerm gui-startup で自動起動) のため
-# tmux セッションの自動生成はせず常に直接実行する
 # IS_CLAUDE user varでWezTermのマウス動作を切り替え
 # (herdr 配下ではマウスは herdr が処理するため実質 no-op、生シェルでは従来通り)
 function claude() {

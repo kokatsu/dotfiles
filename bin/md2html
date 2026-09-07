@@ -48,12 +48,7 @@ input_dir="$(cd "$(dirname "$input")" && pwd)"
 input_base="$(basename "$input")"
 
 # 出力先を絶対パスに正規化（cd 後でも正しいパスに書き出す）
-output_dir_raw="$(dirname "$output")"
-if [[ -d "$output_dir_raw" ]]; then
-  output_dir="$(cd "$output_dir_raw" && pwd)"
-else
-  output_dir="$(cd "$(dirname "$output")" && pwd)"
-fi
+output_dir="$(cd "$(dirname "$output")" && pwd)"
 output_abs="$output_dir/$(basename "$output")"
 
 # CSS を解決: ローカルの assets/style.css を優先、無ければ同梱の既定 CSS（絶対パス）

@@ -71,7 +71,6 @@ function isSidechainFlag(value: unknown): boolean {
 
 type Group = {
   mid: string;
-  uuid: string | null;
   firstIdx: number;
   stopReason: string | null;
   usage: Rec;
@@ -80,7 +79,6 @@ type Group = {
 
 type State = {
   cursor_mid?: string;
-  cursor_uuid?: string;
   stale_after?: number;
 };
 
@@ -105,8 +103,6 @@ function loadState(sessionId: string): State {
     if (parsed === null) return state;
     const cursorMid = str(parsed.cursor_mid);
     if (cursorMid !== null) state.cursor_mid = cursorMid;
-    const cursorUuid = str(parsed.cursor_uuid);
-    if (cursorUuid !== null) state.cursor_uuid = cursorUuid;
     const staleAfter = parsed.stale_after;
     if (typeof staleAfter === "number" && Number.isFinite(staleAfter)) {
       state.stale_after = staleAfter;
@@ -191,7 +187,6 @@ function groupAssistants(objs: unknown[], sessionId: string): Group[] {
     if (entry === undefined) {
       entry = {
         mid,
-        uuid: str(o.uuid),
         firstIdx: idx,
         stopReason: null,
         usage: {},
@@ -395,10 +390,8 @@ async function failClosed(
       // Nothing terminal in the window to anchor to. stale_after still guards
       // freshness, so drop the unfindable cursor instead of stalling a turn.
       delete state.cursor_mid;
-      delete state.cursor_uuid;
     } else {
       state.cursor_mid = watermark.mid;
-      state.cursor_uuid = watermark.uuid ?? undefined;
     }
   }
   if (staleAfter !== undefined) state.stale_after = staleAfter;
@@ -426,10 +419,7 @@ async function publish(
     await failClosed(sessionId, state);
     return;
   }
-  const saved = saveState(sessionId, {
-    cursor_mid: entry.mid,
-    cursor_uuid: entry.uuid ?? undefined,
-  });
+  const saved = saveState(sessionId, { cursor_mid: entry.mid });
   if (!saved) {
     // Without a persisted cursor the next Stop could re-adopt this entry.
     await clearToken();
