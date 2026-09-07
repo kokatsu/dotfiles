@@ -49,10 +49,6 @@
 !git/
 !git/**
 
-# git-graph (https://github.com/mlange-42/git-graph)
-!git-graph/
-!git-graph/**
-
 #  gomi (https://github.com/babarot/gomi)
 !gomi/
 !gomi/**

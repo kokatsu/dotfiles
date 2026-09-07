@@ -2,7 +2,6 @@
   "exclude": [
     "\\.config/bat/themes/",
     "\\.config/btop/themes/",
-    "\\.config/octorus/themes/",
     "\\.config/yazi/flavors/",
     "\\.config/yazi/plugins/",
     "\\.config/zsh/wezterm-integration\\.sh"
