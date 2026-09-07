@@ -21,7 +21,6 @@ in {
       };
       # fff.nvim: Nix ビルド版 (Rust バックエンド同梱) を lazy.nvim の dir 参照用に配置
       ".local/share/nvim/nix-plugins/fff.nvim".source = pkgs.vimPlugins.fff-nvim;
-      ".config/delta".source = ../../.config/delta;
       ".config/fastfetch/config.jsonc".text = let
         rgb = c: "${toString c.rgb.r};${toString c.rgb.g};${toString c.rgb.b}";
         staticContent = builtins.readFile ../../.config/fastfetch/config.static.jsonc;

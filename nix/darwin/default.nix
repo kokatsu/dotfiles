@@ -1,8 +1,4 @@
-{
-  pkgs,
-  username,
-  ...
-}: {
+{username, ...}: {
   # Nix設定 (Determinate Nix使用のため無効化)
   nix.enable = false;
 
@@ -13,14 +9,6 @@
 
   # プライマリユーザー設定 (nix-darwin 最新版で必要)
   system.primaryUser = username;
-
-  # システム全体のパッケージ
-  environment.systemPackages = with pkgs; [
-    # 基本ツール
-    git
-    curl
-    wget
-  ];
 
   # Homebrew (Nixで管理できないGUIアプリ用)
   homebrew = {

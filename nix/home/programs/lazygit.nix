@@ -40,7 +40,12 @@
           }
           {
             name = "delta";
-            command = "delta --dark --paging=never";
+            # 明暗は catppuccin flavor から導出 (latte だけ light)
+            command = "delta ${
+              if config.catppuccin.flavor == "latte"
+              then "--light"
+              else "--dark"
+            } --paging=never";
           }
           # pager なしの素の git diff
           {

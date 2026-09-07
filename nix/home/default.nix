@@ -119,7 +119,7 @@ in {
           value = overridePort name;
         })
         whiskersPorts);
-    # 既存 symlink と競合するため後の Phase で有効化
+    # git の delta 連携は difftastic 移行で無効化中 (programs/git.nix 参照)
     delta.enable = false;
     # 手動管理 or カスタムテンプレートで管理
     nvim.enable = false;
@@ -153,7 +153,7 @@ in {
         EDITOR = "nvim";
         VISUAL = "nvim";
         GEM_HOME = "${config.home.homeDirectory}/.gem"; # gem インストール先 (バージョン非依存)
-        XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
+        # XDG_CONFIG_HOME は xdg.enable = true で Home Manager が設定する
         ZDOTDIR = "${config.xdg.configHome}/zsh";
         BAT_CONFIG_DIR = "${config.xdg.configHome}/bat";
         CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";

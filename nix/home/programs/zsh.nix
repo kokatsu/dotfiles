@@ -10,12 +10,6 @@
 
   home = {
     activation = {
-      # config.d / functions.d ディレクトリを作成（存在しない場合）
-      createZshExtraDirs = lib.hm.dag.entryAfter ["writeBoundary"] ''
-        $DRY_RUN_CMD mkdir -p "${config.xdg.configHome}/zsh/config.d"
-        $DRY_RUN_CMD mkdir -p "${config.xdg.configHome}/zsh/functions.d"
-      '';
-
       # config.d / functions.d のgit管理外ファイルを作業ツリーからコピーする。
       setupZshExtraFiles = lib.hm.dag.entryAfter ["linkGeneration"] ''
         for subdir in config.d functions.d; do
@@ -131,16 +125,12 @@
 
         # Home Manager session variables
         # 親シェルから継承された場合にスキップされるのを防ぐため、ガード変数をリセット
+        # (standalone Home Manager のみ使うため /etc/profiles/per-user は見ない)
         unset __HM_SESS_VARS_SOURCED
         if [ -e "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
           . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
-        elif [ -e "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh" ]; then
-          . "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
         fi
-
-        # XDG
-        export XDG_CONFIG_HOME="$HOME/.config"
-        export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+        # XDG_CONFIG_HOME / ZDOTDIR は hm-session-vars.sh と ~/.zshenv が設定する
       '';
 
       # ~/.zshenv - ZDOTDIRの設定と $ZDOTDIR/.zshenv の読み込み

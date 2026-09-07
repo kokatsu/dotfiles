@@ -1,13 +1,12 @@
 let
   lib = import ./lib.nix;
   inherit (lib) mkBinaryRelease;
+  # 実際に使う 3 環境のみ (x86_64-darwin は不使用)
   appleGnuPlatformMap = {
     "aarch64-darwin" = "aarch64-apple-darwin";
-    "x86_64-darwin" = "x86_64-apple-darwin";
     "aarch64-linux" = "aarch64-unknown-linux-gnu";
     "x86_64-linux" = "x86_64-unknown-linux-gnu";
   };
-  currentAppleGnuPlatformMap = removeAttrs appleGnuPlatformMap ["x86_64-darwin"];
 in {
   # mise - dev tools, env vars, task runner
   # Renovate: datasource=github-releases depName=jdx/mise
@@ -129,7 +128,7 @@ in {
     };
     url = platform: "https://github.com/openai/codex/releases/download/rust-v${version}/codex-package-${platform}.tar.gz";
     format = "tar";
-    binPath = "bin/codex";
+    # installPhase を丸ごと差し替えるため binPath は使わない
     extraAttrs = {
       sourceRoot = ".";
       installPhase = ''
@@ -186,7 +185,7 @@ in {
       "aarch64-linux" = "sha256-xoUOspVDg4A4b3EcqFHtmnRzEOPmdz08YLNceU6brzQ=";
       "x86_64-linux" = "sha256-R9QLFm85h0QqnGJP+j1QU3t7e5SiOmfNZjhX8y2mPtA=";
     };
-    platformMap = currentAppleGnuPlatformMap;
+    platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/atusy/kakehashi/releases/download/v${version}/kakehashi-v${version}-${platform}.tar.gz";
     format = "tar";
     extraAttrs = {sourceRoot = ".";};
@@ -244,7 +243,7 @@ in {
       "aarch64-linux" = "sha256-Rk1Qk1PE1IcEixBaLCbzpUPzkfP5NAFAhiVYr7ZRGnc=";
       "x86_64-linux" = "sha256-Y+LsJQcs0zd/6J8UxDgO7Zy8df6+FBLSu5R3+9jcnDM=";
     };
-    platformMap = currentAppleGnuPlatformMap;
+    platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/ushironoko/octorus/releases/download/v${version}/octorus-${version}-${platform}.tar.gz";
     format = "tar";
     binName = "or";
@@ -265,7 +264,7 @@ in {
       "aarch64-linux" = "sha256-5Wwsave4c+Ybw6ZSkt4B83SOfkIUxxMtjZVtEdffHF4=";
       "x86_64-linux" = "sha256-pbOiSykZBZFVS8R9Fb/711X/WV9s5l17F4+dv3lHSzc=";
     };
-    platformMap = currentAppleGnuPlatformMap;
+    platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/brevity1swos/rgx/releases/download/v${version}/rgx-cli-${platform}.tar.xz";
     format = "tar";
     binName = "rgx";

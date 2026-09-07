@@ -2,28 +2,10 @@
   pkgs,
   lib,
   stablePkgs,
-  dotfilesDir ? "",
   isCI ? false,
   ...
 }: let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
-
-  # ユーザースクリプトのラッパー (bin/ 内の Deno/Bun スクリプトを短い名前で実行)
-  feed-watch = pkgs.writeShellScriptBin "feed-watch" ''
-    exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/feed-watch" "$@"
-  '';
-
-  feed-summarize = pkgs.writeShellScriptBin "feed-summarize" ''
-    exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/feed-summarize" "$@"
-  '';
-
-  memo = pkgs.writeShellScriptBin "memo" ''
-    exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/memo" "$@"
-  '';
-
-  daily = pkgs.writeShellScriptBin "daily" ''
-    exec "''${DOTFILES_DIR:-${dotfilesDir}}/bin/daily" "$@"
-  '';
 
   cargo-with-openssl = pkgs.writeShellScriptBin "cargo-with-openssl" ''
     export PATH="${lib.makeBinPath [pkgs.pkg-config]}:$PATH"
@@ -34,7 +16,9 @@
   '';
 in {
   # 以下のパッケージは programs.* モジュールで管理:
-  # bat, btop, delta, eza, fzf, gh, git, lazygit, zoxide
+  # bat, broot, btop, delta, eza, fzf, gh, git, hunk, lazygit, nh, readline, starship, zoxide
+  # bin/ のユーザースクリプト (feed-watch, memo, daily 等) は files.nix が
+  # ~/.local/bin/scripts に symlink し、sessionPath で PATH に入る
   home.packages = with pkgs;
     [
       # https://github.com/vercel-labs/agent-browser
@@ -107,8 +91,7 @@ in {
       curl # データ転送ツール
       # https://github.com/eradman/entr
       entr # ファイル変更監視 → コマンド実行
-      # https://github.com/inotify-tools/inotify-tools (Linux)
-      # https://man.openbsd.org/kqueue (macOS)
+      # https://github.com/funtoo/keychain
       keychain # SSH/GPG エージェント管理
       # https://github.com/duckdb/duckdb
       duckdb # OLAP DB
@@ -353,12 +336,6 @@ in {
       #--- CLI ツール (overlay) ---#
       cc-statusline # 高速 Claude Code statusline (Zig)
 
-      #--- ユーザースクリプト ラッパー ---#
-      feed-watch # GitHub フィード監視 (bin/feed-watch)
-      feed-summarize # GitHub コミット要約 (bin/feed-summarize)
-      memo # タイムスタンプ付き単独メモツール (bin/memo)
-      daily # 日記メモツール (bin/daily)
-
       #--- Language Servers (overlay) ---#
       # https://github.com/antonk52/cssmodules-language-server
       cssmodules-language-server # CSS Modules LSP
@@ -451,6 +428,7 @@ in {
       docker-buildx # Docker BuildKit
       # https://github.com/docker/compose
       docker-compose # macOSではOrbStackを使用
+      # https://www.google.com/chrome/
       google-chrome # Chromium ベースブラウザ
       # https://github.com/mermaid-js/mermaid-cli
       # Darwin では chromium (Linux専用) が無く PUPPETEER_EXECUTABLE_PATH が設定されないため未対応
@@ -465,6 +443,6 @@ in {
       # Ghostty は Homebrew cask で管理 (nix/darwin/default.nix)
       # WSLではWindows側にインストールするためLinuxでは除外
       # https://github.com/wez/wezterm
-      pkgs.wezterm
+      wezterm
     ];
 }

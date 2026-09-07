@@ -36,7 +36,8 @@
 
     # Herdr 公式リリースバイナリ。nixpkgs 収録版より安定版への追従が速く、
     # Rust/Zig ツールチェーンを使ったソースビルドも不要。
-    # 更新: nix flake update herdr-nix
+    # 実際に使う版は nix/overlays/herdr.nix が pinnedVersion で上書きしているため、
+    # 更新はそちらの version と hash を書き換える (この input の更新だけでは変わらない)。
     # https://github.com/herdrdev/herdr-nix
     herdr-nix = {
       url = "github:herdrdev/herdr-nix";
@@ -129,11 +130,6 @@
     # システムごとにpkgsを取得するヘルパー
     inherit (nixpkgs) lib;
     forAllSystems = lib.genAttrs allSystems;
-    pkgsFor = system:
-      import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
     stablePkgsFor = system: nixpkgs-stable.legacyPackages.${system};
 
     # カスタムオーバーレイ
@@ -160,7 +156,6 @@
       customOverlays.cssmodules-language-server
       customOverlays.dcd
       customOverlays.deck-slides
-      customOverlays.direnv-no-check
       customOverlays.git-graph-fork
       customOverlays.herdr
       customOverlays.hermes-agent
@@ -190,12 +185,7 @@
       home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
           inherit system;
-          config = {
-            allowUnfree = true;
-            # vue-language-server (3.2.x) がビルド時にのみ使う pnpm。
-            # nixpkgs が patched pnpm_10 に bump したら削除する。
-            permittedInsecurePackages = ["pnpm-10.34.0"];
-          };
+          config.allowUnfree = true;
           overlays = commonOverlays ++ lib.optionals (builtins.elem system darwinSystems) darwinOnlyOverlays;
         };
         modules = [./nix/home catppuccin.homeModules.catppuccin];
@@ -351,7 +341,7 @@
     });
 
     # フォーマッター
-    formatter = forAllSystems (system: (pkgsFor system).alejandra);
+    formatter = forAllSystems (system: devPkgs.${system}.alejandra);
 
     # CIのhash検証用データ。標準のlib出力配下に置き、flake checkの
     # unknown-output警告を発生させない。

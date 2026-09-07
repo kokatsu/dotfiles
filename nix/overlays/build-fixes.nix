@@ -66,15 +66,6 @@ in {
     });
   };
 
-  # direnv 2.37.1 zsh checkPhase hangs on macOS Nix sandbox
-  # (SIGCHLD race in waitforpid during $(direnv export zsh))
-  direnv-no-check = _final: prev: {
-    direnv =
-      if prev.stdenv.hostPlatform.isDarwin
-      then guardedOverride "direnv" "2.37.1" prev.direnv (_old: {doCheck = false;})
-      else prev.direnv;
-  };
-
   # Use forked git-graph with:
   # - --current option
   # - ANSI color wrapping fix
