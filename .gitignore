@@ -20,3 +20,7 @@ logs
 
 # Nix npm package build artifacts (nix/npm-locks/*/node_modules)
 node_modules/
+
+# Local-only overrides (lefthook / gitleaks)
+/.lefthook-local.jsonc
+*.local.toml
