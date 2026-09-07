@@ -16,5 +16,4 @@
 !linux.zsh
 
 # WezTermの設定ファイル
-!wezterm-completion.zsh
 !wezterm-integration.sh

@@ -33,10 +33,6 @@
 !fastfetch/
 !fastfetch/**
 
-# gh (https://cli.github.com/)
-!gh/
-!gh/**
-
 # Ghostty (https://github.com/ghostty-org/ghostty)
 !ghostty/
 !ghostty/**
@@ -49,17 +45,9 @@
 !git/
 !git/**
 
-#  gomi (https://github.com/babarot/gomi)
-!gomi/
-!gomi/**
-
 # lazydocker (https://github.com/jesseduffield/lazydocker)
 !lazydocker/
 !lazydocker/**
-
-# lazygit (https://github.com/jesseduffield/lazygit)
-!lazygit/
-!lazygit/**
 
 # markdown-oxide (https://github.com/Feel-ix-343/markdown-oxide)
 !moxide/

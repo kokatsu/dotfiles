@@ -125,14 +125,12 @@ case $OSTYPE in
 esac
 [[ -n $os && -f $ZDOTDIR/"$os".zsh ]] && . $ZDOTDIR/"$os".zsh
 
-# 分離された設定ファイルを読み込む (ディレクトリがなければ作成)
-[ -d "$ZDOTDIR/config.d" ] || mkdir -p "$ZDOTDIR/config.d"
+# 分離された設定ファイルを読み込む (ディレクトリは zsh.nix の activation が作る)
 for conf in "$ZDOTDIR/config.d/"*.zsh(N); do
   source "${conf}"
 done
 
 # カスタム関数を読み込む
-[ -d "$ZDOTDIR/functions.d" ] || mkdir -p "$ZDOTDIR/functions.d"
 for func in "$ZDOTDIR/functions.d/"*.zsh(N); do
   source "${func}"
 done

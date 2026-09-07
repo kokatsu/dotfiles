@@ -28,7 +28,6 @@ if (( _IS_WSL )); then
   # https://github.com/anthropics/claude-code/issues/14352
   export CLAUDE_CODE_SKIP_WINDOWS_PROFILE=1
   # PowerShell Constrained Language Mode で Claude Code の /copy が初回失敗するため除外
-  # https://github.com/anthropics/claude-code/issues/XXXXX
   path=(${path:#*/WindowsPowerShell/*})
   export USERPROFILE="/mnt/c/Users/$(whoami)"
   export WEZTERM_HOSTNAME="$(< /proc/sys/kernel/hostname)"

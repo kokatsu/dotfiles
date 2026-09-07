@@ -166,6 +166,8 @@ in {
         builtins.replaceStrings ["__CATPPUCCIN_THEME__"] [names.spaced] staticContent;
       ".config/octorus/themes/${names.spaced}.tmTheme".source =
         ../../.config/bat/themes + "/${names.spaced}.tmTheme";
+      # `or init` が $XDG_CONFIG_HOME/octorus/prompts/{reviewer,rereview,reviewee}.md を読む
+      ".config/octorus/prompts".source = ../../.config/octorus/prompts;
       ".config/bulletty/feeds.opml".source = ../../.config/bulletty/feeds.opml;
       ".config/bulletty/feeds-forum.opml".source = ../../.config/bulletty/feeds-forum.opml;
       # feeds*.opml だけを bin/feed-watch が読む。bulletty へ import したいが

@@ -16,7 +16,7 @@
       italic-text = "always";
       paging = "never";
       map-syntax = [
-        # TODO(human): 拡張子を持たない pkl 関連ファイルの map-syntax を追加
+        "PklProject:Pkl"
         "justfile:Makefile"
         "*.json5:JavaScript"
         "deno.lock:JSON"
