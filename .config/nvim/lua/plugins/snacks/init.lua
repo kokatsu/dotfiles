@@ -6,7 +6,6 @@ local bufdelete = require('plugins.snacks.bufdelete')
 local dashboard = require('plugins.snacks.dashboard')
 local explorer = require('plugins.snacks.explorer')
 local gitbrowse = require('plugins.snacks.gitbrowse')
-local image = require('plugins.snacks.image')
 local indent = require('plugins.snacks.indent')
 local lazygit = require('plugins.snacks.lazygit')
 local notifier = require('plugins.snacks.notifier')
@@ -28,8 +27,9 @@ return {
     bufdelete = bufdelete.opts,
     ---@class snacks.gitbrowse.Config
     gitbrowse = gitbrowse.opts,
+    -- opts に載っているモジュールだけが有効化されるため、既定設定のまま使う場合も空テーブルを置く
     ---@class snacks.image.Config
-    image = image.opts,
+    image = {},
     ---@class snacks.notifier.Config
     notifier = notifier.opts,
     ---@class snacks.quickfile.Config
@@ -38,8 +38,6 @@ return {
     scroll = scroll.opts,
     ---@class snacks.words.Config
     words = words.opts,
-    ---@class snacks.picker.matcher.Config
-    matcher = picker.matcher_opts,
     ---@class snacks.explorer.Config
     explorer = explorer.opts,
     ---@class snacks.lazygit.Config

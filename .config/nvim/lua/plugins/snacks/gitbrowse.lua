@@ -6,7 +6,8 @@ local M = {}
 M.opts = {
   -- WSL: Open URLs in Windows browser
   open = os_utils.detect_os() == 'wsl' and function(url)
-    vim.fn.jobstart({ 'cmd.exe', '/c', 'start', url:gsub('&', '^&') }, { detach = true })
+    -- gsub は置換回数も返すため括弧で 1 値に絞る (cmd.exe に余分な引数を渡さない)
+    vim.fn.jobstart({ 'cmd.exe', '/c', 'start', (url:gsub('&', '^&')) }, { detach = true })
   end or nil,
 }
 

@@ -35,6 +35,17 @@ M.opts = {
       },
     },
   },
+  matcher = {
+    fuzzy = true,
+    smart_case = true,
+    ignorecase = true,
+    sort_empty = false,
+    filename_bonus = true,
+    file_pos = true,
+    cwd_bonus = true,
+    frecency = true,
+    history_bonus = true,
+  },
   -- https://www.reddit.com/r/neovim/comments/1kbqsdc/snacks_explorer_preview_to_the_right/
   sources = {
     explorer = explorer.config,
@@ -47,19 +58,6 @@ M.opts = {
       },
     },
   },
-}
-
--- Matcher opts
-M.matcher_opts = {
-  fuzzy = true,
-  smart_case = true,
-  ignorecase = true,
-  sort_empty = false,
-  filename_bonus = true,
-  file_pos = true,
-  cwd_bonus = true,
-  frecency = true,
-  history_bonus = true,
 }
 
 -- Smart find action

@@ -13,12 +13,12 @@ local p = ok and palettes.get_palette()
     yellow = '#f9e2af',
   }
 
+-- editPreset / nerdFontsVersion は nix/home/programs/lazygit.nix 側の設定ファイルに
+-- あり、snacks は --use-config-file でそちらも読み込むためここでは重複させない
 M.opts = {
   configure = true,
   config = {
-    os = { editPreset = 'nvim-remote' },
     gui = {
-      nerdFontsVersion = '3',
       theme = {
         activeBorderColor = { p.blue, 'bold' },
         inactiveBorderColor = { p.subtext0 },
@@ -31,18 +31,6 @@ M.opts = {
         searchingActiveBorderColor = { p.yellow },
       },
     },
-  },
-  theme = {
-    [241] = { fg = 'Special' },
-    activeBorderColor = { fg = 'MatchParen', bold = true },
-    cherryPickedCommitBgColor = { fg = 'Identifier' },
-    cherryPickedCommitFgColor = { fg = 'Function' },
-    defaultFgColor = { fg = 'Normal' },
-    inactiveBorderColor = { fg = 'FloatBorder' },
-    optionsTextColor = { fg = 'Function' },
-    searchingActiveBorderColor = { fg = 'MatchParen', bold = true },
-    selectedLineBgColor = { bg = 'Visual' }, -- set to `default` to have no background colour
-    unstagedChangesColor = { fg = 'DiagnosticError' },
   },
   win = {
     position = 'float',

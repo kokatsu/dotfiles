@@ -39,7 +39,8 @@ if os_utils.detect_os() == 'wsl' then
   vim.g.netrw_nogx = 1
   vim.keymap.set('n', 'gx', function()
     local url = vim.fn.expand('<cfile>')
-    vim.fn.jobstart({ 'cmd.exe', '/c', 'start', url:gsub('&', '^&') }, { detach = true })
+    -- gsub は置換回数も返すため括弧で 1 値に絞る (cmd.exe に余分な引数を渡さない)
+    vim.fn.jobstart({ 'cmd.exe', '/c', 'start', (url:gsub('&', '^&')) }, { detach = true })
   end, { desc = 'Open URL in Windows browser' })
   vim.keymap.set('n', 'gX', function()
     vim.fn.jobstart({ 'wslview', vim.fn.expand('%:p') }, { detach = true })

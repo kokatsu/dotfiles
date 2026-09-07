@@ -29,13 +29,8 @@ vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufNewFile' }, {
   callback = function(args)
     if check_deno_shebang(args.buf) then
       vim.b[args.buf].is_deno = true
+      -- denols 自体は vim.lsp.enable('denols') と after/lsp/denols.lua の is_deno 分岐が起動する
       vim.bo[args.buf].filetype = 'typescript'
-      -- Start denols manually for this buffer
-      vim.lsp.start({
-        name = 'denols',
-        cmd = { 'deno', 'lsp' },
-        root_dir = vim.fn.fnamemodify(args.file, ':h'),
-      })
     end
   end,
 })

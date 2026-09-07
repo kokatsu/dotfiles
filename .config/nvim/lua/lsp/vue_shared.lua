@@ -1,8 +1,9 @@
 -- Vue language server の共有設定。
 -- vue_ls (Vue 3, 最新 3.2.9) と vue_ls_legacy (Vue 2, 3.0.x) で
--- on_init ハンドラ・init_options・settings を共有する。
+-- init_options・settings を共有する。
 -- 3.0/3.2 とも v3 系プロトコル (named pipe 廃止、tsserver/request を
--- クライアント側で typescript-tools へ転送) なので on_init は共通で使える。
+-- クライアント側で typescript-tools へ転送)。vue_ls は nvim-lspconfig 本体の
+-- on_init を使い、定義の無い vue_ls_legacy だけがここの on_init を使う。
 
 local M = {}
 
@@ -38,8 +39,11 @@ function M.make_root_dir(predicate)
   end
 end
 
--- on_init: vue_ls からの tsserver/request を typescript-tools/vtsls/ts_ls へ転送
+-- on_init: vue_ls_legacy からの tsserver/request を typescript-tools/vtsls/ts_ls へ転送。
+-- nvim-lspconfig 本体の vue_ls 定義と同じ処理 (リトライ上限付き)。
 function M.on_init(client)
+  local retries = 0
+
   ---@param _ lsp.ResponseError
   ---@param result any
   ---@param context lsp.HandlerContext
@@ -49,10 +53,19 @@ function M.on_init(client)
       or vim.lsp.get_clients({ bufnr = context.bufnr, name = 'typescript-tools' })[1]
 
     if not ts_client then
-      -- typescript-tools の起動を待つ（最大5秒）
-      vim.defer_fn(function()
-        typescriptHandler(_, result, context)
-      end, 200)
+      -- typescript-tools の attach を待つ。上限を超えたら諦めて通知する
+      -- (上限なしだと ts client が無いバッファで timer が回り続ける)
+      if retries <= 10 then
+        retries = retries + 1
+        vim.defer_fn(function()
+          typescriptHandler(_, result, context)
+        end, 100)
+      else
+        vim.notify(
+          'vue_ls_legacy: ts_ls / vtsls / typescript-tools のいずれも attach していません',
+          vim.log.levels.ERROR
+        )
+      end
       return
     end
 

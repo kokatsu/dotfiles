@@ -51,34 +51,6 @@ return {
 
     vim.lsp.inlay_hint.enable()
 
-    -- :LspInfo command (removed in nvim-lspconfig 2024)
-    vim.api.nvim_create_user_command('LspInfo', function()
-      -- https://github.com/neovim/nvim-lspconfig/commit/eefb0030c7c5f795ed2b1b0cd498d2670d7513f8
-      if vim.fn.has('nvim-0.12') == 1 then
-        vim.cmd('checkhealth vim.lsp')
-        return
-      end
-      local clients = vim.lsp.get_clients({ bufnr = 0 })
-      if #clients == 0 then
-        print('No LSP clients attached to this buffer')
-        return
-      end
-      for _, client in ipairs(clients) do
-        print(string.format('[%d] %s (root: %s)', client.id, client.name, client.root_dir or 'none'))
-      end
-    end, { desc = 'Show LSP clients attached to current buffer' })
-
-    vim.api.nvim_create_user_command('LspRestart', function()
-      local clients = vim.lsp.get_clients({ bufnr = 0 })
-      for _, client in ipairs(clients) do
-        print('Restarting ' .. client.name .. '...')
-        client:stop()
-      end
-      vim.defer_fn(function()
-        vim.cmd('edit')
-      end, 100)
-    end, { desc = 'Restart LSP clients attached to current buffer' })
-
     local servers = {
       'bashls',
       'biome',
