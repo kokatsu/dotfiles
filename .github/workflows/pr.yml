@@ -109,14 +109,6 @@ jobs:
             PACKAGES="${PACKAGES:+$PACKAGES, }codex $VERSION"
           fi
 
-          if echo "$DIFF" | grep -q 'win32yank'; then
-            echo "has_win32yank=true" >> $GITHUB_OUTPUT
-            VERSION=$(grep -A 20 "# Renovate:.*depName=.*win32yank" "nix/overlays/standalone.nix" | grep -oP 'version = "\K[^"]+' | head -1)
-            validate_version "win32yank" "$VERSION"
-            echo "version_win32yank=$VERSION" >> $GITHUB_OUTPUT
-            PACKAGES="${PACKAGES:+$PACKAGES, }win32yank $VERSION"
-          fi
-
           if echo "$DIFF" | grep -q 'x-api-playground'; then
             echo "has_x_api_playground=true" >> $GITHUB_OUTPUT
             VERSION=$(grep -A 20 "# Renovate:.*depName=.*playground" "nix/overlays/source-builds.nix" | grep -oP 'version = "\K[^"]+' | head -1)
@@ -324,17 +316,6 @@ jobs:
             HASH=$(nix hash convert --hash-algo sha256 --to sri "$HEX")
             sed -i "/codex = mkBinaryRelease/,/^  };/{s|\"${NIX_SYSTEM}\" = \"sha256-[^\"]*\"|\"${NIX_SYSTEM}\" = \"${HASH}\"|}" "$OVERLAY"
           done
-
-      - name: Update win32yank hashes
-        if: steps.detect.outputs.has_win32yank == 'true'
-        env:
-          VERSION: ${{ steps.detect.outputs.version_win32yank }}
-        run: |
-          OVERLAY="nix/overlays/standalone.nix"
-          URL="https://github.com/equalsraf/win32yank/releases/download/v${VERSION}/win32yank-x64.zip"
-          # fetchzip uses unpacked hash (--unpack)
-          HASH=$(nix-prefetch-url --unpack --type sha256 "$URL" 2>/dev/null | xargs nix hash convert --hash-algo sha256 --to sri)
-          sed -i "/win32yank = _final: prev:/,/^  };/{s|hash = \"sha256-[^\"]*\";|hash = \"${HASH}\";|}" "$OVERLAY"
 
       - name: Update x-api-playground hashes
         if: steps.detect.outputs.has_x_api_playground == 'true'

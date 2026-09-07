@@ -6,12 +6,6 @@
   ...
 }: {
   home.activation = {
-    # win32yank.exe を ~/bin/ にコピー (WSL クリップボード連携)
-    copyWin32yank = lib.mkIf isWSL (lib.hm.dag.entryAfter ["writeBoundary"] ''
-      $DRY_RUN_CMD mkdir -p "$HOME/bin"
-      $DRY_RUN_CMD cp -f "${pkgs.win32yank}/bin/win32yank.exe" "$HOME/bin/win32yank.exe"
-      $DRY_RUN_CMD chmod +x "$HOME/bin/win32yank.exe"
-    '');
     # WSL2 で不要な PulseAudio サービスをマスク
     maskPulseAudio = lib.mkIf isWSL (lib.hm.dag.entryAfter ["writeBoundary"] ''
       $DRY_RUN_CMD ${pkgs.systemd}/bin/systemctl --user mask --now pulseaudio.service pulseaudio.socket 2>/dev/null || true

@@ -139,7 +139,6 @@ BESPOKE=(
   'x-api-playground|source-builds.nix|x-api-playground = _final: prev: {|vendor|20|# Renovate:.*depName=.*playground'
   'vite-plus|npm-packages.nix|vite-plus = _final: prev: let|npm|20|# Renovate:.*depName=vite-plus'
   'textlint-rule-preset-ai-writing|npm-packages.nix|textlint-rule-preset-ai-writing = _final: prev: let|npm|20|# Renovate:.*depName=@textlint-ja/textlint-rule-preset-ai-writing'
-  'win32yank|standalone.nix|win32yank = _final: prev:|single|20|# Renovate:.*depName=.*win32yank'
 )
 
 bespoke_has() {
@@ -263,11 +262,11 @@ for entry in "${BESPOKE[@]}"; do
 done
 
 # ============================================================================
-# 3. 追加忘れ検出: source-builds / npm / standalone の _final: prev: セクションが
+# 3. 追加忘れ検出: source-builds / npm の _final: prev: セクションが
 #    全て BESPOKE に登録されているか照合する
 # ============================================================================
 echo "=== bespoke coverage (no missing _final: prev: sections) ==="
-for file in source-builds.nix npm-packages.nix standalone.nix; do
+for file in source-builds.nix npm-packages.nix; do
   filepath="$OVERLAY_DIR/$file"
   [ -f "$filepath" ] || continue
   while IFS= read -r sec; do

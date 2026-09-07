@@ -193,13 +193,7 @@
             # nixpkgs が patched pnpm_10 に bump したら削除する。
             permittedInsecurePackages = ["pnpm-10.34.0"];
           };
-          overlays =
-            commonOverlays
-            ++ (
-              if isDarwin
-              then darwinOnlyOverlays
-              else linuxOnlyOverlays
-            );
+          overlays = commonOverlays ++ lib.optionals isDarwin darwinOnlyOverlays;
         };
         modules = [./nix/home catppuccin.homeModules.catppuccin];
         extraSpecialArgs = {
@@ -239,11 +233,6 @@
     darwinOnlyOverlays = [
       customOverlays.cava-darwin-fix
       customOverlays.jp2a-darwin-fix
-    ];
-
-    # Linux専用オーバーレイ (WSL等)
-    linuxOnlyOverlays = [
-      customOverlays.win32yank
     ];
 
     # CI の hash 検証用マニフェスト。
@@ -288,13 +277,7 @@
             # nixpkgs が patched pnpm_10 に bump したら削除する。
             permittedInsecurePackages = ["pnpm-10.34.0"];
           };
-          overlays =
-            commonOverlays
-            ++ (
-              if isCurrentDarwin
-              then darwinOnlyOverlays
-              else linuxOnlyOverlays
-            );
+          overlays = commonOverlays ++ lib.optionals isCurrentDarwin darwinOnlyOverlays;
         };
         modules = [./nix/home catppuccin.homeModules.catppuccin];
         extraSpecialArgs = {
