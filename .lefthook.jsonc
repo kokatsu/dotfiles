@@ -6,6 +6,16 @@
         "glob": ["*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"],
         "run": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files} && git update-index --again"
       },
+      // .biome.jsonc が除外する Deno 管理の TypeScript (justfile の deno_dirs / deno_files) を検査する。
+      // deno check は import map のため各 dir で実行が必要なので `just deno-check` / CI に任せる。
+      "deno-format": {
+        "glob": ["*.ts"],
+        "run": "deno fmt {staged_files} && git update-index --again"
+      },
+      "deno-lint": {
+        "glob": ["*.ts"],
+        "run": "deno lint {staged_files}"
+      },
       "nix-lint": {
         "glob": ["*.nix"],
         "exclude": ["node_modules/**/*"],
@@ -75,10 +85,33 @@
         "glob": ["*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"],
         "run": "biome check --no-errors-on-unmatched --files-ignore-unknown=true {push_files}"
       },
+      "deno-format": {
+        "glob": ["*.ts"],
+        "run": "deno fmt --check {push_files}"
+      },
+      "deno-lint": {
+        "glob": ["*.ts"],
+        "run": "deno lint {push_files}"
+      },
       "nix-lint": {
         "glob": ["*.nix"],
         "exclude": ["node_modules/**/*"],
         "run": "echo {push_files} | xargs -n1 statix check && deadnix --fail {push_files}"
+      },
+      // pre-commit が書き換える整形は --no-verify で素通りするため push 時に check する
+      "nix-format": {
+        "glob": ["*.nix"],
+        "exclude": ["node_modules/**/*"],
+        "run": "alejandra -c {push_files}"
+      },
+      "lua-format": {
+        "glob": ["*.lua"],
+        "exclude": [".config/yazi/plugins/**/*"],
+        "run": "stylua --check {push_files}"
+      },
+      "toml-format": {
+        "glob": ["*.toml"],
+        "run": "taplo format --check {push_files}"
       },
       "lua-lint-nvim": {
         "glob": [".config/nvim/**/*.lua"],
