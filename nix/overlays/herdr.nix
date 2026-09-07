@@ -5,19 +5,19 @@
     # 上流 herdr-nix が v0.8.0 で止まっているため、追いつくまでこちらでリリース
     # バイナリを上書きする。上流が追随したら pinnedVersion/assets ごと削除する。
     # 更新: バージョンを上げたら nix-prefetch-url で hash を取り直す。
-    pinnedVersion = "0.8.2";
+    pinnedVersion = "0.9.0";
     assets = {
       x86_64-linux = {
         name = "herdr-linux-x86_64";
-        hash = "sha256-l2FQoU1JDJSyQ+ouGn6y37Z/EuNrGC25CTb2co5q7PQ=";
+        hash = "sha256-T6GgEVjdgEPaktMbJweAsNzBBgMDjZthysTYGrY/tx8=";
       };
       aarch64-linux = {
         name = "herdr-linux-aarch64";
-        hash = "sha256-9VYQZY4cLg0qrvcwtLKriF9/i6AChas3K/sU8uPVtA0=";
+        hash = "sha256-nI2yD7fnQnsTjVNnET8WIf/TGfL2XW8AniWUApEV8NI=";
       };
       aarch64-darwin = {
         name = "herdr-macos-aarch64";
-        hash = "sha256-pdT01QTYswnJH4EQUFWTAPq6MSWEJfU8UIUvyW9q5XQ=";
+        hash = "sha256-MrU98JhyYoBZx4mmnwKmuOKeFN3yZxFCHzRj9wwa7xc=";
       };
     };
     asset = assets.${prev.stdenv.hostPlatform.system};
