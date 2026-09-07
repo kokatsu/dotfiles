@@ -89,6 +89,10 @@ in {
       _7zz # 7-Zip アーカイバ
       # https://github.com/rclone/rclone
       rclone # クラウドストレージ同期
+      # https://www.postgresql.org
+      # psql 用。nixpkgs にクライアント単体の attr がないため postgresql を入れる。
+      # $PSQLRC は default.nix が .config/pg/.psqlrc を指す
+      postgresql # PostgreSQL クライアント (psql) + サーバーバイナリ
       # https://github.com/github/copilot-cli
       github-copilot-cli # GitHub Copilot CLI
       # https://github.com/crocidb/bulletty
@@ -304,6 +308,8 @@ in {
       nil # Nix LSP
       # https://github.com/nix-community/nixd
       nixd # Nix LSP (補完強化)
+      # https://github.com/supabase-community/postgres-language-server
+      postgres-language-server # PostgreSQL LSP (nvim-lspconfig の postgres_lsp / kakehashi ブリッジ)
       # https://github.com/sveltejs/language-tools
       svelte-language-server # Svelte LSP
       # https://github.com/tailwindlabs/tailwindcss-intellisense
