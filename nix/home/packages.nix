@@ -426,6 +426,7 @@ in {
     ]
     ++ lib.optionals (!isDarwin) [
       # Linux/WSL専用
+      util-linux # feed-watch / feed-summarize の flock
       # https://github.com/containers/bubblewrap
       bubblewrap # サンドボックスツール (Codex CLI 用)
       # https://github.com/inotify-tools/inotify-tools

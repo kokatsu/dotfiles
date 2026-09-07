@@ -55,10 +55,16 @@
               done
             ) &
             WATCHDOG_PID=$!
-            wait $ZIMFW_PID || true
+            ZIMFW_RESULT=0
+            wait $ZIMFW_PID || ZIMFW_RESULT=$?
             kill $WATCHDOG_PID 2>/dev/null || true
             wait $WATCHDOG_PID 2>/dev/null || true
-            install -m 644 "$ZIM_CONFIG_FILE" "$LAST_ZIMRC"
+            # 失敗時は前回成功時の記録を残し、次回の activation で再試行する。
+            if [ "$ZIMFW_RESULT" -eq 0 ]; then
+              install -m 644 "$ZIM_CONFIG_FILE" "$LAST_ZIMRC"
+            else
+              echo "warning: zimfw install failed (exit $ZIMFW_RESULT); retry on next activation" >&2
+            fi
           fi
         fi
 

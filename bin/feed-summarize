@@ -10,21 +10,22 @@ set -euo pipefail
 #   feed-summarize            - 全カテゴリを要約
 #   feed-summarize <category> - 指定カテゴリのみ要約
 
-OPML_DIR="$HOME/.config/bulletty"
+OPML_DIR="${FEED_WATCH_OPML_DIR:-$HOME/.config/bulletty}"
 
 # XML/JSONL の変換を担う Deno ヘルパー。
 # PATH 上の ~/.local/bin/scripts は dotfiles/bin への symlink なので readlink で
 # 実体へ辿る (bin/md2html と同じ手順)。
 script_path="$(readlink -f "$0" 2>/dev/null || echo "$0")"
 HELPER="$(cd "$(dirname "$script_path")/.." && pwd)/scripts/feed-summarize-helper.ts"
+# shellcheck source=scripts/feed-status.sh
+source "$(dirname "$script_path")/../scripts/feed-status.sh"
 
 # agent-browser のデーモンを閉じずに終了すると、systemd (Type=oneshot) が
 # cgroup 残留プロセスの stop-sigterm タイムアウトで unit を failed にするため、
 # 終了時に必ずブラウザを閉じる
 cleanup() {
-  agent-browser close >/dev/null 2>&1 || true
+  feed_run agent-browser close >/dev/null 2>&1 || true
 }
-trap cleanup EXIT
 
 # 要約対象のフィード名 (status.json の key と一致させる)
 SUMMARIZE_FEEDS=(
@@ -43,6 +44,10 @@ is_summarize_target() {
 }
 
 get_status_dir() {
+  if [[ -n "${FEED_WATCH_STATUS_DIR:-}" ]]; then
+    printf '%s\n' "$FEED_WATCH_STATUS_DIR"
+    return
+  fi
   local winuser
   winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
   if [[ -z "$winuser" || ! -d "/mnt/c/Users/$winuser" ]]; then
@@ -168,7 +173,7 @@ fetch_commit_context() {
   local repo="$1" sha="$2"
 
   local commit_json
-  commit_json=$(gh api "repos/$repo/commits/$sha" --jq '{
+  commit_json=$(feed_run gh api "repos/$repo/commits/$sha" --jq '{
     sha: .sha[0:7],
     message: .commit.message,
     author: .commit.author.name,
@@ -178,7 +183,7 @@ fetch_commit_context() {
   }' 2>/dev/null) || return 1
 
   local pr_json
-  pr_json=$(gh api "repos/$repo/commits/$sha/pulls" --jq '[.[:1][] | {
+  pr_json=$(feed_run gh api "repos/$repo/commits/$sha/pulls" --jq '[.[:1][] | {
     number: .number,
     title: .title,
     body: (.body // "" | if length > 2000 then .[0:2000] + "\n… (truncated)" else . end),
@@ -193,14 +198,14 @@ fetch_commit_context() {
 parse_feed_entries() {
   local url="$1"
   local content
-  content=$(curl -sfL "$url") || return 1
+  content=$(feed_run curl -sfL "$url") || return 1
 
   # yq は XML パーサーとしてだけ使い、entry/item の抽出はヘルパー側に置く。
   # ElementTree と違い &nbsp; のような未定義実体を許すため、以前はフィードごと
   # 取りこぼしていたものも読める。整形式でない XML では yq が非ゼロで終了し、
   # 呼び出し元の "Failed to parse feed" 経路に入る。
-  printf '%s' "$content" | yq -p=xml -o=json '.' |
-    deno run --no-prompt "$HELPER" normalize-feed
+  printf '%s' "$content" | feed_run yq -p=xml -o=json '.' |
+    feed_run deno run --no-prompt "$HELPER" normalize-feed
 }
 
 # --- agent-browser で記事本文を取得 ---
@@ -209,12 +214,12 @@ parse_feed_entries() {
 # 描画するサイトだけ、従来どおり Chrome を起動する経路に落とす。
 fetch_article_text() {
   local url="$1" text
-  if text=$(agent-browser --max-output 20000 read "$url" 2>/dev/null) && [[ -n "$text" ]]; then
+  if text=$(feed_run agent-browser --max-output 20000 read "$url" 2>/dev/null) && [[ -n "$text" ]]; then
     printf '%s' "$text"
     return 0
   fi
-  agent-browser open "$url" >/dev/null 2>&1 || return 1
-  agent-browser --max-output 20000 get text body 2>/dev/null || return 1
+  feed_run agent-browser open "$url" >/dev/null 2>&1 || return 1
+  feed_run agent-browser --max-output 20000 get text body 2>/dev/null || return 1
 }
 
 # --- GitHub フィードを要約 ---
@@ -228,7 +233,7 @@ summarize_github_feed() {
   }
 
   local commits
-  commits=$(gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
+  commits=$(feed_run gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
     echo "Failed to fetch commits for $repo" >&2
     return
   }
@@ -257,7 +262,7 @@ summarize_github_feed() {
       continue
     }
 
-    summary=$(echo "$context" | claude -p "$GITHUB_PROMPT" 2>/dev/null) || {
+    summary=$(echo "$context" | feed_run claude -p "$GITHUB_PROMPT" 2>/dev/null) || {
       echo "Failed to summarize commit $sha for $repo" >&2
       continue
     }
@@ -276,9 +281,7 @@ summarize_github_feed() {
       printf '%s\n' "$summary"
     } >"$out_file"
 
-    status=$(echo "$status" | jq --arg name "$name" --arg id "$sha" \
-      '.feeds[$name].last_summarized_id = $id')
-    echo "$status" | jq . >"$STATUS_FILE"
+    feed_status_update feed_status_mark_summarized "$name" "$sha"
   done
 }
 
@@ -307,7 +310,7 @@ summarize_article_feed() {
   # ID は argv で渡す。旧実装は Python ソースへ直接展開していたため、
   # フィード由来の ID にコードを混ぜられる余地があった。
   new_entries=$(echo "$entries_jsonl" |
-    deno run --no-prompt "$HELPER" pending-entries "$last_summarized_id")
+    feed_run deno run --no-prompt "$HELPER" pending-entries "$last_summarized_id")
 
   if [[ -z "$new_entries" ]]; then
     return
@@ -338,7 +341,7 @@ summarize_article_feed() {
       --arg title "$title" --arg link "$link" --arg date "$pub" --arg body "$article_text" \
       '{title: $title, link: $link, date: $date, body: $body}')
 
-    summary=$(echo "$input" | claude -p "$ARTICLE_PROMPT" 2>/dev/null) || {
+    summary=$(echo "$input" | feed_run claude -p "$ARTICLE_PROMPT" 2>/dev/null) || {
       echo "Failed to summarize article: $link" >&2
       continue
     }
@@ -357,9 +360,7 @@ summarize_article_feed() {
       printf '%s\n' "$summary"
     } >"$out_file"
 
-    status=$(echo "$status" | jq --arg name "$name" --arg id "$id" \
-      '.feeds[$name].last_summarized_id = $id')
-    echo "$status" | jq . >"$STATUS_FILE"
+    feed_status_update feed_status_mark_summarized "$name" "$id"
   done <<<"$new_entries"
 }
 
@@ -368,7 +369,7 @@ summarize_feed() {
   local name="$1"
   local feed_status type category url last_seen_id last_summarized_id
 
-  feed_status=$(echo "$status" | jq -r --arg name "$name" '.feeds[$name]')
+  feed_status=$(feed_status_read | jq -r --arg name "$name" '.feeds[$name]')
   type=$(echo "$feed_status" | jq -r '.type // ""')
   category=$(echo "$feed_status" | jq -r '.category // ""')
   url=$(echo "$feed_status" | jq -r '.url // ""')
@@ -384,9 +385,7 @@ summarize_feed() {
 
   # 初回: 現在位置を記録して終了 (過去分は要約しない)
   if [[ -z "$last_summarized_id" ]]; then
-    status=$(echo "$status" | jq --arg name "$name" --arg id "$last_seen_id" \
-      '.feeds[$name].last_summarized_id = $id')
-    echo "$status" | jq . >"$STATUS_FILE"
+    feed_status_update feed_status_mark_summarized "$name" "$last_seen_id"
     return
   fi
 
@@ -412,6 +411,10 @@ summarize_feed() {
 }
 
 # --- メイン ---
+# 要約同士の進捗の巻き戻しを防ぐ。check/read 用の短い更新ロックとは分ける。
+exec 8>"$STATUS_FILE.summarize.lock"
+feed_lock 8 "$STATUS_FILE.summarize.lock"
+trap cleanup EXIT
 mkdir -p "$SUMMARIES_DIR"
 
 target_category="${1:-}"

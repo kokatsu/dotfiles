@@ -10,10 +10,17 @@ set -euo pipefail
 #   feed-watch read --all     - 全フィードを既読にする
 #   feed-watch read <name>    - 部分一致したフィードを既読にする
 
-OPML_DIR="$HOME/.config/bulletty"
+OPML_DIR="${FEED_WATCH_OPML_DIR:-$HOME/.config/bulletty}"
+script_path="$(readlink -f "$0")"
+# shellcheck source=scripts/feed-status.sh
+source "$(dirname "$script_path")/../scripts/feed-status.sh"
 
 # --- Windows 側の出力先を決定 ---
 get_status_dir() {
+  if [[ -n "${FEED_WATCH_STATUS_DIR:-}" ]]; then
+    printf '%s\n' "$FEED_WATCH_STATUS_DIR"
+    return
+  fi
   local winuser
   # cmd.exe は systemd サービス内では WSL interop が無効で使えない
   winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
@@ -41,13 +48,6 @@ STATUS_DIR=$(get_status_dir) || {
   exit 0
 }
 STATUS_FILE="$STATUS_DIR/status.json"
-
-ensure_status_file() {
-  mkdir -p "$STATUS_DIR"
-  if [[ ! -f "$STATUS_FILE" ]]; then
-    echo '{"feeds":{}}' >"$STATUS_FILE"
-  fi
-}
 
 # --- 共通: 新規エントリを数えて status を更新 ---
 # $1: status JSON, $2: フィード名, $3: IDs (改行区切り), $4: type (github|feed), $5: url, $6: category
@@ -92,7 +92,7 @@ update_feed_status() {
       if [[ "$id" == "$prev_id" ]]; then
         break
       fi
-      ((new_count++))
+      ((new_count += 1))
     done <<<"$ids"
 
     local total_unread=$((prev_unread + new_count))
@@ -112,7 +112,7 @@ fetch_feed_ids() {
   local content
   # --max-time は status-watch と揃えた 10 秒。timer は 5 分間隔なので、応答の
   # 無いフィードが 1 つあるだけで次の起動と重なるのを防ぐ
-  content=$(curl -sfL --max-time 10 "$url") || return 1
+  content=$(feed_run curl -sfL --max-time 10 "$url") || return 1
 
   # Atom: <id> タグ (先頭のフィード自体の id はスキップ)
   local atom_ids
@@ -171,8 +171,11 @@ parse_opml() {
 }
 
 # --- check サブコマンド ---
-cmd_check() {
-  ensure_status_file
+cmd_check() (
+  # check 同士は通信も含め直列化し、古い取得結果による巻き戻しを防ぐ。
+  mkdir -p "$STATUS_DIR"
+  exec 8>"$STATUS_FILE.check.lock"
+  feed_lock 8 "$STATUS_FILE.check.lock"
 
   if ! compgen -G "$OPML_DIR/feeds*.opml" >/dev/null; then
     echo "No OPML files matching $OPML_DIR/feeds*.opml" >&2
@@ -194,48 +197,64 @@ cmd_check() {
   local configured_names
   configured_names=$(cut -d'|' -f2 <<<"$entries" | jq -R . | jq -s .)
 
-  local status
-  status=$(cat "$STATUS_FILE")
+  local updates='[]'
 
   while IFS='|' read -r category name xml_url html_url; do
-    local ids
+    local ids type
 
     # GitHub フィード: gh api でコミットSHA を取得
     if [[ "$xml_url" =~ ^https://github\.com/([^/]+/[^/]+)/commits\.atom$ ]]; then
       local repo="${BASH_REMATCH[1]}"
-      ids=$(gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
+      ids=$(feed_run gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
         echo "Failed to fetch commits for $repo" >&2
         continue
       }
-      status=$(update_feed_status "$status" "$name" "$ids" "github" "$html_url" "$category")
+      type=github
     else
       ids=$(fetch_feed_ids "$xml_url" 2>/dev/null) || {
         echo "Failed to fetch feed: $name" >&2
         continue
       }
-      status=$(update_feed_status "$status" "$name" "$ids" "feed" "$html_url" "$category")
+      type=feed
     fi
+    updates=$(printf '%s\n' "$updates" | jq \
+      --arg name "$name" --arg ids "$ids" --arg type "$type" \
+      --arg url "$html_url" --arg category "$category" \
+      '. + [{name: $name, ids: $ids, type: $type, url: $url, category: $category}]')
   done <<<"$entries"
+
+  feed_status_update apply_check_results "$updates" "$configured_names"
+)
+
+apply_check_results() {
+  local status="$1" updates="$2" configured_names="$3" row name ids type url category
+  while IFS= read -r row; do
+    name=$(jq -r '.name' <<<"$row")
+    ids=$(jq -r '.ids' <<<"$row")
+    type=$(jq -r '.type' <<<"$row")
+    url=$(jq -r '.url' <<<"$row")
+    category=$(jq -r '.category' <<<"$row")
+    status=$(update_feed_status "$status" "$name" "$ids" "$type" "$url" "$category")
+  done < <(jq -c '.[]' <<<"$updates")
 
   # OPML から消えたフィードのエントリを落とす。残しておくと、未読を抱えたまま
   # 設定から外れたフィードがステータスバーに出続ける
   status=$(echo "$status" | jq --argjson names "$configured_names" \
     '.feeds |= with_entries(select(.key as $k | ($names | index($k)) != null))')
 
-  echo "$status" | jq --argjson ts "$(date +%s)" '.last_updated = $ts' >"$STATUS_FILE"
+  echo "$status" | jq --argjson ts "$(date +%s)" '.last_updated = $ts'
 }
 
 # --- read サブコマンド ---
 cmd_read() {
-  ensure_status_file
-
   local target="${1:-}"
   local status
-  status=$(cat "$STATUS_FILE")
+  status=$(feed_status_read)
 
+  local names
   if [[ "$target" == "--all" ]]; then
     # 全フィード既読
-    status=$(echo "$status" | jq '.feeds |= with_entries(.value.unread_count = 0)')
+    names=null
   elif [[ -z "$target" ]]; then
     # fzf で対話的に選択
     if ! command -v fzf >/dev/null 2>&1; then
@@ -264,11 +283,7 @@ cmd_read() {
 
     [[ -z "$selected" ]] && exit 0
 
-    local _count name _category
-    while IFS=$'\t' read -r _count name _category; do
-      status=$(echo "$status" | jq --arg name "$name" \
-        '.feeds[$name].unread_count = 0')
-    done <<<"$selected"
+    names=$(printf '%s\n' "$selected" | cut -f2 | jq -R . | jq -s .)
   else
     # 部分一致で検索
     local matched
@@ -280,11 +295,10 @@ cmd_read() {
       exit 1
     fi
 
-    status=$(echo "$status" | jq --arg name "$matched" \
-      '.feeds[$name].unread_count = 0')
+    names=$(jq -n --arg name "$matched" '[$name]')
   fi
 
-  echo "$status" | jq . >"$STATUS_FILE"
+  feed_status_update feed_status_mark_read "$names"
 }
 
 # --- メイン ---

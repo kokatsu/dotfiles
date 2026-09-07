@@ -40,7 +40,7 @@
       "shellcheck": {
         "glob": ["*.sh"],
         "exclude": [".config/zsh/wezterm-integration.sh"],
-        "run": "shellcheck {staged_files}"
+        "run": "shellcheck -x {staged_files}"
       },
       "shfmt": {
         "glob": ["*.sh"],
@@ -99,7 +99,7 @@
       "shellcheck": {
         "glob": ["*.sh"],
         "exclude": [".config/zsh/wezterm-integration.sh"],
-        "run": "shellcheck {push_files}"
+        "run": "shellcheck -x {push_files}"
       },
       "shfmt": {
         "glob": ["*.sh"],

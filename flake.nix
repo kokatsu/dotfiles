@@ -337,40 +337,44 @@
       # `nix develop --command just check-static` でこのシェルを使うため、
       # ここが手元と CI の lint ツールチェーンの single source of truth になる。
       default = pkgs.mkShell {
-        packages = with pkgs; [
-          neovim # Plugin smoke tests
-          nil # Nix LSP
-          nixd # Alternative Nix LSP
-          just # Task runner
-          git # just の _sh-files がファイル列挙に使う
+        packages = with pkgs;
+          [
+            neovim # Plugin smoke tests
+            nil # Nix LSP
+            nixd # Alternative Nix LSP
+            just # Task runner
+            git # just の _sh-files がファイル列挙に使う
 
-          # Nix
-          alejandra # Nix formatter
-          deadnix # Nix dead code finder
-          statix # Nix linter
+            # Nix
+            alejandra # Nix formatter
+            deadnix # Nix dead code finder
+            statix # Nix linter
 
-          # Lua
-          stylua # Lua formatter
-          selene # Lua linter
+            # Lua
+            stylua # Lua formatter
+            selene # Lua linter
 
-          # Shell
-          shellcheck # シェルスクリプト linter
-          shfmt # シェルスクリプト formatter
+            # Shell
+            bash # Shell regression tests
+            jq # Feed state regression tests
+            shellcheck # シェルスクリプト linter
+            shfmt # シェルスクリプト formatter
 
-          # Web / TypeScript
-          biome # formatter + linter
-          deno # fmt / lint / check
+            # Web / TypeScript
+            biome # formatter + linter
+            deno # fmt / lint / check
 
-          # Markup / config
-          markdownlint-cli # Markdown linter
-          taplo # TOML formatter + linter
-          yamlfmt # YAML formatter
+            # Markup / config
+            markdownlint-cli # Markdown linter
+            taplo # TOML formatter + linter
+            yamlfmt # YAML formatter
 
-          # Cross-cutting
-          editorconfig-checker # EditorConfig 準拠チェッカー
-          gitleaks # Secret detection and configuration smoke test
-          typos # タイポ検出
-        ];
+            # Cross-cutting
+            editorconfig-checker # EditorConfig 準拠チェッカー
+            gitleaks # Secret detection and configuration smoke test
+            typos # タイポ検出
+          ]
+          ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [pkgs.util-linux]; # feed state tests (flock)
       };
     });
 

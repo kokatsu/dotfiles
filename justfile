@@ -12,7 +12,7 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos banned-commands-test herdr-peer-guard-test herdr-peer-test
+check-static: fmt-check lint typos banned-commands-test herdr-peer-guard-test herdr-peer-test reliability-test
 
 # Run all formatters
 fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt
@@ -35,7 +35,7 @@ lua-fmt-check:
 lua-lint:
     @for dir in {{ lua_dirs }}; do \
       echo "selene: $dir"; \
-      (cd "$dir" && selene .); \
+      (cd "$dir" && selene .) || exit $?; \
     done
 
 # Format Nix files
@@ -74,11 +74,11 @@ biome-lint:
 _deno-each cmd:
     @for dir in {{ deno_dirs }}; do \
       echo "deno {{ cmd }}: $dir"; \
-      deno {{ cmd }} "$dir"; \
+      deno {{ cmd }} "$dir" || exit $?; \
     done
     @for file in {{ deno_files }}; do \
       echo "deno {{ cmd }}: $file"; \
-      deno {{ cmd }} "$file"; \
+      deno {{ cmd }} "$file" || exit $?; \
     done
 
 # Format Deno TypeScript files
@@ -97,11 +97,11 @@ deno-lint:
 deno-check:
     @for dir in {{ deno_dirs }}; do \
       echo "deno check: $dir"; \
-      (cd "$dir" && find . -name '*.ts' -exec deno check {} +); \
+      (cd "$dir" && find . -name '*.ts' -exec deno check {} +) || exit $?; \
     done
     @for file in {{ deno_files }}; do \
       echo "deno check: $file"; \
-      deno check "$file"; \
+      deno check "$file" || exit $?; \
     done
 
 # List git-tracked shell scripts (shfmt -f detects them by extension or shebang)
@@ -114,7 +114,7 @@ _sh-files:
 
 # Lint shell scripts
 shellcheck:
-    @just _sh-files | xargs shellcheck
+    @just _sh-files | xargs shellcheck -x
 
 # Format shell scripts
 shfmt:
@@ -192,6 +192,12 @@ herdr-peer-guard-test:
 # Verify peer resolution and session bootstrap behavior
 herdr-peer-test:
     bash scripts/test-herdr-peer.sh
+
+# Verify check failures, concurrent feed updates, and activation retries
+reliability-test:
+    bash scripts/test-check-failures.sh
+    bash scripts/test-feed-status.sh
+    bash scripts/test-zimfw-activation.sh
 
 # Verify Renovate regex patterns match overlay files
 renovate-patterns-test:
