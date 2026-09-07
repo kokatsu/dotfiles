@@ -12,7 +12,7 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos banned-commands-test herdr-peer-guard-test herdr-peer-test reliability-test
+check-static: fmt-check lint typos banned-commands-test herdr-peer-guard-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test nvim-test
 
 # Run all formatters
 fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt

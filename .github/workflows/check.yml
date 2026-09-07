@@ -47,19 +47,23 @@ jobs:
         run: nix develop --command just check-static
 
   hash-patterns:
+    # NOTE: 中身は lint job の `just check-static` にも含まれる。main の ruleset が
+    # `Check / Hash update patterns` を required status check として参照しているため
+    # job 名を残している。ruleset から外したらこの job ごと削除できる。
     name: Hash update patterns
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
-      - name: Verify sed patterns match overlay file
-        run: bash scripts/test-hash-patterns.sh
-      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2.0.5
-      - name: Verify Renovate regex patterns match overlay files
-        run: deno run --allow-read scripts/test-renovate-patterns.ts
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+      - uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
+        with:
+          name: kokatsu
+      - name: Verify hash-update and Renovate patterns match overlay files
+        run: nix develop --command just hash-patterns-test renovate-patterns-test
 
   npm-audit:
     name: npm audit
@@ -98,8 +102,6 @@ jobs:
           authToken: ${{ github.ref == 'refs/heads/main' && secrets.CACHIX_AUTH_TOKEN || '' }}
       - name: Check flake
         run: nix flake check --fallback
-      - name: Test Neovim custom plugins
-        run: nix develop --command nvim --headless --clean -l scripts/test-nvim-config.lua
 
   build-darwin:
     name: Build (macOS)
