@@ -369,43 +369,6 @@ local function get_process_icon(pane)
   return default_icon
 end
 
--- https://qiita.com/showchan33/items/c91bb7f6f2b89e9ed57d
--- 現在のディレクトリ名を取得する
--- フォルダ名 (cwd) タイトルは herdr のサイドバーが担うため無効化。
--- herdr をやめる場合はコメント解除
---[=[
-local function get_cwd_name(pane)
-  local cwd_uri = pane and pane:get_current_working_dir()
-  if not cwd_uri then
-    return nil
-  end
-
-  ---@diagnostic disable-next-line: undefined-field
-  local cwd_uri_string = wezterm.to_string(cwd_uri)
-  if not cwd_uri_string then
-    return nil
-  end
-
-  local cwd = cwd_uri_string:gsub('^file://', '')
-
-  if not cwd then
-    return nil
-  end
-
-  -- Remove trailing slash if present
-  cwd = cwd:gsub('/$', '')
-
-  local cwd_name = cwd:match('^.*/(.*)$')
-
-  -- If regex didn't match, try alternative approach
-  if not cwd_name then
-    cwd_name = cwd:match('([^/]+)$')
-  end
-
-  return cwd_name
-end
---]=]
-
 local function is_claude(pane)
   return is_process(pane, 'claude', true)
 end
@@ -424,76 +387,9 @@ local function get_tab_id(window, pane)
   end
 end
 
--- フォルダ名 (cwd) タイトルは herdr のサイドバーが担うため無効化。
--- herdr をやめる場合はコメント解除
---[=[
--- 各タブのディレクトリ名を記憶しておくテーブル
-local title_cache = {}
---]=]
-
 --- イベントハンドラを登録する
 M.apply = function()
   wezterm.on('update-status', function(window, _pane)
-    -- フォルダ名 (cwd) タイトルのキャッシュは herdr のサイドバーが担うため無効化。
-    -- herdr をやめる場合はコメント解除し、引数名を _pane → pane に戻す
-    --[=[
-    local title = get_cwd_name(pane)
-    local pane_id = pane:pane_id()
-
-    -- 現在存在するペインIDを収集
-    local active_pane_ids = {}
-    for _, tab in ipairs(window:mux_window():tabs()) do
-      for _, p in ipairs(tab:panes()) do
-        active_pane_ids[p:pane_id()] = true
-      end
-    end
-
-    -- 存在しないペインのキャッシュをクリーンアップ
-    for cached_id in pairs(title_cache) do
-      if not active_pane_ids[cached_id] then
-        title_cache[cached_id] = nil
-      end
-    end
-
-    title_cache[pane_id] = title
-    --]=]
-
-    -- ウィンドウ枠 (window_frame ボーダー) の描画は herdr がペイン枠を持つため無効化。
-    -- herdr をやめる場合はコメント解除
-    --[=[
-    local border_color = default_color
-    local is_zoomed = false
-    for _, p in ipairs(window:active_tab():panes_with_info()) do
-      if p.is_active and p.is_zoomed then
-        is_zoomed = true
-        break
-      end
-    end
-
-    if is_zoomed then
-      border_color = zoomed_color
-    end
-
-    -- set_config_overrides は呼ぶたびに config 全体を再評価する高コスト操作のため、
-    -- 枠色が実際に変わった時（ズーム状態の変化 / 背景切替で window_frame が消えた時）だけ呼ぶ。
-    -- update-status は周期的に発火するので、毎ティック呼ぶと入力遅延の一因になる。
-    local overrides = window:get_config_overrides() or {}
-    local current_frame = overrides.window_frame
-    if not current_frame or current_frame.border_left_color ~= border_color then
-      overrides.window_frame = {
-        border_left_width = '0.5cell',
-        border_right_width = '0.5cell',
-        border_bottom_height = '0.25cell',
-        border_top_height = '0.25cell',
-        border_left_color = border_color,
-        border_right_color = border_color,
-        border_bottom_color = border_color,
-        border_top_color = border_color,
-      }
-      window:set_config_overrides(overrides)
-    end
-    --]=]
-
     window:set_left_status(wezterm.format({}))
 
     -- ダブルプレス確認メッセージの表示/クリア
@@ -541,14 +437,6 @@ M.apply = function()
     local pane = tab.active_pane
 
     local title = tab.active_pane.title
-    -- フォルダ名 (cwd) タイトルは herdr のサイドバーが担うため無効化 (ペインタイトルに委譲)。
-    -- herdr をやめる場合はコメント解除
-    --[=[
-    local pane_id = pane.pane_id
-    if title_cache[pane_id] then
-      title = title_cache[pane_id]
-    end
-    --]=]
 
     -- タブ幅 (wezterm.lua の tab_max_width = 32) に収まるよう省略記号込み
     -- 26 セルへ丸める。装飾は ' ' + アイコン + ' ' + 末尾 ' ' の 4 セル分
