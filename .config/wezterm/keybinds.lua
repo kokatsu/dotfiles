@@ -97,6 +97,30 @@ local common_keys = {
   -- `Shift + Enter` で 改行を送信
   -- https://zenn.dev/glaucus03/articles/070589323cb450
   { key = 'Enter', mods = 'SHIFT', action = act.SendString('\n') },
+  -- `Alt + k` で Slack の未読バッジをクリアする。
+  -- 常駐リスナー (windows/slack-watch) がこのマーカーを見つけて通知センターから
+  -- Slack のトーストを消すので、Windows の通知センター側も同時に空になる
+  {
+    key = 'k',
+    mods = 'ALT',
+    action = wezterm.action_callback(function(_window, _pane)
+      local userprofile = os.getenv('USERPROFILE')
+      if not userprofile then
+        return
+      end
+
+      local dir = userprofile .. '\\.cache\\slack-watch\\'
+      local tmp = dir .. 'clear.request.tmp'
+      local file = io.open(tmp, 'w')
+      if not file then
+        return
+      end
+
+      file:close()
+      -- 常駐はファイル監視で即座に反応する。書き込み途中を消されないよう rename で置く
+      os.rename(tmp, dir .. 'clear.request')
+    end),
+  },
   -- `Ctrl + q` で WezTerm を終了（2度押しで確認）
   -- herdr セッションはサーバ側に残るため、次回起動時にそのまま復帰する
   {

@@ -1,0 +1,224 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# slack-watch: Windows の通知センターに残る Slack のトーストを数え、WezTerm の
+# ステータスバーに未読バッジを出すための、Windows 側リスナーの管理スクリプト
+#
+# Usage:
+#   slack-watch install  - Windows 側へ publish し、ログオン時に起動する設定を入れる
+#   slack-watch start    - リスナーを起動する
+#   slack-watch stop     - リスナーを止める
+#   slack-watch status   - 現在の status.json を表示する
+#   slack-watch clear    - 未読バッジと通知センターの Slack トーストを消す
+#   slack-watch titles   - Slack トーストのタイトルだけを出す (メンション判別の確認用)
+#
+# 実行ファイルを配置せずに済ませるため、起動は常に dotnet ホスト経由で行う。
+# 詳細は windows/slack-watch/README.md を参照
+
+DOTNET=${SLACK_WATCH_DOTNET:-/mnt/c/Program Files/dotnet/dotnet.exe}
+
+# Windows 側のプロセスには WSLENV に載せた変数しか渡らない。載せないと、
+# 常駐は既定値で動くのにこのスクリプトだけが指定値でタイムアウトを計算する
+export WSLENV="${WSLENV:+$WSLENV:}SLACK_WATCH_APP_ID:SLACK_WATCH_INTERVAL"
+RUN_KEY='HKCU\Software\Microsoft\Windows\CurrentVersion\Run'
+RUN_VALUE_NAME=slack-watch
+
+# 常駐の巡回間隔。停止・起動の確認時間はここから決める。
+# 不正値の扱いを C# 側 (int.TryParse して正なら採用、でなければ 30) と揃える
+INTERVAL=${SLACK_WATCH_INTERVAL:-30}
+if [[ $INTERVAL =~ ^[0-9]+$ ]] && ((10#$INTERVAL > 0)); then
+  INTERVAL=$((10#$INTERVAL))
+else
+  INTERVAL=30
+fi
+CONFIRM_TIMEOUT=$((INTERVAL * 3 + 15))
+# status.json がこれ以上古ければ、常駐はいても更新できていない
+STALE_AFTER=$((INTERVAL * 3 + 5))
+
+script_path="$(readlink -f "$0")"
+repo_dir="$(dirname "$script_path")/.."
+source_dir="$repo_dir/windows/slack-watch"
+
+# --- Windows 側のユーザープロファイルを決定 ---
+# ユーザー名から C:\Users\<name> を組み立てず、Windows が持つ実際のプロファイルを使う。
+# C# 側 (SpecialFolder.UserProfile) と WezTerm 側 (%USERPROFILE%) と同じ基準になる
+get_win_profile() {
+  local profile
+  profile=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERPROFILE%" 2>/dev/null | tr -d '\r') || true
+  if [[ -n "$profile" && "$profile" != '%USERPROFILE%' ]]; then
+    printf '%s\n' "$profile"
+    return
+  fi
+
+  echo "slack-watch: Windows のユーザープロファイルを特定できません" >&2
+  exit 1
+}
+
+WIN_PROFILE=$(get_win_profile)
+PROFILE_DIR=$(wslpath -u "$WIN_PROFILE")
+INSTALL_DIR="$PROFILE_DIR/AppData/Local/slack-watch"
+WIN_INSTALL_DIR="$WIN_PROFILE\\AppData\\Local\\slack-watch"
+WIN_DLL="$WIN_INSTALL_DIR\\bin\\SlackWatch.dll"
+STATUS_DIR="$PROFILE_DIR/.cache/slack-watch"
+STATUS_FILE="$STATUS_DIR/status.json"
+STOP_REQUEST="$STATUS_DIR/stop.request"
+PID_FILE="$STATUS_DIR/daemon.pid"
+
+require_dotnet() {
+  if [[ ! -x "$DOTNET" ]]; then
+    echo "slack-watch: dotnet が見つかりません: $DOTNET" >&2
+    exit 1
+  fi
+}
+
+require_installed() {
+  if [[ ! -f "$INSTALL_DIR/bin/SlackWatch.dll" ]]; then
+    echo "slack-watch: 未インストールです。先に 'slack-watch install' を実行してください" >&2
+    exit 1
+  fi
+}
+
+# リスナーを dotnet ホスト経由で呼ぶ
+run_mode() {
+  require_dotnet
+  require_installed
+  "$DOTNET" "$WIN_DLL" "$1"
+}
+
+# 常駐はファイル監視で即座に反応し、作成した直後のマーカーを消す。
+# 対象へ直接 open すると途中で消えて ENOENT になるので、別名で作って rename する
+write_marker() {
+  local target=$1 tmp
+  tmp="$(dirname "$target")/.$(basename "$target").$$"
+  : >"$tmp"
+  mv -f "$tmp" "$target"
+}
+
+mtime_of() {
+  if [[ -f "$1" ]]; then
+    stat -c %Y "$1"
+  else
+    echo 0
+  fi
+}
+
+# 常駐の生死は C# 側に聞く。Windows は PID を使い回すので、PID が生きていることと
+# status.json が新しいことだけでは、異常終了直後に PID を拾った別プロセスと区別できない。
+# 保存した起動時刻との照合をシェルで作り直さず、判定を 1 か所に寄せる
+is_running() {
+  [[ -f "$PID_FILE" && -f "$INSTALL_DIR/bin/SlackWatch.dll" ]] || return 1
+  "$DOTNET" "$WIN_DLL" running >/dev/null 2>&1
+}
+
+cmd_install() {
+  require_dotnet
+
+  # 常駐中だと publish が SlackWatch.dll を上書きできない。
+  # 停止を確認できなければ cmd_stop が非ゼロで抜けて publish へ進まない
+  if is_running; then
+    cmd_stop >/dev/null
+  fi
+
+  mkdir -p "$INSTALL_DIR/src"
+  cp "$source_dir/SlackWatch.csproj" "$source_dir/Program.cs" "$INSTALL_DIR/src/"
+
+  # dotnet.exe は Windows のパスしか解釈しないので、出力先も Windows 形式で渡す
+  echo "publishing to $INSTALL_DIR/bin ..."
+  (cd "$INSTALL_DIR/src" && "$DOTNET" publish -c Release -o "$WIN_INSTALL_DIR\\bin" --nologo)
+
+  # ログオン時の自動起動。管理者権限もスクリプトファイルの追加配置も要らないので、
+  # schtasks やスタートアップフォルダではなく HKCU の Run キーを使う
+  echo "registering autostart ..."
+  /mnt/c/Windows/System32/reg.exe add "$RUN_KEY" \
+    /v "$RUN_VALUE_NAME" /t REG_SZ /f \
+    /d "\"$(wslpath -w "$DOTNET")\" \"$WIN_DLL\" watch" >/dev/null
+
+  echo "done. 'slack-watch start' で起動します"
+}
+
+cmd_start() {
+  require_dotnet
+  require_installed
+
+  if is_running; then
+    echo "already running"
+    return
+  fi
+
+  # 停止マーカーが残っていると起動直後に自分で消費して終了してしまう
+  rm -f "$STOP_REQUEST"
+
+  # UNC を作業ディレクトリにすると cmd/dotnet が警告を出すので /mnt/c から起動する。
+  # WSL のシェルを抜けても Windows 側のプロセスとして残る
+  (cd /mnt/c && setsid "$DOTNET" "$WIN_DLL" watch >/dev/null 2>&1 &)
+
+  local i
+  for ((i = 0; i < CONFIRM_TIMEOUT; i++)); do
+    sleep 1
+    if is_running; then
+      echo "started"
+      return
+    fi
+  done
+
+  echo "slack-watch: 起動を確認できません ($STATUS_FILE が更新されません)" >&2
+  exit 1
+}
+
+cmd_stop() {
+  if ! is_running; then
+    # 置きっぱなしのマーカーは次回起動を即終了させるので消す
+    rm -f "$STOP_REQUEST" "$PID_FILE"
+    echo "not running"
+    return
+  fi
+
+  # dotnet ホスト経由なので PID を辿らず、停止マーカーで抜けさせる。
+  # 完了の判断はマーカーの消滅ではなく status.json が止まったこと
+  mkdir -p "$STATUS_DIR"
+  write_marker "$STOP_REQUEST"
+
+  local i
+  for ((i = 0; i < CONFIRM_TIMEOUT; i++)); do
+    sleep 1
+    if ! is_running; then
+      rm -f "$STOP_REQUEST" "$PID_FILE"
+      echo "stopped"
+      return
+    fi
+  done
+
+  echo "slack-watch: 停止を確認できません (常駐がまだ動いています)" >&2
+  exit 1
+}
+
+cmd_status() {
+  if [[ ! -f "$STATUS_FILE" ]]; then
+    echo "slack-watch: $STATUS_FILE がありません (リスナーが未起動の可能性)" >&2
+    exit 1
+  fi
+
+  cat "$STATUS_FILE"
+
+  # 常駐がいても更新できていない状態を出す (生死そのものは is_running が見る)
+  local age
+  age=$(($(date +%s) - $(mtime_of "$STATUS_FILE")))
+  if ((age > STALE_AFTER)); then
+    echo "slack-watch: status.json が ${age}s 更新されていません" >&2
+    is_running || echo "slack-watch: 常駐プロセスがいません" >&2
+  fi
+}
+
+case "${1:-}" in
+install) cmd_install ;;
+start) cmd_start ;;
+stop) cmd_stop ;;
+status) cmd_status ;;
+# 常駐中なら C# 側が要求マーカーを置いて任せる。マーカーの後始末もそちらが行う
+clear) run_mode clear ;;
+titles) run_mode titles ;;
+*)
+  sed -n '4,16p' "$script_path" >&2
+  exit 2
+  ;;
+esac

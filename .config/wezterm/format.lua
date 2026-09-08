@@ -85,14 +85,16 @@ end
 ---@param name string cache_dir に渡す名前
 ---@param filename string
 ---@param validate fun(data: table): boolean
+---@param interval integer? 再読込の間隔 (秒)。既定は STATUS_CHECK_INTERVAL
 ---@return fun(): table|false
-local function cached_json_reader(name, filename, validate)
+local function cached_json_reader(name, filename, validate, interval)
   local cache = nil
   local last_check = 0
+  local check_interval = interval or STATUS_CHECK_INTERVAL
 
   return function()
     local now = os.time()
-    if cache ~= nil and (now - last_check) < STATUS_CHECK_INTERVAL then
+    if cache ~= nil and (now - last_check) < check_interval then
       return cache
     end
     last_check = now
@@ -149,6 +151,69 @@ local function format_feed_status()
   end
 
   return elements
+end
+
+-- slack-watch: Windows の通知センターに残る Slack のトースト件数。
+-- 常駐リスナーが数秒ごとに書き換えるので、reader 側も既定より短い間隔で読む
+local SLACK_CHECK_INTERVAL = 5 -- seconds
+
+-- 未読が増えた直後だけ色を変える時間
+local SLACK_FLASH_SECONDS = 10
+
+-- 更新が止まったとみなす下限。実際の境界は status.json が申告する巡回間隔から
+-- 導くので、間隔を延ばしても停止表示にはならない
+local SLACK_STATUS_TTL = 60 -- seconds
+
+local read_slack_status = cached_json_reader('slack-watch', 'status.json', function(data)
+  return data.unread_count ~= nil
+end, SLACK_CHECK_INTERVAL)
+
+local function format_slack_status()
+  local data = read_slack_status()
+  if not data or not data.unread_count then
+    return {}
+  end
+
+  local g = wezterm.GLOBAL
+
+  -- 取得失敗とリスナー停止は「未読 0」と区別する。黙ってバッジを消すと気づけない
+  local ttl = math.max(SLACK_STATUS_TTL, (data.poll_interval or 0) * 3)
+  local stale = not data.last_updated or (os.time() - data.last_updated) > ttl
+  if data.error or stale then
+    g.slack_prev_count = 0
+    return {
+      { Foreground = { Color = colors.palette.red } },
+      { Text = nf.md_slack .. ' ' },
+      { Foreground = { Color = colors.palette.text } },
+      { Text = (data.error and '!' or '?') .. ' ' },
+    }
+  end
+
+  -- 未読 0 も出す。セクションごと消すと「0 件」と「リスナーが死んで表示されない」が
+  -- 見た目で同じになる。緑のアイコンだけを残して、監視が生きていることを示す
+  local count = data.unread_count
+  if count == 0 then
+    g.slack_prev_count = 0
+    return {
+      { Foreground = { Color = colors.palette.green } },
+      { Text = nf.md_slack .. ' ' },
+    }
+  end
+
+  -- 件数が増えたときだけ強調する。通知センターの上限で頭打ちになるため、
+  -- 増加していなくても未読が増えている可能性はある (capped が真のとき)
+  if count > (g.slack_prev_count or 0) then
+    g.slack_flash_until = os.time() + SLACK_FLASH_SECONDS
+  end
+  g.slack_prev_count = count
+
+  local flashing = g.slack_flash_until and os.time() < g.slack_flash_until
+  return {
+    { Foreground = { Color = flashing and colors.palette.red or colors.palette.yellow } },
+    { Text = nf.md_slack .. ' ' },
+    { Foreground = { Color = colors.palette.text } },
+    { Text = tostring(count) .. (data.capped and '+' or '') .. ' ' },
+  }
 end
 
 local function format_feed_last_updated()
@@ -413,6 +478,7 @@ M.apply = function()
       local right_elements = {}
       for _, section in ipairs({
         format_feed_status(),
+        format_slack_status(),
         format_service_status('status.json', claude_icon),
         format_service_status('openai.json', openai_icon),
         format_service_status('github.json', github_icon),

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <AssemblyName>SlackWatch</AssemblyName>
+    <RootNamespace>SlackWatch</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- apphost (SlackWatch.exe) は作らず、`dotnet SlackWatch.dll` で起動する。
+      実行ファイルを配置せずに済ませる -->
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
+
+</Project>
