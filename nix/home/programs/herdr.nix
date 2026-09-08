@@ -67,6 +67,14 @@ in {
         [ui]
         accent = "${p.blue.hex}"
         show_agent_labels_on_pane_borders = true
+        # デフォルトの "auto" は分割していないペインに枠を描かないので、単独
+        # ペインのタブでは上の agent label も出ない。"always" は
+        # pane_outer_borders (デフォルト true) が有効なら単独ペインにも枠を描く。
+        # ドキュメントは show_agent_labels_on_pane_borders を "split pane
+        # borders" としか書いていないが、0.9.0 の実機では単独ペインの枠にも
+        # ラベルが載ることを確認済み。代償は単独ペインのタブすべてで縦 2 行と
+        # 横 2 桁
+        pane_borders = "always"
         # デフォルトの "dots" は色だけで状態を示すため、idle と、エージェントを
         # 起動していないシェルが返す unknown がどちらも緑になり区別が付かない。
         # "symbols" は blocked/working/done/idle/unknown に固有のグリフを当てる
