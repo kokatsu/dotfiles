@@ -128,11 +128,12 @@
   "alwaysThinkingEnabled": true,
   "modelSettings": {
     "claude-opus-5": {
-      "effortLevel": "xhigh"
+      "effortLevel": "high"
     },
     "claude-fable-5-1": {
       "effortLevel": "medium"
     }
   },
+  "advisorModel": "fable",
   "agentPushNotifEnabled": true
 }
