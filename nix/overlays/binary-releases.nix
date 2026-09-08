@@ -155,7 +155,7 @@ in {
   # Renovate: datasource=github-releases depName=vercel-labs/agent-browser
   agent-browser = mkBinaryRelease rec {
     pname = "agent-browser";
-    version = "0.34.0";
+    version = "0.36.0";
     hashes = {
       "aarch64-darwin" = "sha256-1oCnqWq4bpq50rVxsSkZt2HpNoKtHecUu9WshJyNfJw=";
       "aarch64-linux" = "sha256-wIZPsgbjIa9IpG+4MxzwiuYLP8wQRiMsHRyELbT8QMo=";
