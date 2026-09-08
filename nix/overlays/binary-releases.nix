@@ -155,11 +155,11 @@ in {
   # Renovate: datasource=github-releases depName=vercel-labs/agent-browser
   agent-browser = mkBinaryRelease rec {
     pname = "agent-browser";
-    version = "0.34.0";
+    version = "0.36.0";
     hashes = {
-      "aarch64-darwin" = "sha256-1oCnqWq4bpq50rVxsSkZt2HpNoKtHecUu9WshJyNfJw=";
-      "aarch64-linux" = "sha256-wIZPsgbjIa9IpG+4MxzwiuYLP8wQRiMsHRyELbT8QMo=";
-      "x86_64-linux" = "sha256-3UdSuh3vgcdENQTChLZVnSja2OzQK1+uymyvT8H7lI4=";
+      "aarch64-darwin" = "sha256-shBqs52wg457F3L38m92BRjeVtCQUxUMVvnd3xWvmX0=";
+      "aarch64-linux" = "sha256-HKfgA8nLGF8XT8geUaYJ2yfHfjv+AKDt/2Boj4zRT4g=";
+      "x86_64-linux" = "sha256-ogzCpSAqSPWCA3KAPe281fVW3/eolCHxsPJhKWKxBxg=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
