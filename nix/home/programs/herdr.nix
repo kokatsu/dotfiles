@@ -67,6 +67,10 @@ in {
         [ui]
         accent = "${p.blue.hex}"
         show_agent_labels_on_pane_borders = true
+        # デフォルトの "dots" は色だけで状態を示すため、idle と、エージェントを
+        # 起動していないシェルが返す unknown がどちらも緑になり区別が付かない。
+        # "symbols" は blocked/working/done/idle/unknown に固有のグリフを当てる
+        status_indicators = "symbols"
         # デフォルトの "{hostname}: {workspace}" だと WezTerm 側のタブタイトル
         # (format.lua が表示幅で省略) が長いホスト名だけで埋まり実質固定表示に
         # なるため workspace/tab に差し替える
