@@ -13,7 +13,12 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos banned-commands-test herdr-peer-guard-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test nvim-test
+check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test nvim-test
+
+# Test automatic Codex thread naming without starting a model turn
+codex-auto-title-test:
+    deno test scripts/test-codex-auto-title.ts
+    bash scripts/test-codex-auto.sh
 
 # Run all formatters
 fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt
