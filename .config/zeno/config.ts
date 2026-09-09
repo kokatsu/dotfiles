@@ -11,6 +11,7 @@ export default defineConfig(({ env }) => {
     // Tools
     // -------------------------------------------------------------------------
     { name: "bat", keyword: "bag", snippet: "bat --style grid" },
+    { name: "codex-auto", keyword: "ca", snippet: "codex-auto" },
     { name: "fd", keyword: "fd", snippet: "fd --hidden" },
     { name: "eza", keyword: "e", snippet: "eza --icons --git" },
     { name: "eza -a", keyword: "ea", snippet: "eza -a --icons --git" },
