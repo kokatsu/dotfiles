@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eEuo pipefail
+
+# Assertions here are bare [[ ]], grep and jq -e, so an unexpected failure exits
+# silently and a CI log shows only the exit code. Name the line that died instead.
+report_failure() {
+  local rc=$? line=$1
+  printf '%s:%s: exit %s: %s\n' "${BASH_SOURCE[0]##*/}" "$line" "$rc" "$BASH_COMMAND" >&2
+}
+trap 'report_failure "$LINENO"' ERR
 
 repo_root=$(git rev-parse --show-toplevel)
 wrapper="$repo_root/.config/claude/skills/herdr-peer/scripts/herdr-peer"
@@ -161,6 +169,9 @@ case "$1 $2" in
 "agent read")
   marker=''
   [[ ! -s $FAKE_STATE/marker ]] || read -r marker <"$FAKE_STATE/marker"
+  # Counted for every scenario, including the failing one: the release clock keys off
+  # attempts, and an attempt that dies is still an attempt.
+  read_count=$(bump read-count)
   case $FAKE_SCENARIO in
   read-fail)
     printf 'fake read failure\n' >&2
@@ -170,7 +181,7 @@ case "$1 $2" in
     printf '%s\n' "$marker"
     ;;
   marker-late)
-    count=$(bump read-count)
+    count=$read_count
     # The request is echoed into the pane with the marker mid-sentence; an anchored
     # search must not treat that as the reply.
     printf 'Finish your reply with a final line that contains only %s and nothing else.\n' "$marker"
@@ -202,19 +213,35 @@ EOF
 chmod +x "$test_dir/bin/sleep"
 
 # A controllable clock, kept out of "$test_dir/bin" so only the cases that ask for it
-# are affected. It freezes time until FAKE_CLOCK_JUMP_AFTER calls have gone by, then
-# jumps far past any deadline.
+# are affected. It freezes time until released, then jumps far past any deadline.
+#
+# FAKE_CLOCK_RELEASE names a counter the fake herdr keeps, as COUNTER:THRESHOLD, so a
+# case says "once the prompt is out" or "after three reads" and stays out of the
+# wrapper's own `date` call order. FAKE_CLOCK_JUMP_AFTER counts those calls instead,
+# for the two cases whose subject is that order rather than an observable event.
 mkdir -p "$test_dir/clockbin"
 cat >"$test_dir/clockbin/date" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
 now=1700000000
-count=0
-[[ ! -f $FAKE_STATE/clock-count ]] || read -r count <"$FAKE_STATE/clock-count"
-count=$((count + 1))
-printf '%s\n' "$count" >"$FAKE_STATE/clock-count"
-((count <= ${FAKE_CLOCK_JUMP_AFTER:-1})) || now=$((now + 100000))
+released=false
+
+if [[ -n ${FAKE_CLOCK_RELEASE:-} ]]; then
+  counter=${FAKE_CLOCK_RELEASE%%:*}
+  threshold=${FAKE_CLOCK_RELEASE##*:}
+  reached=0
+  [[ ! -f $FAKE_STATE/$counter ]] || read -r reached <"$FAKE_STATE/$counter"
+  ((reached < threshold)) || released=true
+else
+  count=0
+  [[ ! -f $FAKE_STATE/clock-count ]] || read -r count <"$FAKE_STATE/clock-count"
+  count=$((count + 1))
+  printf '%s\n' "$count" >"$FAKE_STATE/clock-count"
+  ((count <= ${FAKE_CLOCK_JUMP_AFTER:-1})) || released=true
+fi
+
+[[ $released == false ]] || now=$((now + 100000))
 printf '%s\n' "$now"
 EOF
 chmod +x "$test_dir/clockbin/date"
@@ -251,6 +278,20 @@ run_wrapper_clock() {
   FAKE_SCENARIO=$scenario \
     FAKE_STATE="$test_dir" \
     FAKE_CLOCK_JUMP_AFTER=$jump \
+    HERDR_ENV=1 \
+    HERDR_PANE_ID=current-pane \
+    PATH="$test_dir/clockbin:$test_dir/bin:$PATH" \
+    "$wrapper" "$@"
+}
+
+# Time stands still until the fake herdr has reached COUNTER:THRESHOLD, so the budget
+# expires at a point the case names rather than one the wall clock picks.
+run_wrapper_release() {
+  local scenario=$1 release=$2
+  shift 2
+  FAKE_SCENARIO=$scenario \
+    FAKE_STATE="$test_dir" \
+    FAKE_CLOCK_RELEASE=$release \
     HERDR_ENV=1 \
     HERDR_PANE_ID=current-pane \
     PATH="$test_dir/clockbin:$test_dir/bin:$PATH" \
@@ -354,25 +395,30 @@ run_wrapper marker-late prompt --timeout 60000 'late marker round' >"$test_dir/m
 tail -n 1 "$test_dir/marker-late.out" | jq -e '.completion == "confirmed" and .readiness == "confirmed"' >/dev/null
 
 # A marker that never lands means delivered but unconfirmed, and must not be resent.
+# The budget has to run out after two fruitless reads, so the clock is held until the
+# marker search has actually run and come up empty.
 reset_state
-if run_wrapper marker-missing prompt --timeout 1000 'never finishes' >"$test_dir/missing.out" 2>"$test_dir/missing.err"; then
+if run_wrapper_release marker-missing read-count:2 prompt --timeout 1000 'never finishes' >"$test_dir/missing.out" 2>"$test_dir/missing.err"; then
   printf 'expected a missing completion marker to fail\n' >&2
   exit 1
 fi
 grep -F 'completion marker never appeared' "$test_dir/missing.err" >/dev/null
 grep -F 'do not retry automatically' "$test_dir/missing.err" >/dev/null
 [[ $(prompt_count) == 1 ]]
+[[ $(<"$test_dir/read-count") -ge 2 ]]
 tail -n 1 "$test_dir/missing.out" | jq -e '.completion == "unconfirmed"' >/dev/null
 
 # A pane that cannot be read is transient, not an absent marker, so it keeps polling
-# and still ends as delivered-but-unconfirmed.
+# and still ends as delivered-but-unconfirmed. Three failed reads have to fit inside
+# the budget for that to mean anything, so the clock waits for them.
 reset_state
-if run_wrapper read-fail prompt --timeout 1000 'unreadable pane' >"$test_dir/read-fail.out" 2>"$test_dir/read-fail.err"; then
+if run_wrapper_release read-fail read-count:3 prompt --timeout 1000 'unreadable pane' >"$test_dir/read-fail.out" 2>"$test_dir/read-fail.err"; then
   printf 'expected an unreadable pane to fail\n' >&2
   exit 1
 fi
 grep -F 'do not retry automatically' "$test_dir/read-fail.err" >/dev/null
 [[ $(prompt_count) == 1 ]]
+[[ $(<"$test_dir/read-count") -ge 3 ]]
 tail -n 1 "$test_dir/read-fail.out" | jq -e '.completion == "unconfirmed"' >/dev/null
 
 # A blocked peer is a dead end rather than something to wait out.
