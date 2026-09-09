@@ -40,7 +40,6 @@ web_search = { context_size = "medium", location = { country = "JP", timezone = 
 [tui]
 notifications = true
 notification_condition = "always"
-pet = "custom:kometa-cli"
 resume_cwd = "session"
 terminal_title = ["thread"]
 status_line = [

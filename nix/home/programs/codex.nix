@@ -39,6 +39,9 @@ in {
     ];
 
     file = {
+      # ペットを有効にするとTUIがKitty graphicsのスプライトをアイドル中も
+      # 描き続け、herdr serverが全ペインの出力を端末エミュレートするCPUに
+      # 直撃してペイン切替が詰まる。config.tomlのtui.petは未設定のままにする。
       # Codex CLI 0.149.0向けの9行スプライト版。
       ".config/codex/pets/kometa-cli" = {
         source = ../../../.config/codex/pets/kometa-cli;
