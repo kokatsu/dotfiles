@@ -148,6 +148,20 @@ return {
       desc = 'Git Log',
     },
     {
+      '<leader>gL',
+      function()
+        Snacks.picker.git_log_file()
+      end,
+      desc = 'Git Log (Current File)',
+    },
+    {
+      '<leader>gc',
+      function()
+        Snacks.picker.git_log_line()
+      end,
+      desc = 'Git Log (Current Line)',
+    },
+    {
       '<leader>gb',
       function()
         Snacks.picker.git_branches()
