@@ -122,6 +122,67 @@ local read_feed_status = cached_json_reader('feed-watch', 'status.json', functio
   return data.feeds ~= nil
 end)
 
+-- フィード名は長いのでバーには出さず、アイコン 2 つと件数だけを並べる。
+-- 1 つ目は OPML のカテゴリから引く「種別」、2 つ目は URL のホストから引く「サービス」
+
+-- 値はリポジトリに既に載っているホストだけにする。git 管理外の OPML にしかない
+-- フィードを足すと、ホスト名が public なこのリポジトリに入る。
+-- キーが "ホスト/パス先頭" なのは GitHub に複数の org が同居するため
+local feed_service_icons = {
+  ['x.com'] = nf.cod_twitter,
+  ['github.com/xdevplatform'] = nf.cod_twitter,
+  ['facebook.com'] = nf.md_facebook,
+  ['metastatus.com'] = nf.md_facebook,
+}
+
+local feed_kind_icons = {
+  Blog = nf.md_post,
+  Forum = nf.md_forum,
+  GitHub = nf.cod_github_alt,
+  Private = nf.md_lock,
+  Status = nf.md_pulse,
+}
+
+--- URL をホストとパスに分解する
+---@param url string?
+---@return string? host
+---@return string path
+local function url_parts(url)
+  local host, path = (url or ''):match('^https?://([^/]+)(.*)$')
+  return host, path or ''
+end
+
+--- フィードの種別アイコン。カテゴリが未知なら type で決める
+---@param info table status.json の feeds エントリ
+---@return string
+local function feed_kind_icon(info)
+  if feed_kind_icons[info.category] then
+    return feed_kind_icons[info.category]
+  end
+
+  return info.type == 'github' and nf.cod_github_alt or nf.md_rss
+end
+
+--- フィードのサービスアイコン。表に無いホストなら nil (種別アイコンだけ出す)
+---@param info table status.json の feeds エントリ
+---@return string?
+local function feed_service_icon(info)
+  local host, path = url_parts(info.url)
+  if not host then
+    return nil
+  end
+
+  for key, icon in pairs(feed_service_icons) do
+    local domain, prefix = key:match('^([^/]+)(.*)$')
+    -- ホストは完全一致とサブドメインだけを見る。部分一致にすると netflix.com が
+    -- x.com に当たるような誤判定が起きる
+    local host_match = host == domain or host:sub(-#domain - 1) == '.' .. domain
+    if host_match and (prefix == '' or path:sub(1, #prefix) == prefix) then
+      return icon
+    end
+  end
+end
+
 local function format_feed_status()
   local data = read_feed_status()
   if not data or not data.feeds then
@@ -142,11 +203,14 @@ local function format_feed_status()
       if #elements > 0 then
         table.insert(elements, { Text = '  ' })
       end
-      local icon = info.type == 'github' and nf.dev_github_badge or nf.md_rss
+      -- アイコン同士は 1 セル空ける。字形がセル幅いっぱいに描かれるものがあり、
+      -- 詰めると隣とくっついて見える
+      local service_icon = feed_service_icon(info)
+      local icons = feed_kind_icon(info) .. (service_icon and (' ' .. service_icon) or '')
       table.insert(elements, { Foreground = { Color = colors.palette.overlay1 } })
-      table.insert(elements, { Text = icon .. ' ' })
+      table.insert(elements, { Text = icons .. ' ' })
       table.insert(elements, { Foreground = { Color = colors.palette.text } })
-      table.insert(elements, { Text = name .. ' (' .. tostring(info.unread_count) .. ') ' })
+      table.insert(elements, { Text = tostring(info.unread_count) .. ' ' })
     end
   end
 
