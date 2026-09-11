@@ -175,11 +175,11 @@ in {
   # Renovate: datasource=github-releases depName=dlang-community/DCD
   dcd = mkBinaryRelease rec {
     pname = "dcd";
-    version = "0.16.3";
+    version = "0.17.8";
     hashes = {
-      "aarch64-darwin" = "sha256-q+EQtXnehXgVKhtmKrPtMDfnNn5JoCWbgo+LTM1KoPk=";
-      "aarch64-linux" = "sha256-KqKYocMSlhGDEsHvOhmdRugNNvftp8nngzkPoI1ml6E=";
-      "x86_64-linux" = "sha256-fGyzS7jdCTs1OsyGbyrGRCQ2mkhiFJPCVdnwA/Yg8hY=";
+      "aarch64-darwin" = "sha256-UsDWzKTe/jbbfGnsHLWW0PyNgjdvQQa5X0vO6ntlX1s=";
+      "aarch64-linux" = "sha256-Pd5lIBpxqfuhwjJi1yb36wtVdoSkvtztrmKBlc+tdDU=";
+      "x86_64-linux" = "sha256-WS57u3s2JksKFBrdVLXxcHMk7X99s/nOkA8CCg3egfw=";
     };
     platformMap = {
       "aarch64-darwin" = "osx-aarch64";
