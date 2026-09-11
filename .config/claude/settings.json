@@ -6,8 +6,6 @@
   },
   "respectGitignore": false,
   "cleanupPeriodDays": 60,
-  "bashOutputMaxChars": 128000,
-  "taskOutputMaxChars": 128000,
   "env": {
     "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-sonnet-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-5",
@@ -119,6 +117,8 @@
       }
     ]
   },
+  "bashOutputMaxChars": 128000,
+  "taskOutputMaxChars": 128000,
   "statusLine": {
     "type": "command",
     "command": "CC_STATUSLINE_SHOW_COST=0 cc-statusline",
