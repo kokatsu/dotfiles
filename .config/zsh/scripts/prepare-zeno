@@ -34,6 +34,38 @@ if [ -f "$completion_file" ] && grep -q 'local.*expect_key options ' "$completio
   trap - EXIT HUP INT TERM
 fi
 
+# deno 2.9.6 で `deno run -- <script>` が script を認識しなくなった
+# (denoland/deno#36792)。zeno が渡すのは常に $ZENO_ROOT 起点の絶対パスで
+# ハイフン始まりにならないため、end-of-options の -- を外して回避する。
+for relative_path in \
+  bin/zeno \
+  bin/zeno-server \
+  shells/zsh/functions/zeno \
+  shells/zsh/functions/zeno-server; do
+  run_file="$zim_home/modules/zeno.zsh/$relative_path"
+
+  [ -f "$run_file" ] || continue
+  # Zsh parameter expressions below are grep literals.
+  # shellcheck disable=SC2016
+  grep -q -e '-- "\$ZENO_ROOT' -e '-- "\${ZENO_ROOT' "$run_file" || continue
+
+  temporary_file=$(mktemp "${run_file}.tmp.XXXXXX")
+  trap 'rm -f "$temporary_file"' EXIT HUP INT TERM
+
+  # 元ファイルの permission を一時ファイルへ引き継ぎ、置換後も維持する。
+  cp -p "$run_file" "$temporary_file"
+
+  # Zsh parameter expressions below are sed literals.
+  # shellcheck disable=SC2016
+  sed \
+    -e 's/-- "\$ZENO_ROOT/"$ZENO_ROOT/' \
+    -e 's/-- "\${ZENO_ROOT/"${ZENO_ROOT/' \
+    "$run_file" >"$temporary_file"
+
+  mv -f "$temporary_file" "$run_file"
+  trap - EXIT HUP INT TERM
+done
+
 # zeno.zsh で毎シェル実行せず、モジュールの導入・更新時に準備する。
 [ -f "$cli_file" ] || exit 0
 "$deno_command" cache --node-modules-dir=auto --no-lock --no-check -- "$cli_file"
