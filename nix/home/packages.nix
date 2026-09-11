@@ -16,7 +16,7 @@
   '';
 in {
   # 以下のパッケージは programs.* モジュールで管理:
-  # bat, broot, btop, delta, eza, fzf, gh, git, hunk, lazygit, nh, readline, starship, zoxide
+  # bat, broot, btop, delta, eza, fzf, gh, git, lazygit, nh, readline, starship, zoxide
   # bin/ のユーザースクリプト (feed-watch, memo, daily 等) は files.nix が
   # ~/.local/bin/scripts に symlink し、sessionPath で PATH に入る
   home.packages = with pkgs;
@@ -107,6 +107,8 @@ in {
       gomi # ゴミ箱CLI (rm alternative)
       # https://gitlab.com/graphviz/graphviz
       graphviz # グラフ可視化
+      # https://github.com/modem-dev/hunk
+      hunk # エージェント生成の差分向けターミナル diff ビューア
       # https://github.com/sharkdp/hyperfine
       hyperfine # コマンドラインベンチマークツール
       # https://github.com/casey/just

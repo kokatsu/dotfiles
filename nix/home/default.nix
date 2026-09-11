@@ -53,7 +53,6 @@ in {
     ./programs/gh.nix
     ./programs/git.nix
     ./programs/herdr.nix
-    ./programs/hunk.nix
     ./programs/karabiner.nix
     ./programs/lazygit.nix
     ./programs/lefthook.nix
