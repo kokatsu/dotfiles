@@ -148,32 +148,6 @@ in {
     };
   };
 
-  # agent-browser - AI エージェント向けブラウザ自動化 CLI
-  # nixpkgs は 0.27.0 で停滞しているため overlay で上書きする。v0.30.0 で入った
-  # read (Chrome を起動せず markdown を取得する) を browser-research スキルと
-  # feed-summarize が使う。Linux は静的リンクの musl ビルドを選ぶ (mise と同じ方針)。
-  # Renovate: datasource=github-releases depName=vercel-labs/agent-browser
-  agent-browser = mkBinaryRelease rec {
-    pname = "agent-browser";
-    version = "0.36.0";
-    hashes = {
-      "aarch64-darwin" = "sha256-shBqs52wg457F3L38m92BRjeVtCQUxUMVvnd3xWvmX0=";
-      "aarch64-linux" = "sha256-HKfgA8nLGF8XT8geUaYJ2yfHfjv+AKDt/2Boj4zRT4g=";
-      "x86_64-linux" = "sha256-ogzCpSAqSPWCA3KAPe281fVW3/eolCHxsPJhKWKxBxg=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "darwin-arm64";
-      "aarch64-linux" = "linux-musl-arm64";
-      "x86_64-linux" = "linux-musl-x64";
-    };
-    url = platform: "https://github.com/vercel-labs/agent-browser/releases/download/v${version}/agent-browser-${platform}";
-    meta = {
-      description = "Browser automation CLI for AI agents";
-      homepage = "https://github.com/vercel-labs/agent-browser";
-      license = "asl20";
-    };
-  };
-
   # kakehashi - Tree-sitter Language Server
   # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=atusy/kakehashi
@@ -250,27 +224,6 @@ in {
     meta = {
       description = "TUI tool for GitHub PR review with Vim-style keybindings";
       homepage = "https://github.com/ushironoko/octorus";
-    };
-  };
-
-  # rgx - Terminal regex tester (regex101 for the terminal)
-  # Uses pre-built binaries from GitHub releases
-  # Renovate: datasource=github-releases depName=brevity1swos/rgx
-  rgx-cli = mkBinaryRelease rec {
-    pname = "rgx-cli";
-    version = "0.14.2";
-    hashes = {
-      "aarch64-darwin" = "sha256-UiIj6w2Q6CQrOJG2VJfhdz3da6KLnuak+pTfG/QnHgM=";
-      "aarch64-linux" = "sha256-5Wwsave4c+Ybw6ZSkt4B83SOfkIUxxMtjZVtEdffHF4=";
-      "x86_64-linux" = "sha256-pbOiSykZBZFVS8R9Fb/711X/WV9s5l17F4+dv3lHSzc=";
-    };
-    platformMap = appleGnuPlatformMap;
-    url = platform: "https://github.com/brevity1swos/rgx/releases/download/v${version}/rgx-cli-${platform}.tar.xz";
-    format = "tar";
-    binName = "rgx";
-    meta = {
-      description = "Terminal regex tester with real-time matching and multi-engine support";
-      homepage = "https://github.com/brevity1swos/rgx";
     };
   };
 

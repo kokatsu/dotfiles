@@ -140,7 +140,6 @@
     commonOverlays = [
       # upstream overlay (pkgs.moonbit-bin.* を生やす)
       inputs.moonbit-overlay.overlays.default
-      customOverlays.agent-browser
       customOverlays.cc-statusline
       customOverlays.claude-code
       customOverlays.codex
@@ -154,7 +153,6 @@
       customOverlays.mise
       customOverlays.octorus
       customOverlays.pkl
-      customOverlays.rgx-cli
       customOverlays.statix-no-check
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.unocss-language-server

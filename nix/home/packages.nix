@@ -21,8 +21,6 @@ in {
   # ~/.local/bin/scripts に symlink し、sessionPath で PATH に入る
   home.packages = with pkgs;
     [
-      # https://github.com/vercel-labs/agent-browser
-      agent-browser # ブラウザ自動化エージェント (nixpkgs が停滞しているため overlay)
       # https://github.com/NousResearch/hermes-agent
       hermes-agent # 自己改善型 AI エージェント (long-term memory + skill learning, overlay)
 
@@ -79,6 +77,8 @@ in {
       postgresql # PostgreSQL クライアント (psql) + サーバーバイナリ
       # https://github.com/github/copilot-cli
       github-copilot-cli # GitHub Copilot CLI
+      # https://github.com/vercel-labs/agent-browser
+      agent-browser # ブラウザ自動化エージェント
       # https://github.com/crocidb/bulletty
       bulletty # TUI RSS/Atom フィードリーダー
       # https://github.com/carapace-sh/carapace-bin
@@ -390,7 +390,7 @@ in {
       # https://github.com/ushironoko/octorus
       octorus # GitHub PR レビュー TUI (overlay)
       # https://github.com/brevity1swos/rgx
-      rgx-cli # ターミナル正規表現テスター (regex101 の TUI 版, overlay)
+      rgx # ターミナル正規表現テスター (regex101 の TUI 版)
       # https://github.com/herdrdev/herdr-nix (公式リリースバイナリ、overlay)
       herdr # tmux 的なエージェント対応ターミナルマルチプレクサ
       #--- エディタ ---#
