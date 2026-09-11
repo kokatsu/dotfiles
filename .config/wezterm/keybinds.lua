@@ -168,6 +168,8 @@ local unified_keys = {
   { key = 'X', mods = 'PRIMARY', action = act.ActivateCopyMode },
   -- QuickSelect モード
   { key = 'q', mods = 'SECONDARY', action = act.QuickSelect },
+  -- 選択中の文字列を検索モードに渡し、画面内の同じ文字列をすべて強調する。
+  { key = '/', mods = 'SECONDARY', action = act.Search('CurrentSelectionOrEmptyString') },
   -- コマンドパレット
   { key = 'p', mods = 'PRIMARY|SHIFT', action = act.ActivateCommandPalette },
 }
