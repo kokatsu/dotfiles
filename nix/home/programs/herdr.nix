@@ -87,6 +87,18 @@ in {
         # (デフォルト 26)
         sidebar_width = 30
 
+        # タブ行の右端に Claude Code のコストを出す。ペインごとの statusline に
+        # 同じ数字を並べる代わりに、ウィンドウ全体で 1 箇所に集約する
+        # (.config/claude/settings.json は statusLine.command に
+        # CC_STATUSLINE_SHOW_COST=0 を前置してペイン側の行を落としている)。
+        #
+        # cc-statusline は stdin が空でもコスト行を出し、かつその場合は
+        # 1 行しか出さない。herdr はコマンド出力の最終行だけを採用するため、
+        # 行を選り分けるラッパースクリプトは要らない。
+        tab_bar_right = [
+          { type = "command", command = "${config.home.homeDirectory}/.nix-profile/bin/cc-statusline", interval_seconds = 60, timeout_seconds = 1 },
+        ]
+
         [ui.sidebar.agents]
         row_gap = 1
 
