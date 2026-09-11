@@ -83,7 +83,7 @@
         {
           key = "F";
           context = "files";
-          command = "git commit --fixup={{.SelectedLocalCommit.Hash}}";
+          command = "git commit --fixup={{.SelectedCommit.Hash}}";
           description = "Create fixup commit for selected commit";
           loadingText = "Creating fixup commit...";
         }
@@ -102,7 +102,7 @@
             {
               key = "r";
               context = "commits";
-              command = "git rebase -i {{.SelectedLocalCommit.Hash}}~1";
+              command = "git rebase -i {{.SelectedCommit.Hash}}~1";
               description = "Interactive rebase from this commit";
               output = "terminal";
             }
