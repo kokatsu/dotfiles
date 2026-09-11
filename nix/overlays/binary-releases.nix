@@ -175,7 +175,7 @@ in {
   # Renovate: datasource=github-releases depName=dlang-community/DCD
   dcd = mkBinaryRelease rec {
     pname = "dcd";
-    version = "0.16.3";
+    version = "0.17.8";
     hashes = {
       "aarch64-darwin" = "sha256-q+EQtXnehXgVKhtmKrPtMDfnNn5JoCWbgo+LTM1KoPk=";
       "aarch64-linux" = "sha256-KqKYocMSlhGDEsHvOhmdRugNNvftp8nngzkPoI1ml6E=";
