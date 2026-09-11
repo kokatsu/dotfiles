@@ -306,7 +306,7 @@ in {
       # https://github.com/hrsh7th/vscode-langservers-extracted
       vscode-langservers-extracted # HTML/CSS/JSON/ESLint LSP
       # https://github.com/microsoft/typescript-go
-      typescript-go # TypeScript Go コンパイラ (tsgo)
+      typescript # TypeScript 7 の Go 製コンパイラ (旧 typescript-go、コマンドは tsc)
       # https://github.com/yioneko/vtsls
       vtsls # TypeScript LSP
       # https://github.com/vuejs/language-tools
