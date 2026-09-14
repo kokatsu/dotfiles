@@ -2,7 +2,8 @@
 
 return {
   'saghen/blink.cmp',
-  event = 'InsertEnter',
+  -- nvim-lspconfig.lua が起動時に get_lsp_capabilities() を要求するため遅延できない
+  lazy = false,
   -- optional: provides snippets for the snippet source
   -- mini.snippets は mini.nvim 同梱版を使うため依存に含めない
   dependencies = {
