@@ -255,50 +255,64 @@ in {
 
         [[keys.command]]
         key = "alt+v"
-        type = "pane"
+        type = "popup"
         command = "${scriptsDir}/prompt-edit.sh"
         description = "Claude Code: プロンプト編集"
+        width = "90%"
+        height = "80%"
 
         [[keys.command]]
         key = "alt+c"
-        type = "pane"
+        type = "popup"
         command = "${scriptsDir}/path-pick-fzf.sh"
         description = "パス選択 (fzf)"
+        width = "90%"
+        height = "80%"
 
         [[keys.command]]
         key = "alt+g"
-        type = "pane"
+        type = "popup"
         command = "${scriptsDir}/path-pick-broot.sh"
         description = "パス選択 (broot)"
+        width = "80%"
+        height = "80%"
 
         [[keys.command]]
         key = "alt+h"
-        type = "pane"
+        type = "popup"
         command = "${scriptsDir}/octorus-history.sh"
         description = "Octorus Rally 履歴"
+        width = "80%"
+        height = "80%"
 
         # alt+y は WSL では WezTerm windows_specific (PowerShell タブ) が先に
         # 捕捉するため macOS 専用
         [[keys.command]]
         key = "alt+y"
-        type = "pane"
+        type = "popup"
         command = "${scriptsDir}/yazi-pane.sh"
         description = "Yazi"
+        width = "90%"
+        height = "90%"
 
         # alt+l は nvim mini.move (<M-l>) を奪うため prefix 側に置く
         [[keys.command]]
         key = "prefix+l"
-        type = "pane"
+        type = "popup"
         command = "${scriptsDir}/lazygit-pane.sh"
         description = "Lazygit"
+        width = "90%"
+        height = "90%"
 
         # 旧 WezTerm Alt+r の移植。feed-watch のデータ生成 (systemd timer) が
         # WSL 限定のため実質 WSL 専用 (macOS ではデータなしメッセージのみ)
         [[keys.command]]
         key = "alt+r"
-        type = "pane"
+        type = "popup"
         command = "${scriptsDir}/feed-open.sh"
         description = "未読フィードを開く"
+        width = "80%"
+        height = "80%"
 
         # ステータスバーのアイコンは色でしか状態を示さないので、詳細を見る動線を
         # キーに割り当てる。fzf を挟まないので type は shell (pane だと一時的な
