@@ -22,8 +22,6 @@ Files vendored from or embedding hex values derived from
 | `.config/bat/themes/Catppuccin Latte.tmTheme` | [catppuccin/bat](https://github.com/catppuccin/bat) |
 | `.config/bat/themes/Catppuccin Macchiato.tmTheme` | [catppuccin/bat](https://github.com/catppuccin/bat) |
 | `.config/bat/themes/Catppuccin Mocha.tmTheme` | [catppuccin/bat](https://github.com/catppuccin/bat) |
-| `.config/btop/themes/catppuccin_mocha.theme` | [catppuccin/btop](https://github.com/catppuccin/btop) |
-| `.config/delta/catppuccin.gitconfig` | [catppuccin/delta](https://github.com/catppuccin/delta) |
 | `nix/home/catppuccin-palette.nix` | [catppuccin/palette](https://github.com/catppuccin/palette) |
 
 ```text

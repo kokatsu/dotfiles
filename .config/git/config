@@ -1,10 +1,6 @@
 # 参考:
 #   - https://blog.gitbutler.com/how-git-core-devs-configure-git/
 
-# difftastic 移行のため delta 連携を無効化 (戻す場合はコメント解除)
-# [include]
-# path = ../delta/catppuccin.gitconfig
-
 [include]
 path = ./config.local
 
