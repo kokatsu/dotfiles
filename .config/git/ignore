@@ -14,3 +14,6 @@
 # Environment variables
 .env
 .env.*
+
+# macOS Finder metadata
+.DS_Store
