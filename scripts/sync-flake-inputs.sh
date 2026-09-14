@@ -30,14 +30,19 @@ OLD_FLAKE=$(mktemp)
 trap 'rm -f "$OLD_FLAKE"' EXIT
 git show origin/main:flake.nix >"$OLD_FLAKE"
 
+NEW_LIST=$(parse_inputs flake.nix)
+OLD_LIST=$(parse_inputs "$OLD_FLAKE")
+
 declare -A NEW_URLS OLD_URLS
 while IFS=' ' read -r name url; do
+  [[ -n "$name" ]] || continue
   NEW_URLS[$name]="$url"
-done < <(parse_inputs flake.nix)
+done <<<"$NEW_LIST"
 
 while IFS=' ' read -r name url; do
+  [[ -n "$name" ]] || continue
   OLD_URLS[$name]="$url"
-done < <(parse_inputs "$OLD_FLAKE")
+done <<<"$OLD_LIST"
 
 CHANGED=()
 EXTRA=""
