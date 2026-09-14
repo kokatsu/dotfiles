@@ -52,6 +52,7 @@ return {
     vim.lsp.inlay_hint.enable()
 
     local servers = {
+      'astro',
       'bashls',
       'biome',
       'cssmodules_ls',
