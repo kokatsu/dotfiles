@@ -313,8 +313,8 @@ in {
         height = "80%"
 
         # ステータスバーのアイコンは色でしか状態を示さないので、詳細を見る動線を
-        # キーに割り当てる。fzf を挟まないので type は shell (pane だと一時的な
-        # 分割が開くだけ無駄になる)。alt+s は WezTerm 側の SSH タブが取っている
+        # キーに割り当てる。ブラウザを開いて通知を出すだけで端末を使わないため
+        # type は shell
         [[keys.command]]
         key = "alt+i"
         type = "shell"
