@@ -14,18 +14,20 @@
 set -euo pipefail
 
 herdr_bin=${HERDR_BIN_PATH:-herdr}
+active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
 
-cd "$HERDR_ACTIVE_PANE_CWD"
+cd "${HERDR_ACTIVE_PANE_CWD:?HERDR_ACTIVE_PANE_CWD is not set}"
 
+# fzf のキャンセル (exit 130) を set -e で落とさず、空選択として扱う
 selected=$(fd --type f --hidden --no-ignore --exclude .git --exclude node_modules . |
   fzf --multi \
     --preview 'bat --color=always --style=numbers {} 2>/dev/null || cat {}' \
-    --preview-window=right:60%)
+    --preview-window=right:60%) || true
 
 [[ -z "$selected" ]] && exit 0
 
 # 取得に失敗しても中断せず、Claude 形式にフォールバックする
-agent=$("$herdr_bin" pane get "$HERDR_ACTIVE_PANE_ID" |
+agent=$("$herdr_bin" pane get "$active_pane_id" |
   jq -r '.result.pane.agent // ""') || agent=""
 
 if [[ "$agent" == codex ]]; then
@@ -36,4 +38,4 @@ else
   payload=$(printf '%s\n' "$selected" | sed 's|^|@|' | tr '\n' ' ')
 fi
 
-"$herdr_bin" pane send-text "$HERDR_ACTIVE_PANE_ID" "$payload"
+"$herdr_bin" pane send-text "$active_pane_id" "$payload"
