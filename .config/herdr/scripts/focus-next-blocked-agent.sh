@@ -4,12 +4,9 @@
 
 set -euo pipefail
 
-herdr_bin=${HERDR_BIN_PATH:-herdr}
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
-
-notify() {
-  "$herdr_bin" notification show "$1" --sound none >/dev/null 2>&1 || true
-}
+# shellcheck source=.config/herdr/scripts/lib.sh
+source "$(dirname "$0")/lib.sh"
 
 if ! agents_json=$("$herdr_bin" agent list); then
   notify "エージェント一覧の取得に失敗しました"

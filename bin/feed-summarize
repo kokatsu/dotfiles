@@ -43,29 +43,7 @@ is_summarize_target() {
   return 1
 }
 
-get_status_dir() {
-  if [[ -n "${FEED_WATCH_STATUS_DIR:-}" ]]; then
-    printf '%s\n' "$FEED_WATCH_STATUS_DIR"
-    return
-  fi
-  local winuser
-  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
-  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
-    echo "/mnt/c/Users/$winuser/.cache/feed-watch"
-    return
-  fi
-
-  # cmd.exe が使えないときは WSL ユーザー名と同名のプロファイルだけを候補にする
-  # (feed-watch と同じ規則。/mnt/c/Users/* の先頭を拾う推測はしない)
-  if [[ -d "/mnt/c/Users/$USER" ]]; then
-    echo "/mnt/c/Users/$USER/.cache/feed-watch"
-    return
-  fi
-
-  return 1
-}
-
-STATUS_DIR=$(get_status_dir) || {
+STATUS_DIR=${FEED_WATCH_STATUS_DIR:-$("$(dirname "$script_path")/status-dir" feed-watch)} || {
   echo "Windows mount not available, skipping." >&2
   exit 0
 }

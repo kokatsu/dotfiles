@@ -9,42 +9,12 @@
 
 set -euo pipefail
 
-# feed-watch (bin/feed-watch) と同じ Windows 側出力先の解決
-get_status_dir() {
-  local winuser
-  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
-  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
-    echo "/mnt/c/Users/$winuser/.cache/feed-watch"
-    return
-  fi
+# shellcheck source=.config/herdr/scripts/lib.sh
+source "$(dirname "$0")/lib.sh"
 
-  # cmd.exe が使えないときは WSL ユーザー名と同名のプロファイルだけを候補にする
-  # (feed-watch と同じ規則。/mnt/c/Users/* の先頭を拾う推測はしない)
-  if [[ -d "/mnt/c/Users/$USER" ]]; then
-    echo "/mnt/c/Users/$USER/.cache/feed-watch"
-    return
-  fi
-
-  return 1
-}
-
-# bin/wsl-open は PowerShell の Constrained Language Mode を避けるため wslview を
-# 置き換えたもの (status-open.sh と同じ解決順)。
-open_url() {
-  if [[ $(uname -s) == Darwin ]]; then
-    /usr/bin/open "$1"
-  elif command -v wsl-open >/dev/null 2>&1; then
-    wsl-open "$1"
-  elif [[ -x "$HOME/.local/bin/scripts/wsl-open" ]]; then
-    "$HOME/.local/bin/scripts/wsl-open" "$1"
-  else
-    xdg-open "$1" >/dev/null 2>&1 || open "$1" >/dev/null 2>&1
-  fi
-}
-
-# get_status_dir の失敗 (Windows 側ユーザーを解決できない) で set -e により
+# status-dir の失敗 (Windows 側ユーザーを解決できない) で set -e により
 # 無言終了しないよう、空パスに倒して下の未検出メッセージへ流す
-status_dir=$(get_status_dir) || status_dir=""
+status_dir=$("$HOME/.local/bin/scripts/status-dir" feed-watch) || status_dir=""
 STATUS_FILE="$status_dir/status.json"
 
 [[ ! -f "$STATUS_FILE" ]] && echo "No feed-watch data found" && read -r && exit 0

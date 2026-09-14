@@ -7,31 +7,7 @@ WARNING_USED_PERCENT=${DISK_WATCH_WARNING_USED_PERCENT:-85}
 WARNING_AVAILABLE_GIB=${DISK_WATCH_WARNING_AVAILABLE_GIB:-50}
 CRITICAL_USED_PERCENT=${DISK_WATCH_CRITICAL_USED_PERCENT:-95}
 CRITICAL_AVAILABLE_GIB=${DISK_WATCH_CRITICAL_AVAILABLE_GIB:-15}
-
-get_status_dir() {
-  if [[ -n "${DISK_WATCH_STATUS_DIR:-}" ]]; then
-    echo "$DISK_WATCH_STATUS_DIR"
-    return
-  fi
-
-  local winuser
-  # systemd user unit 内では WSL interop が無効で cmd.exe が使えないことがある
-  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
-  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
-    echo "/mnt/c/Users/$winuser/.cache/disk-watch"
-    return
-  fi
-
-  # cmd.exe が使えないときは、linux.zsh の USERPROFILE と同じ前提 (Windows ユーザー名 =
-  # WSL ユーザー名) で同名プロファイルだけを候補にする。/mnt/c/Users/* の先頭を拾う
-  # 推測はしない: このホストには非システムのプロファイルが複数あり、別ユーザーへ書き込む
-  if [[ -d "/mnt/c/Users/$USER" ]]; then
-    echo "/mnt/c/Users/$USER/.cache/disk-watch"
-    return
-  fi
-
-  return 1
-}
+script_dir=$(dirname "$(readlink -f "$0")")
 
 filesystem_status() {
   local label=$1 path=$2 available_kib used_percent available_gib level
@@ -67,7 +43,7 @@ filesystem_status() {
 
 cmd_check() {
   local status_dir status_file temp_file windows_status wsl_status
-  status_dir=$(get_status_dir) || {
+  status_dir=${DISK_WATCH_STATUS_DIR:-$("$script_dir/status-dir" disk-watch)} || {
     echo "Windows mount not available, skipping." >&2
     return 0
   }

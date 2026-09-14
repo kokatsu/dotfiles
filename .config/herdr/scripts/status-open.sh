@@ -10,58 +10,9 @@ set -euo pipefail
 # format.lua と同じ TTL。これを超えたデータは監視が止まっているとみなす
 TTL=900
 
-herdr_bin=${HERDR_BIN_PATH:-herdr}
-
-notify() {
-  "$herdr_bin" notification show "$1" --sound none >/dev/null 2>&1 || true
-}
-
-# status-watch の get_status_dir と同じ解決
-get_status_dir() {
-  if [[ -n "${STATUS_WATCH_STATUS_DIR:-}" ]]; then
-    echo "$STATUS_WATCH_STATUS_DIR"
-    return
-  fi
-
-  if [[ $(uname -s) == Darwin ]]; then
-    echo "$HOME/.cache/status-watch"
-    return
-  fi
-
-  local winuser
-  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
-  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
-    echo "/mnt/c/Users/$winuser/.cache/status-watch"
-    return
-  fi
-
-  # cmd.exe が使えないときは WSL ユーザー名と同名のプロファイルだけを候補にする
-  # (status-watch と同じ規則)
-  if [[ -d "/mnt/c/Users/$USER" ]]; then
-    echo "/mnt/c/Users/$USER/.cache/status-watch"
-    return
-  fi
-
-  return 1
-}
-
-# bin/wsl-open は PowerShell の Constrained Language Mode を避けるため wslview を
-# 置き換えたもの。PATH 経由で見つからない場合は配置先の絶対パスへ倒す。
-# macOS を先に分けるのは、bin/ が macOS でも PATH に入るため wsl-open が必ず
-# 見つかってしまい、中の cmd.exe 実行で落ちて後段まで来ないから
-open_url() {
-  if [[ $(uname -s) == Darwin ]]; then
-    /usr/bin/open "$1"
-  elif command -v wsl-open >/dev/null 2>&1; then
-    wsl-open "$1"
-  elif [[ -x "$HOME/.local/bin/scripts/wsl-open" ]]; then
-    "$HOME/.local/bin/scripts/wsl-open" "$1"
-  else
-    xdg-open "$1" >/dev/null 2>&1 || open "$1" >/dev/null 2>&1
-  fi
-}
-
-status_dir=$(get_status_dir) || {
+# shellcheck source=.config/herdr/scripts/lib.sh
+source "$(dirname "$0")/lib.sh"
+status_dir=${STATUS_WATCH_STATUS_DIR:-$("$HOME/.local/bin/scripts/status-dir" status-watch)} || {
   notify "キャッシュディレクトリを解決できませんでした"
   exit 1
 }

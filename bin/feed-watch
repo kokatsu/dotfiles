@@ -15,32 +15,7 @@ script_path="$(readlink -f "$0")"
 # shellcheck source=scripts/feed-status.sh
 source "$(dirname "$script_path")/../scripts/feed-status.sh"
 
-# --- Windows 側の出力先を決定 ---
-get_status_dir() {
-  if [[ -n "${FEED_WATCH_STATUS_DIR:-}" ]]; then
-    printf '%s\n' "$FEED_WATCH_STATUS_DIR"
-    return
-  fi
-  local winuser
-  # systemd user unit 内では WSL interop が無効で cmd.exe が使えないことがある
-  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
-  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
-    echo "/mnt/c/Users/$winuser/.cache/feed-watch"
-    return
-  fi
-
-  # cmd.exe が使えないときは、linux.zsh の USERPROFILE と同じ前提 (Windows ユーザー名 =
-  # WSL ユーザー名) で同名プロファイルだけを候補にする。/mnt/c/Users/* の先頭を拾う
-  # 推測はしない: このホストには非システムのプロファイルが複数あり、別ユーザーへ書き込む
-  if [[ -d "/mnt/c/Users/$USER" ]]; then
-    echo "/mnt/c/Users/$USER/.cache/feed-watch"
-    return
-  fi
-
-  return 1
-}
-
-STATUS_DIR=$(get_status_dir) || {
+STATUS_DIR=${FEED_WATCH_STATUS_DIR:-$("$(dirname "$script_path")/status-dir" feed-watch)} || {
   echo "Windows mount not available, skipping." >&2
   exit 0
 }

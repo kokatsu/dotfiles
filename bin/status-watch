@@ -13,41 +13,7 @@ set -euo pipefail
 CLAUDE_SUMMARY_URL=${STATUS_WATCH_CLAUDE_URL:-${STATUS_WATCH_URL:-https://status.claude.com/api/v2/summary.json}}
 OPENAI_SUMMARY_URL=${STATUS_WATCH_OPENAI_URL:-https://status.openai.com/api/v2/summary.json}
 GITHUB_SUMMARY_URL=${STATUS_WATCH_GITHUB_URL:-https://www.githubstatus.com/api/v2/summary.json}
-
-# --- 出力先を決定 ---
-get_status_dir() {
-  if [[ -n "${STATUS_WATCH_STATUS_DIR:-}" ]]; then
-    echo "$STATUS_WATCH_STATUS_DIR"
-    return
-  fi
-
-  # macOS は WezTerm とこのスクリプトが同じマシンにいるので Windows プロファイルを
-  # 探さない。XDG_CACHE_HOME は見ない: feed-watch / disk-watch も .cache 直下の固定
-  # パスで、読み手 (format.lua / status-open.sh) と揃わなくなるのを避ける
-  if [[ $(uname -s) == Darwin ]]; then
-    echo "$HOME/.cache/status-watch"
-    return
-  fi
-
-  local winuser
-  # systemd user unit 内では WSL interop が無効で cmd.exe が使えないことがある
-  # (systemd-run --user では解決できたが、feed-watch では timer 内での失敗実績がある)
-  winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
-  if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
-    echo "/mnt/c/Users/$winuser/.cache/status-watch"
-    return
-  fi
-
-  # cmd.exe が使えないときは、linux.zsh の USERPROFILE と同じ前提 (Windows ユーザー名 =
-  # WSL ユーザー名) で同名プロファイルだけを候補にする。/mnt/c/Users/* の先頭を拾う
-  # 推測はしない: このホストには非システムのプロファイルが複数あり、別ユーザーへ書き込む
-  if [[ -d "/mnt/c/Users/$USER" ]]; then
-    echo "/mnt/c/Users/$USER/.cache/status-watch"
-    return
-  fi
-
-  return 1
-}
+script_dir=$(dirname "$(readlink -f "$0")")
 
 fetch_status() (
   local status_dir=$1
@@ -102,7 +68,7 @@ cmd_check() {
   local status_dir
   local failed=0
 
-  status_dir=$(get_status_dir) || {
+  status_dir=${STATUS_WATCH_STATUS_DIR:-$("$script_dir/status-dir" status-watch)} || {
     echo "Could not resolve the Windows profile directory." >&2
     exit 1
   }

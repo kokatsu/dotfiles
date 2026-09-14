@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# status-dir: WezTerm のステータスバーが読むキャッシュディレクトリを解決して出力する
+#
+# Usage:
+#   status-dir <name>   例: status-dir feed-watch → /mnt/c/Users/<user>/.cache/feed-watch
+#
+# WezTerm は Windows 側で動くため WSL では Windows プロファイル配下を使い、macOS は
+# 同じマシンの ~/.cache を使う。XDG_CACHE_HOME は見ない: 読み手 (format.lua) と
+# 固定パスで揃えるため
+
+name=${1:?usage: status-dir <name>}
+
+if [[ $(uname -s) == Darwin ]]; then
+  echo "$HOME/.cache/$name"
+  exit 0
+fi
+
+# systemd user unit 内では WSL interop が無効で cmd.exe が使えないことがある
+winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
+if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
+  echo "/mnt/c/Users/$winuser/.cache/$name"
+  exit 0
+fi
+
+# cmd.exe が使えないときは、linux.zsh の USERPROFILE と同じ前提 (Windows ユーザー名 =
+# WSL ユーザー名) で同名プロファイルだけを候補にする。/mnt/c/Users/* の先頭を拾う
+# 推測はしない: 非システムのプロファイルが複数あるホストでは別ユーザーへ書き込みうる
+if [[ -d "/mnt/c/Users/$USER" ]]; then
+  echo "/mnt/c/Users/$USER/.cache/$name"
+  exit 0
+fi
+
+exit 1
