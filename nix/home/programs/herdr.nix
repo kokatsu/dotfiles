@@ -173,6 +173,7 @@ in {
         focus_agent = "alt+1..9"
         previous_workspace = "prefix+comma"
         next_workspace = "prefix+period"
+        switch_workspace = "prefix+alt+1..9"
         # デフォルトの prefix+b を下の custom command に譲り、使用頻度の低い
         # サイドバー切替を別キーへ移す
         toggle_sidebar = "prefix+shift+b"
