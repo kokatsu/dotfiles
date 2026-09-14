@@ -115,7 +115,7 @@ return {
       desc = 'Diagnostics in Workspace',
     },
     {
-      '<leader>b',
+      '<leader>bb',
       function()
         Snacks.picker.buffers()
       end,
