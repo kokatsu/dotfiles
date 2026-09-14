@@ -6,6 +6,14 @@ local platform = require('platform')
 
 local M = {}
 
+M.show_status_badge = function(window, message)
+  window:set_right_status(wezterm.format({
+    { Background = { Color = colors.palette.red } },
+    { Foreground = { Color = colors.palette.crust } },
+    { Text = ' ' .. message .. ' ' },
+  }))
+end
+
 local default_color = colors.palette.blue
 local zoomed_color = colors.palette.peach
 
@@ -531,11 +539,7 @@ M.apply = function()
         window:set_right_status(wezterm.format({}))
       else
         -- まだ有効: メッセージを再描画（update-statusで上書きされるため）
-        window:set_right_status(wezterm.format({
-          { Background = { Color = colors.palette.red } },
-          { Foreground = { Color = colors.palette.crust } },
-          { Text = ' ' .. g.status_message .. ' ' },
-        }))
+        M.show_status_badge(window, g.status_message)
       end
     else
       -- 右ステータスは複数セクションの連結。空のセクションは飛ばす

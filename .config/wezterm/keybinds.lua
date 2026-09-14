@@ -31,14 +31,9 @@ local function double_press_action(key_name, action, timeout_sec, message)
       -- 1回目: ステータスバーにメッセージを表示
       wezterm.GLOBAL[key_name] = now
       if message then
-        local colors = require('colors')
         wezterm.GLOBAL.status_message = message
         wezterm.GLOBAL.status_expire = now + timeout_sec
-        window:set_right_status(wezterm.format({
-          { Background = { Color = colors.palette.red } },
-          { Foreground = { Color = colors.palette.crust } },
-          { Text = ' ' .. message .. ' ' },
-        }))
+        require('format').show_status_badge(window, message)
       end
     end
   end)
