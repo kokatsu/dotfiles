@@ -25,7 +25,6 @@ local denols_config = {
     end
     on_dir(project_root)
   end,
-  single_file_support = true,
 }
 
 return denols_config
