@@ -169,7 +169,7 @@ cmd_check() (
   local configured_names
   configured_names=$(cut -d'|' -f2 <<<"$entries" | jq -R . | jq -s .)
 
-  local updates='[]'
+  local updates='[]' fetched=0
 
   while IFS='|' read -r category name xml_url html_url; do
     local ids type
@@ -193,7 +193,13 @@ cmd_check() (
       --arg name "$name" --arg ids "$ids" --arg type "$type" \
       --arg url "$html_url" --arg category "$category" \
       '. + [{name: $name, ids: $ids, type: $type, url: $url, category: $category}]')
+    fetched=$((fetched + 1))
   done <<<"$entries"
+
+  if [[ $fetched -eq 0 ]]; then
+    echo "All feed fetches failed; keeping the previous status" >&2
+    exit 1
+  fi
 
   feed_status_update apply_check_results "$updates" "$configured_names"
 )

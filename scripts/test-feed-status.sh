@@ -56,7 +56,8 @@ cat >"$test_dir/bin/gh" <<'MOCK'
 set -euo pipefail
 [[ ! -e /proc/$$/fd/8 && ! -e /proc/$$/fd/9 ]] || exit 99
 printf 'fetch\n' >>"$FEED_TEST_DIR/fetch-calls"
-if [[ -e "$FEED_TEST_DIR/fail-fetch" ]]; then exit 1; fi
+if [[ -e "$FEED_TEST_DIR/fail-fetch" && "$*" == *example/demo* ]]; then exit 1; fi
+if [[ -e "$FEED_TEST_DIR/fail-all" ]]; then exit 1; fi
 if [[ -e "$FEED_TEST_DIR/pause-fetch" ]]; then
   touch "$FEED_TEST_DIR/fetch-ready"
   wait_file "$FEED_TEST_DIR/release"
@@ -86,11 +87,26 @@ jq -e '.feeds.demo.unread_count == 1 and .feeds.demo.last_summarized_id == "new-
 # Rechecking the same IDs must not double-count new entries.
 bash "$repo_root/bin/feed-watch" check
 jq -e '.feeds.demo.unread_count == 1' "$STATUS_FILE" >/dev/null
-# Failed fetches must not prune a configured feed.
+# A failed fetch must not prune the configured feed while other feeds succeed.
+cat >"$FEED_WATCH_OPML_DIR/feeds.opml" <<'XML'
+<opml><body>
+<outline text="test">
+<outline text="demo" xmlUrl="https://github.com/example/demo/commits.atom" htmlUrl="https://github.com/example/demo"/>
+<outline text="other" xmlUrl="https://github.com/example/other/commits.atom" htmlUrl="https://github.com/example/other"/>
+</outline>
+</body></opml>
+XML
 touch "$test_dir/fail-fetch"
 bash "$repo_root/bin/feed-watch" check
-jq -e '.feeds.demo.unread_count == 1' "$STATUS_FILE" >/dev/null
+jq -e '.feeds.demo.unread_count == 1 and .feeds.other != null' "$STATUS_FILE" >/dev/null
+rm "$test_dir/fail-fetch"
+# When every fetch fails the run must fail and leave the file (last_updated included) alone.
 cp "$STATUS_FILE" "$test_dir/before"
+touch "$test_dir/fail-all"
+if bash "$repo_root/bin/feed-watch" check 2>"$test_dir/all-failed"; then exit 1; fi
+grep -Fq 'All feed fetches failed' "$test_dir/all-failed"
+cmp "$STATUS_FILE" "$test_dir/before"
+rm "$test_dir/fail-all"
 : >"$FEED_WATCH_OPML_DIR/feeds.opml"
 if bash "$repo_root/bin/feed-watch" check; then exit 1; fi
 cmp "$STATUS_FILE" "$test_dir/before"
