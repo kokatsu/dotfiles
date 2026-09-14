@@ -318,8 +318,6 @@ in {
       yaml-language-server # YAML LSP
       # https://github.com/ziglang/zls
       zls # Zig Language Server
-      # https://github.com/tekumara/typos-lsp
-      typos-lsp # タイポ検出 LSP
 
       #####################################
       # Git hooks/lint ツール
