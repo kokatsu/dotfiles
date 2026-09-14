@@ -95,8 +95,8 @@ do
         local name = plugin.name
         -- lazy.nvim 本体・依存ライブラリ・startプラグインは除外
         -- startプラグイン(lazy=false)はLazyLoadイベントを発火しないためログに残らない
-        -- NOTE: plugin._.dep は lazy.nvim の内部API
-        -- v11以降で plugin._.kind 等に変更される可能性あり。アップデート時に要確認
+        -- plugin._.dep は lazy.nvim の内部 API。更新で消えると依存ライブラリまで
+        -- 未使用扱いになる
         if name ~= 'lazy.nvim' and not (plugin._ and plugin._.dep) and plugin.lazy then
           local last = last_loaded[name]
           if not last then
