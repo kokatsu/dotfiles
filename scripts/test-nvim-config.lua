@@ -52,6 +52,7 @@ if vim.fn.isdirectory(plugin_dir) == 0 then
 end
 
 local plugin_files = vim.fn.glob(plugin_dir .. '/*.lua', false, true)
+vim.opt.rtp:prepend(vim.fn.getcwd() .. '/.config/nvim')
 
 print('=== Neovim Config Smoke Tests ===')
 print('')

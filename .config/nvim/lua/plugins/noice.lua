@@ -8,11 +8,7 @@ return {
     {
       'rcarriga/nvim-notify',
       opts = function()
-        -- nvim-notify の背景フォールバック色は catppuccin palette の base に追従
-        local ok, palettes = pcall(require, 'catppuccin.palettes')
-        return {
-          background_colour = ok and palettes.get_palette().base or '#1e1e2e',
-        }
+        return { background_colour = require('utils.palette').get().base }
       end,
     },
   },

@@ -3,10 +3,7 @@
 local group = vim.api.nvim_create_augroup('Trailspace', { clear = true })
 
 local function set_hl(visible)
-  -- catppuccin palette の red を使用 (flavor 追従)
-  local ok, palettes = pcall(require, 'catppuccin.palettes')
-  local red = ok and palettes.get_palette().red or '#f38ba8'
-  vim.api.nvim_set_hl(0, 'Trailspace', { bg = visible and red or 'NONE' })
+  vim.api.nvim_set_hl(0, 'Trailspace', { bg = visible and require('utils.palette').get().red or 'NONE' })
 end
 
 -- Dashboard integration: hide highlight while snacks_dashboard is open
