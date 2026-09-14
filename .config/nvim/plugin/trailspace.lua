@@ -9,9 +9,6 @@ local function set_hl(visible)
   vim.api.nvim_set_hl(0, 'Trailspace', { bg = visible and red or 'NONE' })
 end
 
--- Start hidden (dashboard may be showing at startup)
-set_hl(false)
-
 -- Dashboard integration: hide highlight while snacks_dashboard is open
 local function is_dashboard_open()
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
@@ -21,6 +18,9 @@ local function is_dashboard_open()
   end
   return false
 end
+
+-- plugin/ は init.lua の colorscheme 適用後に読まれるため、起動時の ColorScheme はここに届かない
+set_hl(not is_dashboard_open())
 
 vim.api.nvim_create_autocmd('ColorScheme', {
   group = group,

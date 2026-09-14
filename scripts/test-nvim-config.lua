@@ -90,6 +90,11 @@ test('Trailspace augroup has autocmds', function()
   assert_true(#autocmds > 0, 'no autocmds in Trailspace group')
 end)
 
+test('Trailspace highlight is visible after startup', function()
+  local hl = vim.api.nvim_get_hl(0, { name = 'Trailspace' })
+  assert_true(hl.bg ~= nil, 'Trailspace highlight has no background right after loading')
+end)
+
 test('Trailspace match is added in normal buffers', function()
   vim.cmd('doautocmd BufWinEnter')
   -- matchadd is deferred via vim.schedule; flush the event loop
