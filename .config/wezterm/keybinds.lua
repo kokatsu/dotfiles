@@ -199,9 +199,9 @@ local windows_specific_keys = {
       window:perform_action(act.SendKey({ key = 'Space', mods = 'CTRL' }), pane)
     end),
   },
-  -- `Alt + y` で新しいタブで PowerShell を起動
+  -- `Alt + e` で新しいタブで PowerShell を起動
   {
-    key = 'y',
+    key = 'e',
     mods = 'ALT',
     action = act.SpawnCommandInNewTab({ args = { 'powershell.exe' }, domain = { DomainName = 'local' } }),
   },

@@ -285,8 +285,6 @@ in {
         width = "80%"
         height = "80%"
 
-        # alt+y は WSL では WezTerm windows_specific (PowerShell タブ) が先に
-        # 捕捉するため macOS 専用
         [[keys.command]]
         key = "alt+y"
         type = "popup"
