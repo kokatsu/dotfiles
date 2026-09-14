@@ -44,38 +44,6 @@ local function double_press_action(key_name, action, timeout_sec, message)
   end)
 end
 
---- 修飾子を変換する
----@param mods string 修飾子文字列
----@param mods_map table 修飾子マッピング { PRIMARY = 'CMD', SECONDARY = 'CTRL' }
----@return string 変換後の修飾子
-local function convert_mods(mods, mods_map)
-  local result = mods
-  for placeholder, actual in pairs(mods_map) do
-    result = result:gsub(placeholder, actual)
-  end
-  return result
-end
-
---- キーバインドの修飾子を変換する
----@param keys table[] キーバインドテーブル
----@param mods_map table 修飾子マッピング
----@return table[] 変換後のキーバインドテーブル
-local function convert_keys(keys, mods_map)
-  local result = {}
-  for _, key in ipairs(keys) do
-    local converted = {}
-    for k, v in pairs(key) do
-      if k == 'mods' then
-        converted[k] = convert_mods(v, mods_map)
-      else
-        converted[k] = v
-      end
-    end
-    table.insert(result, converted)
-  end
-  return result
-end
-
 --- キーテーブルをマージする
 ---@param ... table[] マージするキーテーブル
 ---@return table マージされたキーテーブル
@@ -96,6 +64,60 @@ local common_keys = {
   -- `Shift + Enter` で 改行を送信
   -- https://zenn.dev/glaucus03/articles/070589323cb450
   { key = 'Enter', mods = 'SHIFT', action = act.SendString('\n') },
+  -- `Ctrl + q` で WezTerm を終了（2度押しで確認）
+  -- herdr セッションはサーバ側に残るため、次回起動時にそのまま復帰する
+  {
+    key = 'q',
+    mods = 'CTRL',
+    action = double_press_action(
+      'ctrl_q_press',
+      act.QuitApplication,
+      2, -- 2秒以内に再度押すと実行
+      'もう一度 Ctrl+Q で終了'
+    ),
+  },
+}
+
+-- 統一キーバインド (WSL と macOS で同じ Ctrl/Alt 操作感)
+-- macOS では Karabiner がターミナルアプリ以外でのみ Ctrl↔Cmd を入れ替えるため、
+-- WezTerm には物理 Ctrl が Ctrl のまま届く
+local unified_keys = {
+  -- `Ctrl + c` でクリップボードにコピー
+  { key = 'c', mods = 'CTRL', action = act.CopyTo('Clipboard') },
+  -- `Ctrl + Shift + c` でキャンセル (SIGINT)
+  { key = 'C', mods = 'CTRL', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
+  -- `Ctrl + v` でクリップボードからペースト
+  { key = 'v', mods = 'CTRL', action = act.PasteFrom('Clipboard') },
+  -- `Ctrl + Shift + n` で新しいウィンドウを作成 (herdr 外の生シェル escape hatch)
+  { key = 'N', mods = 'CTRL', action = act.SpawnWindow },
+  -- `Ctrl + 左矢印` で前の単語に移動 (Esc+b)
+  -- selene: allow(bad_string_escape)
+  { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1bb') },
+  -- `Ctrl + 右矢印` で次の単語に移動 (Esc+f)
+  -- selene: allow(bad_string_escape)
+  { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1bf') },
+  -- `Ctrl + Shift + L` でデバッグオーバーレイを表示
+  { key = 'L', mods = 'CTRL', action = act.ShowDebugOverlay },
+  -- `Ctrl + ;` でフォントを大きくする
+  { key = ';', mods = 'CTRL', action = act.IncreaseFontSize },
+  -- `Ctrl + -` でフォントを小さくする
+  { key = '-', mods = 'CTRL', action = act.DecreaseFontSize },
+  -- `Ctrl + :` でフォントをリセット
+  { key = ':', mods = 'CTRL', action = act.ResetFontSize },
+  -- `Ctrl + Backspace` で単語を削除
+  { key = 'Backspace', mods = 'CTRL', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
+  -- `Ctrl + Shift + X` でコピーモードをアクティブにする
+  { key = 'X', mods = 'CTRL', action = act.ActivateCopyMode },
+  -- QuickSelect モード
+  { key = 'q', mods = 'ALT', action = act.QuickSelect },
+  -- 選択中の文字列を検索モードに渡し、画面内の同じ文字列をすべて強調する。
+  { key = '/', mods = 'ALT', action = act.Search('CurrentSelectionOrEmptyString') },
+  -- コマンドパレット
+  { key = 'p', mods = 'CTRL|SHIFT', action = act.ActivateCommandPalette },
+}
+
+-- Windows 固有キーバインド
+local windows_specific_keys = {
   -- `Alt + k` で Slack の未読バッジをクリアする。
   -- 常駐リスナー (windows/slack-watch) がこのマーカーを見つけて通知センターから
   -- Slack のトーストを消すので、Windows の通知センター側も同時に空になる
@@ -120,61 +142,6 @@ local common_keys = {
       os.rename(tmp, dir .. 'clear.request')
     end),
   },
-  -- `Ctrl + q` で WezTerm を終了（2度押しで確認）
-  -- herdr セッションはサーバ側に残るため、次回起動時にそのまま復帰する
-  {
-    key = 'q',
-    mods = 'CTRL',
-    action = double_press_action(
-      'ctrl_q_press',
-      act.QuitApplication,
-      2, -- 2秒以内に再度押すと実行
-      'もう一度 Ctrl+Q で終了'
-    ),
-  },
-}
-
--- 統一キーバインド (PRIMARY/SECONDARY をプラットフォームごとに変換)
--- Windows: PRIMARY=CTRL, SECONDARY=ALT
--- macOS: PRIMARY=CTRL, SECONDARY=ALT (Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替)
--- これにより、WSL と macOS で同じ操作感を実現
-local unified_keys = {
-  -- `PRIMARY + c` でクリップボードにコピー
-  { key = 'c', mods = 'PRIMARY', action = act.CopyTo('Clipboard') },
-  -- `PRIMARY + Shift + c` でキャンセル (SIGINT)
-  { key = 'C', mods = 'PRIMARY', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
-  -- `PRIMARY + v` でクリップボードからペースト
-  { key = 'v', mods = 'PRIMARY', action = act.PasteFrom('Clipboard') },
-  -- `PRIMARY + Shift + n` で新しいウィンドウを作成 (herdr 外の生シェル escape hatch)
-  { key = 'N', mods = 'PRIMARY', action = act.SpawnWindow },
-  -- `PRIMARY + 左矢印` で前の単語に移動 (Esc+b)
-  -- selene: allow(bad_string_escape)
-  { key = 'LeftArrow', mods = 'PRIMARY', action = act.SendString('\x1bb') },
-  -- `PRIMARY + 右矢印` で次の単語に移動 (Esc+f)
-  -- selene: allow(bad_string_escape)
-  { key = 'RightArrow', mods = 'PRIMARY', action = act.SendString('\x1bf') },
-  -- `PRIMARY + Shift + L` でデバッグオーバーレイを表示
-  { key = 'L', mods = 'PRIMARY', action = act.ShowDebugOverlay },
-  -- `PRIMARY + ;` でフォントを大きくする
-  { key = ';', mods = 'PRIMARY', action = act.IncreaseFontSize },
-  -- `PRIMARY + -` でフォントを小さくする
-  { key = '-', mods = 'PRIMARY', action = act.DecreaseFontSize },
-  -- `PRIMARY + :` でフォントをリセット
-  { key = ':', mods = 'PRIMARY', action = act.ResetFontSize },
-  -- `PRIMARY + Backspace` で単語を削除
-  { key = 'Backspace', mods = 'PRIMARY', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
-  -- `PRIMARY + Shift + X` でコピーモードをアクティブにする
-  { key = 'X', mods = 'PRIMARY', action = act.ActivateCopyMode },
-  -- QuickSelect モード
-  { key = 'q', mods = 'SECONDARY', action = act.QuickSelect },
-  -- 選択中の文字列を検索モードに渡し、画面内の同じ文字列をすべて強調する。
-  { key = '/', mods = 'SECONDARY', action = act.Search('CurrentSelectionOrEmptyString') },
-  -- コマンドパレット
-  { key = 'p', mods = 'PRIMARY|SHIFT', action = act.ActivateCommandPalette },
-}
-
--- Windows 固有キーバインド
-local windows_specific_keys = {
   -- `Ctrl + Space` (herdr prefix) で日本語 IME をオフにしてから prefix を送る。
   -- herdr の switch_ascii_input_source_in_prefix は WSL 内の Linux プロセスからは
   -- Windows の IME に届かないため、Windows 側で動く WezTerm が代行する。
@@ -240,12 +207,6 @@ local windows_specific_keys = {
     end),
   },
 }
-
--- macOS 固有キーバインド
--- Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替のため、物理 Ctrl = Ctrl として届く
--- 注意: OPT+矢印 を SendString で潰すと herdr の focus_pane (alt+矢印) に
--- キーが届かなくなるため、単語移動は Ctrl+矢印 に一本化している
-local darwin_specific_keys = {}
 
 -- コピーモードのキーテーブル（Vim風操作）
 local copy_mode = {
@@ -319,16 +280,12 @@ local search_mode = {
 }
 
 return {
-  windows_keys = merge_keys(
-    common_keys,
-    convert_keys(unified_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),
-    windows_specific_keys
-  ),
-  darwin_keys = merge_keys(
-    common_keys,
-    convert_keys(unified_keys, { PRIMARY = 'CTRL', SECONDARY = 'ALT' }),
-    darwin_specific_keys -- macOS固有キーを最後に配置して優先
-  ),
+  windows_keys = merge_keys(common_keys, unified_keys, windows_specific_keys),
+  -- macOS 固有キーはない。Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替のため、
+  -- 物理 Ctrl = Ctrl として届く。
+  -- 注意: OPT+矢印 を SendString で潰すと herdr の focus_pane (alt+矢印) に
+  -- キーが届かなくなるため、単語移動は Ctrl+矢印 に一本化している
+  darwin_keys = merge_keys(common_keys, unified_keys),
   key_tables = {
     copy_mode = copy_mode,
     search_mode = search_mode,
