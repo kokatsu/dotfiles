@@ -205,12 +205,6 @@ local windows_specific_keys = {
     mods = 'ALT',
     action = act.SpawnCommandInNewTab({ args = { 'powershell.exe' }, domain = { DomainName = 'local' } }),
   },
-  -- `Alt + s` で新しいタブで WSL に SSH 接続 (yazi 画像プレビュー用)
-  {
-    key = 's',
-    mods = 'ALT',
-    action = act.SpawnCommandInNewTab({ args = { 'ssh', '127.0.0.1' }, domain = { DomainName = 'local' } }),
-  },
   -- `Alt + p` で最新のスクリーンショットのWSLパスを入力（WSLドメインのみ）
   -- 外部プロセス不要: wezterm.glob() でファイル一覧を取得
   {
