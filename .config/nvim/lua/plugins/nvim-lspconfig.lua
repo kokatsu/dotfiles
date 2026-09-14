@@ -63,6 +63,7 @@ return {
       'kakehashi',
       'lua_ls',
       'markdown_oxide',
+      'nil_ls',
       'nixd',
       'postgres_lsp',
       'serve_d',
