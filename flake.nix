@@ -27,8 +27,7 @@
 
     # Herdr 公式リリースバイナリ。nixpkgs 収録版より安定版への追従が速く、
     # Rust/Zig ツールチェーンを使ったソースビルドも不要。
-    # 実際に使う版は nix/overlays/herdr.nix が pinnedVersion で上書きしているため、
-    # 更新はそちらの version と hash を書き換える (この input の更新だけでは変わらない)。
+    # 更新: nix flake update herdr-nix
     # https://github.com/herdrdev/herdr-nix
     herdr-nix = {
       url = "github:herdrdev/herdr-nix";
