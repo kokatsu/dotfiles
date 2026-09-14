@@ -344,6 +344,10 @@ analyze='
   | if $c == "rm" then "RM"
     elif $c == "eval" then "EVAL"
     elif $c == "shred" then "SHRED"
+    elif $c == "pkill" and ($a | opts_before_ddash
+        | any(.[]; . == "--full" or test("^-[A-Za-z]*f")))
+    then "PKILL_F"
+    elif $c == "killall" then "KILLALL"
     elif ($c | startswith("mkfs.")) then "MKFS"
     elif $c == "dd" and ($a | any(.[]; startswith("of=/dev/"))) then "DD_DEV"
     elif $c == "chmod" then
@@ -370,6 +374,8 @@ if [[ -n $verdicts ]]; then
   RM) msg="Use gomi instead of rm" ;;
   EVAL) msg="Refuse eval. Review the command and run it directly instead." ;;
   SHRED) msg="Refuse shred. Confirm intent and run manually." ;;
+  PKILL_F) msg="Refuse pkill -f: it pattern-matches every command line, including this harness and its live servers. Kill by a recorded PID or use the tool's own stop command." ;;
+  KILLALL) msg="Refuse killall. Kill by a recorded PID or use the tool's own stop command." ;;
   MKFS) msg="Refuse mkfs. Run manually if intentional." ;;
   DD_DEV) msg="Refuse dd writing to a device. Run manually if intentional." ;;
   CHMOD_R_777) msg="Refuse chmod -R 777. Use a tighter mode." ;;

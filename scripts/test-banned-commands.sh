@@ -8,7 +8,7 @@
 #   2. 誤検知しやすいコマンドが通過すること (exit 0)
 #      clone --depth、submodule --depth、fetch/pull を含むコミットメッセージ・URL など
 #   3. git identity の書き込みがブロックされ、読み取りが通過すること
-#   4. AST コマンドガード (rm/eval/dd/mkfs/chmod/shred/grep -r/git 系) が
+#   4. AST コマンドガード (rm/eval/dd/mkfs/chmod/shred/pkill -f/killall/grep -r/git 系) が
 #      改行・then/do・ラッパー・バッククォート等の全経路でブロックし、
 #      引数位置やコミットメッセージ内の語には誤検知しないこと
 
@@ -273,6 +273,13 @@ assert_blocked "git reset --hard HEAD~1" 'git reset --hard HEAD~1'
 assert_blocked "grep -r foo ." 'grep -r'
 assert_blocked "grep --recursive foo ." 'grep --recursive'
 assert_blocked "egrep -Rn foo ." 'egrep -Rn'
+assert_blocked "pkill -f herdr" 'pkill -f'
+assert_blocked "pkill -CHLD -f 'source.*zimfw'" 'pkill -CHLD -f (シグナル指定の後)'
+assert_blocked "pkill --full herdr" 'pkill --full'
+assert_blocked "killall node" 'killall'
+assert_allowed "pkill herdr" 'pkill (名前一致のみ)'
+assert_allowed 'kill -CHLD "$ZIMFW_PID"' 'kill by PID'
+assert_allowed "git commit -m 'stop using pkill -f'" 'pkill -f in commit message'
 echo ""
 
 echo "--- AST command guard: 誤検知しないこと ---"
