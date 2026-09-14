@@ -1,13 +1,8 @@
 -- Picker設定
 local M = {}
 
--- 共通の exclude 設定
-local ok, common_exclude = pcall(require, 'plugins.snacks.exclude')
-if not ok then
-  common_exclude = {}
-end
-
 local explorer = require('plugins.snacks.explorer')
+local common_exclude = explorer.common_exclude
 
 -- Picker opts
 M.opts = {

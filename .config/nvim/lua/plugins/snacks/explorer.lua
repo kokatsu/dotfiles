@@ -5,7 +5,12 @@ local M = {}
 local ok, common_exclude = pcall(require, 'plugins.snacks.exclude')
 if not ok then
   common_exclude = {}
+  vim.notify(
+    'plugins/snacks/exclude.lua がないため picker / explorer の除外設定は空です',
+    vim.log.levels.WARN
+  )
 end
+M.common_exclude = common_exclude
 
 -- Explorer共通設定
 local side_preview_min_columns = 140
