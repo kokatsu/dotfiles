@@ -3,6 +3,8 @@
 # Alt-y で起動。アクティブペインの cwd から開き、ファイルは opener 設定
 # (nvim, block) でそのまま編集できる
 
-cd "$HERDR_ACTIVE_PANE_CWD" 2>/dev/null || true
+set -euo pipefail
+
+cd "${HERDR_ACTIVE_PANE_CWD:?HERDR_ACTIVE_PANE_CWD is not set}"
 
 exec yazi
