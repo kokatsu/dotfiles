@@ -33,7 +33,7 @@ return {
   end,
   config = function()
     local app = 'browser'
-    if vim.fn.has('wsl') == 1 then
+    if vim.fn.has('wsl') == 1 and vim.fn.executable('wslview') == 1 then
       app = { 'wslview' }
     end
     require('peek').setup({

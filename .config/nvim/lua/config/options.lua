@@ -40,9 +40,11 @@ if is_wsl then
   vim.keymap.set('n', 'gx', function()
     require('utils.windows').open_url(vim.fn.expand('<cfile>'))
   end, { desc = 'Open URL in Windows browser' })
-  vim.keymap.set('n', 'gX', function()
-    vim.fn.jobstart({ 'wslview', vim.fn.expand('%:p') }, { detach = true })
-  end, { desc = 'Open current file in Windows browser' })
+  if vim.fn.executable('wslview') == 1 then
+    vim.keymap.set('n', 'gX', function()
+      vim.fn.jobstart({ 'wslview', vim.fn.expand('%:p') }, { detach = true })
+    end, { desc = 'Open current file in Windows browser' })
+  end
 end
 
 -- 行頭行末の左右移動で行をまたぐ
