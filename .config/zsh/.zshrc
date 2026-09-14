@@ -236,7 +236,7 @@ zsh-defer -a +1 +2 -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || 
 
 # https://github.com/catppuccin/catppuccin/discussions/2220
 # https://github.com/catppuccin/catppuccin/discussions/2220#discussioncomment-9476399
-if [[ ! -f "$ZSH_EVALCACHE_DIR/ls_colors_cache" ]]; then
+if [[ ! -s "$ZSH_EVALCACHE_DIR/ls_colors_cache" ]]; then
   vivid generate ${CATPPUCCIN_VIVID_THEME:-catppuccin-mocha} > "$ZSH_EVALCACHE_DIR/ls_colors_cache"
 fi
 export LS_COLORS="$(< $ZSH_EVALCACHE_DIR/ls_colors_cache)"
