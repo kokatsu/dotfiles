@@ -42,6 +42,8 @@ autoload -Uz -- git-alias-lookup git-branch-current git-branch-delete-interactiv
 # 即座に読み込み（プロンプト表示に必須）
 source ${ZIM_HOME}/modules/zsh-defer/zsh-defer.plugin.zsh
 source ${ZIM_HOME}/modules/evalcache/evalcache.plugin.zsh
+# 自前生成の補完 (delta など)。zimfw が管理する modules/ 配下に書くと update で消える
+fpath=(${ZSH_EVALCACHE_DIR}/completions ${fpath})
 source ${ZIM_HOME}/modules/environment/init.zsh
 source ${ZIM_HOME}/modules/input/init.zsh
 
@@ -209,7 +211,7 @@ fi
 # Delta (https://github.com/dandavison/delta)
 # ------------------------------------------------------------------------------
 
-zsh-defer -a +1 +2 -c '[ -e "$ZIM_HOME/modules/zsh-completions/src/_delta" ] || delta --generate-completion zsh >$ZIM_HOME/modules/zsh-completions/src/_delta'
+zsh-defer -a +1 +2 -c '[ -e "$ZSH_EVALCACHE_DIR/completions/_delta" ] || { mkdir -p "$ZSH_EVALCACHE_DIR/completions" && delta --generate-completion zsh >"$ZSH_EVALCACHE_DIR/completions/_delta"; }'
 
 # fastfetch は home.file で管理
 
