@@ -18,10 +18,10 @@ Nix + Home Manager (with Flakes) で macOS/Linux のシェル・ツール設定�
 
 ```bash
 # ユーザー環境 (packages / dotfiles)。Linux/WSL と macOS 共通
-home-manager switch --flake . --impure
+DOTFILES_DIR="$PWD" home-manager switch --flake . --impure
 
 # macOS システム設定 + Homebrew。cask の upgrade が走るため Chrome を閉じてから実行
-sudo HOSTNAME=$(hostname -s) darwin-rebuild switch --flake . --impure
+sudo HOSTNAME=$(hostname -s) DOTFILES_DIR="$PWD" darwin-rebuild switch --flake . --impure
 
 # Update packages
 nix flake update

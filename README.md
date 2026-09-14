@@ -91,4 +91,4 @@ Lefthook runs a subset of these on commit and push (formatters, linters, gitleak
 
 ## License
 
-MIT
+MIT. Third-party notices are listed in [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).

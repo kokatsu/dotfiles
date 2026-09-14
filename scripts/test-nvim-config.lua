@@ -1,4 +1,4 @@
--- Smoke tests for custom Neovim plugin/ files
+-- Smoke tests for custom Neovim plugin/ files and lua/utils modules
 -- Run: nvim --headless --clean -l scripts/test-nvim-config.lua
 
 local errors = {}
