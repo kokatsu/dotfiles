@@ -3,11 +3,10 @@
 # Alt-c で fzf を起動し、選択したパスを Claude Code / Codex CLI に送信する
 # 複数選択 (Tab) 対応、bat プレビュー付き
 #
-# 旧 tmux 版は bind 時点で pane_current_command から agent を判定して別スクリプトに
-# 振り分けていたが、herdrは1キー=1コマンド固定で振り分けができないため、
-# 起動元ペインのエージェントを herdr pane get で調べてこのスクリプト内で
-# 実行時に判定する。foreground process 名の手動マッチではなく herdr 自身の
-# 検出結果 (.result.pane.agent) を使う。エージェントなしのペインは null
+# herdr は 1 キー = 1 コマンド固定で bind 時点の振り分けができないため、
+# 起動元ペインのエージェントを herdr pane get で調べて実行時に判定する。
+# foreground process 名の手動マッチではなく herdr 自身の検出結果
+# (.result.pane.agent) を使う。エージェントなしのペインは null
 #
 # Codex CLI は入力欄で "@" を打つと内蔵fuzzy pickerが開く仕様のため、
 # "@" prefixを付けずに相対パス文字列だけを送る。

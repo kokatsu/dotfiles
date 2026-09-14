@@ -39,7 +39,7 @@ in {
   #
   # [keys] は herdr を macOS の常用マルチプレクサとした再構築 (WezTerm は
   # タブ/ペイン管理を全撤去した薄い GUI シェル) に合わせた配置:
-  # - prefix+t 新タブは旧 WezTerm (ctrl+t) の筋肉記憶
+  # - prefix+t 新タブは ctrl+t の筋肉記憶に寄せたもの
   # - alt+矢印 focus_pane は tmux/WezTerm 時代の direct キーを踏襲
   #   (WezTerm 側の OPT+矢印 SendString と Alt 系バインドは撤去済みが前提)
   # - alt+1..9 focus_agent は左右どちらの Option でも可
@@ -177,8 +177,7 @@ in {
         # サイドバー切替を別キーへ移す
         toggle_sidebar = "prefix+shift+b"
 
-        # Herdr の agent list 順で次の blocked エージェントへ移動する。末尾では先頭へ
-        # 折り返し、該当エージェントがいなければ通知する
+        # Herdr の agent list 順。末尾では先頭へ折り返し、該当がなければ通知する
         [[keys.command]]
         key = "prefix+b"
         type = "shell"
@@ -221,7 +220,6 @@ in {
         command = "${scriptsDir}/three-pane-layout.sh full-right"
         description = "3ペイン作業レイアウト (右を全高)"
 
-        # 選択中のペインを指定方向の隣接ペインと入れ替える。
         [[keys.command]]
         key = "prefix+shift+left"
         type = "shell"
@@ -246,7 +244,7 @@ in {
         command = "${scriptsDir}/swap-pane.sh right"
         description = "ペインを右と入れ替え"
 
-        # tmux の break-pane (prefix+!) と同じく、現在のペインを新しいタブへ移動
+        # キーは tmux の break-pane (prefix+!) から
         [[keys.command]]
         key = "prefix+!"
         type = "shell"
@@ -302,8 +300,8 @@ in {
         width = "90%"
         height = "90%"
 
-        # 旧 WezTerm Alt+r の移植。feed-watch のデータ生成 (systemd timer) が
-        # WSL 限定のため実質 WSL 専用 (macOS ではデータなしメッセージのみ)
+        # feed-watch のデータ生成 (systemd timer) が WSL 限定のため実質 WSL 専用
+        # (macOS ではデータなしメッセージのみ)
         [[keys.command]]
         key = "alt+r"
         type = "popup"
@@ -322,8 +320,7 @@ in {
         description = "異常のあるサービスの Statuspage を開く"
       '';
       # Claude Code / Codex の SessionStart から呼ぶ agent session 報告フック。
-      # `herdr integration install` が生成していた埋め込み Python のスクリプト
-      # 2 本 (上流の更新で上書きされる生成物) を自前の 1 本に置き換えたもの。
+      # `herdr integration install` の生成物は上流の更新で上書きされるため使わない。
       # 両エージェントで共有するため、配置はこのファイルだけが持つ
       # (claude-code.nix / codex.nix 側では扱わない)
       ".config/herdr/hooks/report-agent-session.sh" = {

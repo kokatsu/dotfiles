@@ -6,7 +6,6 @@ local platform = require('platform')
 -- ダブルプレス確認用のグローバル状態
 wezterm.GLOBAL = wezterm.GLOBAL or {}
 
--- プラットフォームユーティリティをローカル変数にバインド
 local is_wsl_domain = platform.is_wsl_domain
 
 --- ダブルプレスで実行するアクションを作成
