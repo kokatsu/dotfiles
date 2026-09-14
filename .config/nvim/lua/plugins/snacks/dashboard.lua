@@ -96,7 +96,9 @@ M.opts = {
       icon = ' ',
       -- https://github.com/mlange-42/git-graph (original)
       -- https://github.com/kokatsu/git-graph (fork, using this)
-      cmd = [[git-graph --model catppuccin-mocha --style bold --color always --wrap 50 0 8 --format 'oneline' --max-count 30 --local --highlight-head 'bold,black,bg:bright_yellow']],
+      cmd = 'git-graph --model catppuccin-'
+        .. (vim.env.CATPPUCCIN_NVIM_FLAVOR or 'mocha')
+        .. [[ --style bold --color always --wrap 50 0 8 --format 'oneline' --max-count 30 --local --highlight-head 'bold,black,bg:bright_yellow']],
       indent = 1,
       height = 35,
       ttl = 0,
