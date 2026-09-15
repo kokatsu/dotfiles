@@ -19,7 +19,7 @@ in {
       fi
       $DRY_RUN_CMD ${pkgs.deno}/bin/deno run \
         --config "${validDotfilesDir}/karabiner-config/deno.json" \
-        --allow-env --allow-read --allow-write \
+        --allow-env --allow-read --allow-write --allow-sys=homedir \
         "${validDotfilesDir}/karabiner-config/karabiner.ts"
     ''
   );

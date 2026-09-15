@@ -240,8 +240,8 @@ renovate-patterns-test:
 
 # Build karabiner.json from karabiner.ts
 karabiner-build:
-    cd karabiner-config && deno run --allow-env --allow-read --allow-write ./karabiner.ts
+    cd karabiner-config && deno run --allow-env --allow-read --allow-write --allow-sys=homedir ./karabiner.ts
 
 # Dry-run karabiner.json generation (no write)
 karabiner-dry-run:
-    cd karabiner-config && deno run --allow-env --allow-read --allow-write ./karabiner.ts --dry-run
+    cd karabiner-config && deno run --allow-env --allow-read --allow-write --allow-sys=homedir ./karabiner.ts --dry-run

@@ -1,5 +1,5 @@
 {
   "imports": {
-    "karabiner.ts": "https://deno.land/x/karabinerts@1.38.0/deno.ts"
+    "karabiner.ts": "npm:karabiner.ts@1.38.0"
   }
 }

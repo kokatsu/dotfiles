@@ -2,9 +2,15 @@
  * Karabiner-Elements configuration
  * @see https://github.com/evan-liu/karabiner.ts
  *
- * Build: deno run --allow-env --allow-read --allow-write karabiner.ts
+ * Build: deno run --allow-env --allow-read --allow-write --allow-sys=homedir karabiner.ts
  */
+import { createRequire } from "node:module";
 import { ifApp, map, rule, writeToProfile } from "karabiner.ts";
+
+// The npm ESM bundle calls bare require() for node:path/os/fs, which Deno does
+// not define in ESM.
+// deno-lint-ignore no-explicit-any
+(globalThis as any).require = createRequire(import.meta.url);
 
 // Terminal applications bundle identifiers
 const terminalApps = ifApp([
