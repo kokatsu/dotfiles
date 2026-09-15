@@ -207,6 +207,10 @@ banned-commands-test:
 herdr-peer-guard-test:
     bash scripts/test-herdr-peer-command-guard.sh
 
+# Measure the POSIX ERE / ECMAScript gap in banned-commands.json for this OS and locale
+regex-dialect-check:
+    bash scripts/check-regex-dialect.sh
+
 # Verify peer resolution and session bootstrap behavior
 herdr-peer-test:
     bash scripts/test-herdr-peer.sh
