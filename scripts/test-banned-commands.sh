@@ -449,14 +449,34 @@ assert_raw_blocked '{"tool_input":{"command":42}}' 'command が文字列でな�
 echo ""
 
 # payload を読む前に失敗する経路。fd 0 を閉じた状態では cat が制御端末へ落ちて
-# ハングし、exit 2 を返さないどころか永久に戻らなかった。timeout を噛ませて、
+# ハングし、exit 2 を返さないどころか永久に戻らなかった。時間を区切って、
 # 落ちること自体も検証する。
+#
+# 見張りを自前で持つのは、coreutils の timeout が macOS に無いからである。
+#
+# 終わらせるのが KILL なのは、フックが TERM を exit 2 へ変換するからで、
+# TERM で殺すとハングがこの assert の PASS に化ける。KILL は捕まえられず、
+# 137 をフックが騙ることはできない。
+#
+# 見張りの出力を捨てるのは、sleep が継承した stdout を握ったまま孤児になり、
+# 出力がパイプなら読み手をその分待たせるからである。
 echo "--- payload を読む前に失敗しても fail-closed であること ---"
 assert_exit2_cmd() {
-  local label="$1" rc=0
+  local label="$1" rc=0 pid watchdog
   shift
-  timeout 20 "$@" >/dev/null 2>&1 || rc=$?
-  if [ "$rc" -eq 2 ]; then
+  "$@" >/dev/null 2>&1 &
+  pid=$!
+  (
+    sleep 20
+    kill -KILL "$pid" 2>/dev/null
+  ) >/dev/null 2>&1 &
+  watchdog=$!
+  wait "$pid" || rc=$?
+  kill -TERM "$watchdog" 2>/dev/null || true
+  wait "$watchdog" 2>/dev/null || true
+  if [ "$rc" -eq 137 ]; then
+    fail "timed out after 20s: $label"
+  elif [ "$rc" -eq 2 ]; then
     pass "blocked: $label"
   else
     fail "should be blocked (exit 2), got exit $rc: $label"
