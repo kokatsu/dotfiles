@@ -6,11 +6,12 @@
 # locale を変えると POSIX 側の文字クラスが変わるので、対象環境ごとに走らせる。
 # macOS の BSD libc は未検証である。
 #
-# 受け入れ条件は 3 つあり、どれか 1 つでも崩れたら exit 1 で落ちる。
+# 受け入れ条件は 4 つあり、どれか 1 つでも崩れたら exit 1 で落ちる。
 #
 #   1. POSIX [[:space:]] のみに一致する符号位置が空であること
 #   2. A-Za-z0-9 が POSIX [[:alnum:]] の部分集合であること
-#   3. corpus の判定が両方言で一致すること
+#   3. jq (Oniguruma) の [[:space:]] をフックの JQ_SPACE が包含すること
+#   4. corpus の判定が両方言で一致すること
 #
 # 1 と 2 は「ECMAScript 側が POSIX 側を包含する」ことの確認である。包含して
 # いる限り差は過剰ブロックにしか出ず、禁止ルールでは fail-safe になる。逆向き
@@ -99,7 +100,31 @@ if [[ -s $work/alnum-ascii-only.txt ]]; then
   failed=1
 fi
 
-# --- 3. 実パターンを corpus で突き合わせる ---
+# --- 3. jq (Oniguruma) の [[:space:]] を JQ_SPACE が包含するか ---
+# banned-commands.json は bash が読むが、check-banned-commands.ts の sSplit と
+# ansiDecode は旧実装の jq プログラムから書き写した。jq は Oniguruma なので
+# 集合が bash とも JavaScript とも違い、jq だけが U+0085 に一致する。素朴に \s へ
+# 置き換えたところ env -S の区切りを取りこぼし、shallow 化が素通りした。
+# フック側の JQ_SPACE ([\s\u0085]) がこの集合を包含することをここで確かめる。
+jq -nr 'range(1;65536) | select(. < 55296 or . > 57343)
+        | select(([.] | implode) | test("[[:space:]]")) | .' |
+  awk '{printf "U+%04X\n", $1}' | sort >"$work/jq-space.txt"
+
+deno run --no-prompt "$helper" jq-space-set | sort >"$work/hook-space.txt"
+
+comm -23 "$work/jq-space.txt" "$work/hook-space.txt" >"$work/jq-only.txt"
+
+printf '[jq whitespace class vs the hook JQ_SPACE]\n'
+printf '  jq [[:space:]]: %s code points\n' "$(wc -l <"$work/jq-space.txt")"
+printf '  hook JQ_SPACE:  %s code points\n' "$(wc -l <"$work/hook-space.txt")"
+printf '  jq のみ (取りこぼし、不可): %s\n\n' "$(tr '\n' ' ' <"$work/jq-only.txt")"
+
+if [[ -s $work/jq-only.txt ]]; then
+  echo 'FAIL: jq の [[:space:]] のみに一致する符号位置がある。env -S の区切りを取りこぼす。' >&2
+  failed=1
+fi
+
+# --- 4. 実パターンを corpus で突き合わせる ---
 patterns=()
 while IFS= read -r line; do patterns+=("$line"); done < <(jq -r '.[].pattern' "$rules")
 

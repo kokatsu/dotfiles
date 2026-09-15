@@ -65,16 +65,21 @@ expect_exit() {
   esac
 }
 
-# 元の helper をコピーし、sed 式 $1 で壊した複製のパスを返す
+# helper は変換器をフックから import しているので、壊すのはその import である。
+# import 行を、$1 の本体を持つ壊れた定義に差し替えた複製のパスを返す。
 broken_helper() {
-  local expression=$1 name=$2
+  local body=$1 name=$2
   local path="$work/$name.ts"
-  cp "$helper" "$path"
-  sedi "$expression" "$path"
+  grep -v 'check-banned-commands\.ts";$' "$helper" >"$path"
   if diff -q "$helper" "$path" >/dev/null; then
-    echo "mutation did not apply: $name" >&2
+    echo "import lines not found in $helper" >&2
     exit 1
   fi
+  {
+    echo "export function toEcmaScript(pattern: string): string {"
+    echo "  return pattern$body;"
+    echo "}"
+  } >>"$path"
   echo "$path"
 }
 
@@ -89,15 +94,15 @@ expect_exit zero "無改変の helper" "$helper"
 # [:space:] を literal X にすると、パイプと shell 名の間の空白が一致しなくなり
 # pipe-to-shell と base64-to-shell が両方 allow へ転ぶ
 expect_exit nonzero "[:space:] の置換先が壊れている" \
-  "$(broken_helper 's|"\\\\s"|"X"|' space-literal)" skip-scan
+  "$(broken_helper '.replaceAll("[:space:]", "X").replaceAll("[:alnum:]", "A-Za-z0-9")' space-literal)" skip-scan
 
 # [:alnum:] の置換先を壊すと [^BROKEN_] になり、末尾の境界判定が変わる
 expect_exit nonzero "[:alnum:] の置換先が壊れている" \
-  "$(broken_helper 's|"A-Za-z0-9"|"BROKEN"|' alnum-broken)" skip-scan
+  "$(broken_helper '.replaceAll("[:space:]", "\\s").replaceAll("[:alnum:]", "BROKEN")' alnum-broken)" skip-scan
 
 # 置換自体を行わなければ POSIX クラスが RegExp へそのまま渡り、別物になる
 expect_exit nonzero "置換が行われない" \
-  "$(broken_helper 's|\.replaceAll("\[:space:\]", "\\\\s")||' no-space-replace)" skip-scan
+  "$(broken_helper '' no-replace)" skip-scan
 
 echo ""
 echo "=== Results: $TESTS tests, $ERRORS failures ==="
