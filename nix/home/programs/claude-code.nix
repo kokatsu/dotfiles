@@ -21,6 +21,7 @@
       source = ../../../.config/claude/hooks/check-banned-commands.sh;
       executable = true;
     };
+    ".config/claude/hooks/check-banned-commands.ts".source = ../../../.config/claude/hooks/check-banned-commands.ts;
     ".config/claude/hooks/check-ai-writing.sh" = {
       source = ../../../.config/claude/hooks/check-ai-writing.sh;
       executable = true;
