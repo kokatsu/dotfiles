@@ -67,7 +67,11 @@ script="$HOOKS_DIR/check-banned-commands.ts"
 # would hang.
 [[ -t 0 ]] && refuse "stdin is a terminal, not a piped payload"
 
-payload=$(mktemp) || refuse "could not create a temporary file"
+# An explicit template: a bare `mktemp` is a usage error on BSD and would
+# refuse every command on macOS, and `-t` there appends its own suffix to
+# what it treats as a prefix. A path template means the same on both.
+payload=$(mktemp "${TMPDIR:-/tmp}/banned-commands.XXXXXX") ||
+  refuse "could not create a temporary file"
 
 # Spool in the background and wait. A trapped signal is only delivered between
 # commands, so signalling the launcher while a foreground `cat` blocks on a
