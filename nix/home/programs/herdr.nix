@@ -177,6 +177,7 @@ in {
         # デフォルトの prefix+b を下の custom command に譲り、使用頻度の低い
         # サイドバー切替を別キーへ移す
         toggle_sidebar = "prefix+shift+b"
+        copy_mode = "prefix+["
 
         # Herdr の agent list 順。末尾では先頭へ折り返し、該当がなければ通知する
         [[keys.command]]
