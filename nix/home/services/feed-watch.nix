@@ -14,7 +14,7 @@ lib.mkIf isWSL {
       TimeoutStartSec = "10min";
       ExecStart = toString (pkgs.writeShellScript "feed-watch-check" ''
         # bash は feed-watch の shebang (#!/usr/bin/env bash) 解決に必要
-        export PATH="${lib.makeBinPath (with pkgs; [bash gh jq curl coreutils gnused gnugrep gawk util-linux])}"
+        export PATH="${lib.makeBinPath (with pkgs; [bash deno gh jq curl coreutils gnused gnugrep util-linux])}"
         exec "$HOME/.local/bin/scripts/feed-watch" check
       '');
     };

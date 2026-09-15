@@ -12,6 +12,7 @@ set -euo pipefail
 
 OPML_DIR="${FEED_WATCH_OPML_DIR:-$HOME/.config/bulletty}"
 script_path="$(readlink -f "$0")"
+HELPER="$(cd "$(dirname "$script_path")/.." && pwd)/scripts/feed-watch-helper.ts"
 # shellcheck source=scripts/feed-status.sh
 source "$(dirname "$script_path")/../scripts/feed-status.sh"
 
@@ -20,63 +21,6 @@ STATUS_DIR=${FEED_WATCH_STATUS_DIR:-$("$(dirname "$script_path")/status-dir" fee
   exit 0
 }
 STATUS_FILE="$STATUS_DIR/status.json"
-
-# --- 共通: 新規エントリを数えて status を更新 ---
-# $1: status JSON, $2: フィード名, $3: IDs (改行区切り), $4: type (github|feed), $5: url, $6: category
-update_feed_status() {
-  local status="$1" name="$2" ids="$3" type="$4" url="$5" category="$6"
-
-  if [[ -z "$ids" ]]; then
-    # 既存エントリがあれば category だけ更新
-    echo "$status" | jq \
-      --arg name "$name" --arg category "$category" \
-      'if .feeds[$name] then .feeds[$name].category = $category else . end'
-    return
-  fi
-
-  local latest_id
-  latest_id=$(echo "$ids" | head -n1)
-
-  local prev_id
-  prev_id=$(echo "$status" | jq -r --arg name "$name" '.feeds[$name].last_seen_id // ""')
-
-  local prev_unread
-  prev_unread=$(echo "$status" | jq -r --arg name "$name" '.feeds[$name].unread_count // 0')
-
-  # 既存の last_summarized_id を保持 (上書きしない)
-  local prev_summarized
-  prev_summarized=$(echo "$status" | jq -r --arg name "$name" '.feeds[$name].last_summarized_id // ""')
-
-  if [[ -z "$prev_id" ]]; then
-    # 初回: 未読 0 で最新 ID を記録
-    echo "$status" | jq \
-      --arg name "$name" --arg id "$latest_id" --arg type "$type" --arg url "$url" --arg category "$category" \
-      '.feeds[$name] = {"last_seen_id": $id, "unread_count": 0, "type": $type, "url": $url, "category": $category}'
-  elif [[ "$prev_id" == "$latest_id" ]]; then
-    # 変更なし (url, category は常に最新化)
-    echo "$status" | jq \
-      --arg name "$name" --arg url "$url" --arg category "$category" \
-      '.feeds[$name].url = $url | .feeds[$name].category = $category'
-  else
-    # 新規エントリを数える
-    local new_count=0
-    while IFS= read -r id; do
-      if [[ "$id" == "$prev_id" ]]; then
-        break
-      fi
-      ((new_count += 1))
-    done <<<"$ids"
-
-    local total_unread=$((prev_unread + new_count))
-
-    echo "$status" | jq \
-      --arg name "$name" --arg id "$latest_id" --arg type "$type" --arg url "$url" --arg category "$category" \
-      --arg summarized "$prev_summarized" \
-      --argjson count "$total_unread" \
-      '.feeds[$name] = {"last_seen_id": $id, "unread_count": $count, "type": $type, "url": $url, "category": $category}
-      | if $summarized != "" then .feeds[$name].last_summarized_id = $summarized else . end'
-  fi
-}
 
 # --- フィードからエントリ ID を取得 (Atom/RSS 自動判別) ---
 fetch_feed_ids() {
@@ -113,33 +57,7 @@ parse_opml() {
     return
   fi
 
-  awk '
-    function extract(attr, line,    pat, s, e) {
-      pat = attr "=\"[^\"]*\""
-      if (match(line, pat)) {
-        s = RSTART + length(attr) + 2
-        e = RLENGTH - length(attr) - 3
-        return substr(line, s, e)
-      }
-      return ""
-    }
-    /<outline/ && /xmlUrl=/ {
-      name = extract("text", $0)
-      xml_url = extract("xmlUrl", $0)
-      html_url = extract("htmlUrl", $0)
-      if (html_url == "") html_url = xml_url
-      print category "|" name "|" xml_url "|" html_url
-      next
-    }
-    /<outline/ && !/\/>/ {
-      t = extract("text", $0)
-      if (t != "") category = t
-    }
-    /<\/outline>/ {
-      # bulletty の OPML は 2 階層なので、閉じタグでカテゴリをリセットしても
-      # 次のカテゴリ outline で上書きされる。明示的なリセットは不要。
-    }
-  ' "${files[@]}"
+  cat "${files[@]}" | feed_run deno run --no-prompt "$HELPER" parse-opml
 }
 
 # --- check サブコマンド ---
@@ -164,12 +82,12 @@ cmd_check() (
     exit 1
   fi
 
-  # prune の基準は「OPML に書かれている名前」。取得に失敗したフィードも OPML には
-  # 残っているので、一時的なネットワーク障害でエントリを失わない
-  local configured_names
-  configured_names=$(cut -d'|' -f2 <<<"$entries" | jq -R . | jq -s .)
+  # レコードの区切りは NUL なのでシェル変数には積めない。一時ファイルへ書き足す
+  local updates
+  updates=$(mktemp "${TMPDIR:-/tmp}/feed-watch.XXXXXX") || exit 1
+  trap 'rm -f "$updates"' EXIT
 
-  local updates='[]' fetched=0
+  local fetched=0
 
   while IFS='|' read -r category name xml_url html_url; do
     local ids type
@@ -189,10 +107,8 @@ cmd_check() (
       }
       type=feed
     fi
-    updates=$(printf '%s\n' "$updates" | jq \
-      --arg name "$name" --arg ids "$ids" --arg type "$type" \
-      --arg url "$html_url" --arg category "$category" \
-      '. + [{name: $name, ids: $ids, type: $type, url: $url, category: $category}]')
+    printf '%s\0%s\0%s\0%s\0%s\0' \
+      "$name" "$type" "$html_url" "$category" "$ids" >>"$updates"
     fetched=$((fetched + 1))
   done <<<"$entries"
 
@@ -201,26 +117,16 @@ cmd_check() (
     exit 1
   fi
 
-  feed_status_update apply_check_results "$updates" "$configured_names"
+  feed_status_update apply_check_results "$updates" "$entries"
 )
 
 apply_check_results() {
-  local status="$1" updates="$2" configured_names="$3" row name ids type url category
-  while IFS= read -r row; do
-    name=$(jq -r '.name' <<<"$row")
-    ids=$(jq -r '.ids' <<<"$row")
-    type=$(jq -r '.type' <<<"$row")
-    url=$(jq -r '.url' <<<"$row")
-    category=$(jq -r '.category' <<<"$row")
-    status=$(update_feed_status "$status" "$name" "$ids" "$type" "$url" "$category")
-  done < <(jq -c '.[]' <<<"$updates")
-
-  # OPML から消えたフィードのエントリを落とす。残しておくと、未読を抱えたまま
-  # 設定から外れたフィードがステータスバーに出続ける
-  status=$(echo "$status" | jq --argjson names "$configured_names" \
-    '.feeds |= with_entries(select(.key as $k | ($names | index($k)) != null))')
-
-  echo "$status" | jq --argjson ts "$(date +%s)" '.last_updated = $ts'
+  local status="$1" updates="$2" entries="$3"
+  {
+    printf '%s\0%s\0' "$status" "$entries"
+    cat "$updates"
+  } |
+    feed_run deno run --no-prompt "$HELPER" apply-check-results
 }
 
 # --- read サブコマンド ---
