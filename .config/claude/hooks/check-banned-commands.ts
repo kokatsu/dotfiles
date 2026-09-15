@@ -77,15 +77,15 @@ export const VERDICT_MESSAGES: Record<Verdict, string> = {
 
 // --- shfmt --tojson のノード ---------------------------------------------
 
-type Node = Record<string, unknown>;
+export type Node = Record<string, unknown>;
 
-function isNode(value: unknown): value is Node {
+export function isNode(value: unknown): value is Node {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 // jq の `..` と同じ前順走査。値を出してから子へ降り、オブジェクトはキー順、
 // 配列は要素順で辿る。採用される判定はこの順序の先頭なので、順序自体が仕様。
-function* walk(value: unknown): Generator<Node> {
+export function* walk(value: unknown): Generator<Node> {
   if (isNode(value)) {
     yield value;
     for (const child of Object.values(value)) yield* walk(child);
@@ -142,7 +142,7 @@ function ansiDecode(value: string): string {
 // AST の語を文字列に戻す。展開結果が分からない部分 (ParamExp、CmdSubst など) は
 // 空文字になるので、`"$x"rm` は `rm` として読まれる。Lit はバックスラッシュを
 // すべて落とすため `r\m` も `rm` になる。取りこぼすより過剰に一致させる側へ倒す。
-function wordText(word: unknown): string {
+export function wordText(word: unknown): string {
   if (!isNode(word)) return "";
   const parts = Array.isArray(word.Parts) ? word.Parts : [];
   return parts
@@ -285,7 +285,7 @@ function stripExecOpts(args: string[]): string[] {
   return args;
 }
 
-function stripWrappers(args: string[]): string[] {
+export function stripWrappers(args: string[]): string[] {
   if (args.length === 0) return args;
   switch (args[0]) {
     case "command":

@@ -34,6 +34,7 @@
       source = ../../../.config/claude/hooks/gh-api-guard.sh;
       executable = true;
     };
+    ".config/claude/hooks/gh-api-guard.ts".source = ../../../.config/claude/hooks/gh-api-guard.ts;
     ".config/claude/hooks/herdr-cache-token.sh" = {
       source = ../../../.config/claude/hooks/herdr-cache-token.sh;
       executable = true;
