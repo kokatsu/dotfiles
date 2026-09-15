@@ -224,6 +224,7 @@ herdr-peer-test:
 reliability-test:
     bash scripts/test-check-failures.sh
     bash scripts/test-feed-status.sh
+    bash scripts/test-feed-watch.sh
     bash scripts/test-zimfw-activation.sh
     bash scripts/test-daily.sh
     bash scripts/test-status-dir.sh
