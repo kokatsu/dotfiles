@@ -5,7 +5,7 @@
 # banned-commands.json の正本方言は POSIX ERE で、フックは toEcmaScript() を
 # 通してから RegExp に渡す。ここで確かめるのはその変換が取りこぼしを生まないこと
 # である。locale を変えると POSIX 側の文字クラスが変わるので、対象環境ごとに
-# 走らせる。macOS の BSD libc は未検証である。
+# 走らせる。macOS の BSD libc は LANG=en_US.UTF-8 で通ることを確かめてある。
 #
 # 受け入れ条件は 4 つあり、どれか 1 つでも崩れたら exit 1 で落ちる。
 #
