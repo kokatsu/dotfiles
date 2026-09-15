@@ -13,7 +13,7 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test nvim-test
+check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test nvim-test
 
 # Test automatic Codex thread naming without starting a model turn
 codex-auto-title-test:
@@ -210,6 +210,11 @@ herdr-peer-guard-test:
 # Measure the POSIX ERE / ECMAScript gap in banned-commands.json for this OS and locale
 regex-dialect-check:
     bash scripts/check-regex-dialect.sh
+
+# Verify the POSIX-to-ECMAScript converter, and that check-regex-dialect.sh fails on a broken one
+regex-dialect-test:
+    deno test --allow-read scripts/test-regex-dialect-check.ts
+    bash scripts/test-regex-dialect.sh
 
 # Verify peer resolution and session bootstrap behavior
 herdr-peer-test:
