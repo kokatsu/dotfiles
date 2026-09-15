@@ -13,7 +13,7 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test nvim-test
+check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test nvim-test
 
 # Test automatic Codex thread naming without starting a model turn
 codex-auto-title-test:
@@ -206,6 +206,10 @@ banned-commands-test:
 # Verify raw Herdr input commands cannot bypass the shared peer guard
 herdr-peer-guard-test:
     bash scripts/test-herdr-peer-command-guard.sh
+
+# Verify `gh api` is auto-allowed only when it is provably read-only
+gh-api-guard-test:
+    bash scripts/test-gh-api-guard.sh
 
 # Measure the POSIX ERE / ECMAScript gap in banned-commands.json for this OS and locale
 regex-dialect-check:

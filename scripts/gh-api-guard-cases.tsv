@@ -1,0 +1,70 @@
+# gh-api-guard の判定を固定する。1 行 = id<TAB>decision<TAB>reason<TAB>command。
+# decision が none の行は、フックが何も出さずに 0 で終わること (settings.json の
+# if ゲートは「解析できないコマンド」でも起動するため、gh api が無い入力が届く)。
+# その行の reason 列には - を置く。タブは IFS の空白なので、空の列は隣と潰れる。
+#
+# A: 書き込みの疑いで ask になる形
+# B: 読み取りと証明できて allow になる形
+# C: 値の中身が旗に見えるだけの読み取り
+# D: 展開が旗を持ち込める形
+# E: gh api を含まない入力
+# F: argv の境界
+# G: bash として解析できない入力
+# H: 語分割が旗やコマンドを増やす形
+
+A1	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	gh api repos/o/r -X DELETE
+A2	ask	gh api: HTTP method override to 'POST' (not GET/HEAD) — confirm intent	gh api repos/o/r -iX POST
+A3	ask	gh api: HTTP method override to 'PATCH' (not GET/HEAD) — confirm intent	gh api repos/o/r -XPATCH
+A4	ask	gh api: HTTP method override to 'PUT' (not GET/HEAD) — confirm intent	gh api repos/o/r --method=PUT
+A5	ask	gh api: HTTP method override to 'put' (not GET/HEAD) — confirm intent	gh api repos/o/r --method put
+A6	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -F a=b
+A7	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -f a=b
+A8	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r --input body.json
+A9	ask	gh api: non-literal --method flag — confirm intent	gh api repos/o/r --method$M
+A10	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	gh api repos/o/r -X GET -X DELETE
+A11	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	sh -c 'gh api r -X DELETE'
+A12	ask	gh api: indirect invocation (eval / sh -c / xargs / subshell) — confirm intent	xargs gh api
+A13	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	gh api r && `gh api r -X DELETE`
+A14	ask	gh api: HTTP method override to '?' (not GET/HEAD) — confirm intent	gh api repos/o/r -X\ DELETE
+A15	ask	gh api: HTTP method override to '?' (not GET/HEAD) — confirm intent	gh api repos/o/r -X $'\x44ELETE'
+A16	ask	gh api: HTTP method override to '?' (not GET/HEAD) — confirm intent	gh api repos/o/r --method=$'DELETE'
+A17	ask	gh api: HTTP method override to '?' (not GET/HEAD) — confirm intent	gh api repos/o/r -X "$M"
+A18	ask	gh api: HTTP method override to '?' (not GET/HEAD) — confirm intent	gh api repos/o/r --method="$M"
+A19	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	sudo gh api r -X DELETE
+A20	ask	gh api: HTTP method override to 'i' (not GET/HEAD) — confirm intent	gh api repos/o/r -Xi
+A21	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -Fname=v
+A22	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -F'name=v'
+B1	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r
+B2	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -X GET
+B3	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --method head
+B4	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -H "Accept: application/vnd.github+json"
+B5	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --paginate
+B6	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --jq ".name"
+B7	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -q .name
+B8	allow	gh api: read-only (GET/HEAD)	gh api "repos/$O/commits"
+B9	allow	gh api: read-only (GET/HEAD)	gh api -H "$H" repos/o/r
+B10	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --jq "$Q"
+C1	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	gh api repos/o/r --jq "select(.x) | -X DELETE"
+C2	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r | grep -F name
+C3	ask	gh api: indirect invocation (eval / sh -c / xargs / subshell) — confirm intent	echo $(date) && gh api repos/o/r
+C4	ask	gh api: indirect invocation (eval / sh -c / xargs / subshell) — confirm intent	x=$(gh api repos/o/r)
+C5	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r && rm -f /tmp/x
+D1	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r/issues $X
+D2	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r "$@"
+D3	allow	gh api: read-only (GET/HEAD)	gh api $FLAGS repos/o/r
+D4	allow	gh api: read-only (GET/HEAD)	gh api repos/$O/commits
+D5	allow	gh api: read-only (GET/HEAD)	gh api "$X"
+E1	none	-	echo hello
+F1	allow	gh api: read-only (GET/HEAD)	gh api -- "$X"
+F2	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	gh api -- -X DELETE
+F3	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -H"$V"
+F4	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --nonesuch
+F5	allow	gh api: read-only (GET/HEAD)	gh api "repos/${a[@]}"
+F6	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	env GH_HOST=x gh api r -X DELETE
+F7	ask	gh api: non-literal --input flag — confirm intent	gh api repos/o/r --input"$F"
+G1	allow	gh api: read-only (GET/HEAD)	gh api 'unterminated
+G2	none	-	echo 'unterminated
+H1	allow	gh api: read-only (GET/HEAD)	gh api r -H $H
+H2	allow	gh api: read-only (GET/HEAD)	gh api r --header $H
+H3	allow	gh api: read-only (GET/HEAD)	env -u $V gh api r
+H4	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	gh api r && $CMD api r -X DELETE
