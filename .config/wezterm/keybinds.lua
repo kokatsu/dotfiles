@@ -106,7 +106,18 @@ local unified_keys = {
   -- QuickSelect モード
   { key = 'q', mods = 'ALT', action = act.QuickSelect },
   -- 選択中の文字列を検索モードに渡し、画面内の同じ文字列をすべて強調する。
-  { key = '/', mods = 'ALT', action = act.Search('CurrentSelectionOrEmptyString') },
+  -- alternate screen のスクロールバックは ConPTY のリサイズが残した過去の
+  -- フレームでしかなく、消しても失うものがない
+  {
+    key = '/',
+    mods = 'ALT',
+    action = wezterm.action_callback(function(window, pane)
+      if pane:is_alt_screen_active() then
+        window:perform_action(act.ClearScrollback('ScrollbackOnly'), pane)
+      end
+      window:perform_action(act.Search('CurrentSelectionOrEmptyString'), pane)
+    end),
+  },
   -- コマンドパレット
   { key = 'p', mods = 'CTRL|SHIFT', action = act.ActivateCommandPalette },
 }
