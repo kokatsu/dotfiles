@@ -2,9 +2,10 @@
 # check-regex-dialect.sh — banned-commands.json の POSIX ERE を ECMAScript へ
 # 変換したときの差を、実行中の OS と locale で測る。
 #
-# check-banned-commands.sh を Deno へ移す前の受け入れ条件を確認するためのツール。
-# locale を変えると POSIX 側の文字クラスが変わるので、対象環境ごとに走らせる。
-# macOS の BSD libc は未検証である。
+# banned-commands.json の正本方言は POSIX ERE で、フックは toEcmaScript() を
+# 通してから RegExp に渡す。ここで確かめるのはその変換が取りこぼしを生まないこと
+# である。locale を変えると POSIX 側の文字クラスが変わるので、対象環境ごとに
+# 走らせる。macOS の BSD libc は未検証である。
 #
 # 受け入れ条件は 4 つあり、どれか 1 つでも崩れたら exit 1 で落ちる。
 #
@@ -15,9 +16,14 @@
 #
 # 1 と 2 は「ECMAScript 側が POSIX 側を包含する」ことの確認である。包含して
 # いる限り差は過剰ブロックにしか出ず、禁止ルールでは fail-safe になる。逆向き
-# の差は取りこぼしなので許容しない。
+# の差は取りこぼしなので許容しない。corpus は特定の入力しか見ないので、一般の
+# 場合を保証するのはこの 2 つだけである。
 #
-# 3 は変換器そのものの検査である。1 と 2 が成り立っていても toEcmaScript() が
+# 3 は sSplit と ansiDecode のための別の包含関係である。この 2 つは jq の
+# プログラムから書き写しており、jq は Oniguruma なので集合が POSIX とも
+# ECMAScript とも違う。
+#
+# 4 は変換器そのものの検査である。1 から 3 が成り立っていても toEcmaScript() が
 # 壊れれば判定は変わる。corpus は判定が一致する入力だけで構成してあるため、
 # 差分はすべて異常として扱う。過剰ブロック側の入力を corpus へ入れるなら、
 # 行ごとの期待値を持たせてから入れる。
@@ -101,10 +107,9 @@ if [[ -s $work/alnum-ascii-only.txt ]]; then
 fi
 
 # --- 3. jq (Oniguruma) の [[:space:]] を JQ_SPACE が包含するか ---
-# banned-commands.json は bash が読むが、check-banned-commands.ts の sSplit と
-# ansiDecode は旧実装の jq プログラムから書き写した。jq は Oniguruma なので
-# 集合が bash とも JavaScript とも違い、jq だけが U+0085 に一致する。素朴に \s へ
-# 置き換えたところ env -S の区切りを取りこぼし、shallow 化が素通りした。
+# banned-commands.json と違い、check-banned-commands.ts の sSplit と ansiDecode は
+# jq のプログラムから書き写した。jq は Oniguruma なので集合が POSIX とも
+# ECMAScript とも違い、jq だけが U+0085 に一致する。
 # フック側の JQ_SPACE ([\s\u0085]) がこの集合を包含することをここで確かめる。
 jq -nr 'range(1;65536) | select(. < 55296 or . > 57343)
         | select(([.] | implode) | test("[[:space:]]")) | .' |

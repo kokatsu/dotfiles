@@ -58,6 +58,42 @@ Deno.test("every rule converts to a pattern with no POSIX class left", () => {
   }
 });
 
+// banned-commands.json の正本方言は POSIX ERE である。ECMAScript 構文へ書き換え
+// られても、条件 1 と 2 の包含関係は壊れないので check-regex-dialect.sh では
+// 気づけない。方言そのものをここで縛る。
+//
+// 許可する POSIX クラスを 2 つに限るのは、toEcmaScript() が知っているのがこの
+// 2 つだけだからである。3 つ目を JSON へ足すと、変換されないまま RegExp に渡り、
+// 文字クラスではなく文字の羅列として黙って別の意味になる。
+Deno.test("rules use only the POSIX classes the converter knows", () => {
+  const known = new Set(["[:space:]", "[:alnum:]"]);
+  for (const rule of rules()) {
+    for (const found of rule.pattern.match(/\[:[a-z]+:\]/g) ?? []) {
+      assert(
+        known.has(found),
+        `unknown POSIX class ${found} in: ${rule.pattern}`,
+      );
+    }
+  }
+});
+
+// ECMAScript 固有の構文が混ざると、正本が POSIX ERE でなくなる。bash の ERE は
+// \s も \d も lookaround も解釈しないので、混ざった時点で両方言で読める状態が
+// 失われる。
+Deno.test("rules carry no ECMAScript-only syntax", () => {
+  const forbidden: [RegExp, string][] = [
+    [/\\[sSdDwWbB]/, "a \\s / \\d / \\w style shorthand"],
+    [/\(\?[=!<]/, "a lookaround"],
+    [/\\[pP]\{/, "a Unicode property escape"],
+    [/\\u\{/, "a \\u{...} escape"],
+  ];
+  for (const rule of rules()) {
+    for (const [re, what] of forbidden) {
+      assertFalse(re.test(rule.pattern), `${what} in: ${rule.pattern}`);
+    }
+  }
+});
+
 Deno.test("converted rules still block the canonical pipe-to-shell forms", () => {
   const res = rules().map((r) => new RegExp(toEcmaScript(r.pattern)));
   const blocked = [

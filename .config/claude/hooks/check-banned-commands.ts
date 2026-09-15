@@ -16,10 +16,13 @@
 //
 // パースできないときは exit 2 で落ちる。検査できていないコマンドを通さない。
 
-// POSIX ERE の文字クラスを ECMAScript へ直す。banned-commands.json は bash の
-// [[ =~ ]] でも読めるよう POSIX のまま置いてあり、RegExp は bracket expression を
-// 解釈しないので、渡す前にここを通す。scripts/check-regex-dialect.sh が両方言の
-// 一致範囲を測り、scripts/test-regex-dialect-check.ts がこの関数を検証する。
+// banned-commands.json の正本方言は POSIX ERE である。実行時に読むのは今この
+// TypeScript だけだが、JSON を ECMAScript 構文へ書き換えないこと。RegExp は
+// bracket expression を解釈しないので、渡す前にここを通す。
+//
+// toEcmaScript() は POSIX 側の禁止対象を取りこぼさない向きへ変換する。
+// scripts/check-regex-dialect.sh が両方言の包含を測り、
+// scripts/test-regex-dialect-check.ts がこの関数と JSON の構文方針を検証する。
 export function toEcmaScript(pattern: string): string {
   return pattern
     .replaceAll("[:space:]", "\\s")

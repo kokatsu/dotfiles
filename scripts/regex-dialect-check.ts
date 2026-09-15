@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --no-prompt
-// regex-dialect-check.ts — check-banned-commands.sh を Deno へ移す準備として、
-// banned-commands.json の POSIX ERE を ECMAScript へ変換したときの差を測る。
+// regex-dialect-check.ts — banned-commands.json の POSIX ERE を ECMAScript へ
+// 変換したときの差を測る。check-regex-dialect.sh が使う ECMAScript 側の半分。
 //
 //   space-set      stdout: ECMAScript の \s が一致する符号位置 (U+XXXX、1 行 1 個)
 //   jq-space-set   stdout: フックの JQ_SPACE が一致する符号位置 (同上)
