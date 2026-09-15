@@ -1,0 +1,32 @@
+# check-banned-commands.sh が複数のルールに触れるコマンドで、どの判定を採用するか。
+#
+# フックは判定の並びから head -n1 だけを使うので、終了コードを見るテストでは
+# どちらが勝ったか分からない。ここは stderr のメッセージで採用された判定を見る。
+#
+# 現行実装での並びは 3 段になっている。1 段目は Assign ノードの
+# GIT_AUTHOR_*/GIT_COMMITTER_* 変数名、2 段目は CallExpr の引数に現れる同名の
+# 代入、3 段目がコマンドごとの判定である。1 段目と 2 段目はコマンド中の位置に
+# 関係なく 3 段目より先に出る。3 段目の中だけが AST の文書順で決まる。
+#
+# 書式: 期待する判定<TAB>コマンド
+#
+# 位置によらず GIT_IDENTITY が優先される (1 段目と 2 段目)
+GIT_IDENTITY	rm x && GIT_AUTHOR_NAME=y git commit
+GIT_IDENTITY	GIT_AUTHOR_NAME=y git commit && rm x
+GIT_IDENTITY	env GIT_COMMITTER_EMAIL=a@b git commit && shred f
+# 3 段目どうしは文書順で決まる
+EVAL	eval x; rm y
+RM	rm y; eval x
+FORCE_PUSH	git push --force && rm x
+RM	rm x && git push --force
+KILLALL	killall foo && eval bar
+GIT_CLEAN	git clean -fd; git fetch --depth 1
+EXTDIFF	git diff | grep -r pattern
+# git config 由来の GIT_IDENTITY は 3 段目なので、先行する rm に負ける
+RM	sudo rm -rf / && git config user.email a@b
+# コマンド置換とバッククォートの中身は、その語が現れた位置で訪問される
+RM	x=$(rm a) && grep -r b
+GREP_R	grep -r b && x=$(rm a)
+EVAL	`eval ls` && rm x
+# then/else の本体も同じ文書順に並ぶ
+RM	if true; then rm x; else eval y; fi

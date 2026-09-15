@@ -45,6 +45,49 @@ hook_rc() {
   echo "$rc"
 }
 
+# フックが stderr に出したメッセージを返す
+hook_stderr() {
+  { make_input "$1" | bash "$HOOK_SCRIPT" >/dev/null; } 2>&1 || true
+}
+
+# 判定コードごとの、メッセージを一意に見分ける断片
+verdict_needle() {
+  case $1 in
+  RM) echo 'Use gomi instead of rm' ;;
+  EVAL) echo 'Refuse eval' ;;
+  SHRED) echo 'Refuse shred' ;;
+  PKILL_F) echo 'Refuse pkill -f' ;;
+  KILLALL) echo 'Refuse killall' ;;
+  MKFS) echo 'Refuse mkfs' ;;
+  DD_DEV) echo 'Refuse dd writing to a device' ;;
+  CHMOD_R_777) echo 'Refuse chmod -R 777' ;;
+  CHMOD_777_ROOT) echo 'Refuse chmod 777 /' ;;
+  GREP_R) echo 'Use rg instead of grep' ;;
+  FORCE_PUSH) echo 'Refuse git push -f' ;;
+  GIT_CLEAN) echo 'Refuse git clean' ;;
+  GIT_RESET_HARD) echo 'Refuse git reset --hard' ;;
+  SHALLOW) echo 'Refuse shallow git fetch/pull' ;;
+  GIT_IDENTITY) echo "Don't set or override Git identity" ;;
+  EXTDIFF) echo 'Add --no-ext-diff' ;;
+  *)
+    echo "unknown verdict in fixture: $1" >&2
+    exit 1
+    ;;
+  esac
+}
+
+# 複数のルールに触れるコマンドで、採用された判定を stderr から確かめる
+assert_verdict() {
+  local want="$1" cmd="$2" needle output
+  needle=$(verdict_needle "$want")
+  output=$(hook_stderr "$cmd")
+  if [[ $output == *"$needle"* ]]; then
+    pass "verdict $want: $cmd"
+  else
+    fail "expected verdict $want for: $cmd (got: ${output%%$'\n'*})"
+  fi
+}
+
 # コマンドがブロックされることを検証 (厳密に exit 2)
 assert_blocked() {
   local cmd="$1"
@@ -365,6 +408,16 @@ assert_blocked 'herdr pane send-text hello'
 assert_blocked 'herdr pane run ls'
 assert_allowed 'herdr pane list' '入力系でない herdr サブコマンド'
 assert_allowed 'herdr-peer ask codex "hello"' 'herdr-peer 経由'
+echo ""
+
+# フックは触れた判定のうち先頭だけを使う。終了コードしか見ない他のテストでは
+# その順序を検査できないので、ここだけ stderr を読む。
+echo "--- 複数のルールに触れるときに採用される判定 ---"
+fixture="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/verdict-precedence-cases.txt"
+while IFS=$'\t' read -r want cmd; do
+  [[ -n $want && ${want:0:1} != "#" ]] || continue
+  assert_verdict "$want" "$cmd"
+done <"$fixture"
 echo ""
 
 echo "=== Results: $TESTS tests, $ERRORS failures ==="
