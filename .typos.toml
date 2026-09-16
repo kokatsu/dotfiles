@@ -7,4 +7,5 @@ extend-ignore-re = [
 ]
 
 [default.extend-words]
-noice = "noice" # noice.nvim (Neovim プラグイン名)
+noice = "noice"     # noice.nvim (Neovim プラグイン名)
+ratatui = "ratatui" # ratatui / ratatui-image (Rust TUI クレート名)
