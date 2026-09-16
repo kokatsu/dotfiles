@@ -32,6 +32,8 @@ return {
           'markdown',
           'markdown_inline',
           'mermaid',
+          'nix',
+          'regex',
           'ruby',
           'rust',
           'scss',
