@@ -112,22 +112,4 @@ in {
       meta = old.meta // {broken = false;};
     });
   };
-
-  # vscode-langservers-extracted 4.10.0 の各サーバ bundle は esbuild が生成した
-  # `createRequire(import.meta.url)` を含む。これは CJS では無効な import.meta 構文で、
-  # Node 24 のモジュール構文自動判定が CJS ファイルを ESM と誤認し、先頭の require() が
-  # "require is not defined in ES module scope" でクラッシュする (jsonls/cssls/htmlls 全滅)。
-  # import.meta.{url,dirname} を CJS 等価の __filename/__dirname に置換して解消する。
-  vscode-langservers-detect-module-fix = _final: prev: {
-    vscode-langservers-extracted = guardedOverride "vscode-langservers-extracted" "1.126.04524" prev.vscode-langservers-extracted (old: {
-      postInstall =
-        (old.postInstall or "")
-        + ''
-          find $out -path '*/node/*ServerMain.js' \
-            -exec sed -i \
-              -e 's|import\.meta\.url|__filename|g' \
-              -e 's|import\.meta\.dirname|__dirname|g' {} +
-        '';
-    });
-  };
 }

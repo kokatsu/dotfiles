@@ -156,7 +156,6 @@
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.unocss-language-server
       customOverlays.vite-plus
-      customOverlays.vscode-langservers-detect-module-fix
       customOverlays.vue-language-server-pin
       customOverlays.x-api-playground
     ];
