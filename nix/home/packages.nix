@@ -16,7 +16,8 @@
   '';
 in {
   # 以下のパッケージは programs.* モジュールで管理:
-  # bat, broot, btop, delta, eza, fzf, gh, git, lazygit, nh, readline, starship, zoxide
+  # bat, broot, btop, delta, eza, fastfetch, fzf, gh, git, lazydocker, lazygit, nh,
+  # readline, starship, zoxide
   # bin/ のユーザースクリプト (feed-watch, memo, daily 等) は files.nix が
   # ~/.local/bin/scripts に symlink し、sessionPath で PATH に入る
   home.packages = with pkgs;
@@ -99,8 +100,6 @@ in {
       difftastic # 構文を理解する構造的 diff (tree-sitter ベース, difft)
       # https://github.com/bootandy/dust
       dust # ディスク使用量可視化 (du alternative)
-      # https://github.com/fastfetch-cli/fastfetch
-      fastfetch # システム情報表示
       # https://github.com/sharkdp/fd
       fd # ファイル検索 (find alternative)
       # https://github.com/b4b4r07/gomi
@@ -119,8 +118,6 @@ in {
       miller # CSV/TSV/JSON 処理
       # https://github.com/mikefarah/yq
       yq-go # YAML/JSON/XML プロセッサ (yq コマンド)
-      # https://github.com/jesseduffield/lazydocker
-      lazydocker # Docker TUI
       # https://github.com/rofl0r/ncdu
       ncdu # ディスク使用量 TUI (du alternative)
       # https://github.com/nurse/nkf

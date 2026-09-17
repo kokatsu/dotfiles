@@ -49,11 +49,13 @@ in {
     ./programs/claude-code.nix
     ./programs/codex.nix
     ./programs/eza.nix
+    ./programs/fastfetch.nix
     ./programs/fzf.nix
     ./programs/gh.nix
     ./programs/git.nix
     ./programs/herdr.nix
     ./programs/karabiner.nix
+    ./programs/lazydocker.nix
     ./programs/lazygit.nix
     ./programs/lefthook.nix
     ./programs/nh.nix

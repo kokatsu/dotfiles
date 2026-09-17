@@ -21,36 +21,7 @@ in {
       };
       # fff.nvim: Nix ビルド版 (Rust バックエンド同梱) を lazy.nvim の dir 参照用に配置
       ".local/share/nvim/nix-plugins/fff.nvim".source = pkgs.vimPlugins.fff-nvim;
-      ".config/fastfetch/config.jsonc".text = let
-        rgb = c: "${toString c.rgb.r};${toString c.rgb.g};${toString c.rgb.b}";
-        staticContent = builtins.readFile ../../.config/fastfetch/config.static.jsonc;
-      in
-        builtins.replaceStrings
-        [
-          "__RED_RGB__"
-          "__BLUE_RGB__"
-          "__YELLOW_RGB__"
-          "__MAUVE_RGB__"
-          "__GREEN_RGB__"
-          "__PINK_RGB__"
-          "__SKY_RGB__"
-          "__PEACH_RGB__"
-          "__LAVENDER_RGB__"
-          "__TEAL_RGB__"
-        ]
-        [
-          (rgb p.red)
-          (rgb p.blue)
-          (rgb p.yellow)
-          (rgb p.mauve)
-          (rgb p.green)
-          (rgb p.pink)
-          (rgb p.sky)
-          (rgb p.peach)
-          (rgb p.lavender)
-          (rgb p.teal)
-        ]
-        staticContent;
+      # fastfetch is managed by nix/home/programs/fastfetch.nix
       ".config/git-graph/models/catppuccin-${flavor}.toml".text =
         # toml
         ''
@@ -167,8 +138,7 @@ in {
         staticContent = builtins.readFile ../../.config/octorus/config.static.toml;
       in
         builtins.replaceStrings ["__CATPPUCCIN_THEME__"] [names.spaced] staticContent;
-      ".config/octorus/themes/${names.spaced}.tmTheme".source =
-        ../../.config/bat/themes + "/${names.spaced}.tmTheme";
+      ".config/octorus/themes/${names.spaced}.tmTheme".source = "${config.catppuccin.sources.bat}/${names.spaced}.tmTheme";
       # `or init` が $XDG_CONFIG_HOME/octorus/prompts/{reviewer,rereview,reviewee}.md を読む
       ".config/octorus/prompts".source = ../../.config/octorus/prompts;
       ".config/bulletty/feeds.opml".source = ../../.config/bulletty/feeds.opml;
@@ -177,23 +147,7 @@ in {
       # 未読カウントには出したくないフィードはこちらへ置く
       ".config/bulletty/bulletty-only.opml".source = ../../.config/bulletty/bulletty-only.opml;
       ".config/biome".source = ../../.config/biome;
-      ".config/lazydocker/config.yml".text = let
-        staticContent = builtins.readFile ../../.config/lazydocker/config.static.yml;
-      in
-        builtins.replaceStrings
-        [
-          "__ACTIVE_BORDER__"
-          "__INACTIVE_BORDER__"
-          "__SELECTED_BG__"
-          "__OPTIONS_TEXT__"
-        ]
-        [
-          p.blue.hex
-          p.overlay0.hex
-          p.surface0.hex
-          p.blue.hex
-        ]
-        staticContent;
+      # lazydocker is managed by nix/home/programs/lazydocker.nix
       ".config/taplo".source = ../../.config/taplo;
       # bin: ユーザースクリプト (Deno/Bun/Shell)
       # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
@@ -247,8 +201,7 @@ in {
           search_current_bg = ${rgb p.peach}
           search_current_fg = ${rgb p.base}
         '';
-      ".config/treemd/code-themes/${names.spaced}.tmTheme".source =
-        ../../.config/bat/themes + "/${names.spaced}.tmTheme";
+      ".config/treemd/code-themes/${names.spaced}.tmTheme".source = "${config.catppuccin.sources.bat}/${names.spaced}.tmTheme";
     }
     # Docker CLI plugins (macOSではOrbStackが管理)
     // lib.optionalAttrs (!isDarwin) {

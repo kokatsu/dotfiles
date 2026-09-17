@@ -18,10 +18,6 @@ Files vendored from or embedding hex values derived from
 
 | Path | Upstream |
 | --- | --- |
-| `.config/bat/themes/Catppuccin Frappe.tmTheme` | [catppuccin/bat](https://github.com/catppuccin/bat) |
-| `.config/bat/themes/Catppuccin Latte.tmTheme` | [catppuccin/bat](https://github.com/catppuccin/bat) |
-| `.config/bat/themes/Catppuccin Macchiato.tmTheme` | [catppuccin/bat](https://github.com/catppuccin/bat) |
-| `.config/bat/themes/Catppuccin Mocha.tmTheme` | [catppuccin/bat](https://github.com/catppuccin/bat) |
 | `nix/home/catppuccin-palette.nix` | [catppuccin/palette](https://github.com/catppuccin/palette) |
 
 ```text
