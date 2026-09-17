@@ -58,269 +58,271 @@ in {
     {
       ".config/herdr/config.toml".text = let
         scriptsDir = "${config.xdg.configHome}/herdr/scripts";
-      in ''
-        onboarding = false
+      in
+        # toml
+        ''
+          onboarding = false
 
-        [theme]
-        name = "${names.kebab}"
+          [theme]
+          name = "${names.kebab}"
 
-        [ui]
-        accent = "${p.blue.hex}"
-        show_agent_labels_on_pane_borders = true
-        # デフォルトの "auto" は分割していないペインに枠を描かないので、単独
-        # ペインのタブでは上の agent label も出ない。"always" は
-        # pane_outer_borders (デフォルト true) が有効なら単独ペインにも枠を描く。
-        # ドキュメントは show_agent_labels_on_pane_borders を "split pane
-        # borders" としか書いていないが、0.9.0 の実機では単独ペインの枠にも
-        # ラベルが載ることを確認済み。代償は単独ペインのタブすべてで縦 2 行と
-        # 横 2 桁
-        pane_borders = "always"
-        # デフォルトの "dots" は色だけで状態を示すため、idle と、エージェントを
-        # 起動していないシェルが返す unknown がどちらも緑になり区別が付かない。
-        # "symbols" は blocked/working/done/idle/unknown に固有のグリフを当てる
-        status_indicators = "symbols"
-        # デフォルトの "{hostname}: {workspace}" だと WezTerm 側のタブタイトル
-        # (format.lua が表示幅で省略) が長いホスト名だけで埋まり実質固定表示に
-        # なるため workspace/tab に差し替える
-        window_title = "{workspace}: {tab}"
-        # tab-numbers プラグインが付ける [N] プレフィックスの分を確保する
-        # (デフォルト 26)
-        sidebar_width = 30
+          [ui]
+          accent = "${p.blue.hex}"
+          show_agent_labels_on_pane_borders = true
+          # デフォルトの "auto" は分割していないペインに枠を描かないので、単独
+          # ペインのタブでは上の agent label も出ない。"always" は
+          # pane_outer_borders (デフォルト true) が有効なら単独ペインにも枠を描く。
+          # ドキュメントは show_agent_labels_on_pane_borders を "split pane
+          # borders" としか書いていないが、0.9.0 の実機では単独ペインの枠にも
+          # ラベルが載ることを確認済み。代償は単独ペインのタブすべてで縦 2 行と
+          # 横 2 桁
+          pane_borders = "always"
+          # デフォルトの "dots" は色だけで状態を示すため、idle と、エージェントを
+          # 起動していないシェルが返す unknown がどちらも緑になり区別が付かない。
+          # "symbols" は blocked/working/done/idle/unknown に固有のグリフを当てる
+          status_indicators = "symbols"
+          # デフォルトの "{hostname}: {workspace}" だと WezTerm 側のタブタイトル
+          # (format.lua が表示幅で省略) が長いホスト名だけで埋まり実質固定表示に
+          # なるため workspace/tab に差し替える
+          window_title = "{workspace}: {tab}"
+          # tab-numbers プラグインが付ける [N] プレフィックスの分を確保する
+          # (デフォルト 26)
+          sidebar_width = 30
 
-        # タブ行の右端に Claude Code のコストを出す。ペインごとの statusline に
-        # 同じ数字を並べる代わりに、ウィンドウ全体で 1 箇所に集約する
-        # (.config/claude/settings.json は statusLine.command に
-        # CC_STATUSLINE_SHOW_COST=0 を前置してペイン側の行を落としている)。
-        #
-        # cc-statusline は stdin が空でもコスト行を出し、かつその場合は
-        # 1 行しか出さない。herdr はコマンド出力の最終行だけを採用するため、
-        # 行を選り分けるラッパースクリプトは要らない。
-        tab_bar_right = [
-          { type = "command", command = "${config.home.homeDirectory}/.nix-profile/bin/cc-statusline", interval_seconds = 60, timeout_seconds = 1 },
-        ]
+          # タブ行の右端に Claude Code のコストを出す。ペインごとの statusline に
+          # 同じ数字を並べる代わりに、ウィンドウ全体で 1 箇所に集約する
+          # (.config/claude/settings.json は statusLine.command に
+          # CC_STATUSLINE_SHOW_COST=0 を前置してペイン側の行を落としている)。
+          #
+          # cc-statusline は stdin が空でもコスト行を出し、かつその場合は
+          # 1 行しか出さない。herdr はコマンド出力の最終行だけを採用するため、
+          # 行を選り分けるラッパースクリプトは要らない。
+          tab_bar_right = [
+            { type = "command", command = "${config.home.homeDirectory}/.nix-profile/bin/cc-statusline", interval_seconds = 60, timeout_seconds = 1 },
+          ]
 
-        [ui.sidebar.agents]
-        row_gap = 1
+          [ui.sidebar.agents]
+          row_gap = 1
 
-        # Claude Code は OSC タイトルにセッション要約を書き、Codex は
-        # tui.terminal_title の thread にセッション名を書くので、その行を
-        # デフォルトレイアウトに挟んで表示する。override は rows を丸ごと
-        # 置き換えるため全行を明示
-        [ui.sidebar.agents.rows_by_agent]
-        # $wsnum はカスタムトークンのデフォルト (overlay0 + dim) だと薄すぎるので、
-        # ワークスペース名の非アクティブ時スタイル (subtext0 + bold) に合わせる
-        # terminal_title_stripped は非アクティブのワークスペース名と同じ
-        # subtext0 にして dim を無効化する。
-        # tab は見切れにくいよう専用の 2 行目へ置き、subtext0 + 通常にする。
-        # agent はエージェント種別の識別色にする。Claude Code は peach、
-        # Codex は blue。同じ行テキストである Spaces の branch の mauve だけは
-        # 避ける。blue は ui.accent と同値だが、accent が塗るのは枠とナビ UI で
-        # 行テキストには出てこない。
-        # $cache は teal。行テキストが暖色と青だけだと緑の帯が空いて全体が
-        # 単調になるので、state_icon と同じ緑側から取る。state_icon は 1 行目の
-        # グリフで $cache は 3 行目のテキストなうえ、status_indicators =
-        # "symbols" なので状態は色ではなく形が担っている
-        # 番号と workspace は主情報として Spaces / Agents の両方で太字に揃える
-        claude = [
-          ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
-          [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
-          # $cache は herdr-cache-token.ts が報告する prompt cache の失効時刻。
-          # --ttl-ms で失効と同時に消えるため、無表示 = キャッシュ切れを意味する
-          [{ token = "agent", fg = "${p.peach.hex}", bold = false, dim = false }, { token = "$cache", fg = "${p.teal.hex}", bold = false, dim = false }],
-          [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
-        ]
-        codex = [
-          ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
-          [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
-          [{ token = "agent", fg = "${p.blue.hex}", bold = false, dim = false }],
-          [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
-        ]
+          # Claude Code は OSC タイトルにセッション要約を書き、Codex は
+          # tui.terminal_title の thread にセッション名を書くので、その行を
+          # デフォルトレイアウトに挟んで表示する。override は rows を丸ごと
+          # 置き換えるため全行を明示
+          [ui.sidebar.agents.rows_by_agent]
+          # $wsnum はカスタムトークンのデフォルト (overlay0 + dim) だと薄すぎるので、
+          # ワークスペース名の非アクティブ時スタイル (subtext0 + bold) に合わせる
+          # terminal_title_stripped は非アクティブのワークスペース名と同じ
+          # subtext0 にして dim を無効化する。
+          # tab は見切れにくいよう専用の 2 行目へ置き、subtext0 + 通常にする。
+          # agent はエージェント種別の識別色にする。Claude Code は peach、
+          # Codex は blue。同じ行テキストである Spaces の branch の mauve だけは
+          # 避ける。blue は ui.accent と同値だが、accent が塗るのは枠とナビ UI で
+          # 行テキストには出てこない。
+          # $cache は teal。行テキストが暖色と青だけだと緑の帯が空いて全体が
+          # 単調になるので、state_icon と同じ緑側から取る。state_icon は 1 行目の
+          # グリフで $cache は 3 行目のテキストなうえ、status_indicators =
+          # "symbols" なので状態は色ではなく形が担っている
+          # 番号と workspace は主情報として Spaces / Agents の両方で太字に揃える
+          claude = [
+            ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
+            [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
+            # $cache は herdr-cache-token.ts が報告する prompt cache の失効時刻。
+            # --ttl-ms で失効と同時に消えるため、無表示 = キャッシュ切れを意味する
+            [{ token = "agent", fg = "${p.peach.hex}", bold = false, dim = false }, { token = "$cache", fg = "${p.teal.hex}", bold = false, dim = false }],
+            [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
+          ]
+          codex = [
+            ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
+            [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
+            [{ token = "agent", fg = "${p.blue.hex}", bold = false, dim = false }],
+            [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
+          ]
 
-        [ui.sidebar.spaces]
-        # tab-numbers プラグインが報告する $number トークンで番号を表示する
-        # (デフォルト行構成に $number を挿し込んだもの)
-        rows = [["state_icon", { token = "$number", fg = "${p.subtext0.hex}", bold = true, dim = false }, { token = "workspace", bold = true }], ["branch", "git_status"]]
-        row_gap = 1
+          [ui.sidebar.spaces]
+          # tab-numbers プラグインが報告する $number トークンで番号を表示する
+          # (デフォルト行構成に $number を挿し込んだもの)
+          rows = [["state_icon", { token = "$number", fg = "${p.subtext0.hex}", bold = true, dim = false }, { token = "workspace", bold = true }], ["branch", "git_status"]]
+          row_gap = 1
 
-        [ui.toast]
-        delivery = "${
-          if pkgs.stdenv.hostPlatform.isLinux
-          then "herdr"
-          else "terminal"
-        }"
+          [ui.toast]
+          delivery = "${
+            if pkgs.stdenv.hostPlatform.isLinux
+            then "herdr"
+            else "terminal"
+          }"
 
-        [ui.toast.herdr]
-        position = "bottom-right"
+          [ui.toast.herdr]
+          position = "bottom-right"
 
-        [ui.sound]
-        enabled = ${lib.boolToString pkgs.stdenv.hostPlatform.isLinux}
+          [ui.sound]
+          enabled = ${lib.boolToString pkgs.stdenv.hostPlatform.isLinux}
 
-        [keys]
-        prefix = "ctrl+space"
-        # デタッチは押し間違えると作業中のセッションから抜けてしまうので shift 必須にする
-        detach = "prefix+shift+q"
-        new_tab = "prefix+t"
-        move_tab_previous = "alt+shift+left"
-        move_tab_next = "alt+shift+right"
-        # prefix+x は close-pane-confirm.sh (custom command) に譲る。
-        # 無効化しないとデフォルトの close_pane が勝ち custom command 側が捨てられる
-        close_pane = ""
-        focus_pane_left = "alt+left"
-        focus_pane_down = "alt+down"
-        focus_pane_up = "alt+up"
-        focus_pane_right = "alt+right"
-        last_pane = "prefix+space"
-        focus_agent = "alt+1..9"
-        previous_workspace = "prefix+comma"
-        next_workspace = "prefix+period"
-        switch_workspace = "prefix+alt+1..9"
-        # デフォルトの prefix+b を下の custom command に譲り、使用頻度の低い
-        # サイドバー切替を別キーへ移す
-        toggle_sidebar = "prefix+shift+b"
-        copy_mode = "prefix+["
+          [keys]
+          prefix = "ctrl+space"
+          # デタッチは押し間違えると作業中のセッションから抜けてしまうので shift 必須にする
+          detach = "prefix+shift+q"
+          new_tab = "prefix+t"
+          move_tab_previous = "alt+shift+left"
+          move_tab_next = "alt+shift+right"
+          # prefix+x は close-pane-confirm.sh (custom command) に譲る。
+          # 無効化しないとデフォルトの close_pane が勝ち custom command 側が捨てられる
+          close_pane = ""
+          focus_pane_left = "alt+left"
+          focus_pane_down = "alt+down"
+          focus_pane_up = "alt+up"
+          focus_pane_right = "alt+right"
+          last_pane = "prefix+space"
+          focus_agent = "alt+1..9"
+          previous_workspace = "prefix+comma"
+          next_workspace = "prefix+period"
+          switch_workspace = "prefix+alt+1..9"
+          # デフォルトの prefix+b を下の custom command に譲り、使用頻度の低い
+          # サイドバー切替を別キーへ移す
+          toggle_sidebar = "prefix+shift+b"
+          copy_mode = "prefix+["
 
-        # Herdr の agent list 順。末尾では先頭へ折り返し、該当がなければ通知する
-        [[keys.command]]
-        key = "prefix+b"
-        type = "shell"
-        command = "${scriptsDir}/focus-next-blocked-agent.sh"
-        description = "次の blocked エージェントへ移動"
+          # Herdr の agent list 順。末尾では先頭へ折り返し、該当がなければ通知する
+          [[keys.command]]
+          key = "prefix+b"
+          type = "shell"
+          command = "${scriptsDir}/focus-next-blocked-agent.sh"
+          description = "次の blocked エージェントへ移動"
 
-        [experimental]
-        switch_ascii_input_source_in_prefix = true
-        reveal_hidden_cursor_for_cjk_ime = true
-        cjk_ime_agents = ["claude", "codex"]
+          [experimental]
+          switch_ascii_input_source_in_prefix = true
+          reveal_hidden_cursor_for_cjk_ime = true
+          cjk_ime_agents = ["claude", "codex"]
 
-        # close_pane の置き換え。エージェントが idle (緑) 以外なら close-confirm
-        # プラグインの popup 確認画面を開く (prefix+z 押し間違いによる稼働中
-        # エージェントの喪失防止)。popup 型 custom command は即閉じパスでも一瞬
-        # 描画されるため、shell 型 + 必要時のみ plugin pane open の構成
-        [[keys.command]]
-        key = "prefix+x"
-        type = "shell"
-        command = "${scriptsDir}/close-pane-confirm.sh"
-        description = "ペインを閉じる (エージェント稼働中は確認)"
+          # close_pane の置き換え。エージェントが idle (緑) 以外なら close-confirm
+          # プラグインの popup 確認画面を開く (prefix+z 押し間違いによる稼働中
+          # エージェントの喪失防止)。popup 型 custom command は即閉じパスでも一瞬
+          # 描画されるため、shell 型 + 必要時のみ plugin pane open の構成
+          [[keys.command]]
+          key = "prefix+x"
+          type = "shell"
+          command = "${scriptsDir}/close-pane-confirm.sh"
+          description = "ペインを閉じる (エージェント稼働中は確認)"
 
-        # 現在のペインを左上として、左右 1:1、左上下 3:1、右上下 1:1 に分割
-        [[keys.command]]
-        key = "prefix+backslash"
-        type = "shell"
-        command = "${scriptsDir}/four-pane-layout.sh"
-        description = "4ペイン作業レイアウト"
+          # 現在のペインを左上として、左右 1:1、左上下 3:1、右上下 1:1 に分割
+          [[keys.command]]
+          key = "prefix+backslash"
+          type = "shell"
+          command = "${scriptsDir}/four-pane-layout.sh"
+          description = "4ペイン作業レイアウト"
 
-        # 新しいペインを全高の左列として追加し、既存ペインを右列で上下 1:1 に分割する。
-        [[keys.command]]
-        key = "prefix+left"
-        type = "shell"
-        command = "${scriptsDir}/three-pane-layout.sh full-left"
-        description = "3ペイン作業レイアウト (左を全高)"
+          # 新しいペインを全高の左列として追加し、既存ペインを右列で上下 1:1 に分割する。
+          [[keys.command]]
+          key = "prefix+left"
+          type = "shell"
+          command = "${scriptsDir}/three-pane-layout.sh full-left"
+          description = "3ペイン作業レイアウト (左を全高)"
 
-        # 既存ペインを左列で上下 1:1 に配置し、新しいペインを全高の右列にする。
-        [[keys.command]]
-        key = "prefix+right"
-        type = "shell"
-        command = "${scriptsDir}/three-pane-layout.sh full-right"
-        description = "3ペイン作業レイアウト (右を全高)"
+          # 既存ペインを左列で上下 1:1 に配置し、新しいペインを全高の右列にする。
+          [[keys.command]]
+          key = "prefix+right"
+          type = "shell"
+          command = "${scriptsDir}/three-pane-layout.sh full-right"
+          description = "3ペイン作業レイアウト (右を全高)"
 
-        [[keys.command]]
-        key = "prefix+shift+left"
-        type = "shell"
-        command = "${scriptsDir}/swap-pane.sh left"
-        description = "ペインを左と入れ替え"
+          [[keys.command]]
+          key = "prefix+shift+left"
+          type = "shell"
+          command = "${scriptsDir}/swap-pane.sh left"
+          description = "ペインを左と入れ替え"
 
-        [[keys.command]]
-        key = "prefix+shift+down"
-        type = "shell"
-        command = "${scriptsDir}/swap-pane.sh down"
-        description = "ペインを下と入れ替え"
+          [[keys.command]]
+          key = "prefix+shift+down"
+          type = "shell"
+          command = "${scriptsDir}/swap-pane.sh down"
+          description = "ペインを下と入れ替え"
 
-        [[keys.command]]
-        key = "prefix+shift+up"
-        type = "shell"
-        command = "${scriptsDir}/swap-pane.sh up"
-        description = "ペインを上と入れ替え"
+          [[keys.command]]
+          key = "prefix+shift+up"
+          type = "shell"
+          command = "${scriptsDir}/swap-pane.sh up"
+          description = "ペインを上と入れ替え"
 
-        [[keys.command]]
-        key = "prefix+shift+right"
-        type = "shell"
-        command = "${scriptsDir}/swap-pane.sh right"
-        description = "ペインを右と入れ替え"
+          [[keys.command]]
+          key = "prefix+shift+right"
+          type = "shell"
+          command = "${scriptsDir}/swap-pane.sh right"
+          description = "ペインを右と入れ替え"
 
-        # キーは tmux の break-pane (prefix+!) から
-        [[keys.command]]
-        key = "prefix+!"
-        type = "shell"
-        command = "${scriptsDir}/move-pane-to-new-tab.sh"
-        description = "現在のペインを新しいタブへ移動"
+          # キーは tmux の break-pane (prefix+!) から
+          [[keys.command]]
+          key = "prefix+!"
+          type = "shell"
+          command = "${scriptsDir}/move-pane-to-new-tab.sh"
+          description = "現在のペインを新しいタブへ移動"
 
-        [[keys.command]]
-        key = "alt+v"
-        type = "popup"
-        command = "${scriptsDir}/prompt-edit.sh"
-        description = "Claude Code: プロンプト編集"
-        width = "90%"
-        height = "80%"
+          [[keys.command]]
+          key = "alt+v"
+          type = "popup"
+          command = "${scriptsDir}/prompt-edit.sh"
+          description = "Claude Code: プロンプト編集"
+          width = "90%"
+          height = "80%"
 
-        [[keys.command]]
-        key = "alt+c"
-        type = "popup"
-        command = "${scriptsDir}/path-pick-fzf.sh"
-        description = "パス選択 (fzf)"
-        width = "90%"
-        height = "80%"
+          [[keys.command]]
+          key = "alt+c"
+          type = "popup"
+          command = "${scriptsDir}/path-pick-fzf.sh"
+          description = "パス選択 (fzf)"
+          width = "90%"
+          height = "80%"
 
-        [[keys.command]]
-        key = "alt+g"
-        type = "popup"
-        command = "${scriptsDir}/path-pick-broot.sh"
-        description = "パス選択 (broot)"
-        width = "80%"
-        height = "80%"
+          [[keys.command]]
+          key = "alt+g"
+          type = "popup"
+          command = "${scriptsDir}/path-pick-broot.sh"
+          description = "パス選択 (broot)"
+          width = "80%"
+          height = "80%"
 
-        [[keys.command]]
-        key = "alt+h"
-        type = "popup"
-        command = "${scriptsDir}/octorus-history.sh"
-        description = "Octorus Rally 履歴"
-        width = "80%"
-        height = "80%"
+          [[keys.command]]
+          key = "alt+h"
+          type = "popup"
+          command = "${scriptsDir}/octorus-history.sh"
+          description = "Octorus Rally 履歴"
+          width = "80%"
+          height = "80%"
 
-        [[keys.command]]
-        key = "alt+y"
-        type = "popup"
-        command = "${scriptsDir}/yazi-pane.sh"
-        description = "Yazi"
-        width = "90%"
-        height = "90%"
+          [[keys.command]]
+          key = "alt+y"
+          type = "popup"
+          command = "${scriptsDir}/yazi-pane.sh"
+          description = "Yazi"
+          width = "90%"
+          height = "90%"
 
-        # alt+l は nvim mini.move (<M-l>) を奪うため prefix 側に置く
-        [[keys.command]]
-        key = "prefix+l"
-        type = "popup"
-        command = "${scriptsDir}/lazygit-pane.sh"
-        description = "Lazygit"
-        width = "90%"
-        height = "90%"
+          # alt+l は nvim mini.move (<M-l>) を奪うため prefix 側に置く
+          [[keys.command]]
+          key = "prefix+l"
+          type = "popup"
+          command = "${scriptsDir}/lazygit-pane.sh"
+          description = "Lazygit"
+          width = "90%"
+          height = "90%"
 
-        # feed-watch のデータ生成 (systemd timer) が WSL 限定のため実質 WSL 専用
-        # (macOS ではデータなしメッセージのみ)
-        [[keys.command]]
-        key = "alt+r"
-        type = "popup"
-        command = "${scriptsDir}/feed-open.sh"
-        description = "未読フィードを開く"
-        width = "80%"
-        height = "80%"
+          # feed-watch のデータ生成 (systemd timer) が WSL 限定のため実質 WSL 専用
+          # (macOS ではデータなしメッセージのみ)
+          [[keys.command]]
+          key = "alt+r"
+          type = "popup"
+          command = "${scriptsDir}/feed-open.sh"
+          description = "未読フィードを開く"
+          width = "80%"
+          height = "80%"
 
-        # ステータスバーのアイコンは色でしか状態を示さないので、詳細を見る動線を
-        # キーに割り当てる。ブラウザを開いて通知を出すだけで端末を使わないため
-        # type は shell
-        [[keys.command]]
-        key = "alt+i"
-        type = "shell"
-        command = "${scriptsDir}/status-open.sh"
-        description = "異常のあるサービスの Statuspage を開く"
-      '';
+          # ステータスバーのアイコンは色でしか状態を示さないので、詳細を見る動線を
+          # キーに割り当てる。ブラウザを開いて通知を出すだけで端末を使わないため
+          # type は shell
+          [[keys.command]]
+          key = "alt+i"
+          type = "shell"
+          command = "${scriptsDir}/status-open.sh"
+          description = "異常のあるサービスの Statuspage を開く"
+        '';
       # Claude Code / Codex の SessionStart から呼ぶ agent session 報告フック。
       # `herdr integration install` の生成物は上流の更新で上書きされるため使わない。
       # 両エージェントで共有するため、配置はこのファイルだけが持つ
@@ -348,10 +350,13 @@ in {
   # store パスを登録する。pin を変えたときだけパスが変わるため陳腐化しない。
   # close-confirm は close-pane-confirm.sh と対でこのリポジトリに残しているため、
   # 従来どおりチェックアウトの実パスを登録する
-  home.activation.linkHerdrPlugins = lib.hm.dag.entryAfter ["linkGeneration"] ''
-    $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
-      "${validDotfilesDir}/.config/herdr/plugins/close-confirm" > /dev/null
-    $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
-      "${inputs.herdr-tab-numbers}" > /dev/null
-  '';
+  home.activation.linkHerdrPlugins =
+    lib.hm.dag.entryAfter ["linkGeneration"]
+    # bash
+    ''
+      $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
+        "${validDotfilesDir}/.config/herdr/plugins/close-confirm" > /dev/null
+      $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
+        "${inputs.herdr-tab-numbers}" > /dev/null
+    '';
 }

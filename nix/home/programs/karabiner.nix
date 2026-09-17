@@ -11,7 +11,9 @@ in {
   # writeToProfile()は既存profileを上書きするため、未作成ならstubを置いてから生成する。
   # CIではdenoのローカルビルドを避けるため実行しない。
   home.activation.buildKarabinerConfig = lib.mkIf (isDarwin && !isCI) (
-    lib.hm.dag.entryAfter ["writeBoundary"] ''
+    lib.hm.dag.entryAfter ["writeBoundary"]
+    # bash
+    ''
       KARABINER_DIR="${config.home.homeDirectory}/.config/karabiner"
       $DRY_RUN_CMD mkdir -p "$KARABINER_DIR"
       if [ ! -f "$KARABINER_DIR/karabiner.json" ]; then

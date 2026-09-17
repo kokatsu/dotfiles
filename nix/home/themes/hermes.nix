@@ -53,19 +53,22 @@ in {
     }) ["latte" "frappe" "macchiato" "mocha"]);
 
     # catppuccin.flavorに追従してHermesの現在skinを書き戻す。
-    activation.applyHermesSkin = lib.hm.dag.entryAfter ["linkGeneration"] ''
-      DESIRED="catppuccin-${config.catppuccin.flavor}"
-      CONFIG="${config.xdg.configHome}/hermes/config.yaml"
-      CURRENT=""
-      if [ -f "$CONFIG" ]; then
-        CURRENT=$(${pkgs.gnugrep}/bin/grep -E '^[[:space:]]*skin:[[:space:]]*' "$CONFIG" \
-          | ${pkgs.gnused}/bin/sed -E 's/^[[:space:]]*skin:[[:space:]]*"?([^"#]+)"?.*/\1/' \
-          | tr -d '[:space:]' || true)
-      fi
-      if [ "$CURRENT" != "$DESIRED" ]; then
-        $DRY_RUN_CMD env HERMES_HOME="${config.xdg.configHome}/hermes" \
-          "${pkgs.hermes-agent}/bin/hermes" config set display.skin "$DESIRED" > /dev/null
-      fi
-    '';
+    activation.applyHermesSkin =
+      lib.hm.dag.entryAfter ["linkGeneration"]
+      # bash
+      ''
+        DESIRED="catppuccin-${config.catppuccin.flavor}"
+        CONFIG="${config.xdg.configHome}/hermes/config.yaml"
+        CURRENT=""
+        if [ -f "$CONFIG" ]; then
+          CURRENT=$(${pkgs.gnugrep}/bin/grep -E '^[[:space:]]*skin:[[:space:]]*' "$CONFIG" \
+            | ${pkgs.gnused}/bin/sed -E 's/^[[:space:]]*skin:[[:space:]]*"?([^"#]+)"?.*/\1/' \
+            | tr -d '[:space:]' || true)
+        fi
+        if [ "$CURRENT" != "$DESIRED" ]; then
+          $DRY_RUN_CMD env HERMES_HOME="${config.xdg.configHome}/hermes" \
+            "${pkgs.hermes-agent}/bin/hermes" config set display.skin "$DESIRED" > /dev/null
+        fi
+      '';
   };
 }
