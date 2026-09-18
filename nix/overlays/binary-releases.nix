@@ -85,14 +85,14 @@ in {
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = mkBinaryRelease rec {
     pname = "claude-code";
-    version = "2.1.275";
+    version = "2.1.276";
     # hash は Google の manifest.json (publisher 公開 checksum) から取得するため
     # 汎用 prefetch ループの対象外。更新は pr.yml の個別ステップが担う。
     hashSource = "manifest";
     hashes = {
-      "aarch64-darwin" = "sha256-G4F3/knyvlusx16JtfiPp0VHkSgxE6zhakU/6RcdF5s=";
-      "aarch64-linux" = "sha256-7877dEjD0SoEW1xT4PtOiFn/mavpDWf4OQDE8P/VF+0=";
-      "x86_64-linux" = "sha256-E1hvMVCnyhZV824dunWftATg989wIdSj3NXm9gTlYVY=";
+      "aarch64-darwin" = "sha256-neNk2xGkENU8u7D2sfGMZskAU+/JpjNwByhW0Q22Yyk=";
+      "aarch64-linux" = "sha256-6aw9+VYINkVXijgq1k7DBEaGZuNiwzv979gDzW/1lrA=";
+      "x86_64-linux" = "sha256-ilbIoUvTyyRuK9t+YK7+D2Cb/3jIu8xeprGBfBEcYUU=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
