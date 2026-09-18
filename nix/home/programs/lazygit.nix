@@ -1,11 +1,27 @@
 {
   lib,
   config,
+  pkgs,
   isWSL,
   ...
 }: {
   programs.lazygit = {
     enable = true;
+    # status.showUntrackedFiles=normal のリポジトリでは git status が新規ディレクトリを
+    # 1 エントリに畳み、lazygit がそれをファイル扱いして
+    # `git diff --no-index -- /dev/null <dir>` に渡すため Could not access で落ちる。
+    # lazygit が呼ぶ git にだけ all を渡す (CLI の git status は normal のまま)
+    package = pkgs.symlinkJoin {
+      name = "lazygit-wrapped";
+      paths = [pkgs.lazygit];
+      nativeBuildInputs = [pkgs.makeWrapper];
+      postBuild = ''
+        wrapProgram $out/bin/lazygit \
+          --set GIT_CONFIG_COUNT 1 \
+          --set GIT_CONFIG_KEY_0 status.showUntrackedFiles \
+          --set GIT_CONFIG_VALUE_0 all
+      '';
+    };
     settings = {
       gui = {
         showRandomTip = false;
