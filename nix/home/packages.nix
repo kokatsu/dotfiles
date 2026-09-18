@@ -82,6 +82,8 @@ in {
       agent-browser # ブラウザ自動化エージェント
       # https://github.com/crocidb/bulletty
       bulletty # TUI RSS/Atom フィードリーダー
+      # https://github.com/contentauth/c2pa-rs
+      c2patool # C2PA マニフェストの表示・署名・検証 CLI
       # https://github.com/carapace-sh/carapace-bin
       carapace # マルチシェル補完エンジン (carapace-bin)
       # https://github.com/hpjansson/chafa
