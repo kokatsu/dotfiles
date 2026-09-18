@@ -1,0 +1,195 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ime-watch: herdr の prefix を押したとき WezTerm の日本語 IME を閉じる、
+# Windows 側リスナーの管理スクリプト
+#
+# Usage:
+#   ime-watch install  - Windows 側へ publish し、ログオン時に起動する設定を入れる
+#   ime-watch start    - リスナーを起動する
+#   ime-watch stop     - リスナーを止める
+#   ime-watch status   - 現在の status.json を表示する
+#   ime-watch off      - 常駐を介さずその場で IME を閉じる (動作確認用)
+#
+# 実行ファイルを配置せずに済ませるため、起動は常に dotnet ホスト経由で行う。
+# 詳細は windows/ime-watch/README.md を参照
+
+DOTNET=${IME_WATCH_DOTNET:-/mnt/c/Program Files/dotnet/dotnet.exe}
+
+RUN_KEY='HKCU\Software\Microsoft\Windows\CurrentVersion\Run'
+RUN_VALUE_NAME=ime-watch
+
+# 起動と停止の確認に待つ秒数。常駐は status.json を定期更新しないので、判断材料は PID だけ
+CONFIRM_TIMEOUT=20
+
+script_path="$(readlink -f "$0")"
+repo_dir="$(dirname "$script_path")/.."
+source_dir="$repo_dir/windows/ime-watch"
+
+# ユーザー名から C:\Users\<name> を組み立てず、Windows が持つ実際のプロファイルを使う。
+# C# 側 (SpecialFolder.UserProfile) と WezTerm 側 (%USERPROFILE%) と同じ基準になる
+get_win_profile() {
+  local profile
+  profile=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERPROFILE%" 2>/dev/null | tr -d '\r') || true
+  if [[ -n "$profile" && "$profile" != '%USERPROFILE%' ]]; then
+    printf '%s\n' "$profile"
+    return
+  fi
+
+  echo "ime-watch: Windows のユーザープロファイルを特定できません" >&2
+  exit 1
+}
+
+WIN_PROFILE=$(get_win_profile)
+PROFILE_DIR=$(wslpath -u "$WIN_PROFILE")
+INSTALL_DIR="$PROFILE_DIR/AppData/Local/ime-watch"
+WIN_INSTALL_DIR="$WIN_PROFILE\\AppData\\Local\\ime-watch"
+WIN_DLL="$WIN_INSTALL_DIR\\bin\\ImeWatch.dll"
+STATE_DIR="$PROFILE_DIR/.cache/ime-watch"
+STATUS_FILE="$STATE_DIR/status.json"
+STOP_REQUEST="$STATE_DIR/stop.request"
+PID_FILE="$STATE_DIR/daemon.pid"
+
+require_dotnet() {
+  if [[ ! -x "$DOTNET" ]]; then
+    echo "ime-watch: dotnet が見つかりません: $DOTNET" >&2
+    exit 1
+  fi
+}
+
+require_installed() {
+  if [[ ! -f "$INSTALL_DIR/bin/ImeWatch.dll" ]]; then
+    echo "ime-watch: 未インストールです。先に 'ime-watch install' を実行してください" >&2
+    exit 1
+  fi
+}
+
+run_mode() {
+  require_dotnet
+  require_installed
+  "$DOTNET" "$WIN_DLL" "$1"
+}
+
+# 常駐はファイル監視で即座に反応し、作成した直後のマーカーを消す。
+# 対象へ直接 open すると途中で消えて ENOENT になるので、別名で作って rename する
+write_marker() {
+  local target=$1 tmp
+  tmp="$(dirname "$target")/.$(basename "$target").$$"
+  : >"$tmp"
+  mv -f "$tmp" "$target"
+}
+
+# 常駐の生死は C# 側に聞く。Windows は PID を使い回すので、PID が生きていることだけでは
+# 異常終了直後に PID を拾った別プロセスと区別できない
+is_running() {
+  [[ -f "$PID_FILE" && -f "$INSTALL_DIR/bin/ImeWatch.dll" ]] || return 1
+  "$DOTNET" "$WIN_DLL" running >/dev/null 2>&1
+}
+
+cmd_install() {
+  require_dotnet
+
+  # 常駐中だと publish が ImeWatch.dll を上書きできない
+  if is_running; then
+    cmd_stop >/dev/null
+  fi
+
+  mkdir -p "$INSTALL_DIR/src"
+  cp "$source_dir/ImeWatch.csproj" "$source_dir/Program.cs" "$INSTALL_DIR/src/"
+
+  # dotnet.exe は Windows のパスしか解釈しないので、出力先も Windows 形式で渡す
+  echo "publishing to $INSTALL_DIR/bin ..."
+  (cd "$INSTALL_DIR/src" && "$DOTNET" publish -c Release -o "$WIN_INSTALL_DIR\\bin" --nologo)
+
+  # ログオン時の自動起動。管理者権限もスクリプトファイルの追加配置も要らないので、
+  # schtasks やスタートアップフォルダではなく HKCU の Run キーを使う
+  echo "registering autostart ..."
+  /mnt/c/Windows/System32/reg.exe add "$RUN_KEY" \
+    /v "$RUN_VALUE_NAME" /t REG_SZ /f \
+    /d "\"$(wslpath -w "$DOTNET")\" \"$WIN_DLL\" watch" >/dev/null
+
+  echo "done. 'ime-watch start' で起動します"
+}
+
+cmd_start() {
+  require_dotnet
+  require_installed
+
+  if is_running; then
+    echo "already running"
+    return
+  fi
+
+  # 停止マーカーが残っていると起動直後に自分で消費して終了してしまう
+  rm -f "$STOP_REQUEST"
+
+  # UNC を作業ディレクトリにすると cmd/dotnet が警告を出すので /mnt/c から起動する。
+  # WSL のシェルを抜けても Windows 側のプロセスとして残る
+  (cd /mnt/c && setsid "$DOTNET" "$WIN_DLL" watch >/dev/null 2>&1 &)
+
+  local i
+  for ((i = 0; i < CONFIRM_TIMEOUT; i++)); do
+    sleep 1
+    if is_running; then
+      echo "started"
+      return
+    fi
+  done
+
+  echo "ime-watch: 起動を確認できません" >&2
+  exit 1
+}
+
+cmd_stop() {
+  if ! is_running; then
+    # 置きっぱなしのマーカーは次回起動を即終了させるので消す
+    rm -f "$STOP_REQUEST" "$PID_FILE"
+    echo "not running"
+    return
+  fi
+
+  # dotnet ホスト経由なので PID を辿らず、停止マーカーで抜けさせる
+  mkdir -p "$STATE_DIR"
+  write_marker "$STOP_REQUEST"
+
+  local i
+  for ((i = 0; i < CONFIRM_TIMEOUT; i++)); do
+    sleep 1
+    if ! is_running; then
+      rm -f "$STOP_REQUEST" "$PID_FILE"
+      echo "stopped"
+      return
+    fi
+  done
+
+  echo "ime-watch: 停止を確認できません (常駐がまだ動いています)" >&2
+  exit 1
+}
+
+cmd_status() {
+  # 常駐は起動時にゼロの status.json を書くので、無いのは一度も起動していないとき
+  if [[ ! -f "$STATUS_FILE" ]]; then
+    echo "ime-watch: $STATUS_FILE がありません (常駐が未起動の可能性)" >&2
+    exit 1
+  fi
+
+  cat "$STATUS_FILE"
+
+  # 常駐が死んでも status.json は残るので、生死は別に見る
+  if ! is_running; then
+    echo "ime-watch: 常駐プロセスがいません" >&2
+    exit 1
+  fi
+}
+
+case "${1:-}" in
+install) cmd_install ;;
+start) cmd_start ;;
+stop) cmd_stop ;;
+status) cmd_status ;;
+off) run_mode off ;;
+*)
+  sed -n '4,15p' "$script_path" >&2
+  exit 2
+  ;;
+esac
