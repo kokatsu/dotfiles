@@ -122,6 +122,45 @@ local unified_keys = {
   { key = 'p', mods = 'CTRL|SHIFT', action = act.ActivateCommandPalette },
 }
 
+--- ime-watch 常駐に IME を閉じるよう要求する
+--- 書いている途中を常駐に消されないよう、別名で作って rename で置く。
+--- 一時名はペインごとに分けて、同時押しでの取り合いを避ける
+---@param pane table WezTermのペインオブジェクト
+---@return string? 失敗理由。成功なら nil
+local function request_ime_off(pane)
+  local userprofile = os.getenv('USERPROFILE')
+  if not userprofile then
+    return 'USERPROFILE がない'
+  end
+
+  local dir = userprofile .. '\\.cache\\ime-watch\\'
+  local tmp = dir .. 'off.request.' .. pane:pane_id() .. '.tmp'
+  local file, open_err = io.open(tmp, 'w')
+  if not file then
+    return tostring(open_err)
+  end
+
+  file:close()
+
+  local renamed, rename_err = os.rename(tmp, dir .. 'off.request')
+  if renamed then
+    return nil
+  end
+
+  -- Windows の rename は移動先があると失敗する。消し損ねても、同じペインの次の
+  -- 要求が同名を切り詰めて書き直す
+  os.remove(tmp)
+
+  -- 未処理の要求が残っているだけなら、IME を閉じる要求は冪等なので合流でよい
+  local pending = io.open(dir .. 'off.request', 'r')
+  if pending then
+    pending:close()
+    return nil
+  end
+
+  return tostring(rename_err)
+end
+
 -- Windows 固有キーバインド
 local windows_specific_keys = {
   -- `Alt + k` で Slack の未読バッジをクリアする。
@@ -151,21 +190,20 @@ local windows_specific_keys = {
   -- `Ctrl + Space` (herdr prefix) で日本語 IME をオフにしてから prefix を送る。
   -- herdr の switch_ascii_input_source_in_prefix は WSL 内の Linux プロセスからは
   -- Windows の IME に届かないため、Windows 側で動く WezTerm が代行する。
-  -- Windows 側の zenhan.exe は起動できないため、Neovim の InsertLeave と同じく
-  -- WSL 内の zenhan を wsl.exe 経由で起こす。
-  -- 起動失敗で callback が中断すると prefix 自体が届かなくなるので pcall で保護する。
-  -- 非同期起動 (実測 0.3〜0.4 秒) のため、IME が ON の状態で prefix 直後 0.3 秒以内に
-  -- 打った次のキーは食われうる。同期待ちは prefix 転送自体を遅らせるので採らない。
+  -- 実処理は常駐 (windows/ime-watch) に渡す。WSL 内の exe を wsl.exe 越しに
+  -- 起こすと約 0.2 秒かかり、次のキーがその内側で IME に食われる。
+  -- 完了は待たない。callback を止めても、その間に押されたキーは IME 変換を免れない。
   -- prefix 終了を WezTerm は検知できないため IME はオフのまま残る
   {
     key = 'Space',
     mods = 'CTRL',
     action = wezterm.action_callback(function(window, pane)
-      -- PowerShell など WSL 以外のペインでは IME を触らない
+      -- PowerShell など WSL 以外のペインでは IME を触らない。
+      -- 要求の失敗で callback が中断すると prefix 自体が届かなくなるので pcall で保護する
       if is_wsl_domain(pane) then
-        local ok, err = pcall(wezterm.background_child_process, { 'wsl.exe', '-e', 'zenhan', '0' })
-        if not ok then
-          wezterm.log_error('zenhan: ' .. tostring(err))
+        local ok, failure = pcall(request_ime_off, pane)
+        if not ok or failure then
+          wezterm.log_error('ime-watch: ' .. tostring(failure))
         end
       end
       window:perform_action(act.SendKey({ key = 'Space', mods = 'CTRL' }), pane)
