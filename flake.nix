@@ -47,7 +47,7 @@
     # https://github.com/NousResearch/hermes-agent
     # Renovate: datasource=github-releases depName=NousResearch/hermes-agent
     hermes-agent = {
-      url = "github:NousResearch/hermes-agent/v2026.9.7";
+      url = "github:NousResearch/hermes-agent/v2026.9.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
