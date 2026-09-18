@@ -145,7 +145,8 @@ in {
     sessionPath = [
       "${config.home.homeDirectory}/.local/bin/scripts"
       "${config.home.homeDirectory}/.local/share/pnpm/bin" # pnpm グローバルバイナリ (v11+ は bin/ サブディレクトリ)
-      "${config.home.homeDirectory}/.gem/bin" # ruby-lsp 等の gem 実行ファイル
+      "${config.xdg.dataHome}/gem/bin" # ruby-lsp 等の gem 実行ファイル
+      "${config.xdg.dataHome}/cargo/bin" # rustup が入れる cargo/rustc 等
     ];
 
     sessionVariables =
@@ -153,7 +154,11 @@ in {
         PNPM_HOME = "${config.home.homeDirectory}/.local/share/pnpm";
         EDITOR = "nvim";
         VISUAL = "nvim";
-        GEM_HOME = "${config.home.homeDirectory}/.gem"; # gem インストール先 (バージョン非依存)
+        GEM_HOME = "${config.xdg.dataHome}/gem"; # gem インストール先 (バージョン非依存)
+        RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
+        CARGO_HOME = "${config.xdg.dataHome}/cargo";
+        GOPATH = "${config.xdg.dataHome}/go";
+        NPM_CONFIG_CACHE = "${config.xdg.cacheHome}/npm";
         # XDG_CONFIG_HOME は xdg.enable = true で Home Manager が設定する
         ZDOTDIR = "${config.xdg.configHome}/zsh";
         BAT_CONFIG_DIR = "${config.xdg.configHome}/bat";
@@ -163,6 +168,14 @@ in {
         CODEX_HOME = "${config.xdg.configHome}/codex";
         HERMES_HOME = "${config.xdg.configHome}/hermes";
         TAPLO_CONFIG = "${config.xdg.configHome}/taplo/taplo.toml";
+        NPM_CONFIG_USERCONFIG = "${config.xdg.configHome}/npm/npmrc";
+        WGETRC = "${config.xdg.configHome}/wget/wgetrc";
+        BUN_INSTALL = "${config.xdg.dataHome}/bun";
+        BUNDLE_USER_HOME = "${config.xdg.dataHome}/bundle";
+        ZSH_EVALCACHE_DIR = "${config.xdg.cacheHome}/zsh-evalcache";
+        # less と node は親ディレクトリを作らないので xdg.stateFile で用意する
+        LESSHISTFILE = "${config.xdg.stateHome}/less/history";
+        NODE_REPL_HISTORY = "${config.xdg.stateHome}/node/repl_history";
         # zeno (@db/sqlite) が実行時に取得する upstream プリビルトの libsqlite3 は
         # deno 2.9.4 上で segfault し、zeno-server が socket を作れず起動に失敗する。
         # nixpkgs の libsqlite3 を使わせる。
@@ -186,9 +199,34 @@ in {
         # Nix 版 bun/node で npm プレビルト native モジュール (sharp 等) が
         # libstdc++.so.6 を解決できない問題の回避 (Linux のみ)
         LD_LIBRARY_PATH = lib.makeLibraryPath [pkgs.stdenv.cc.cc.lib];
+        # macOS は OrbStack が Docker CLI の設定を管理するため Linux のみ
+        DOCKER_CONFIG = "${config.xdg.configHome}/docker";
       };
   };
 
   xdg.enable = true;
+
+  # home.sessionVariables は hm-session-vars.sh 経由なので zsh にしか届かない。
+  # systemd ユーザーユニットには environment.d が要る。
+  systemd.user.sessionVariables = lib.optionalAttrs (!isDarwin) {
+    inherit
+      (config.home.sessionVariables)
+      NPM_CONFIG_USERCONFIG
+      WGETRC
+      BUN_INSTALL
+      BUNDLE_USER_HOME
+      ZSH_EVALCACHE_DIR
+      LESSHISTFILE
+      NODE_REPL_HISTORY
+      GEM_HOME
+      PSQLRC
+      RUSTUP_HOME
+      CARGO_HOME
+      GOPATH
+      NPM_CONFIG_CACHE
+      DOCKER_CONFIG
+      ;
+  };
+
   fonts.fontconfig.enable = true;
 }

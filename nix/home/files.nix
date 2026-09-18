@@ -205,11 +205,30 @@ in {
     }
     # Docker CLI plugins (macOSではOrbStackが管理)
     // lib.optionalAttrs (!isDarwin) {
-      ".docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
-      ".docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
+      ".config/docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
+      ".config/docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
     }
     # macOS: Biome グローバル設定 (~/Library/Application Support/biome/)
     // lib.optionalAttrs isDarwin {
       "Library/Application Support/biome/.biome.jsonc".source = ../../.config/biome/.biome.jsonc;
     };
+
+  xdg.configFile = {
+    "wget/wgetrc".text = ''
+      hsts_file = ${config.xdg.stateHome}/wget/hsts
+    '';
+
+    # vim はここに vimrc があると runtimepath の $HOME/.vim を
+    # $XDG_CONFIG_HOME/vim に差し替える (patch 9.1.0327 以降)
+    "vim/vimrc".source = ../../.config/vim/vimrc;
+  };
+
+  # less と node と wget は状態ファイルの親ディレクトリを作らず、
+  # 無ければ書き込みを黙って諦める。
+  xdg.stateFile = {
+    "less/.keep".text = "";
+    "node/.keep".text = "";
+    "wget/.keep".text = "";
+    "vim/.keep".text = "";
+  };
 }

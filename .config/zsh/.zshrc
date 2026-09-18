@@ -166,7 +166,7 @@ setopt no_beep
 . $ZDOTDIR/functions.zsh
 
 # GEM_HOME (hm-session-vars.sh の PATH 設定が WezTerm WSL ドメインで反映されない問題の回避)
-[[ -d "$HOME/.gem/bin" ]] && [[ ":$PATH:" != *":$HOME/.gem/bin:"* ]] && export PATH="$HOME/.gem/bin:$PATH"
+[[ -d "$XDG_DATA_HOME/gem/bin" ]] && [[ ":$PATH:" != *":$XDG_DATA_HOME/gem/bin:"* ]] && export PATH="$XDG_DATA_HOME/gem/bin:$PATH"
 
 # EDITOR, BAT_CONFIG_DIR は home.sessionVariables で管理
 
@@ -183,7 +183,7 @@ zsh-defer -a +1 +2 -c '_evalcache carapace _carapace zsh'
 # Cargo (https://github.com/rust-lang/cargo)
 # ------------------------------------------------------------------------------
 
-[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+[[ -d "$XDG_DATA_HOME/cargo/bin" ]] && [[ ":$PATH:" != *":$XDG_DATA_HOME/cargo/bin:"* ]] && export PATH="$XDG_DATA_HOME/cargo/bin:$PATH"
 
 # ------------------------------------------------------------------------------
 # Claude Code (https://docs.anthropic.com/ja/docs/claude-code/overview)

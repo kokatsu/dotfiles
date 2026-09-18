@@ -57,6 +57,10 @@
 !treemd/
 !treemd/**
 
+# Vim (https://github.com/vim/vim)
+!vim/
+!vim/**
+
 # WezTerm (https://github.com/wezterm/wezterm)
 !wezterm/
 !wezterm/**

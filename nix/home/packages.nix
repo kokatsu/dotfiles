@@ -393,6 +393,8 @@ in {
       #--- エディタ ---#
       # https://github.com/neovim/neovim
       neovim
+      # https://github.com/vim/vim
+      vim
 
       #--- フォント (Nerd Fonts) ---#
       # https://github.com/ryanoasis/nerd-fonts
