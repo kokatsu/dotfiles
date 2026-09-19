@@ -177,9 +177,9 @@ in {
     pname = "dcd";
     version = "0.18.5";
     hashes = {
-      "aarch64-darwin" = "sha256-q+EQtXnehXgVKhtmKrPtMDfnNn5JoCWbgo+LTM1KoPk=";
-      "aarch64-linux" = "sha256-KqKYocMSlhGDEsHvOhmdRugNNvftp8nngzkPoI1ml6E=";
-      "x86_64-linux" = "sha256-fGyzS7jdCTs1OsyGbyrGRCQ2mkhiFJPCVdnwA/Yg8hY=";
+      "aarch64-darwin" = "sha256-aV4vRxBBsyaaHIAzeZzSBogKAZuLP9f44KX4CJjWS2M=";
+      "aarch64-linux" = "sha256-AFlKrDSxMinH1tt9N5GZPAldApzNhT/D6Kd8Za//uRg=";
+      "x86_64-linux" = "sha256-dn1IxfMbjvBHCuVhn/h9a63v6ZFE5w7R3pJ0Y6fOYKE=";
     };
     platformMap = {
       "aarch64-darwin" = "osx-aarch64";
