@@ -1,6 +1,6 @@
 ---
 name: browser-research
-description: Research web pages using agent-browser — reads a URL as markdown without launching a browser, and falls back to a headless Chrome session that renders JavaScript and handles dynamic content. Use this skill as a fallback when WebSearch or WebFetch fails, returns insufficient results, or when the target page requires JS rendering (SPAs, dynamic docs). Also use when the user provides a specific URL to investigate, when you need to navigate multi-page documentation, or when summarizing web content that WebFetch cannot parse properly.
+description: Research web pages with agent-browser when normal fetching is insufficient or rendered content and browser navigation are needed.
 allowed-tools:
   - Bash(agent-browser:*)
   - Read
@@ -9,7 +9,7 @@ allowed-tools:
 
 # Browser Research Skill
 
-Research web pages using agent-browser CLI and summarize content.
+Research web pages using agent-browser CLI and summarize content. A supplied URL alone does not require this skill when ordinary fetching already answers the question. Explicit user instructions take precedence over workflow preferences.
 
 ## Usage
 
@@ -45,19 +45,13 @@ requires step 2.
 
 ### 2. Fall back to a browser session
 
-A previous session may still be open. Close it before starting to avoid conflicts:
-
-```bash
-agent-browser close 2>/dev/null || true
-```
-
-Then open the page:
+Use a session owned by this task; do not close an unrelated existing session. Consult `agent-browser --help` for session selection when isolation is needed. Open the page:
 
 ```bash
 agent-browser open "<URL>" && agent-browser wait --load networkidle --timeout 15000
 ```
 
-If `open` fails: verify the URL is well-formed, retry once. If it fails again, report the error to the user and stop.
+If `open` fails, verify the URL and retry once when useful. If it still fails, report the inaccessible source and continue with other relevant sources when they can answer the question.
 
 If `wait` times out: proceed anyway — the page may still be usable.
 
@@ -98,7 +92,7 @@ agent-browser close
 
 ## Deeper investigation
 
-Most research finishes with the steps above. Read `${CLAUDE_SKILL_DIR}/reference.md` when you need any of these:
+Most research finishes with the steps above. Read [reference.md](reference.md) when you need any of these:
 
 - The full `read` option reference (`--raw`, `--require-md`, `--llms full`, `--timeout`)
 - Text from a specific element, page metadata, or finding elements by role/text/label
@@ -110,14 +104,13 @@ Most research finishes with the steps above. Read `${CLAUDE_SKILL_DIR}/reference
 
 ## Critical Rules
 
-- **Try `read` first** — only open a browser when `read` cannot do the job. A Chrome session costs
-  hundreds of MB of memory; `read` costs none.
+- **Prefer `read` for text retrieval**. Open a browser directly when interaction or JavaScript rendering is already known to be necessary.
 - **Always close a session you opened** — every `open` must have a matching `close`.
 - **Read-only by default** — never submit forms or enter data. Clicking is allowed only for passive navigation: dismissing cookie/consent banners, following links, expanding collapsed sections, or switching tabs. Do not click buttons that trigger writes, purchases, or state changes.
 - **No guessing** — do not fabricate or assume page content; only report what `read`/`snapshot`/`get`/`eval` return.
-- **Authentication pages** — if a page requires login, report it immediately and stop. Do not attempt to authenticate.
+- **Authentication pages** — do not attempt to authenticate as part of research. Report the inaccessible source and use relevant public sources if sufficient; ask for accessible source material when the answer depends on the protected page.
 - **Minimize tokens** — prefer `read` (or `read --filter`) over full-page extraction, and use `--max-output` for large pages.
 
 ## Output
 
-Lead with the answer to the research question, then the supporting points and the source URLs the reader may want to follow. For a single-URL quick lookup, respond directly in chat; when researching multiple URLs or when the user asks, save results to a file with the Write tool.
+Lead with the answer to the research question, then the supporting points and the source URLs the reader may want to follow. Respond directly in chat unless the user requested a saved artifact.

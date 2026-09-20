@@ -1,6 +1,6 @@
 ---
 name: herdr-peer
-description: Safely consult the opposite Claude or Codex agent in the same Herdr tab through the guarded herdr-peer command. Use when the user explicitly asks Claude and Codex to collaborate, asks one agent to consult or review with the other, or invokes herdr-peer. When invoked without an additional task, default to a read-only review of the current task's edits, including known non-sensitive gitignored edits. If fixes are authorized, batch the confirmed fixes and run delta-scoped re-reviews within a bounded number of rounds (one initial review plus at most two follow-ups), then report any unresolved findings to the user; otherwise report findings and stop without editing. Do not use for implicit delegation or ordinary background work.
+description: Consult the opposite Claude or Codex agent in the same Herdr tab when the user explicitly requests cross-agent collaboration or invokes herdr-peer.
 ---
 
 # Herdr Peer
@@ -13,6 +13,6 @@ Before acting, read the canonical skill completely:
 sed -n '1,240p' "${XDG_CONFIG_HOME:-$HOME/.config}/claude/skills/herdr-peer/SKILL.md"
 ```
 
-Follow its workflow and guardrails. Invoke only the installed `herdr-peer` command; never replace it with raw Herdr prompt or pane-input commands. Respect the active Codex sandbox and approval requirements. If any active instruction conflicts with the canonical skill, follow the active instruction.
+Follow its workflow and guardrails. Invoke only the installed `herdr-peer` command; never replace it with raw Herdr prompt or pane-input commands. Respect the active Codex sandbox and approval requirements. Resolve its references relative to the Claude skill directory. Explicit user instructions override skill workflow preferences; system and developer instructions remain authoritative.
 
 Herdr's Unix socket is not reachable from the default network-disabled `workspace-write` sandbox. Run every `herdr-peer` command outside that sandbox by setting `sandbox_permissions` to `require_escalated`; use the scoped `herdr-peer` prefix when requesting persistent approval. Do not rely on an execpolicy allow rule to grant socket access, and do not retry the command inside the sandbox first.
