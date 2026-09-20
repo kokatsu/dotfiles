@@ -89,10 +89,7 @@ jobs:
   build-linux:
     name: Build (Linux)
     runs-on: ubuntu-latest
-    # nodejs 26.9.0 (x86_64-linux) が cache.nixos.org に無く、hermes-agent 経由で
-    # ソースビルドになるため 60 分では終わらない。main だけ余裕を持たせて完走させ、
-    # cachix へ push させる。kokatsu.cachix.org に乗ったら 60 に戻す。
-    timeout-minutes: ${{ github.ref == 'refs/heads/main' && 180 || 60 }}
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
