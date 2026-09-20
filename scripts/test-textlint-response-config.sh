@@ -16,12 +16,15 @@ fail() {
 # textlint は指摘があると終了コード 1 を返す。pipefail 下でそれが呼び出し側の
 # パイプラインまで伝播すると、判定が常に失敗するためここで吸収する。
 rules_of() {
-  local report
+  local report status=0
   report=$(
     printf '%s\n' "$1" |
       textlint --config "$config" --stdin --stdin-filename response.md \
-        --format json --no-color 2>/dev/null
-  ) || true
+        --format json --no-color
+  ) || status=$?
+  [ "$status" -le 1 ] || fail "textlint failed with exit status $status"
+  printf '%s' "$report" | jq -e 'type == "array" and length > 0 and all(.[]; .messages | type == "array")' >/dev/null ||
+    fail "textlint did not return a valid report"
   printf '%s' "$report" | jq -r '.[].messages[].ruleId' | sort -u
 }
 
@@ -48,7 +51,6 @@ expect_clean() {
 # 検査範囲が黙って変わるため。
 expected_rules=$(
   cat <<'RULES'
-@textlint-ja/ai-writing/ai-tech-writing-guideline
 @textlint-ja/ai-writing/no-ai-colon-continuation
 @textlint-ja/ai-writing/no-ai-emphasis-patterns
 @textlint-ja/ai-writing/no-ai-hype-expressions
@@ -101,4 +103,38 @@ expect_no_rule ja-technical-writing/sentence-length \
   'この設定ファイルは textlint のルールを制御するためのものであり、AI 文体の検出と日本語技術文書の規範のうち必要なものだけを有効にして、それ以外はすべて明示的に無効化しているという構成になっていますが、これは preset の個別ルールが NODE_PATH のトップレベルで解決できないためです。' \
   'long sentences in chat'
 
-printf 'textlint response config: rule set and 8 cases verified\n'
+expect_clean '> これは革命的な技術です。' 'quoted hype remains verbatim'
+expect_clean '> - **用語**: 説明の本文' 'quoted list remains verbatim'
+expect_clean '> 引用の冒頭です。
+> これは革命的な技術です。' 'multiline block quote'
+expect_clean '> > これは革命的な技術です。' 'nested quote'
+expect_rule @textlint-ja/ai-writing/no-ai-hype-expressions \
+  '> 引用は維持します。
+
+これは革命的な技術です。' 'body after a quote is still checked'
+expect_clean '必要に応じて設定します。' 'advice does not block a response'
+expect_clean '```text
+これは革命的な技術です。
+```' 'code remains verbatim'
+
+# Also exercise the actual hook with the symlink layout Home Manager deploys.
+workdir=$(mktemp -d)
+trap 'rm -rf "$workdir"' EXIT
+mkdir -p "$workdir/claude/hooks"
+ln -s "$config" "$workdir/claude/hooks/textlint-response.json"
+run_real_hook() {
+  jq -cn --arg m "$1" '{last_assistant_message: $m, stop_hook_active: false}' |
+    XDG_CONFIG_HOME="$workdir" bash "$repo_root/.config/claude/hooks/check-ai-writing.sh"
+}
+for message in '> これは革命的な技術です。' '必要に応じて設定します。'; do
+  [ -z "$(run_real_hook "$message")" ] || fail "hook should pass: $message"
+done
+run_real_hook 'これは革命的な技術です。' | jq -e '.decision == "block"' >/dev/null ||
+  fail "hook should still block unquoted hype"
+
+config="$repo_root/.textlintrc-commit.json"
+expect_rule terminology 'feat: update readme' 'README spelling'
+expect_rule terminology 'feat: update readmes' 'READMEs spelling'
+expect_clean 'feat: update README and READMEs' 'canonical README spelling'
+
+printf 'textlint configs: rule set, response and commit cases, and real hook verified\n'

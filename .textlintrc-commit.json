@@ -11,7 +11,7 @@
         "Karabiner",
         "Lefthook",
         ["[Nn](?:eo)?[Vv]im", "Neovim"],
-        ["readme(s)?", "README$1"],
+        ["readme(s?)", "README$1"],
         "Starship",
         "StyLua",
         "WezTerm",

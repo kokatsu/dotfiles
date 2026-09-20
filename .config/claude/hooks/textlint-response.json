@@ -1,6 +1,11 @@
 {
+  "filters": {
+    "quotes": true
+  },
   "rules": {
-    "@textlint-ja/preset-ai-writing": true,
+    "@textlint-ja/preset-ai-writing": {
+      "ai-tech-writing-guideline": false
+    },
     "preset-ja-technical-writing": {
       "ja-no-redundant-expression": true,
       "no-mix-dearu-desumasu": {
