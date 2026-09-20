@@ -48,6 +48,7 @@
       source = ../../../.config/claude/hooks/notify.sh;
       executable = true;
     };
+    ".config/claude/hooks/textlint-response.json".source = ../../../.config/claude/hooks/textlint-response.json;
     ".config/claude/keybindings.json".source = ../../../.config/claude/keybindings.json;
   };
 }

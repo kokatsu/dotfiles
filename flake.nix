@@ -132,6 +132,10 @@
           # statixの現行nixpkgs derivationはsnapshot testだけが壊れているため、
           # Home Managerと同じ回避策を開発・静的解析環境にも適用する。
           customOverlays.statix-no-check
+          # `just check-static` の textlint テストが使う。ルール本体は overlay 側で
+          # 供給されるため、textlint-with-rules だけでは解決できない。
+          customOverlays.textlint-rule-preset-ai-writing
+          customOverlays.textlint-with-rules
         ];
       });
 
@@ -154,6 +158,7 @@
       customOverlays.pkl
       customOverlays.statix-no-check
       customOverlays.textlint-rule-preset-ai-writing
+      customOverlays.textlint-with-rules
       customOverlays.unocss-language-server
       customOverlays.vite-plus
       customOverlays.vue-language-server-pin
@@ -317,6 +322,7 @@
             # Markup / config
             markdownlint-cli # Markdown linter
             taplo # TOML formatter + linter
+            textlint-with-rules # 日本語校正 (AI 文体 hook のテストが使う)
             yamlfmt # YAML formatter
 
             # Cross-cutting

@@ -6,6 +6,9 @@ set -uo pipefail
 
 payload=$(cat || true)
 notify_hook=${1:-}
+# codex.nix symlinks this script into ~/.config/codex/ as well, so resolving the
+# config relative to $0 would miss it. Point at where it is deployed.
+textlint_config="${XDG_CONFIG_HOME:-$HOME/.config}/claude/hooks/textlint-response.json"
 
 notify() {
   [ -n "$notify_hook" ] || return 0
@@ -26,8 +29,7 @@ fi
 if lint_output=$(
   printf '%s\n' "$message" |
     textlint \
-      --no-textlintrc \
-      --preset @textlint-ja/ai-writing \
+      --config "$textlint_config" \
       --stdin \
       --stdin-filename response.md \
       --format compact \
@@ -39,13 +41,21 @@ else
   lint_status=$?
 fi
 
-# textlint uses 1 for lint findings. Other failures should not trap the agent in
-# a retry loop, but surface the failure so the check is not silently skipped.
-if [ "$lint_status" -ne 1 ]; then
+# textlint returns 1 both for lint findings and for a config it cannot load, so
+# the exit code alone cannot tell them apart. Findings are always prefixed with
+# the --stdin-filename, which no failure message carries. Anything else must not
+# trap the agent in a rewrite loop, but has to surface so the check is not
+# silently skipped.
+case "$lint_output" in
+*"response.md:"*) ;;
+*)
   notify
-  jq -n --arg message "AI 文体検査を実行できませんでした。textlint の終了コード: $lint_status" '{systemMessage: $message}'
+  message="AI 文体検査を実行できませんでした (textlint の終了コード: ${lint_status}、設定: ${textlint_config})
+$lint_output"
+  jq -n --arg message "$message" '{systemMessage: $message}'
   exit 0
-fi
+  ;;
+esac
 
 # A Stop hook continuation causes another Stop event. Permit at most one rewrite
 # to avoid looping on a false positive or a finding that cannot be resolved.

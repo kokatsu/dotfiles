@@ -66,7 +66,7 @@
   # スコープ付き `@textlint-ja/textlint-rule-preset-ai-writing` で配布されている。vite-plus と
   # 同じく wrapper package.json で npm tarball を取り込み、prebuilt な lib/ をそのまま使う
   # (ソースは lib/ を含まず prepare で git config を呼ぶためビルドしない)。依存はルール本体の
-  # node_modules にネストし、packages.nix の symlinkJoin で @textlint 等が衝突しないようにする。
+  # node_modules にネストし、textlint-with-rules の symlinkJoin で @textlint 等が衝突しないようにする。
   # Renovate: datasource=npm depName=@textlint-ja/textlint-rule-preset-ai-writing
   textlint-rule-preset-ai-writing = _final: prev: let
     version = "1.7.0";
@@ -105,6 +105,28 @@
         license = licenses.mit;
         platforms = ["aarch64-darwin" "x86_64-darwin" "aarch64-linux" "x86_64-linux"];
       };
+    };
+  };
+
+  # textlint-with-rules - textlint 本体と日本語校正ルールを 1 つの derivation にまとめる。
+  # ルールは NODE_PATH 経由でしか解決されないため、本体と同じ closure に同居させないと
+  # 見つからない。Home Manager の packages と開発シェルの双方が同じ構成を参照できるよう、
+  # packages.nix に直書きせず overlay に置く。
+  textlint-with-rules = final: prev: {
+    textlint-with-rules = prev.symlinkJoin {
+      name = "textlint-with-rules";
+      paths = [
+        prev.textlint
+        prev.textlint-rule-preset-ja-technical-writing
+        prev.textlint-rule-prh
+        prev.textlint-rule-terminology
+        final.textlint-rule-preset-ai-writing
+      ];
+      nativeBuildInputs = [prev.makeWrapper];
+      postBuild = ''
+        wrapProgram $out/bin/textlint \
+          --set NODE_PATH "$out/lib/node_modules"
+      '';
     };
   };
 }

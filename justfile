@@ -13,7 +13,7 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test nvim-test
+check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test
 
 # Test automatic Codex thread naming without starting a model turn
 codex-auto-title-test:
@@ -206,6 +206,14 @@ banned-commands-test:
 # Verify raw Herdr input commands cannot bypass the shared peer guard
 herdr-peer-guard-test:
     bash scripts/test-herdr-peer-command-guard.sh
+
+# Verify the AI writing Stop hook blocks, passes, and bails out on the right inputs
+ai-writing-hook-test:
+    bash scripts/test-ai-writing-hook.sh
+
+# Verify which textlint rules the Stop hook enforces and how they treat decisive inputs
+textlint-response-config-test:
+    bash scripts/test-textlint-response-config.sh
 
 # Verify `gh api` is auto-allowed only when it is provably read-only
 gh-api-guard-test:

@@ -241,21 +241,7 @@ in {
       # https://github.com/lunarmodules/luacheck
       luaPackages.luacheck # Lua linter (.luacheckrc 用)
       # https://github.com/textlint/textlint
-      (pkgs.symlinkJoin {
-        name = "textlint-with-rules";
-        paths = [
-          pkgs.textlint
-          pkgs.textlint-rule-preset-ja-technical-writing
-          pkgs.textlint-rule-prh
-          pkgs.textlint-rule-terminology
-          pkgs.textlint-rule-preset-ai-writing # AI 文章パターン検出 (overlay)
-        ];
-        nativeBuildInputs = [pkgs.makeWrapper];
-        postBuild = ''
-          wrapProgram $out/bin/textlint \
-            --set NODE_PATH "$out/lib/node_modules"
-        '';
-      }) # 日本語校正 (nixpkgs)
+      textlint-with-rules # 日本語校正 (overlay)
       # https://github.com/Redocly/redocly-cli
       redocly # OpenAPI プレビュー / lint
       # https://github.com/crate-ci/typos
