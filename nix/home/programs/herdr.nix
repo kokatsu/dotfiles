@@ -205,7 +205,7 @@ in {
 
           # 現在のペインを左上として、左右 1:1、左上下 3:1、右上下 1:1 に分割
           [[keys.command]]
-          key = "prefix+backslash"
+          key = ["prefix+backslash", "prefix+¥"]
           type = "shell"
           command = "${scriptsDir}/four-pane-layout.sh"
           description = "4ペイン作業レイアウト"
