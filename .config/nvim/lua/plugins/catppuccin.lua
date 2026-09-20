@@ -1,7 +1,8 @@
 -- https://github.com/catppuccin/nvim
 
-local flavour = vim.env.CATPPUCCIN_NVIM_FLAVOR or 'mocha'
-local light_flavour = vim.env.CATPPUCCIN_NVIM_LIGHT_FLAVOR or 'latte'
+local palette = require('utils.palette')
+local flavour = palette.flavor()
+local light_flavour = palette.light_flavor()
 
 return {
   'catppuccin/nvim',

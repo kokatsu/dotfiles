@@ -22,6 +22,8 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = '\\'
 
 -- Setup lazy.nvim
+local catppuccin = require('utils.palette')
+
 require('lazy').setup({
   spec = {
     -- import your plugins
@@ -55,7 +57,7 @@ require('lazy').setup({
   },
   -- Configure any other settings here. See the documentation for more details.
   -- colorscheme that will be used when installing plugins.
-  install = { colorscheme = { 'catppuccin-mocha' } },
+  install = { colorscheme = { 'catppuccin-' .. catppuccin.flavor() } },
   -- automatically check for plugin updates
   checker = { enabled = true },
   change_detection = {

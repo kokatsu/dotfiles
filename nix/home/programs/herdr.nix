@@ -8,6 +8,7 @@
 }: let
   flavor = config.catppuccin.flavor;
   p = config.catppuccinLib.palettes.${flavor};
+  accent = p.${config.catppuccin.accent};
   names = config.catppuccinLib.flavorNames flavor;
 
   # .config/herdr/scripts/*.sh を列挙して home.file エントリを生成する。
@@ -27,7 +28,7 @@ in {
   # herdr: 組み込みテーマは catppuccin-mocha/catppuccin-latte 等のフレーバー別名で
   # 用意されている (--default-config のコメントには載っていないが実機で受理を確認済み)。
   # Ghostty と同じく catppuccin.flavor から導出する。accent はアクティブペイン枠色を
-  # 担うキー (ui.accent)。他ツールと同じ blue で揃える
+  # 担うキー (ui.accent)。他ツールと同じ catppuccin.accent へ揃える
   #
   # [[keys.command]] は tmux の Alt+v/c/g/h ポップアップの herdr 移植版
   # (.config/herdr/scripts/*.sh)。tmux 版と違い bind 時点での条件分岐が
@@ -67,7 +68,7 @@ in {
           name = "${names.kebab}"
 
           [ui]
-          accent = "${p.blue.hex}"
+          accent = "${accent.hex}"
           show_agent_labels_on_pane_borders = true
           # デフォルトの "auto" は分割していないペインに枠を描かないので、単独
           # ペインのタブでは上の agent label も出ない。"always" は
@@ -116,7 +117,7 @@ in {
           # tab は見切れにくいよう専用の 2 行目へ置き、subtext0 + 通常にする。
           # agent はエージェント種別の識別色にする。Claude Code は peach、
           # Codex は blue。同じ行テキストである Spaces の branch の mauve だけは
-          # 避ける。blue は ui.accent と同値だが、accent が塗るのは枠とナビ UI で
+          # 避ける。現在の blue は ui.accent と同値だが、accent が塗るのは枠とナビ UI で
           # 行テキストには出てこない。
           # $cache は teal。行テキストが暖色と青だけだと緑の帯が空いて全体が
           # 単調になるので、state_icon と同じ緑側から取る。state_icon は 1 行目の

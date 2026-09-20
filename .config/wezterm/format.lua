@@ -14,7 +14,7 @@ M.show_status_badge = function(window, message)
   }))
 end
 
-local default_color = colors.palette.blue
+local default_color = colors.palette.accent
 local zoomed_color = colors.palette.peach
 
 -- プロセス名に応じたアイコンと色の定義

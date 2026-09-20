@@ -57,6 +57,66 @@ vim.opt.rtp:prepend(vim.fn.getcwd() .. '/.config/nvim')
 print('=== Neovim Config Smoke Tests ===')
 print('')
 
+local catppuccin = require('utils.palette')
+
+local function with_catppuccin_env(flavor, accent, light_flavor, fn)
+  local previous = {
+    flavor = vim.env.CATPPUCCIN_FLAVOR,
+    accent = vim.env.CATPPUCCIN_ACCENT,
+    light_flavor = vim.env.CATPPUCCIN_NVIM_LIGHT_FLAVOR,
+  }
+  vim.env.CATPPUCCIN_FLAVOR = flavor
+  vim.env.CATPPUCCIN_ACCENT = accent
+  vim.env.CATPPUCCIN_NVIM_LIGHT_FLAVOR = light_flavor
+  local ok, err = pcall(fn)
+  vim.env.CATPPUCCIN_FLAVOR = previous.flavor
+  vim.env.CATPPUCCIN_ACCENT = previous.accent
+  vim.env.CATPPUCCIN_NVIM_LIGHT_FLAVOR = previous.light_flavor
+  if not ok then
+    error(err)
+  end
+end
+
+test('Catppuccin environment defaults when values are unset', function()
+  with_catppuccin_env(nil, nil, nil, function()
+    assert_true(catppuccin.flavor() == 'mocha', 'unexpected default flavor')
+    assert_true(catppuccin.accent() == 'blue', 'unexpected default accent')
+    assert_true(catppuccin.light_flavor() == 'latte', 'unexpected default light flavor')
+  end)
+end)
+
+test('Catppuccin environment rejects empty values', function()
+  with_catppuccin_env('', '', '', function()
+    assert_true(catppuccin.flavor() == 'mocha', 'empty flavor did not use the default')
+    assert_true(catppuccin.accent() == 'blue', 'empty accent did not use the default')
+    assert_true(catppuccin.light_flavor() == 'latte', 'empty light flavor did not use the default')
+  end)
+end)
+
+test('Catppuccin accent follows the palette without mutating it', function()
+  local original = package.loaded['catppuccin.palettes']
+  local source = { blue = '#blue', mauve = '#mauve' }
+  package.loaded['catppuccin.palettes'] = {
+    get_palette = function()
+      return source
+    end,
+  }
+  local ok, err = pcall(function()
+    with_catppuccin_env('frappe', 'mauve', 'latte', function()
+      local resolved = catppuccin.get()
+      assert_true(catppuccin.flavor() == 'frappe', 'custom flavor was not preserved')
+      assert_true(resolved.accent == '#mauve', 'custom accent was not resolved')
+      assert_true(source.accent == nil, 'source palette was mutated')
+    end)
+  end)
+  package.loaded['catppuccin.palettes'] = original
+  if not ok then
+    error(err)
+  end
+end)
+
+print('')
+
 -- All plugin/ files load without error
 for _, file in ipairs(plugin_files) do
   local name = vim.fn.fnamemodify(file, ':t')

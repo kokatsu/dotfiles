@@ -190,8 +190,10 @@ in {
         # nixpkgs の libsqlite3 を使わせる。
         DENO_SQLITE_PATH = "${pkgs.sqlite.out}/lib/libsqlite3${pkgs.stdenv.hostPlatform.extensions.sharedLibrary}";
         CATPPUCCIN_VIVID_THEME = "catppuccin-${config.catppuccin.flavor}";
+        # Catppuccin 対応の自前設定が参照する共通の flavor / accent。
+        CATPPUCCIN_FLAVOR = config.catppuccin.flavor;
+        CATPPUCCIN_ACCENT = config.catppuccin.accent;
         CC_STATUSLINE_THEME = "catppuccin-${config.catppuccin.flavor}";
-        CATPPUCCIN_NVIM_FLAVOR = config.catppuccin.flavor;
         CATPPUCCIN_NVIM_LIGHT_FLAVOR = "latte";
         # Catppuccin flavor から appearance を導出 (latte だけ light、それ以外は dark)
         APPEARANCE =

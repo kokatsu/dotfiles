@@ -12,9 +12,27 @@ local mocha = {
   yellow = '#f9e2af',
 }
 
+local function env_or(name, fallback)
+  local value = vim.env[name]
+  return value ~= nil and value ~= '' and value or fallback
+end
+
+function M.flavor()
+  return env_or('CATPPUCCIN_FLAVOR', 'mocha')
+end
+
+function M.light_flavor()
+  return env_or('CATPPUCCIN_NVIM_LIGHT_FLAVOR', 'latte')
+end
+
+function M.accent()
+  return env_or('CATPPUCCIN_ACCENT', 'blue')
+end
+
 function M.get()
   local ok, palettes = pcall(require, 'catppuccin.palettes')
-  return ok and palettes.get_palette() or mocha
+  local palette = ok and palettes.get_palette() or mocha
+  return vim.tbl_extend('force', palette, { accent = palette[M.accent()] or palette.blue })
 end
 
 return M

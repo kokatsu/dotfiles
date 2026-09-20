@@ -1,6 +1,7 @@
 -- Dashboard設定
 local M = {}
 
+local catppuccin = require('utils.palette')
 local explorer = require('plugins.snacks.explorer')
 local picker = require('plugins.snacks.picker')
 
@@ -97,7 +98,7 @@ M.opts = {
       -- https://github.com/mlange-42/git-graph (original)
       -- https://github.com/kokatsu/git-graph (fork, using this)
       cmd = 'git-graph --model catppuccin-'
-        .. (vim.env.CATPPUCCIN_NVIM_FLAVOR or 'mocha')
+        .. catppuccin.flavor()
         .. [[ --style bold --color always --wrap 50 0 8 --format 'oneline' --max-count 30 --local --highlight-head 'bold,black,bg:bright_yellow']],
       indent = 1,
       height = 35,

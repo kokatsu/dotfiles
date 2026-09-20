@@ -5,6 +5,7 @@ const isLinux = Deno.build.os === "linux";
 
 export default defineConfig(({ env }) => {
   const isWSL = !!env.WSL_DISTRO_NAME;
+  const catppuccinFlavor = env.CATPPUCCIN_FLAVOR || "mocha";
 
   const snippets: Snippet[] = [
     // -------------------------------------------------------------------------
@@ -25,7 +26,7 @@ export default defineConfig(({ env }) => {
       name: "git-graph",
       keyword: "gg",
       snippet:
-        "git-graph --model catppuccin-mocha --style bold --color always --current --max-count 50 --format '%H%d %s' --highlight-head 'bold,black,bg:bright_yellow'",
+        `git-graph --model catppuccin-${catppuccinFlavor} --style bold --color always --current --max-count 50 --format '%H%d %s' --highlight-head 'bold,black,bg:bright_yellow'`,
     },
     { name: "lazygit", keyword: "lg", snippet: "lazygit" },
     { name: "neovim", keyword: "vi", snippet: "nvim" },

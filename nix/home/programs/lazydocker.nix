@@ -1,6 +1,7 @@
 {config, ...}: let
   flavor = config.catppuccin.flavor;
   p = config.catppuccinLib.palettes.${flavor};
+  accent = p.${config.catppuccin.accent};
 in {
   programs.lazydocker = {
     enable = true;
@@ -14,10 +15,10 @@ in {
         returnImmediately = false;
         wrapMainPanel = true;
         theme = {
-          activeBorderColor = [p.blue.hex "bold"];
+          activeBorderColor = [accent.hex "bold"];
           inactiveBorderColor = [p.overlay0.hex];
           selectedLineBgColor = [p.surface0.hex];
-          optionsTextColor = [p.blue.hex];
+          optionsTextColor = [accent.hex];
         };
       };
 

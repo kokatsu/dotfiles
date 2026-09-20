@@ -8,6 +8,7 @@
 }: let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
   p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
+  accent = p.${config.catppuccin.accent};
   names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
 in {
   home = {
@@ -34,6 +35,7 @@ in {
           local color_scheme = '${names.spaced}'
 
           local palette = {
+            accent = '${accent.hex}',
             rosewater = '${p.rosewater.hex}',
             flamingo = '${p.flamingo.hex}',
             pink = '${p.pink.hex}',
@@ -71,7 +73,7 @@ in {
               cursor_fg = palette.base,
               cursor_border = palette.sapphire,
               compose_cursor = palette.peach,
-              split = palette.blue,
+              split = palette.accent,
             }
             config.command_palette_bg_color = palette.surface0
             config.command_palette_fg_color = palette.text
