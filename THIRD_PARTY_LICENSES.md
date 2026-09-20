@@ -7,7 +7,7 @@ files in this repository.
 Sub-trees that are independently distributable keep their own LICENSE files
 and are not duplicated here:
 
-- `.config/yazi/flavors/*/LICENSE` — yazi flavors are distributed per-directory via `ya pkg`
+- `.config/yazi/flavors/*/LICENSE` — vendored yazi flavors installed by Home Manager
 - `.config/yazi/plugins/*/LICENSE` — same as above
 - `.config/zsh/.zim/modules/*/LICENSE` — zimfw modules are independent submodules
 

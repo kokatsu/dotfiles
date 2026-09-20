@@ -57,7 +57,7 @@ prefix_rule(
     justification = "Allow explicit Git staging without prompting; commits and pushes remain approval-gated.",
     match = [
         "git add README.md",
-        "git add -- .config/codex/config.toml",
+        "git add -- nix/home/programs/codex.nix",
     ],
     not_match = [
         "git commit -m test",

@@ -60,7 +60,7 @@ export const VERDICT_MESSAGES: Record<Verdict, string> = {
   CHMOD_R_777: "Refuse chmod -R 777. Use a tighter mode.",
   CHMOD_777_ROOT: "Refuse chmod 777 /. Scope the path.",
   GREP_R:
-    "Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.ripgreprc glob excludes.",
+    "Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.config/ripgrep/ripgreprc glob excludes.",
   FORCE_PUSH:
     "Refuse git push -f/--force. Use --force-with-lease or run manually.",
   GIT_CLEAN:

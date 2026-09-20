@@ -235,6 +235,7 @@ herdr-peer-test:
 # Verify check failures, concurrent feed updates, and activation retries
 reliability-test:
     bash scripts/test-check-failures.sh
+    bash scripts/test-codex-config-activation.sh
     bash scripts/test-feed-status.sh
     bash scripts/test-feed-watch.sh
     bash scripts/test-zimfw-activation.sh

@@ -5,6 +5,69 @@
   validDotfilesDir,
   ...
 }: let
+  baseConfig = (pkgs.formats.toml {}).generate "codex-config.toml" {
+    approval_policy = "on-request";
+    check_for_update_on_startup = false;
+    file_opener = "none";
+    model = "gpt-5.6-sol";
+    model_reasoning_effort = "medium";
+    model_verbosity = "low";
+    personality = "pragmatic";
+    plan_mode_reasoning_effort = "xhigh";
+    project_doc_fallback_filenames = [
+      "CLAUDE.md"
+    ];
+    sandbox_mode = "workspace-write";
+    web_search = "cached";
+    features = {
+      hooks = true;
+      memories = true;
+      shell_snapshot = true;
+    };
+    history = {
+      max_bytes = 104857600;
+    };
+    mcp_servers = {
+      openaiDeveloperDocs = {
+        url = "https://developers.openai.com/mcp";
+      };
+    };
+    memories = {
+      disable_on_external_context = true;
+      min_rate_limit_remaining_percent = 25;
+    };
+    sandbox_workspace_write = {
+      network_access = false;
+    };
+    shell_environment_policy = {
+      ignore_default_excludes = false;
+    };
+    tools = {
+      web_search = {
+        context_size = "medium";
+        location = {
+          country = "JP";
+          timezone = "Asia/Tokyo";
+        };
+      };
+    };
+    tui = {
+      notifications = true;
+      notification_condition = "always";
+      resume_cwd = "session";
+      terminal_title = [
+        "thread"
+      ];
+      status_line = [
+        "model-with-reasoning"
+        "current-dir"
+        "git-branch"
+        "five-hour-limit"
+        "weekly-limit"
+        "codex-version"
+      ];
+    };
+  };
   codexAutoTitle = pkgs.writeShellApplication {
     name = "codex-auto-title";
     text = ''
@@ -118,7 +181,7 @@ in {
       # bash
       ''
         CODEX_DIR="$HOME/.config/codex"
-        BASE="${validDotfilesDir}/.config/codex/config.toml"
+        BASE="${baseConfig}"
         TARGET="$CODEX_DIR/config.toml"
         $DRY_RUN_CMD mkdir -p "$CODEX_DIR"
         if [ -f "$TARGET" ]; then
@@ -133,7 +196,7 @@ in {
             }
             keep { print }
           ' "$TARGET")
-          $DRY_RUN_CMD cp "$BASE" "$TARGET"
+          $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TARGET"
           if [ -n "$LOCAL_STATE" ]; then
             if [ -n "$DRY_RUN_CMD" ]; then
               echo "Preserving Codex local state in $TARGET"
@@ -142,7 +205,7 @@ in {
             fi
           fi
         else
-          $DRY_RUN_CMD cp "$BASE" "$TARGET"
+          $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TARGET"
         fi
 
         RULES_DIR="$CODEX_DIR/rules"

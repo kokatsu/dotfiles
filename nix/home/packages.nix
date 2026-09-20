@@ -132,8 +132,6 @@ in {
       ov # ページャー
       # https://github.com/ast-grep/ast-grep
       ast-grep # AST ベース構造的コード検索・書き換え (grep/sed alternative, sg)
-      # https://github.com/BurntSushi/ripgrep
-      ripgrep # 高速テキスト検索 (grep alternative)
       # https://github.com/boyter/scc
       scc # コード統計
       # http://www.dest-unreach.org/socat/
@@ -156,8 +154,6 @@ in {
       unzip # ZIP アーカイブ展開
       # https://www.gnu.org/software/wget/
       wget # ファイルダウンローダー
-      # https://github.com/sxyazi/yazi
-      yazi # ファイルマネージャ TUI
       # https://github.com/zimfw/zimfw
       zimfw # Zsh framework
 

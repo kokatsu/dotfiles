@@ -83,11 +83,24 @@ Lefthook runs a subset of these on commit and push (formatters, linters, gitleak
 └── .config/           # Dotfile sources linked by Home Manager
     ├── zsh/           # Zsh shell configuration
     ├── nvim/          # Neovim configuration
-    ├── git/           # Git configuration
     ├── wezterm/       # WezTerm terminal configuration
     ├── claude/        # Claude Code settings, hooks, and skills
     └── ...            # Other tool configurations
 ```
+
+Static application settings live in `nix/home/programs/`. Home Manager generates
+Git, Ghostty, ripgrep, Starship, Yazi, Biome, markdown-oxide, ov, Taplo, octorus,
+psql, Vim, Claude Code keybindings, and the Codex base configuration from Nix.
+Edit these modules, then run `home-manager switch --flake . --impure` to apply them.
+
+Yazi plugins and flavors are vendored under `.config/yazi/` and installed through
+`programs.yazi`; update those sources in Git instead of using `ya pkg`.
+Yazi's `init.lua` and `git-changes.sh` also need
+`home-manager switch --flake . --impure` after editing to apply the changes.
+Lua, shell scripts, and repository tooling configurations remain under `.config/`.
+Claude Code's `settings.json` keeps its writable repository link. Codex receives
+a writable copy of its generated configuration and preserves the existing local
+state sections during activation.
 
 ## License
 

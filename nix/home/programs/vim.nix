@@ -1,0 +1,18 @@
+_: {
+  # vim はここに vimrc があると runtimepath の $HOME/.vim を
+  # $XDG_CONFIG_HOME/vim に差し替える (patch 9.1.0327 以降)。
+  xdg.configFile."vim/vimrc".text =
+    # vim
+    ''
+      " vimrc を置くと defaults.vim が自動では読まれなくなるため明示的に読む。
+      " これが無いと compatible や backspace が素の既定値に戻る。
+      unlet! skip_defaults_vim
+      source $VIMRUNTIME/defaults.vim
+
+      set viminfofile=$XDG_STATE_HOME/vim/viminfo
+
+      " netrw の既定の保存先は runtimepath の先頭 (このファイルのディレクトリ) で、
+      " そこは Home Manager が store へのシンボリックリンクを張るので書き込めない。
+      let g:netrw_home = $XDG_DATA_HOME . '/vim'
+    '';
+}

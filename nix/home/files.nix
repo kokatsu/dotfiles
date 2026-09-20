@@ -116,39 +116,12 @@ in {
           logging:
             enabled: false
         '';
-      ".config/moxide".source = ../../.config/moxide;
-      ".config/ov".source = ../../.config/ov;
-      ".config/pg".source = ../../.config/pg;
-      ".config/.ripgreprc".source = ../../.config/.ripgreprc;
-
-      # Ghostty: catppuccin/nix 管理 (ビルトインテーマを利用)
-      ".config/ghostty/config".text = let
-        staticConfig = builtins.readFile ../../.config/ghostty/config.static;
-      in
-        "# テーマ (catppuccin.flavor から導出、ビルトインテーマを利用)\ntheme = ${names.kebab}\n" + staticConfig;
-
-      # yazi: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
-      # これにより ya pkg コマンドで package.toml への書き込みが可能
-      ".config/yazi" = {
-        source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/yazi";
-        force = true;
-      };
-      # herdr is managed by nix/home/programs/herdr.nix
-      ".config/octorus/config.toml".text = let
-        staticContent = builtins.readFile ../../.config/octorus/config.static.toml;
-      in
-        builtins.replaceStrings ["__CATPPUCCIN_THEME__"] [names.spaced] staticContent;
-      ".config/octorus/themes/${names.spaced}.tmTheme".source = "${config.catppuccin.sources.bat}/${names.spaced}.tmTheme";
-      # `or init` が $XDG_CONFIG_HOME/octorus/prompts/{reviewer,rereview,reviewee}.md を読む
-      ".config/octorus/prompts".source = ../../.config/octorus/prompts;
       ".config/bulletty/feeds.opml".source = ../../.config/bulletty/feeds.opml;
       ".config/bulletty/feeds-forum.opml".source = ../../.config/bulletty/feeds-forum.opml;
       # feeds*.opml だけを bin/feed-watch が読む。bulletty へ import したいが
       # 未読カウントには出したくないフィードはこちらへ置く
       ".config/bulletty/bulletty-only.opml".source = ../../.config/bulletty/bulletty-only.opml;
-      ".config/biome".source = ../../.config/biome;
       # lazydocker is managed by nix/home/programs/lazydocker.nix
-      ".config/taplo".source = ../../.config/taplo;
       # bin: ユーザースクリプト (Deno/Bun/Shell)
       # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
       ".local/bin/scripts" = {
@@ -207,20 +180,12 @@ in {
     // lib.optionalAttrs (!isDarwin) {
       ".config/docker/cli-plugins/docker-buildx".source = "${pkgs.docker-buildx}/bin/docker-buildx";
       ".config/docker/cli-plugins/docker-compose".source = "${pkgs.docker-compose}/bin/docker-compose";
-    }
-    # macOS: Biome グローバル設定 (~/Library/Application Support/biome/)
-    // lib.optionalAttrs isDarwin {
-      "Library/Application Support/biome/.biome.jsonc".source = ../../.config/biome/.biome.jsonc;
     };
 
   xdg.configFile = {
     "wget/wgetrc".text = ''
       hsts_file = ${config.xdg.stateHome}/wget/hsts
     '';
-
-    # vim はここに vimrc があると runtimepath の $HOME/.vim を
-    # $XDG_CONFIG_HOME/vim に差し替える (patch 9.1.0327 以降)
-    "vim/vimrc".source = ../../.config/vim/vimrc;
   };
 
   # less と node と wget は状態ファイルの親ディレクトリを作らず、

@@ -44,6 +44,7 @@ in {
     ./activation.nix
     ./nix.nix
     ./programs/bat.nix
+    ./programs/biome.nix
     ./programs/broot.nix
     ./programs/btop.nix
     ./programs/claude-code.nix
@@ -52,17 +53,26 @@ in {
     ./programs/fastfetch.nix
     ./programs/fzf.nix
     ./programs/gh.nix
+    ./programs/ghostty.nix
     ./programs/git.nix
     ./programs/herdr.nix
     ./programs/karabiner.nix
     ./programs/lazydocker.nix
     ./programs/lazygit.nix
     ./programs/lefthook.nix
+    ./programs/moxide.nix
     ./programs/nh.nix
+    ./programs/octorus.nix
+    ./programs/ov.nix
     ./programs/playwright.nix
+    ./programs/psql.nix
     ./programs/readline.nix
+    ./programs/ripgrep.nix
     ./programs/starship.nix
+    ./programs/taplo.nix
+    ./programs/vim.nix
     ./programs/wezterm.nix
+    ./programs/yazi.nix
     ./programs/zoxide.nix
     ./programs/zsh.nix
     ./services/disk-watch.nix
@@ -164,7 +174,6 @@ in {
         BAT_CONFIG_DIR = "${config.xdg.configHome}/bat";
         CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
         PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
-        RIPGREP_CONFIG_PATH = "${config.xdg.configHome}/.ripgreprc";
         CODEX_HOME = "${config.xdg.configHome}/codex";
         HERMES_HOME = "${config.xdg.configHome}/hermes";
         TAPLO_CONFIG = "${config.xdg.configHome}/taplo/taplo.toml";

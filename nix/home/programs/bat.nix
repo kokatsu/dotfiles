@@ -22,7 +22,7 @@
         "deno.lock:JSON"
         "*.tmTheme:XML"
         ".yamlfmt:YAML"
-        ".ripgreprc:Bourne Again Shell (bash)"
+        "ripgreprc:Bourne Again Shell (bash)"
         "*.markdownlintignore:Git Ignore"
         ".psqlrc:SQL"
         "inputrc:INI"

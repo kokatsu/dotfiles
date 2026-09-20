@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# `g j` picker (see keymap.toml): fuzzy-find a Git-changed file with fzf, preview
+# `g j` picker (see nix/home/programs/yazi.nix): fuzzy-find a Git-changed file with fzf, preview
 # its diff, and reveal it in Yazi at its real location.
 #
 # We read `git status --porcelain -z` rather than the newline form because git

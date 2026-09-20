@@ -1,9 +1,0 @@
-[ui]
-theme = "CatppuccinMocha"
-outline_width = 30
-
-[terminal]
-color_mode = "auto"
-
-[image]
-renderer = "kitty"

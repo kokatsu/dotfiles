@@ -12,6 +12,6 @@ FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 # canonicalize to the repository, not the store, so they still pass.
 CANON=$(readlink -f -- "$FILE" 2>/dev/null || true)
 if [[ "$CANON" == /nix/store/* ]]; then
-  echo "Do not edit Home Manager managed paths directly. Edit the corresponding file in the repository's .config/ directory instead." >&2
+  echo "Do not edit Home Manager managed paths directly. Edit the corresponding source in the repository's nix/home/ or .config/ directory instead." >&2
   exit 2
 fi

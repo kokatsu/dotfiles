@@ -49,6 +49,25 @@
       executable = true;
     };
     ".config/claude/hooks/textlint-response.json".source = ../../../.config/claude/hooks/textlint-response.json;
-    ".config/claude/keybindings.json".source = ../../../.config/claude/keybindings.json;
+    ".config/claude/keybindings.json".text = builtins.toJSON {
+      "$schema" = "https://platform.claude.com/docs/schemas/claude-code/keybindings.json";
+      "$docs" = "https://code.claude.com/docs/en/keybindings";
+      bindings = [
+        {
+          context = "Global";
+          bindings = {
+            "ctrl+t" = null;
+            "alt+t" = "app:toggleTodos";
+          };
+        }
+        {
+          context = "Chat";
+          bindings = {
+            "ctrl+s" = null;
+            "alt+shift+h" = "chat:stash";
+          };
+        }
+      ];
+    };
   };
 }

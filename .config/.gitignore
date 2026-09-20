@@ -1,10 +1,6 @@
 *
 !.gitignore
 
-# Biome (https://github.com/biomejs/biome)
-!biome/
-!biome/**
-
 # bulletty (https://github.com/crocidb/bulletty)
 !bulletty/
 !bulletty/**
@@ -17,21 +13,9 @@
 !codex/
 !codex/**
 
-# Ghostty (https://github.com/ghostty-org/ghostty)
-!ghostty/
-!ghostty/**
-
 # herdr (https://github.com/herdrdev/herdr)
 !herdr/
 !herdr/**
-
-# git (https://git-scm.com/)
-!git/
-!git/**
-
-# markdown-oxide (https://github.com/Feel-ix-343/markdown-oxide)
-!moxide/
-!moxide/**
 
 # Neovim (https://github.com/neovim/neovim)
 !nvim/
@@ -40,26 +24,6 @@
 # octorus (https://github.com/ushironoko/octorus)
 !octorus/
 !octorus/**
-
-# ov (https://github.com/noborus/ov)
-!ov/
-!ov/**
-
-# psql (https://www.postgresql.org/docs/current/app-psql.html)
-!pg/
-!pg/**
-
-# taplo (https://github.com/tamasfe/taplo)
-!taplo/
-!taplo/**
-
-# treemd (https://github.com/Epistates/treemd)
-!treemd/
-!treemd/**
-
-# Vim (https://github.com/vim/vim)
-!vim/
-!vim/**
 
 # WezTerm (https://github.com/wezterm/wezterm)
 !wezterm/
@@ -76,9 +40,3 @@
 # Zsh (https://www.zsh.org/)
 !zsh/
 !zsh/**
-
-# ripgrep (https://github.com/BurntSushi/ripgrep)
-!.ripgreprc
-
-# Starship (https://github.com/starship/starship)
-!starship.toml
