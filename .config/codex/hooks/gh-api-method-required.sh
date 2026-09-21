@@ -5,7 +5,11 @@ set -euo pipefail
 
 INPUT=$(cat)
 COMMAND=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // ""')
-GH_API_RE='(^|[;&|()[:space:]])gh[[:space:]]+api([;&|()[:space:]]|$)'
+# 空白を境界にすると `echo "run gh api later"` のような地の文まで拒否するので、
+# 行頭か制御演算子のあとだけを命令の開始とみなす。ラッパー以降の語は全て読み飛ばす
+# ので、`sudo echo "gh api"` のようなものは拒否側に倒れる。
+WRAPPER_RE='(([^;&|(){}[:space:]]*/)?(env|command|exec|sudo|nohup|nice|time|timeout|builtin)[[:space:]]+([^;&|(){}[:space:]]+[[:space:]]+)*|[A-Za-z_][A-Za-z0-9_]*=[^[:space:]]*[[:space:]]+)*'
+GH_API_RE="(^|[;&|(){}])[[:space:]]*${WRAPPER_RE}([^;&|(){}[:space:]]*/)?gh[[:space:]]+api([;&|(){}[:space:]]|\$)"
 METHOD_RE='(^|[[:space:]])(-[[:alnum:]]*X([[:space:]=]+[A-Za-z]+|[A-Za-z]+)|--method[[:space:]=]+[A-Za-z]+)'
 
 GH_API_COUNT=$(printf '%s\n' "$COMMAND" | grep -oE "$GH_API_RE" | grep -c . || true)
