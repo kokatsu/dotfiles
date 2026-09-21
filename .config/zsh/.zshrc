@@ -42,6 +42,9 @@ autoload -Uz -- git-alias-lookup git-branch-current git-branch-delete-interactiv
 # 即座に読み込み（プロンプト表示に必須）
 source ${ZIM_HOME}/modules/zsh-defer/zsh-defer.plugin.zsh
 source ${ZIM_HOME}/modules/evalcache/evalcache.plugin.zsh
+# evalcache はキャッシュミス時にしかディレクトリを作らず、下の vivid / starship は
+# ディレクトリがある前提で書き込む
+[[ -d "${ZSH_EVALCACHE_DIR}" ]] || mkdir -p "${ZSH_EVALCACHE_DIR}"
 # 自前生成の補完 (delta など)。zimfw が管理する modules/ 配下に書くと update で消える
 fpath=(${ZSH_EVALCACHE_DIR}/completions ${fpath})
 source ${ZIM_HOME}/modules/environment/init.zsh

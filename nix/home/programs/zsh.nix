@@ -27,6 +27,16 @@
           done
         '';
 
+      # evalcache は初期化コマンドの文字列だけをキーにするため、mise activate 等が
+      # 出力に焼き込む store パス入りの PATH は世代が変わっても更新されない。
+      # 世代切り替え時に消して次のシェルで再生成させる。
+      clearZshEvalcache =
+        lib.hm.dag.entryAfter ["linkGeneration"]
+        # bash
+        ''
+          $DRY_RUN_CMD rm -f "${config.xdg.cacheHome}"/zsh-evalcache/init-*.sh "${config.xdg.cacheHome}"/zsh-evalcache/init-*.sh.zwc
+        '';
+
       # zimfw モジュールをインストール (.zimrc に定義された未インストールモジュールを取得)
       zimfwInstall =
         lib.hm.dag.entryAfter ["linkGeneration"]
