@@ -1,4 +1,11 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  config,
+  ...
+}: {
+  # psql は HISTFILE の親ディレクトリを作らず、無ければ履歴を黙って捨てる
+  xdg.stateFile."psql/.keep".text = "";
+
   xdg.configFile."pg".source =
     pkgs.writeTextDir ".psqlrc"
     # sql
@@ -21,7 +28,7 @@
       -- 直前と同じコマンドを履歴に残さない
       \set HISTCONTROL ignoredups
       -- 履歴ファイルを接続データベースごとに分ける
-      \set HISTFILE ~/.local/state/psql/history- :DBNAME
+      \set HISTFILE ${config.xdg.stateHome}/psql/history- :DBNAME
       -- コマンド履歴の保存件数
       \set HISTSIZE 10000
 
