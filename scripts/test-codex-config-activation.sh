@@ -10,7 +10,8 @@ trap 'rm -rf "$test_dir"' EXIT
 awk '/        if \[ -f "\$TARGET" \]; then/ {active=1} /        RULES_DIR=/ {active=0} active' \
   "$repo_root/nix/home/programs/codex.nix" |
   sed -e 's|${pkgs.gawk}/bin/awk|awk|g' \
-    -e 's|${pkgs.coreutils}/bin/install|install|g' >"$test_dir/activate.sh"
+    -e 's|${pkgs.coreutils}/bin/install|install|g' \
+    -e 's|${pkgs.coreutils}/bin/mv|mv|g' >"$test_dir/activate.sh"
 [[ -s "$test_dir/activate.sh" ]]
 
 export BASE="$test_dir/base.toml" TARGET="$test_dir/config.toml" DRY_RUN_CMD=''
@@ -65,4 +66,6 @@ cp "$TARGET" "$test_dir/once.toml"
 bash -eu "$test_dir/activate.sh"
 cmp "$TARGET" "$test_dir/once.toml"
 [[ -w "$TARGET" ]]
+[[ $(stat -c '%a' "$TARGET" 2>/dev/null || stat -f '%Lp' "$TARGET") == 600 ]]
+[[ ! -e "$TARGET.tmp" ]]
 printf 'Codex configuration activation tests passed\n'

@@ -196,14 +196,16 @@ in {
             }
             keep { print }
           ' "$TARGET")
-          $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TARGET"
+          TMP="$TARGET.tmp"
+          $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TMP"
           if [ -n "$LOCAL_STATE" ]; then
             if [ -n "$DRY_RUN_CMD" ]; then
               echo "Preserving Codex local state in $TARGET"
             else
-              printf '\n%s\n' "$LOCAL_STATE" >> "$TARGET"
+              printf '\n%s\n' "$LOCAL_STATE" >> "$TMP"
             fi
           fi
+          $DRY_RUN_CMD ${pkgs.coreutils}/bin/mv -f "$TMP" "$TARGET"
         else
           $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TARGET"
         fi
