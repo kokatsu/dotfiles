@@ -280,8 +280,10 @@ in {
           width = "80%"
           height = "80%"
 
+          # alt+h / alt+l は nvim の plugin/move.lua (<M-h> / <M-l>) を奪うため prefix 側に置く。
+          # prefix+h/l の既定 (focus_pane_left/right) は上で alt+矢印 に移してあるので空いている
           [[keys.command]]
-          key = "alt+h"
+          key = "prefix+h"
           type = "popup"
           command = "${scriptsDir}/octorus-history.sh"
           description = "Octorus Rally 履歴"
@@ -296,7 +298,6 @@ in {
           width = "90%"
           height = "90%"
 
-          # alt+l は nvim mini.move (<M-l>) を奪うため prefix 側に置く
           [[keys.command]]
           key = "prefix+l"
           type = "popup"
