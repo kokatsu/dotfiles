@@ -13,6 +13,8 @@ permissions: {}
 jobs:
   detect-rerun:
     name: Detect hash-update rerun
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:

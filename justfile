@@ -27,7 +27,7 @@ fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt
 fmt-check: lua-fmt-check nix-fmt-check deno-fmt-check shfmt-check toml-fmt-check yaml-fmt-check
 
 # Run all linters
-lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint deno-lint deno-check biome-ci markdownlint toml-check editorconfig gitleaks-smoke-test
+lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint deno-lint deno-check biome-ci markdownlint toml-check editorconfig gitleaks-smoke-test gitleaks-scan
 
 # List git-tracked Lua files (vendored yazi plugins are excluded)
 # lua_dirs だけだと .config/yazi/init.lua や scripts/*.lua を取りこぼすため動的に列挙する。
@@ -169,6 +169,11 @@ gitleaks-smoke-test:
         echo "gitleaks smoke test failed: expected leak exit code 1, got $result_code" >&2; \
         exit 1; \
       fi
+
+# Scan the full git history for secrets. Lefthook only sees staged files and
+# origin/main..HEAD and is bypassed by --no-verify, so CI must do the whole walk.
+gitleaks-scan:
+    gitleaks git --config .gitleaks.toml --no-banner --redact
 
 # Format YAML files
 yaml-fmt:
