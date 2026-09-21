@@ -1,9 +1,5 @@
 # 参考: https://zenn.dev/trifolium/articles/ed53f1a6ebbbf8
-{
-  config,
-  lib,
-  ...
-}: let
+{config, ...}: let
   cleanArgs = ["--keep-since" "30d" "--keep-one"];
 in {
   programs.nh = {
@@ -12,25 +8,22 @@ in {
     clean = {
       enable = true;
       dates = "weekly";
-      extraArgs = lib.concatStringsSep " " cleanArgs;
+      extraArgs = cleanArgs;
     };
   };
 
-  # Home Manager の nh モジュールは systemd unit に PATH を設定しない。NixOS なら
-  # user manager の PATH に /run/current-system/sw/bin が入るが、standalone HM では
-  # distro 既定の PATH のままなので nh が nix を見つけられず毎回失敗する。
-  # nixpkgs の nix ではなく実際に使っている profile の nix を指す
+  # Home Manager の nh モジュールは systemd unit / launchd agent に PATH を設定しない。
+  # NixOS なら user manager の PATH に /run/current-system/sw/bin が入るが、standalone HM
+  # では distro 既定の PATH のままなので nh が nix を見つけられず毎回失敗する。
+  # Linux (single-user Nix) は profile の nix、macOS (Determinate Nix) は
+  # /nix/var/nix/profiles/default の nix を指す。
   systemd.user.services.nh-clean.Service.Environment = [
     "PATH=${config.home.homeDirectory}/.nix-profile/bin"
   ];
-
-  # Home Manager の nh モジュールは launchd に extraArgs 全体を argv の 1 要素として
-  # 渡すため、macOS では毎回パースエラー (exit 2) で失敗する。フラグを個別要素に
-  # 分割して上書きする (launchd は macOS のみ有効なので Linux には影響しない)
-  launchd.agents.nh-clean.config.ProgramArguments = lib.mkForce ([
-      (lib.getExe config.programs.nh.package)
-      "clean"
-      "user"
-    ]
-    ++ cleanArgs);
+  launchd.agents.nh-clean.config = {
+    EnvironmentVariables.PATH = "/nix/var/nix/profiles/default/bin:/usr/bin:/bin";
+    # launchd は失敗しても痕跡を残さないので出力をファイルに落とす
+    StandardOutPath = "${config.home.homeDirectory}/Library/Logs/nh-clean.log";
+    StandardErrorPath = "${config.home.homeDirectory}/Library/Logs/nh-clean.log";
+  };
 }
