@@ -48,7 +48,10 @@
     # Renovate: datasource=github-releases depName=NousResearch/hermes-agent
     hermes-agent = {
       url = "github:NousResearch/hermes-agent/v2026.9.7";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+      };
     };
 
     # UnoCSS LSP (上流が flake を提供しているため自前ビルドから移行)
