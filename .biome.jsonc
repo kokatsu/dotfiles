@@ -22,7 +22,8 @@
       "!.claude",
       "!.config/zeno",
       "!.config/claude/hooks",
-      "!.config/herdr/hooks"
+      "!.config/herdr/hooks",
+      "!.config/nvim/lazy-lock.json"
     ]
   },
   "vcs": {
