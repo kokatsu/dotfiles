@@ -9,8 +9,6 @@
 vim.keymap.set('n', 'gh', vim.lsp.buf.hover, { desc = 'LSP Hover', noremap = true, silent = true })
 vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to definition' })
 vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to declaration' })
-vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, { desc = 'Implementation' })
-vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, { desc = 'Type definition' })
 
 -- Picker
 vim.keymap.set('n', 'gR', function()

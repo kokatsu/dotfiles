@@ -50,6 +50,7 @@ return {
     })
 
     vim.lsp.inlay_hint.enable()
+    vim.lsp.linked_editing_range.enable()
 
     local servers = {
       'astro',

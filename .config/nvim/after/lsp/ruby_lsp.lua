@@ -72,6 +72,8 @@ local ruby_lsp_config = {
     if client:supports_method('textDocument/codeLens', bufnr) then
       vim.lsp.codelens.enable(true, { bufnr = bufnr })
     end
+    -- init_options の onTypeFormatting はサーバー側の機能で、クライアント側でも有効化が要る
+    vim.lsp.on_type_formatting.enable(true, { client_id = client.id })
   end,
 }
 
