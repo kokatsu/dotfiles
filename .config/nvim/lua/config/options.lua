@@ -56,8 +56,6 @@ vim.opt.expandtab = true
 -- https://zenn.dev/vim_jp/articles/511d7982a64967
 -- カーソル行をハイライト
 vim.opt.cursorline = true
--- ターミナルのカラーを有効にする
-vim.opt.termguicolors = true
 -- フローティングウィンドウの境界線の透明度
 vim.opt.pumblend = 30
 -- 背景色 (APPEARANCE 環境変数で dark/light を切替; シェルが OS 設定から検出)
@@ -97,4 +95,5 @@ vim.o.redrawtime = 3000
 
 -- プロジェクトローカルの .nvim.lua / .nvimrc / .exrc を読み込む
 -- Neovim 0.9+ の trust モデルにより未承認ファイルは実行されない（:trust で承認）
+-- 0.12+ は親ディレクトリも探すため、~/workspace/.nvim.lua は配下の全リポジトリに効く
 vim.o.exrc = true
