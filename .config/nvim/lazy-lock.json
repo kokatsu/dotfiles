@@ -21,7 +21,7 @@
   "nvim-treesitter": { "branch": "main", "commit": "c9f9ed6c1892f629ea399f4ee7905f2686fa13f2" },
   "nvim-treesitter-textobjects": { "branch": "main", "commit": "898ee307df58f854d11cd7edd06472574d48014e" },
   "nvim-web-devicons": { "branch": "master", "commit": "5b9067899ee6a2538891573500e8fd6ff008440f" },
-  "octo.nvim": { "branch": "fix/load-buffer-invalid-bufnr", "commit": "58e792776950a88362037d3804a449b4ae7f29b1" },
+  "octo.nvim": { "branch": "master", "commit": "af2411604b51cb4a0f3e2de50b1b7cacc2581c48" },
   "peek.nvim": { "branch": "fix/deprecated-nvim-api", "commit": "d3b586b85efc6e0051a012405cc65b51cb25c0a5" },
   "pkl-neovim": { "branch": "main", "commit": "7907b89958d06fa5a5dc72eeb26d8289605595c3" },
   "plenary.nvim": { "branch": "master", "commit": "74b06c6c75e4eeb3108ec01852001636d85a932b" },
