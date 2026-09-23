@@ -189,9 +189,14 @@ vim.api.nvim_create_autocmd('FileType', {
 -- https://minerva.mamansoft.net/Notes/%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB%E3%81%8C%E5%A4%89%E6%9B%B4%E3%81%95%E3%82%8C%E3%81%9F%E3%82%89%E8%87%AA%E5%8B%95%E3%81%A7%E5%86%8D%E8%AA%AD%E3%81%BF%E8%BE%BC%E3%81%BF+(Neovim)
 -- 外部からファイルを変更されたら反映する
 -- CursorHold/CursorHoldIを追加してClaude Code等の外部ツールによる変更を検知
+-- コマンドラインウィンドウ (q:) 内の checktime は E11 になる
 vim.api.nvim_create_autocmd({ 'WinEnter', 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI' }, {
   pattern = '*',
-  command = 'checktime',
+  callback = function()
+    if vim.fn.getcmdwintype() == '' then
+      vim.cmd.checktime()
+    end
+  end,
 })
 
 -- 外部でファイルが変更された後、LSPに変更を通知して診断を更新
