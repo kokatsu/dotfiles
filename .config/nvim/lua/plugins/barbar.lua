@@ -18,6 +18,5 @@ return {
     { ']b', '<Cmd>BufferNext<CR>', desc = 'Next Buffer' },
     { '[B', '<Cmd>BufferMovePrevious<CR>', desc = 'Move Buffer to Previous' },
     { ']B', '<Cmd>BufferMoveNext<CR>', desc = 'Move Buffer to Next' },
-    { ',b', '<Cmd>BufferClose<CR>', desc = 'Close Buffer' },
   },
 }

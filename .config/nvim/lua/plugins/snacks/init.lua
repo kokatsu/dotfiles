@@ -53,7 +53,7 @@ return {
   keys = {
     -- Profiler
     {
-      ',pp',
+      '<leader>pp',
       function()
         Snacks.toggle.profiler():toggle()
       end,
@@ -177,7 +177,7 @@ return {
       mode = { 'n', 'v' },
     },
     {
-      ',ps',
+      '<leader>ps',
       function()
         Snacks.profiler.scratch()
       end,

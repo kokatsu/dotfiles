@@ -11,6 +11,7 @@ return {
       { '<leader>g', group = 'git' },
       { '<leader>l', group = 'language' },
       { '<leader>o', group = 'octo (github)' },
+      { '<leader>p', group = 'profiler' },
       { '<leader>t', group = 'toggle' },
       { '<leader>x', group = 'diagnostics' },
       { '<leader>y', group = 'yank' },
