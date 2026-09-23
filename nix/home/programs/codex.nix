@@ -9,10 +9,9 @@
     approval_policy = "on-request";
     check_for_update_on_startup = false;
     file_opener = "none";
-    model = "gpt-5.6-sol";
+    model = "gpt-6-sol";
     model_reasoning_effort = "medium";
     model_verbosity = "low";
-    personality = "pragmatic";
     plan_mode_reasoning_effort = "xhigh";
     project_doc_fallback_filenames = [
       "CLAUDE.md"
