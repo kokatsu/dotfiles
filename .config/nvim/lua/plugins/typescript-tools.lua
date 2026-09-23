@@ -31,6 +31,27 @@ local function find_vue_typescript_plugin()
   return glob_first(nix_store_prefix('vue-language-server'), 'lib/**/@vue/typescript-plugin')
 end
 
+-- FileType ではなく attach 時に張る。Deno のファイルなど root_dir で attach を見送った
+-- バッファでは TSTools* コマンドが失敗するため
+vim.api.nvim_create_autocmd('LspAttach', {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if not client or client.name ~= 'typescript-tools' then
+      return
+    end
+    local map = function(lhs, rhs, desc)
+      vim.keymap.set('n', lhs, rhs, { buffer = args.buf, silent = true, desc = desc })
+    end
+    map('<leader>lo', '<cmd>TSToolsOrganizeImports<cr>', 'Organize imports')
+    map('<leader>la', '<cmd>TSToolsAddMissingImports<cr>', 'Add missing imports')
+    map('<leader>lu', '<cmd>TSToolsRemoveUnused<cr>', 'Remove unused')
+    map('<leader>lF', '<cmd>TSToolsFixAll<cr>', 'Fix all')
+    map('<leader>ld', '<cmd>TSToolsGoToSourceDefinition<cr>', 'Go to source definition')
+    map('<leader>lR', '<cmd>TSToolsRenameFile<cr>', 'Rename file')
+    map('<leader>lf', '<cmd>TSToolsFileReferences<cr>', 'File references')
+  end,
+})
+
 return {
   'kokatsu/typescript-tools.nvim',
   branch = 'feat/tsserver-plugins-location-languages',
@@ -41,15 +62,6 @@ return {
     'typescript',
     'typescriptreact',
     'vue',
-  },
-  keys = {
-    { '<leader>lo', '<cmd>TSToolsOrganizeImports<cr>', desc = 'Organize imports' },
-    { '<leader>la', '<cmd>TSToolsAddMissingImports<cr>', desc = 'Add missing imports' },
-    { '<leader>lu', '<cmd>TSToolsRemoveUnused<cr>', desc = 'Remove unused' },
-    { '<leader>lF', '<cmd>TSToolsFixAll<cr>', desc = 'Fix all' },
-    { '<leader>ld', '<cmd>TSToolsGoToSourceDefinition<cr>', desc = 'Go to source definition' },
-    { '<leader>lR', '<cmd>TSToolsRenameFile<cr>', desc = 'Rename file' },
-    { '<leader>lf', '<cmd>TSToolsFileReferences<cr>', desc = 'File references' },
   },
   -- opts は function 化して lazy load (ft イベント) 時に評価する
   -- spec 構築時 (startup 直後) の vim.fn.exepath は PATH や nix-profile symlink の状態に
