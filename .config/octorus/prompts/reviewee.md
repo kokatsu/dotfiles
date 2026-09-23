@@ -41,9 +41,11 @@ All git and gh operations are **denied by default**. Only the following are perm
 - `gh pr checks`
 - `gh api` (GET requests only)
 
-### Everything else is FORBIDDEN
+### Other commands
 
-Any command not listed above — including but not limited to `git add`, `git commit`, `git push`, `git reset`, `git clean`, `git checkout`, `git restore`, `git rebase`, `git merge`, `git stash`, `gh pr merge`, `gh pr close`, `gh pr comment` — is strictly prohibited.
+Do not run any other `git` or `gh` command. The `git` write commands are already blocked by the
+tool configuration; `gh` writes such as `gh pr merge`, `gh pr close`, and `gh pr comment` are not,
+so leave them to the user as well.
 
 The user will review your changes and handle all git operations manually.
 
@@ -67,5 +69,4 @@ The user will review your changes and handle all git operations manually.
 
 ## Output Format
 
-You MUST respond with a JSON object matching the schema provided.
 List all files you modified in the "files_modified" array.

@@ -115,22 +115,11 @@ This is iteration {{iteration}} of the review process.
 
 ## Severity Assessment Rules
 
-When evaluating severity for null/undefined access or type errors:
-
-1. Identify the guard conditions protecting the code path (e.g., `if (x.isFoo)`)
-2. Assess whether the problematic value could realistically be null/undefined
-   when the guard is satisfied
-3. If the code path is guarded and the value is expected to be populated,
-   downgrade to **minor** (defensive coding improvement), not major/critical
-4. Reserve **critical/major** for issues reachable under normal conditions
-   without requiring unusual state
-
-When evaluating error propagation through callbacks or injected functions:
-
-1. Check whether the callback's implementation is visible in the diff
-2. If NOT visible, assume it may have its own error handling internally
-3. Cap severity at **minor** (defensive coding suggestion) unless the diff
-   proves the error path is reachable
+Rate severity by what the diff shows is reachable. Reserve **critical/major** for
+issues reachable under normal conditions without unusual state. When a guard (e.g.,
+`if (x.isFoo)`) means the value is expected to be populated, or when the code that
+would decide the question (a caller, or the implementation of a callback or injected
+function) is not in the diff, say so in the comment and cap severity at **minor**.
 
 ## Comment Accuracy Rules
 
@@ -147,14 +136,8 @@ Before posting a comment that references language features, framework APIs, or t
 4. **Trace the call chain before flagging issues.** Before flagging unreachable
    branches, exception risks, or missing error handling, check how the function
    is called. If the caller's conditions already guarantee that a branch cannot
-   be reached, do not flag it as a real issue. **If the implementation is not
-   visible in the diff, acknowledge this limitation** — do not elevate to
-   critical/major based on unverified assumptions about code you cannot see.
-5. **Be conservative about error claims for callbacks.** When a callback or
-   function is passed as a parameter but its implementation is not in the diff,
-   do not assert it will throw. The implementation may have its own error
-   handling. Hedge with "if this function can throw" and cap severity at
-   **minor** unless the diff itself shows the exception path is reachable.
+   be reached, it is not an issue. When a callback's implementation is not in the
+   diff, do not assert it will throw; write "if this function can throw".
 
 ## Review Decision
 
@@ -164,11 +147,10 @@ Before posting a comment that references language features, framework APIs, or t
 
 ## Output Format
 
-You MUST respond with a JSON object matching the schema provided.
 Be specific in your comments with file paths and line numbers.
 
 ### File Path Rule
 
-**CRITICAL**: The `path` field in each comment MUST be copied exactly from the diff headers
-(lines starting with `diff --git a/... b/...`). NEVER infer or guess file paths from class names,
-component names, or import statements.
+Copy each comment's `path` exactly from a diff header (a line starting with
+`diff --git a/... b/...`). A path inferred from class names, component names, or import
+statements may not be part of the PR, and a comment on such a path cannot be posted.

@@ -46,10 +46,8 @@ PR #{{pr_number}}: {{pr_title}}
 
 ## Output Format
 
-You MUST respond with a JSON object matching the schema provided.
-
 ### File Path Rule
 
-**CRITICAL**: The `path` field in each comment MUST be copied exactly from the diff headers
-(lines starting with `diff --git a/... b/...`). NEVER infer or guess file paths from class names,
-component names, or import statements.
+Copy each comment's `path` exactly from a diff header (a line starting with
+`diff --git a/... b/...`). A path inferred from class names, component names, or import
+statements may not be part of the PR, and a comment on such a path cannot be posted.
