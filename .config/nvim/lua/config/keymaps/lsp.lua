@@ -12,10 +12,16 @@ vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to declaration' 
 vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, { desc = 'Implementation' })
 vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, { desc = 'Type definition' })
 
--- Trouble integration
-vim.keymap.set('n', 'gR', '<cmd>Trouble lsp_references<cr>', { desc = 'References (Trouble)' })
-vim.keymap.set('n', 'gI', '<cmd>Trouble lsp_implementations<cr>', { desc = 'Implementations (Trouble)' })
-vim.keymap.set('n', 'gT', '<cmd>Trouble lsp_type_definitions<cr>', { desc = 'Type Definitions (Trouble)' })
+-- Picker
+vim.keymap.set('n', 'gR', function()
+  Snacks.picker.lsp_references()
+end, { desc = 'References (Picker)' })
+vim.keymap.set('n', 'gI', function()
+  Snacks.picker.lsp_implementations()
+end, { desc = 'Implementations (Picker)' })
+vim.keymap.set('n', 'gT', function()
+  Snacks.picker.lsp_type_definitions()
+end, { desc = 'Type Definitions (Picker)' })
 
 -- Standard ops (<leader>c*)
 vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Code action' })

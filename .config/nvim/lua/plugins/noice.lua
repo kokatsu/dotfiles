@@ -5,12 +5,6 @@ return {
   event = 'VeryLazy',
   dependencies = {
     'MunifTanjim/nui.nvim',
-    {
-      'rcarriga/nvim-notify',
-      opts = function()
-        return { background_colour = require('utils.palette').get().base }
-      end,
-    },
   },
   opts = {
     lsp = {

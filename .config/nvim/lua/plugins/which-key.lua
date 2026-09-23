@@ -13,7 +13,7 @@ return {
       { '<leader>o', group = 'octo (github)' },
       { '<leader>p', group = 'profiler' },
       { '<leader>t', group = 'toggle' },
-      { '<leader>x', group = 'diagnostics' },
+      { '<leader>x', group = 'todo' },
       { '<leader>y', group = 'yank' },
       -- Navigation groups
       { '[', group = 'prev' },

@@ -51,7 +51,6 @@ require('lazy').setup({
     require('plugins.rustaceanvim'),
     require('plugins.snacks'),
     require('plugins.todo-comments'),
-    require('plugins.trouble'),
     require('plugins.typescript-tools'),
     require('plugins.which-key'),
   },
