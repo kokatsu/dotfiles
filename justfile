@@ -13,7 +13,7 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test gh-api-method-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test
+check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test gh-api-method-test managed-paths-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test
 
 # Test automatic Codex thread naming without starting a model turn
 codex-auto-title-test:
@@ -227,6 +227,10 @@ gh-api-guard-test:
 # Verify the Codex `gh api` hook denies only real invocations without an explicit method
 gh-api-method-test:
     bash scripts/test-gh-api-method-required.sh
+
+# Verify edits are refused only when the path resolves into /nix/store
+managed-paths-test:
+    bash scripts/test-check-managed-paths.sh
 
 # Measure the POSIX ERE / ECMAScript gap in banned-commands.json for this OS and locale
 regex-dialect-check:
