@@ -127,6 +127,27 @@ end
 
 print('')
 
+-- lazy.lua lists every spec explicitly, so an unlisted file is silently never loaded
+local config_dir = vim.fn.getcwd() .. '/.config/nvim'
+local lazy_source = table.concat(
+  vim.tbl_map(function(line)
+    return (line:gsub('%-%-.*$', ''))
+  end, vim.fn.readfile(config_dir .. '/lua/config/lazy.lua')),
+  '\n'
+)
+local spec_files = vim.list_extend(
+  vim.fn.glob(config_dir .. '/lua/plugins/*.lua', false, true),
+  vim.fn.glob(config_dir .. '/lua/plugins/*/init.lua', false, true)
+)
+for _, file in ipairs(spec_files) do
+  local name = file:match('/lua/plugins/([^/]+)/init%.lua$') or vim.fn.fnamemodify(file, ':t:r')
+  test('lazy.lua requires plugins.' .. name, function()
+    assert_true(lazy_source:find("require('plugins." .. name .. "')", 1, true) ~= nil, 'spec not listed')
+  end)
+end
+
+print('')
+
 -- move.lua keymaps
 for _, m in ipairs({
   { 'n', '<M-j>' },
