@@ -92,11 +92,11 @@ zsh-defer -a +1 +2 -c 'source <(fzf --zsh)'
 zsh-defer -a +1 +2 -c 'bindkey -r "^T"; bindkey "^[t" fzf-file-widget'
 
 zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zeno.zsh/zeno.zsh
-zsh-defer -a +1 +2 -c 'bindkey " " zeno-auto-snippet'
-zsh-defer -a +1 +2 -c 'bindkey "^m" zeno-auto-snippet-and-accept-line'
-zsh-defer -a +1 +2 -c 'bindkey "^i" zeno-completion'
-zsh-defer -a +1 +2 -c 'bindkey "^r" zeno-smart-history-selection'
-zsh-defer -a +1 +2 -c 'bindkey "^x " zeno-insert-space'
+zsh-defer -a +1 +2 -c '(( $+widgets[zeno-auto-snippet] )) && bindkey " " zeno-auto-snippet'
+zsh-defer -a +1 +2 -c '(( $+widgets[zeno-auto-snippet-and-accept-line] )) && bindkey "^m" zeno-auto-snippet-and-accept-line'
+zsh-defer -a +1 +2 -c '(( $+widgets[zeno-completion] )) && bindkey "^i" zeno-completion'
+zsh-defer -a +1 +2 -c '(( $+widgets[zeno-smart-history-selection] )) && bindkey "^r" zeno-smart-history-selection'
+zsh-defer -a +1 +2 -c '(( $+widgets[zeno-insert-space] )) && bindkey "^x " zeno-insert-space'
 zsh-defer -a +1 +2 -c 'bindkey "^x^m" accept-line'
 
 # Emacs キーバインドを使用（vi モードを無効化）
