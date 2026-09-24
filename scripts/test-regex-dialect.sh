@@ -5,6 +5,11 @@
 # 転ぶ。壊した helper を食わせて、checker が非ゼロで落ちることを固定する。
 set -euo pipefail
 
+# nix の stdenv-darwin は PATH_LOCALE を nixpkgs のロケールデータへ向け、
+# 文字クラスが OS 標準と変わる。ここで見たいのは変換器の故障だけなので、
+# OS 標準のロケールデータで測る。
+unset PATH_LOCALE
+
 repo_root=$(git rev-parse --show-toplevel)
 checker="$repo_root/scripts/check-regex-dialect.sh"
 helper="$repo_root/scripts/regex-dialect-check.ts"
@@ -46,13 +51,14 @@ expect_exit() {
   local rc=0
   REGEX_DIALECT_HELPER="$use_helper" \
     REGEX_DIALECT_SKIP_SCAN="$([[ $skip == skip-scan ]] && echo 1 || echo 0)" \
-    bash "$checker" >/dev/null 2>&1 || rc=$?
+    bash "$checker" >"$work/checker.log" 2>&1 || rc=$?
   case $want in
   zero)
     if [[ $rc -eq 0 ]]; then
       pass "$label (exit 0)"
     else
       fail "$label: expected exit 0, got $rc"
+      sed 's/^/    /' "$work/checker.log"
     fi
     ;;
   nonzero)
@@ -60,6 +66,7 @@ expect_exit() {
       pass "$label (exit $rc)"
     else
       fail "$label: expected nonzero, got 0"
+      sed 's/^/    /' "$work/checker.log"
     fi
     ;;
   esac
