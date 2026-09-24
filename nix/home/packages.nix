@@ -361,8 +361,6 @@ in {
       #--- Rust 製パッケージ ---#
       # https://github.com/mlange-42/git-graph
       git-graph # Git コミットグラフ可視化 (fork: kokatsu/git-graph)
-      # https://github.com/ushironoko/octorus
-      octorus # GitHub PR レビュー TUI (overlay)
       # https://github.com/brevity1swos/rgx
       rgx # ターミナル正規表現テスター (regex101 の TUI 版)
       # https://github.com/herdrdev/herdr-nix (公式リリースバイナリ、overlay)

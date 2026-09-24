@@ -206,27 +206,6 @@ in {
     };
   };
 
-  # octorus - TUI tool for GitHub PR review
-  # Uses pre-built binaries from GitHub releases
-  # Renovate: datasource=github-releases depName=ushironoko/octorus
-  octorus = mkBinaryRelease rec {
-    pname = "octorus";
-    version = "0.7.2";
-    hashes = {
-      "aarch64-darwin" = "sha256-Uv5MKlwgZqG1XaS75yZ5QkVJ8nqlwjWndN9LAv5ZIAI=";
-      "aarch64-linux" = "sha256-Rk1Qk1PE1IcEixBaLCbzpUPzkfP5NAFAhiVYr7ZRGnc=";
-      "x86_64-linux" = "sha256-Y+LsJQcs0zd/6J8UxDgO7Zy8df6+FBLSu5R3+9jcnDM=";
-    };
-    platformMap = appleGnuPlatformMap;
-    url = platform: "https://github.com/ushironoko/octorus/releases/download/v${version}/octorus-${version}-${platform}.tar.gz";
-    format = "tar";
-    binName = "or";
-    meta = {
-      description = "TUI tool for GitHub PR review with Vim-style keybindings";
-      homepage = "https://github.com/ushironoko/octorus";
-    };
-  };
-
   # k1LoW/deck - Markdown to Google Slides
   # darwin は zip、linux は tar.gz と配布形式が異なるため format をプラットフォーム別に指定する。
   # アーカイブ内のバイナリ名は deck だが deck-slides として公開する (binPath/binName で改名)。

@@ -89,7 +89,7 @@ Lefthook runs a subset of these on commit and push (formatters, linters, gitleak
 ```
 
 Static application settings live in `nix/home/programs/`. Home Manager generates
-Git, Ghostty, ripgrep, Starship, Yazi, Biome, markdown-oxide, ov, Taplo, octorus,
+Git, Ghostty, ripgrep, Starship, Yazi, Biome, markdown-oxide, ov, Taplo,
 psql, Vim, Claude Code keybindings, and the Codex base configuration from Nix.
 Edit these modules, then run `home-manager switch --flake . --impure` to apply them.
 

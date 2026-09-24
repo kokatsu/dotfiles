@@ -62,7 +62,6 @@ in {
     ./programs/lefthook.nix
     ./programs/moxide.nix
     ./programs/nh.nix
-    ./programs/octorus.nix
     ./programs/ov.nix
     ./programs/playwright.nix
     ./programs/psql.nix

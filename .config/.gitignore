@@ -21,10 +21,6 @@
 !nvim/
 !nvim/**
 
-# octorus (https://github.com/ushironoko/octorus)
-!octorus/
-!octorus/**
-
 # WezTerm (https://github.com/wezterm/wezterm)
 !wezterm/
 !wezterm/**

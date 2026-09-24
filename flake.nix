@@ -146,7 +146,6 @@
       customOverlays.herdr
       customOverlays.kakehashi
       customOverlays.mise
-      customOverlays.octorus
       customOverlays.pkl
       customOverlays.statix-no-check
       customOverlays.textlint-rule-preset-ai-writing
