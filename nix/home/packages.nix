@@ -164,8 +164,6 @@ in {
       bento4 # MP4 解析/操作ツールキット (mp4dump, mp4info 等)
       # https://github.com/FFmpeg/FFmpeg
       ffmpeg # メディア処理ツールキット
-      # https://github.com/dirkvdb/ffmpegthumbnailer
-      ffmpegthumbnailer # 動画サムネイル (yazi プレビュー用)
       # https://github.com/karlstav/cava
       cava # 音声ビジュアライザ
       # https://github.com/dominikwilkowski/cfonts
