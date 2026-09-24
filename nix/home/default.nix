@@ -182,6 +182,7 @@ in {
         BUN_INSTALL = "${config.xdg.dataHome}/bun";
         BUNDLE_USER_HOME = "${config.xdg.dataHome}/bundle";
         ZSH_EVALCACHE_DIR = "${config.xdg.cacheHome}/zsh-evalcache";
+        MISE_ACTIVATE_SHIMS = "false";
         # less と node は親ディレクトリを作らないので xdg.stateFile で用意する
         LESSHISTFILE = "${config.xdg.stateHome}/less/history";
         NODE_REPL_HISTORY = "${config.xdg.stateHome}/node/repl_history";
