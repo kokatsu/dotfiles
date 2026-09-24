@@ -48,6 +48,8 @@ jobs:
       github.event.pull_request.user.login == 'renovate[bot]' && github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'renovate/') && needs.detect-rerun.outputs.already_updated != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      pushed: ${{ steps.push.outputs.pushed }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -345,6 +347,7 @@ jobs:
           test -f deno.lock || { echo "::error::deno cache did not produce deno.lock"; exit 1; }
 
       - name: Commit and push changes
+        id: push
         env:
           PACKAGES: ${{ steps.detect.outputs.packages }}
           PREFETCH_PACKAGES: ${{ steps.update_prefetch.outputs.changed }}
@@ -379,13 +382,16 @@ jobs:
           else
             echo "No changes to commit"
           fi
+          echo "pushed=$pushed" >> "$GITHUB_OUTPUT"
 
   check:
     name: Check
     needs: update-hashes
     permissions:
       contents: read
-    if: always() && needs.update-hashes.result != 'failure' && needs.update-hashes.result != 'cancelled'
+    # push したコミットは、その push が起こす synchronize の実行が検査する。ここで
+    # 検査しても結果は push 前のコミットに付き、必須チェックの判定に使われない
+    if: always() && needs.update-hashes.result != 'failure' && needs.update-hashes.result != 'cancelled' && needs.update-hashes.outputs.pushed != 'true'
     uses: ./.github/workflows/check.yml
     with:
       ref: ${{ github.head_ref }}
