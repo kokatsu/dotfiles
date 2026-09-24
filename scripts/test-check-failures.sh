@@ -22,7 +22,11 @@ if [[ $PWD == */karabiner-config || "$*" == *karabiner-config* || "$*" == *zeno/
   exit 23
 fi
 MOCK
-chmod +x "$test_dir/selene" "$test_dir/deno"
+cat >"$test_dir/typos" <<'MOCK'
+#!/usr/bin/env bash
+exit 23
+MOCK
+chmod +x "$test_dir/selene" "$test_dir/deno" "$test_dir/typos"
 cd "$repo_root"
 export PATH="$test_dir:$PATH"
 for recipe in lua-lint deno-lint deno-fmt-check deno-check; do
@@ -34,4 +38,8 @@ done
 # Exercise the second loop (explicit files) after all directory checks pass.
 if just --set deno_dirs scripts deno-check >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
 if just --set deno_dirs scripts deno-lint >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
+# A failed recipe must not stop the ones after it, and only it is reported.
+if just _run-all "typos nvim-test" >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
+grep -Fqx 'failed: typos' "$test_dir/output"
+grep -Fq '=== Results:' "$test_dir/output"
 printf 'Check failure propagation tests passed\n'

@@ -13,7 +13,25 @@ default:
 check: check-static nix-eval
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
-check-static: fmt-check lint typos banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test gh-api-method-test managed-paths-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test
+check-static: (_run-all "fmt-check lint typos " + test_recipes)
+
+test_recipes := "banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test gh-api-method-test managed-paths-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test"
+
+# Run every test recipe
+test: (_run-all test_recipes)
+
+# just stops at the first failed dependency, which would hide every later result
+_run-all recipes:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    failed=()
+    for recipe in {{ recipes }}; do
+      just "$recipe" || failed+=("$recipe")
+    done
+    if ((${#failed[@]})); then
+      printf '\nfailed: %s\n' "${failed[*]}" >&2
+      exit 1
+    fi
 
 # Test automatic Codex thread naming without starting a model turn
 codex-auto-title-test:
