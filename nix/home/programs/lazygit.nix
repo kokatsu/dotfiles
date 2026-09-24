@@ -5,6 +5,11 @@
   isWSL,
   ...
 }: {
+  # catppuccin/nix は theme の store パスを LG_CONFIG_FILE として sessionVariables に書くが、
+  # 起動時の環境を持ち続ける長寿命プロセス (herdr サーバー等) では旧パスが GC で消え
+  # lazygit が起動しなくなる。wrapper なら常に現行世代のパスを渡せる
+  catppuccin.lazygit.enable = false;
+
   programs.lazygit = {
     enable = true;
     # status.showUntrackedFiles=normal のリポジトリでは git status が新規ディレクトリを
@@ -17,6 +22,7 @@
       nativeBuildInputs = [pkgs.makeWrapper];
       postBuild = ''
         wrapProgram $out/bin/lazygit \
+          --set LG_CONFIG_FILE "${config.catppuccin.sources.lazygit}/${config.catppuccin.flavor}/${config.catppuccin.accent}.yml,${config.xdg.configHome}/lazygit/config.yml" \
           --set GIT_CONFIG_COUNT 1 \
           --set GIT_CONFIG_KEY_0 status.showUntrackedFiles \
           --set GIT_CONFIG_VALUE_0 all
@@ -43,7 +49,7 @@
           "^[0-9]{8}$" = "blue";
           "^renovate/" = "yellow";
         };
-        # theme は catppuccin/nix で管理
+        # theme は package の wrapper で指定
       };
       git = {
         # `|` で循環切り替えできる。staging view は常に plain diff (--no-ext-diff)
