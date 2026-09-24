@@ -22,9 +22,6 @@ in {
   # ~/.local/bin/scripts に symlink し、sessionPath で PATH に入る
   home.packages = with pkgs;
     [
-      # https://github.com/NousResearch/hermes-agent
-      hermes-agent # 自己改善型 AI エージェント (long-term memory + skill learning, overlay)
-
       #####################################
       # ランタイム (グローバルデフォルト)
       #####################################

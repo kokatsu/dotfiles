@@ -44,16 +44,6 @@
       flake = false;
     };
 
-    # https://github.com/NousResearch/hermes-agent
-    # Renovate: datasource=github-releases depName=NousResearch/hermes-agent
-    hermes-agent = {
-      url = "github:NousResearch/hermes-agent/v2026.9.14";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        home-manager.follows = "home-manager";
-      };
-    };
-
     # UnoCSS LSP (上流が flake を提供しているため自前ビルドから移行)
     # https://github.com/xna00/unocss-language-server
     # nixpkgs.follows は付けない: package.nix が pnpm.fetchDeps の offline store を
@@ -154,7 +144,6 @@
       customOverlays.deck-slides
       customOverlays.git-graph-fork
       customOverlays.herdr
-      customOverlays.hermes-agent
       customOverlays.kakehashi
       customOverlays.mise
       customOverlays.octorus
