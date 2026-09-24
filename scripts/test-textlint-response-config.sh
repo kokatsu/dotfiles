@@ -8,44 +8,69 @@ set -euo pipefail
 repo_root=$(git rev-parse --show-toplevel)
 config="$repo_root/.config/claude/hooks/textlint-response.json"
 
+workdir=$(mktemp -d)
+trap 'rm -rf "$workdir"' EXIT
+mkdir -p "$workdir/cases"
+
 fail() {
   printf '%s\n' "$1" >&2
   return 1
 }
 
-# textlint は指摘があると終了コード 1 を返す。pipefail 下でそれが呼び出し側の
-# パイプラインまで伝播すると、判定が常に失敗するためここで吸収する。
-rules_of() {
-  local report status=0
-  report=$(
-    printf '%s\n' "$1" |
-      textlint --config "$config" --stdin --stdin-filename response.md \
-        --format json --no-color
-  ) || status=$?
+# textlint は起動だけで約 1.5 秒かかるので、ケースはファイルに溜めて
+# run_cases で設定ごとに 1 回だけ起動する
+case_count=0
+case_file=()
+case_kind=()
+case_rule=()
+case_label=()
+
+add_case() {
+  local file="$workdir/cases/case-$case_count.md"
+  case_count=$((case_count + 1))
+  printf '%s\n' "$3" >"$file"
+  case_file+=("$file")
+  case_kind+=("$1")
+  case_rule+=("$2")
+  case_label+=("$4")
+}
+
+expect_rule() { add_case rule "$1" "$2" "$3"; }
+expect_no_rule() { add_case no_rule "$1" "$2" "$3"; }
+expect_clean() { add_case clean '' "$1" "$2"; }
+
+run_cases() {
+  local report status=0 i found
+  # textlint は指摘があると終了コード 1 を返すので、それは失敗として扱わない
+  report=$(textlint --config "$config" --format json --no-color "${case_file[@]}") || status=$?
   [ "$status" -le 1 ] || fail "textlint failed with exit status $status"
-  printf '%s' "$report" | jq -e 'type == "array" and length > 0 and all(.[]; .messages | type == "array")' >/dev/null ||
-    fail "textlint did not return a valid report"
-  printf '%s' "$report" | jq -r '.[].messages[].ruleId' | sort -u
+  printf '%s' "$report" |
+    jq -e --argjson n "${#case_file[@]}" 'type == "array" and length == $n and all(.[]; .messages | type == "array")' >/dev/null ||
+    fail "textlint did not return one report per case"
+  for i in "${!case_file[@]}"; do
+    found=$(printf '%s' "$report" | jq -r --arg f "${case_file[i]}" '.[] | select(.filePath == $f) | .messages[].ruleId' | sort -u)
+    case ${case_kind[i]} in
+    rule)
+      printf '%s\n' "$found" | grep -qx -- "${case_rule[i]}" ||
+        fail "expected ${case_rule[i]} to fire: ${case_label[i]}"
+      ;;
+    no_rule)
+      if printf '%s\n' "$found" | grep -qx -- "${case_rule[i]}"; then
+        fail "expected ${case_rule[i]} to stay silent: ${case_label[i]}"
+      fi
+      ;;
+    clean)
+      [ -z "$found" ] || fail "expected no finding, got: $found (${case_label[i]})"
+      ;;
+    esac
+  done
+  case_file=()
+  case_kind=()
+  case_rule=()
+  case_label=()
 }
 
-expect_rule() {
-  local found
-  found=$(rules_of "$2")
-  printf '%s\n' "$found" | grep -qx "$1" || fail "expected $1 to fire: $3"
-}
-
-expect_no_rule() {
-  local found
-  found=$(rules_of "$2")
-  printf '%s\n' "$found" | grep -qx "$1" && fail "expected $1 to stay silent: $3"
-  return 0
-}
-
-expect_clean() {
-  local found
-  found=$(rules_of "$1")
-  [ -z "$found" ] || fail "expected no finding, got: $found ($2)"
-}
+print_config=$(textlint --config "$config" --print-config)
 
 # 有効なルールの集合を固定する。preset が増減すると 21 個の false 指定が追随できず、
 # 検査範囲が黙って変わるため。
@@ -59,7 +84,7 @@ ja-technical-writing/ja-no-redundant-expression
 ja-technical-writing/no-mix-dearu-desumasu
 RULES
 )
-actual_rules=$(textlint --config "$config" --print-config | jq -r '.rule[].id' | sort)
+actual_rules=$(printf '%s' "$print_config" | jq -r '.rule[].id' | sort)
 if [ "$actual_rules" != "$expected_rules" ]; then
   printf 'enabled rules changed:\n%s\n' "$(diff <(printf '%s\n' "$expected_rules") <(printf '%s\n' "$actual_rules") || true)" >&2
   exit 1
@@ -67,7 +92,7 @@ fi
 
 # オプション名が変わると textlint はエラーにせず既定値に戻る。
 dearu_options=$(
-  textlint --config "$config" --print-config |
+  printf '%s' "$print_config" |
     jq -c '.rule[] | select(.id == "ja-technical-writing/no-mix-dearu-desumasu") | .options'
 )
 [ "$(printf '%s' "$dearu_options" | jq -r '.preferInBody')" = ですます ] ||
@@ -116,10 +141,9 @@ expect_clean '必要に応じて設定します。' 'advice does not block a res
 expect_clean '```text
 これは革命的な技術です。
 ```' 'code remains verbatim'
+run_cases
 
 # Also exercise the actual hook with the symlink layout Home Manager deploys.
-workdir=$(mktemp -d)
-trap 'rm -rf "$workdir"' EXIT
 mkdir -p "$workdir/claude/hooks"
 ln -s "$config" "$workdir/claude/hooks/textlint-response.json"
 run_real_hook() {
@@ -136,5 +160,6 @@ config="$repo_root/.textlintrc-commit.json"
 expect_rule terminology 'feat: update readme' 'README spelling'
 expect_rule terminology 'feat: update readmes' 'READMEs spelling'
 expect_clean 'feat: update README and READMEs' 'canonical README spelling'
+run_cases
 
 printf 'textlint configs: rule set, response and commit cases, and real hook verified\n'
