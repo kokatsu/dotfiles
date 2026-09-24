@@ -10,7 +10,7 @@
   "lazy.nvim": { "branch": "main", "commit": "306a05526ada86a7b30af95c5cc81ffba93fef97" },
   "lazydev.nvim": { "branch": "main", "commit": "ff2cbcba459b637ec3fd165a2be59b7bbaeedf0d" },
   "lualine.nvim": { "branch": "master", "commit": "221ce6b2d999187044529f49da6554a92f740a96" },
-  "md-render.nvim": { "branch": "main", "commit": "00a83b8a25b9d2d50dd15efaf4c701c19de21688" },
+  "md-render.nvim": { "branch": "main", "commit": "865dcce86b98dcbb3a8bc06b5cca060d590cd5c4" },
   "mini.nvim": { "branch": "main", "commit": "1345d191bb3da9c7b0e977f4387c5761f9bff68d" },
   "moonbit.nvim": { "branch": "main", "commit": "907c8240d3d2f96fa8e8569c73973e8604a7b1e6" },
   "noice.nvim": { "branch": "main", "commit": "7bfd942445fb63089b59f97ca487d605e715f155" },
@@ -29,6 +29,6 @@
   "snacks.nvim": { "branch": "main", "commit": "882c996cf28183f4d63640de0b4c02ec886d01f2" },
   "todo-comments.nvim": { "branch": "main", "commit": "31e3c38ce9b29781e4422fc0322eb0a21f4e8668" },
   "typescript-tools.nvim": { "branch": "feat/tsserver-plugins-location-languages", "commit": "8a7ceb16042125a55f2d07e15d4d59a66add19e0" },
-  "wezterm-types": { "branch": "main", "commit": "895fd632c45c0d8fbf5f49756ffec8187e53f50a" },
+  "wezterm-types": { "branch": "main", "commit": "3dcb284ccd891509727725e64d577bfa151f1bda" },
   "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" }
 }
