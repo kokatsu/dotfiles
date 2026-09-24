@@ -23,7 +23,7 @@ in {
   ];
   # vendored sources: yazi-rs/plugins 044c3cc, kokatsu/ansi-preview 865f404,
   # yazi-rs/flavors 20b47bf。更新はリポジトリのソースを更新して switch する。
-  # ya pkg は使用しない。シェルの y 関数は既存の functions.zsh が管理する。
+  # ya pkg は使用しない。シェルの yi 関数は既存の functions.zsh が管理する。
   programs.yazi = {
     enable = true;
     enableBashIntegration = false;
@@ -49,7 +49,7 @@ in {
       opener = {
         edit = [
           {
-            run = "nvim \"$@\"";
+            run = "nvim %s";
             block = true;
             for = "unix";
           }
@@ -110,17 +110,17 @@ in {
           }
           {
             on = "S";
-            run = "shell '$SHELL' --block --confirm";
+            run = "shell '$SHELL' --block";
             desc = "Open shell here";
           }
           {
             on = "e";
-            run = "shell '$EDITOR \"$@\"' --block --confirm";
+            run = "shell '$EDITOR %s' --block";
             desc = "Edit with $EDITOR";
           }
           {
             on = "b";
-            run = "shell 'if command -v wslview >/dev/null 2>&1; then wslview \"$@\"; elif [ \"$(uname)\" = \"Darwin\" ]; then open \"$@\"; else xdg-open \"$@\"; fi' --orphan --confirm";
+            run = "shell 'if command -v wslview >/dev/null 2>&1; then wslview %s; elif [ \"$(uname)\" = \"Darwin\" ]; then open %s; else xdg-open %s; fi' --orphan";
             desc = "Open with default app";
           }
           {
@@ -136,7 +136,7 @@ in {
               "g"
               "j"
             ];
-            run = "shell 'bash \"$HOME/.config/yazi/git-changes.sh\"' --block --confirm";
+            run = "shell 'bash \"$HOME/.config/yazi/git-changes.sh\"' --block";
             desc = "Jump to a Git-changed file (fzf)";
           }
           {
