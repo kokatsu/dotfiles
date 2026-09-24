@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # bin/status-dir の解決規則を確認する。Windows プロファイルの探索は /mnt/c 固定で
 # 差し替えられないため、macOS 分岐と引数検査だけを見る
-set -euo pipefail
+set -eEuo pipefail
+report_failure() {
+  local rc=$? line=$1
+  printf '%s:%s: exit %s: %s\n' "${BASH_SOURCE[0]##*/}" "$line" "$rc" "$BASH_COMMAND" >&2
+}
+trap 'report_failure "$LINENO"' ERR
 repo_root=$(git rev-parse --show-toplevel)
 test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT

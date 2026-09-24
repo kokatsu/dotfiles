@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eEuo pipefail
+report_failure() {
+  local rc=$? line=$1
+  printf '%s:%s: exit %s: %s\n' "${BASH_SOURCE[0]##*/}" "$line" "$rc" "$BASH_COMMAND" >&2
+}
+trap 'report_failure "$LINENO"' ERR
+unexpected_success() {
+  printf '%s:%s: expected a failure, but the command succeeded\n' "${BASH_SOURCE[0]##*/}" "$1" >&2
+  exit 1
+}
 
 # These scripts run on Linux/WSL; macOS does not provide util-linux flock.
 if [[ $(uname -s) != Linux ]]; then
@@ -71,7 +80,7 @@ start_bg bash "$repo_root/bin/feed-watch" check
 check_pid=$worker_pid
 wait_file "$test_dir/fetch-ready"
 # A second check must wait for the outer lock without starting another fetch.
-if FEED_WATCH_LOCK_TIMEOUT=0.1 bash "$repo_root/bin/feed-watch" check 2>"$test_dir/check-timeout"; then exit 1; fi
+if FEED_WATCH_LOCK_TIMEOUT=0.1 bash "$repo_root/bin/feed-watch" check 2>"$test_dir/check-timeout"; then unexpected_success "$LINENO"; fi
 grep -Fq 'Failed to acquire feed lock' "$test_dir/check-timeout"
 [[ $(wc -l <"$test_dir/fetch-calls") -eq 1 ]]
 # Both writers must finish while the network request is still pending.
@@ -103,12 +112,12 @@ rm "$test_dir/fail-fetch"
 # When every fetch fails the run must fail and leave the file (last_updated included) alone.
 cp "$STATUS_FILE" "$test_dir/before"
 touch "$test_dir/fail-all"
-if bash "$repo_root/bin/feed-watch" check 2>"$test_dir/all-failed"; then exit 1; fi
+if bash "$repo_root/bin/feed-watch" check 2>"$test_dir/all-failed"; then unexpected_success "$LINENO"; fi
 grep -Fq 'All feed fetches failed' "$test_dir/all-failed"
 cmp "$STATUS_FILE" "$test_dir/before"
 rm "$test_dir/fail-all"
 : >"$FEED_WATCH_OPML_DIR/feeds.opml"
-if bash "$repo_root/bin/feed-watch" check; then exit 1; fi
+if bash "$repo_root/bin/feed-watch" check; then unexpected_success "$LINENO"; fi
 cmp "$STATUS_FILE" "$test_dir/before"
 # A late summary completion must not recreate a deleted feed.
 feed_status_update feed_status_mark_summarized removed ignored
@@ -121,9 +130,9 @@ fail_update() {
 }
 invalid_update() { printf 'invalid\n'; }
 cp "$STATUS_FILE" "$test_dir/before"
-if feed_status_update fail_update; then exit 1; fi
+if feed_status_update fail_update; then unexpected_success "$LINENO"; fi
 cmp "$STATUS_FILE" "$test_dir/before"
-if feed_status_update invalid_update; then exit 1; fi
+if feed_status_update invalid_update; then unexpected_success "$LINENO"; fi
 cmp "$STATUS_FILE" "$test_dir/before"
 
 # Independent processes must not lose each other's updates.
@@ -199,7 +208,7 @@ start_bg bash "$repo_root/bin/feed-summarize" test
 summary_pid=$worker_pid
 wait_file "$test_dir/summary-ready"
 [[ ! -e "$test_dir/browser-calls" ]]
-if FEED_WATCH_LOCK_TIMEOUT=0.1 bash "$repo_root/bin/feed-summarize" test 2>"$test_dir/summary-timeout"; then exit 1; fi
+if FEED_WATCH_LOCK_TIMEOUT=0.1 bash "$repo_root/bin/feed-summarize" test 2>"$test_dir/summary-timeout"; then unexpected_success "$LINENO"; fi
 grep -Fq 'Failed to acquire feed lock' "$test_dir/summary-timeout"
 # A contender that never acquired the lock must not close the owner's browser.
 [[ ! -e "$test_dir/browser-calls" ]]
@@ -220,18 +229,18 @@ bash "$repo_root/bin/feed-summarize" test
 # An invalid input reports a useful error and remains unchanged.
 cp "$STATUS_FILE" "$test_dir/valid-status"
 printf '{}\n' >"$STATUS_FILE"
-if feed_status_update feed_status_mark_read null 2>"$test_dir/invalid-input"; then exit 1; fi
+if feed_status_update feed_status_mark_read null 2>"$test_dir/invalid-input"; then unexpected_success "$LINENO"; fi
 grep -Fq 'Invalid feed status (input)' "$test_dir/invalid-input"
 [[ $(cat "$STATUS_FILE") == '{}' ]]
 cp "$test_dir/valid-status" "$STATUS_FILE"
-if feed_status_update invalid_update 2>"$test_dir/invalid-output"; then exit 1; fi
+if feed_status_update invalid_update 2>"$test_dir/invalid-output"; then unexpected_success "$LINENO"; fi
 grep -Fq 'Invalid feed status (output)' "$test_dir/invalid-output"
 cmp "$test_dir/valid-status" "$STATUS_FILE"
 
 # The inner state lock also has a bounded wait.
 exec 7>"$STATUS_FILE.lock"
 flock -x 7
-if FEED_WATCH_LOCK_TIMEOUT=0.1 feed_status_update feed_status_mark_read null 2>"$test_dir/state-timeout"; then exit 1; fi
+if FEED_WATCH_LOCK_TIMEOUT=0.1 feed_status_update feed_status_mark_read null 2>"$test_dir/state-timeout"; then unexpected_success "$LINENO"; fi
 grep -Fq 'Failed to acquire feed lock' "$test_dir/state-timeout"
 exec 7>&-
 
@@ -254,7 +263,7 @@ jq -e '.counter == 1' "$STATUS_FILE" >/dev/null
 cp "$STATUS_FILE" "$test_dir/before-mv-failure"
 printf '0\n' >"$test_dir/mv-attempts"
 FEED_TEST_MV_FAILURES=10
-if feed_status_update increment 2>"$test_dir/mv-error"; then exit 1; fi
+if feed_status_update increment 2>"$test_dir/mv-error"; then unexpected_success "$LINENO"; fi
 [[ $(cat "$test_dir/mv-attempts") == 5 ]]
 grep -Fq 'Failed to publish feed status after 5 attempts' "$test_dir/mv-error"
 cmp "$test_dir/before-mv-failure" "$STATUS_FILE"

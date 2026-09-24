@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -eEuo pipefail
+report_failure() {
+  local rc=$? line=$1
+  printf '%s:%s: exit %s: %s\n' "${BASH_SOURCE[0]##*/}" "$line" "$rc" "$BASH_COMMAND" >&2
+}
+trap 'report_failure "$LINENO"' ERR
 
 test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT

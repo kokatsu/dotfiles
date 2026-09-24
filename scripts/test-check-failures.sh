@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eEuo pipefail
+report_failure() {
+  local rc=$? line=$1
+  printf '%s:%s: exit %s: %s\n' "${BASH_SOURCE[0]##*/}" "$line" "$rc" "$BASH_COMMAND" >&2
+}
+trap 'report_failure "$LINENO"' ERR
+unexpected_success() {
+  printf '%s:%s: expected a failure, but the command succeeded\n' "${BASH_SOURCE[0]##*/}" "$1" >&2
+  exit 1
+}
 repo_root=$(git rev-parse --show-toplevel)
 test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT
@@ -23,6 +32,6 @@ for recipe in lua-lint deno-lint deno-fmt-check deno-check; do
   fi
 done
 # Exercise the second loop (explicit files) after all directory checks pass.
-if just --set deno_dirs scripts deno-check >"$test_dir/output" 2>&1; then exit 1; fi
-if just --set deno_dirs scripts deno-lint >"$test_dir/output" 2>&1; then exit 1; fi
+if just --set deno_dirs scripts deno-check >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
+if just --set deno_dirs scripts deno-lint >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
 printf 'Check failure propagation tests passed\n'
