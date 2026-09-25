@@ -62,6 +62,11 @@
       url = "github:moonbit-community/moonbit-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs @ {
@@ -171,7 +176,11 @@
           config.allowUnfree = true;
           overlays = commonOverlays ++ lib.optionals (builtins.elem system darwinSystems) darwinOnlyOverlays;
         };
-        modules = [./nix/home catppuccin.homeModules.catppuccin];
+        modules = [
+          ./nix/home
+          catppuccin.homeModules.catppuccin
+          inputs.nix-index-database.homeModules.nix-index
+        ];
         extraSpecialArgs = {
           inherit inputs self username isCI dotfilesDir;
           stablePkgs = stablePkgsFor system;
