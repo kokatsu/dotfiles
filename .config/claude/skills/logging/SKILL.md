@@ -14,9 +14,6 @@ allowed-tools:
   - Read
   - Glob
   - Grep
-  - Edit
-  - Write
-  - Bash
   - TaskCreate
   - TaskUpdate
 ---
