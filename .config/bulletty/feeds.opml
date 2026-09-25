@@ -7,6 +7,7 @@
     <body>
         <outline text="Blog" title="Blog">
             <outline text="Facebook Developers" title="Facebook Developers" description="The latest news and announcements from Facebook Platform including APIs, SDKs, social plugins and Parse." xmlUrl="https://developers.facebook.com/blog/feed/" htmlUrl="https://developers.facebook.com/blog/" type="rss" />
+            <outline text="Social Media Today" title="Social Media Today" description="Latest News Feed" xmlUrl="https://www.socialmediatoday.com/feeds/news/" htmlUrl="https://www.socialmediatoday.com/" type="rss" />
         </outline>
         <outline text="GitHub" title="GitHub">
             <outline text="Recent Commits to docs:main" title="Recent Commits to docs:main" description="Recent Commits to docs:main" xmlUrl="https://github.com/xdevplatform/docs/commits.atom" htmlUrl="https://github.com/xdevplatform/docs/commits" type="rss" />
