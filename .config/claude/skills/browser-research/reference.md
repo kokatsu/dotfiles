@@ -81,7 +81,7 @@ agent-browser network request <requestId>   # full request/response detail
 
 Filter flags: `--type` (e.g. `xhr,fetch`, `document`, `script`), `--method` (e.g. `POST`), `--status` (e.g. `2xx`, `400-499`).
 
-Use this to locate the JSON endpoint behind a SPA list, then `WebFetch` the endpoint directly for the cleanest data extraction.
+Use this to locate the JSON endpoint behind a SPA list, then fetch it with `agent-browser read "<endpoint-URL>" --raw` for the cleanest data extraction.
 
 ## Navigate to linked pages
 
