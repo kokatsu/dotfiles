@@ -3,7 +3,9 @@ extend-ignore-identifiers-re = [
   "iterm", # iTerm2 image protocol type in fastfetch config
 ]
 extend-ignore-re = [
-  "sha256-.+", # Nix SRI hashes
+  "sha256-.+",           # Nix SRI hashes
+  'U\+[0-9A-Fa-f]{4,6}', # Unicode コードポイント (U+E0BA)
+  '\\x\{[0-9A-Fa-f]+\}', # Perl の文字エスケープ (\x{E0BA})
 ]
 
 [default.extend-words]
