@@ -257,6 +257,12 @@ in {
           description = "現在のペインを新しいタブへ移動"
 
           [[keys.command]]
+          key = "prefix+y"
+          type = "shell"
+          command = "${scriptsDir}/copy-last-output.sh"
+          description = "直前のコマンドと出力をコピー"
+
+          [[keys.command]]
           key = "alt+v"
           type = "popup"
           command = "${scriptsDir}/prompt-edit.sh"
