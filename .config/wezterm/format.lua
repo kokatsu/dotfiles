@@ -141,6 +141,7 @@ local feed_service_icons = {
   ['github.com/xdevplatform'] = nf.cod_twitter,
   ['facebook.com'] = nf.md_facebook,
   ['metastatus.com'] = nf.md_facebook,
+  ['socialmediatoday.com'] = nf.fa_network_wired,
 }
 
 local feed_kind_icons = {
