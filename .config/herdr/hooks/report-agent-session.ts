@@ -46,9 +46,16 @@ const PROFILES: Record<string, Profile> = {
   codex: {
     source: "herdr:codex",
     reportsPath: false,
-    // Codex routes other events through the same hook. An absent name is still
-    // accepted, as it was before, so only a named non-SessionStart is refused.
-    skips: (_payload, event) => event !== "" && event !== "SessionStart",
+    skips: (payload, event) =>
+      // Codex routes other events through the same hook. An absent name is still
+      // accepted, as it was before, so only a named non-SessionStart is refused.
+      (event !== "" && event !== "SessionStart") ||
+      // Ephemeral threads have no rollout, so transcript_path is null and there
+      // is nothing for Herdr to resume. All of them are dropped on purpose: memory
+      // consolidation runs as one inside the pane's process, and an ephemeral
+      // `codex exec` child inherits HERDR_PANE_ID, so either would otherwise
+      // replace the pane's real session.
+      str(payload.transcript_path) === null,
   },
 };
 
