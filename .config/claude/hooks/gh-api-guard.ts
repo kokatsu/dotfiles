@@ -279,6 +279,7 @@ interface Decision {
 
 export function decide(ast: unknown): Decision | null {
   let seen = false;
+  let mayBeApi = false;
   let reason: string | null = null;
 
   for (const node of walk(ast)) {
@@ -287,6 +288,12 @@ export function decide(ast: unknown): Decision | null {
     if (args.length === 0) continue;
     const words = args.map(readWord);
     const texts = args.map(wordText);
+    if (
+      texts.some((text) => /\bapi\b/.test(text)) ||
+      words.some((word, i) =>
+        word.literal === "gh" && words[i + 1]?.literal === null
+      )
+    ) mayBeApi = true;
     const stripped = stripWrappers(texts);
     const offset = texts.length - stripped.length;
 
@@ -294,6 +301,12 @@ export function decide(ast: unknown): Decision | null {
     // 語をまたいだ時点で当てにならない。`env -u $V gh api r` は V が 2 語以上へ
     // 割れれば別のコマンドを走らせるし、`$CMD api r -X DELETE` の頭は gh になりうる。
     if (words.slice(0, offset + 1).some((word) => word.literal === null)) {
+      reason ??= UNREADABLE_REASON;
+      continue;
+    }
+
+    // サブコマンドの位置が展開なら gh api になりうる。`gh a${P}i r -X DELETE`。
+    if (stripped[0] === "gh" && words[offset + 1]?.literal === null) {
       reason ??= UNREADABLE_REASON;
       continue;
     }
@@ -306,6 +319,11 @@ export function decide(ast: unknown): Decision | null {
     if (hidesGhApi(stripped)) reason ??= INDIRECT_REASON;
   }
 
+  // gh api と無関係なコマンドに ask を返すと、確認を減らすためのフックが確認を増やす。
+  // 生の文字列でなく wordText で探すのは、a"pi" や行継続を挟んだ ap\<改行>i も
+  // bash では api になるため。字面の gh の直後が展開なら api になりうるので残す。
+  // gh まで展開に隠した形はここで抜けるが、フックが無い場合と同じ扱いになる。
+  if (!seen && !mayBeApi) return null;
   if (reason !== null) return { decision: "ask", reason };
   return seen ? { decision: "allow", reason: ALLOW_REASON } : null;
 }

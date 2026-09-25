@@ -11,6 +11,7 @@
 # F: argv の境界
 # G: bash として解析できない入力
 # H: 語分割が旗やコマンドを増やす形
+# I: 改行を含む形。この表には書けないので test-gh-api-guard.sh が直接渡す
 
 A1	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	gh api repos/o/r -X DELETE
 A2	ask	gh api: HTTP method override to 'POST' (not GET/HEAD) — confirm intent	gh api repos/o/r -iX POST
@@ -44,6 +45,8 @@ B7	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -q .name
 B8	allow	gh api: read-only (GET/HEAD)	gh api "repos/$O/commits"
 B9	allow	gh api: read-only (GET/HEAD)	gh api -H "$H" repos/o/r
 B10	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --jq "$Q"
+B11	allow	gh api: read-only (GET/HEAD)	gh a"pi" repos/o/r
+B12	allow	gh api: read-only (GET/HEAD)	gh ap\i repos/o/r
 C1	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --jq "select(.x) | -X DELETE"
 C2	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r | grep -F name
 C3	allow	gh api: read-only (GET/HEAD)	echo $(date) && gh api repos/o/r
@@ -55,6 +58,8 @@ D3	ask	gh api: an expanded argument could add a flag — confirm intent	gh api $
 D4	ask	gh api: an expanded argument could add a flag — confirm intent	gh api repos/$O/commits
 D5	ask	gh api: an expanded argument could add a flag — confirm intent	gh api "$X"
 E1	none	-	echo hello
+E2	none	-	VIS=/x/vis && $VIS in out --no-vis
+E3	none	-	$SP/b.out < in.txt > out.txt
 F1	allow	gh api: read-only (GET/HEAD)	gh api -- "$X"
 F2	allow	gh api: read-only (GET/HEAD)	gh api -- -X DELETE
 F3	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -H"$V"
@@ -68,3 +73,7 @@ H1	ask	gh api: an expanded argument could add a flag — confirm intent	gh api r
 H2	ask	gh api: an expanded argument could add a flag — confirm intent	gh api r --header $H
 H3	ask	gh api: an expanded word hides what runs — confirm intent	env -u $V gh api r
 H4	ask	gh api: an expanded word hides what runs — confirm intent	gh api r && $CMD api r -X DELETE
+H5	ask	gh api: an expanded word hides what runs — confirm intent	$CMD api r -X DELETE
+H6	ask	gh api: an expanded word hides what runs — confirm intent	env -u $V gh a${P}i r -X DELETE
+H7	ask	gh api: an expanded word hides what runs — confirm intent	gh a${P}i r -X DELETE
+H8	ask	gh api: an expanded word hides what runs — confirm intent	gh $X r -X DELETE

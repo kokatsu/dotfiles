@@ -48,5 +48,8 @@ while IFS=$'\t' read -r id decision reason cmd; do
   check "$id" "$decision" "$reason" "$cmd"
 done <"$cases"
 
+check I1 allow "gh api: read-only (GET/HEAD)" $'gh ap\\\ni repos/o/r'
+check I2 allow "gh api: read-only (GET/HEAD)" $'gh a\\\np\\\ni repos/o/r'
+
 printf '=== gh-api-guard: %s cases, %s failures ===\n' "$((pass + fail))" "$fail"
 [[ $fail -eq 0 ]]
