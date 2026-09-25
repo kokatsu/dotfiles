@@ -16,8 +16,8 @@
   '';
 in {
   # 以下のパッケージは programs.* モジュールで管理:
-  # bat, broot, btop, delta, eza, fastfetch, fzf, gh, git, lazydocker, lazygit, nh,
-  # readline, starship, zoxide
+  # bat, broot, btop, delta, eza, fastfetch, fzf, gh, git, lazydocker, lazygit, mergiraf,
+  # nh, readline, starship, zoxide
   # bin/ のユーザースクリプト (feed-watch, memo, daily 等) は files.nix が
   # ~/.local/bin/scripts に symlink し、sessionPath で PATH に入る
   home.packages = with pkgs;

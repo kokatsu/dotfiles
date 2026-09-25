@@ -60,6 +60,7 @@ in {
     ./programs/lazydocker.nix
     ./programs/lazygit.nix
     ./programs/lefthook.nix
+    ./programs/mergiraf.nix
     ./programs/moxide.nix
     ./programs/nh.nix
     ./programs/nix-index.nix

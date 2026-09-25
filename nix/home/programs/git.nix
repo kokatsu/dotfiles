@@ -141,10 +141,11 @@
       };
       # difftastic はフィルタ非対応。delta に戻す場合はコメント解除。
       # interactive.diffFilter = "delta";
-      merge = {
-        # 共通祖先も表示し、両側で一致する行は競合領域の外に出す。
-        conflictStyle = "zdiff3";
-      };
+      # mergiraf.nix が diff3 に固定する。mergiraf をやめる場合はコメント解除。
+      # merge = {
+      #   # 共通祖先も表示し、両側で一致する行は競合領域の外に出す。
+      #   conflictStyle = "zdiff3";
+      # };
       pull = {
         # マージではなくリベースする (rebase.autoStash / updateRefs も有効になる)。
         rebase = true;
