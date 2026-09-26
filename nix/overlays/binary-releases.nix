@@ -12,11 +12,11 @@ in {
   # Renovate: datasource=github-releases depName=jdx/mise
   mise = mkBinaryRelease rec {
     pname = "mise";
-    version = "2026.9.8";
+    version = "2026.9.11";
     hashes = {
-      "aarch64-darwin" = "sha256-AvjStU5yKOeSF+XBTXbAm6aSEuB6k06AMQ5wITSWHB0=";
-      "aarch64-linux" = "sha256-0ZIOj4JqPljnCvnNBV/UFQpQo9EuQXCstAvoRp11FnQ=";
-      "x86_64-linux" = "sha256-nIFg890kNRcXw7/j8mhgYua3RjJ5Jl0dku2ZmPzQWXU=";
+      "aarch64-darwin" = "sha256-u/1H72XCJ4xOm6CbUjvrEBk2WjwLnJ/GD2htwW81jg8=";
+      "aarch64-linux" = "sha256-tJ/6+ZwK5ts2pZnvmP+zEtTcbW38ei5OFK4hIpkZ9rc=";
+      "x86_64-linux" = "sha256-hligBrboAgbNSh9vstAryqMhDi0GqVxbTDEj8lAakEQ=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-arm64";
