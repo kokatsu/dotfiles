@@ -3,7 +3,7 @@
   # vite-plus's tarball references private workspace packages in its own
   # devDependencies, so we cannot reuse its package.json directly. Instead we
   # vendor a minimal wrapper package.json + package-lock.json that depends on
-  # vite-plus@<version>, then expose node_modules/vite-plus/bin/vp as $out/bin/vp.
+  # vite-plus@<version>, then expose a wrapper around node_modules/vite-plus/bin/vp as $out/bin/vp.
   # Renovate: datasource=npm depName=vite-plus
   vite-plus = _final: prev: let
     version = "0.3.3";
@@ -28,6 +28,12 @@
       # they collide with other npm packages in Home Manager's buildEnv (e.g.
       # estree-walker vs vue-language-server). Nest them under vite-plus's own
       # node_modules instead; Node resolves them there first.
+      #
+      # The official global vp is a Rust binary that hands dev/build/test/run
+      # to the project's own vite-plus; the npm bin/vp has no such delegation,
+      # so it would run the store's vitest, which cannot resolve project-only
+      # deps such as jsdom. $out/bin/{vp,vpr} emulate the Rust lookup: the
+      # nearest node_modules/.bin/<bin> above $PWD wins, else the store copy.
       installPhase = ''
         runHook preInstall
         dest=$out/lib/node_modules/vite-plus
@@ -36,7 +42,16 @@
         mv node_modules "$dest/node_modules"
         for bin in vp vpr; do
           ln -sfn ../../bin/$bin "$dest/node_modules/.bin/$bin"
-          ln -s ../lib/node_modules/vite-plus/bin/$bin $out/bin/$bin
+          cat > $out/bin/$bin <<EOF
+        #!${prev.runtimeShell}
+        dir=\$PWD
+        while [ "\$dir" != / ]; do
+          [ -x "\$dir/node_modules/.bin/$bin" ] && exec "\$dir/node_modules/.bin/$bin" "\$@"
+          dir=\$(dirname "\$dir")
+        done
+        exec $dest/bin/$bin "\$@"
+        EOF
+          chmod +x $out/bin/$bin
         done
         runHook postInstall
       '';
