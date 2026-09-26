@@ -86,9 +86,9 @@ in {
           # (format.lua が表示幅で省略) が長いホスト名だけで埋まり実質固定表示に
           # なるため workspace/tab に差し替える
           window_title = "{workspace}: {tab}"
-          # tab-numbers プラグインが付ける [N] プレフィックスの分を確保する
-          # (デフォルト 26)
-          sidebar_width = 30
+          # Agents は下の rows_by_agent で 1 エージェントを 4 行に分けており
+          # 1 行あたりの情報が少ないので、デフォルト (26) より詰める
+          sidebar_width = 22
 
           # タブ行の右端に Claude Code のコストを出す。ペインごとの statusline に
           # 同じ数字を並べる代わりに、ウィンドウ全体で 1 箇所に集約する
