@@ -186,6 +186,10 @@ in {
         # less と node は親ディレクトリを作らないので xdg.stateFile で用意する
         LESSHISTFILE = "${config.xdg.stateHome}/less/history";
         NODE_REPL_HISTORY = "${config.xdg.stateHome}/node/repl_history";
+        # man-db は既定で SGR を出し、col -bx がそれを文字化けさせるので、
+        # -c で backspace 重ね打ち形式に戻す。bat.nix の paging = "never" を上書きする
+        MANROFFOPT = "-c";
+        MANPAGER = "sh -c 'col -bx | bat -l man -p --paging=always'";
         # zeno (@db/sqlite) が実行時に取得する upstream プリビルトの libsqlite3 は
         # deno 2.9.4 上で segfault し、zeno-server が socket を作れず起動に失敗する。
         # nixpkgs の libsqlite3 を使わせる。
