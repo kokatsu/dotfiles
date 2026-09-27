@@ -77,8 +77,20 @@ local common_keys = {
 -- macOS では Karabiner がターミナルアプリ以外でのみ Ctrl↔Cmd を入れ替えるため、
 -- WezTerm には物理 Ctrl が Ctrl のまま届く
 local unified_keys = {
-  -- `Ctrl + c` でクリップボードにコピー
-  { key = 'c', mods = 'CTRL', action = act.CopyTo('Clipboard') },
+  -- `Ctrl + c` は選択があればコピー、なければ SIGINT
+  -- コピー後に選択を消さないと、次の Ctrl + c も SIGINT にならずコピーに化ける
+  {
+    key = 'c',
+    mods = 'CTRL',
+    action = wezterm.action_callback(function(window, pane)
+      if window:get_selection_text_for_pane(pane) ~= '' then
+        window:perform_action(act.CopyTo('Clipboard'), pane)
+        window:perform_action(act.ClearSelection, pane)
+      else
+        window:perform_action(act.SendKey({ key = 'c', mods = 'CTRL' }), pane)
+      end
+    end),
+  },
   -- `Ctrl + Shift + c` でキャンセル (SIGINT)
   { key = 'C', mods = 'CTRL', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
   -- `Ctrl + v` でクリップボードからペースト
