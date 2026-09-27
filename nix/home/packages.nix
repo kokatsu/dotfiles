@@ -217,6 +217,10 @@ in {
       devcontainer # Dev Container CLI (devcontainer.json から環境構築・コンテナ内で claude 等を実行)
       # https://github.com/gitleaks/gitleaks
       gitleaks # シークレット検出
+      # https://github.com/getsops/sops
+      sops # シークレットファイル暗号化 (YAML/JSON/ENV 等の値のみ暗号化)
+      # https://github.com/FiloSottile/age
+      age # シンプルなファイル暗号化 (sops のバックエンド)
       # https://github.com/pypa/pipx
       pipx # Python CLI管理
       # https://github.com/kamadorueda/alejandra
