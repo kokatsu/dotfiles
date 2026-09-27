@@ -5,7 +5,7 @@
 #   - Ctrl+p: カレント選択 (ファイル/ディレクトリ両対応) を単一で確定
 #   - Space: staging 切替 (複数選択)
 #   - Ctrl+a: staged をまとめて確定
-# 選択したパス (単一/複数) を Claude Code / Codex CLI に送信する
+# 選択したパス (単一/複数) を起動元ペイン (Claude Code / Codex CLI / シェル) に送信する
 #
 # broot の from_shell verb は outcmd にシェルコマンドを書くだけで
 # 本来は br 関数が eval する必要があるため、このスクリプトが同じ処理を行う
@@ -35,7 +35,7 @@ fi
 
 [[ ! -s "$CLAUDE_PATH_PICK_FILE" ]] && exit 0
 
-# 取得に失敗しても中断せず、Claude 形式にフォールバックする
+# 取得に失敗しても中断せず、シェル向けの形式にフォールバックする
 agent=$("$herdr_bin" pane get "$active_pane_id" |
   jq -r '.result.pane.agent // ""') || agent=""
 
@@ -44,19 +44,16 @@ agent=$("$herdr_bin" pane get "$active_pane_id" |
 payload=""
 while IFS= read -r p || [[ -n "$p" ]]; do
   [[ -z "$p" ]] && continue
-  if [[ "$agent" == codex ]]; then
-    case "$p" in
-    "$PWD"/*) payload+="${p#"$PWD"/} " ;;
-    "$PWD") payload+=". " ;;
-    *) payload+="${p} " ;;
-    esac
-  else
-    case "$p" in
-    "$PWD"/*) payload+="@${p#"$PWD"/} " ;;
-    "$PWD") payload+="@. " ;;
-    *) payload+="@${p} " ;;
-    esac
-  fi
+  case "$p" in
+  "$PWD"/*) p=${p#"$PWD"/} ;;
+  "$PWD") p=. ;;
+  esac
+  case "$agent" in
+  claude) payload+="@${p} " ;;
+  codex) payload+="${p} " ;;
+  # シェルなど: コマンド引数としてそのまま使えるようクォートする
+  *) payload+="$(printf '%q' "$p") " ;;
+  esac
 done <"$CLAUDE_PATH_PICK_FILE"
 
 "$herdr_bin" pane send-text "$active_pane_id" "$payload"

@@ -1,6 +1,6 @@
 #!/bin/bash
 # パス選択スクリプト (fzf版, herdr版)
-# Alt-c で fzf を起動し、選択したパスを Claude Code / Codex CLI に送信する
+# Alt-c で fzf を起動し、選択したパスを起動元ペイン (Claude Code / Codex CLI / シェル) に送信する
 # 複数選択 (Tab) 対応、bat プレビュー付き
 #
 # herdr は 1 キー = 1 コマンド固定で bind 時点の振り分けができないため、
@@ -26,16 +26,26 @@ selected=$(fd --type f --hidden --no-ignore --exclude .git --exclude node_module
 
 [[ -z "$selected" ]] && exit 0
 
-# 取得に失敗しても中断せず、Claude 形式にフォールバックする
+# 取得に失敗しても中断せず、シェル向けの形式にフォールバックする
 agent=$("$herdr_bin" pane get "$active_pane_id" |
   jq -r '.result.pane.agent // ""') || agent=""
 
-if [[ "$agent" == codex ]]; then
-  # Codex: "@" を付けずスペース区切り
-  payload=$(printf '%s\n' "$selected" | tr '\n' ' ')
-else
+case "$agent" in
+claude)
   # Claude: "@path1 @path2 " 形式
   payload=$(printf '%s\n' "$selected" | sed 's|^|@|' | tr '\n' ' ')
-fi
+  ;;
+codex)
+  # Codex: "@" を付けずスペース区切り
+  payload=$(printf '%s\n' "$selected" | tr '\n' ' ')
+  ;;
+*)
+  # シェルなど: コマンド引数としてそのまま使えるようクォートする
+  payload=""
+  while IFS= read -r p; do
+    payload+="$(printf '%q' "$p") "
+  done <<<"$selected"
+  ;;
+esac
 
 "$herdr_bin" pane send-text "$active_pane_id" "$payload"
