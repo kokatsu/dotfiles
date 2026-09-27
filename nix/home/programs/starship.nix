@@ -16,7 +16,7 @@ in {
       add_newline = true;
       command_timeout = 1000;
       scan_timeout = 50;
-      format = "$directory$git_branch$git_metrics$git_status$fill$cmd_duration$time$line_break$battery$character";
+      format = "$directory$git_branch$git_metrics$git_status$fill$nix_shell$status$cmd_duration$time$line_break$battery$jobs$character";
       directory = {
         truncation_symbol = " "; # nf-fa-folder_open
         truncate_to_repo = false;
@@ -59,6 +59,15 @@ in {
       fill = {
         symbol = " ";
       };
+      nix_shell = {
+        symbol = " "; # nf-linux-nixos
+        format = "[$symbol$name  ](bold fg:sapphire)";
+      };
+      status = {
+        disabled = false;
+        symbol = "󰅚 "; # nf-md-close_circle_outline
+        format = "[$symbol$status( $signal_name)  ](fg:red)";
+      };
       cmd_duration = {
         show_milliseconds = true;
         min_time = 100;
@@ -89,6 +98,12 @@ in {
             style = "bold red";
           }
         ];
+      };
+      jobs = {
+        symbol = " "; # nf-fa-gears
+        number_threshold = 1;
+        format = "[$symbol$number ]($style)";
+        style = "bold fg:peach";
       };
       character = {
         success_symbol = "[](bold green)"; # nf-fa-check
