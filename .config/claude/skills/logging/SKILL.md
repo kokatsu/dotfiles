@@ -2,13 +2,10 @@
 name: logging
 description: >-
   Review code for logging quality or add proper logging to code.
-  Use when asked to "add logging", "review logging", "improve logs",
-  "ログ追加", "ログレビュー", "ログ改善", "ログ実装".
-  Also use when the user wants to replace print/console.log with proper logging,
-  improve observability or debuggability, add error context for troubleshooting,
-  or asks about logging best practices.
-  Trigger phrases include "print文を置き換え", "エラーログ", "デバッグログ",
-  "トラブルシュート", "observability", "ログ設計".
+  Use when the user, in English or Japanese, asks to add, review, or improve
+  logging, replace print/console.log with a logger, improve observability or
+  debuggability, add error context for troubleshooting, or asks about logging
+  design and best practices.
 argument-hint: "<file path, directory, or description>"
 allowed-tools:
   - Read

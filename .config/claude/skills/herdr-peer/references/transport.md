@@ -36,7 +36,7 @@ Read before sending a peer request or interpreting a wrapper verdict.
 
    Use `--lines <count>` when more context is needed.
 
-   A confirmed marker proves the reply's tail arrived, not that you can still see its head. The pane read returns a bounded window (about 1000 rows on herdr 0.9.0) shared with whatever preceded the reply, so a long reply loses its beginning. `full_answer_capture` is always reported as `unverified` for that reason. Dump the read to a file the moment the verdict lands and check both ends; successive reads return different windows, not supersets. When the head is gone, ask the peer to re-emit the missing part. That is retrieval, not a review round, so do not count it against the round cap.
+   A confirmed marker proves the reply's tail arrived, not that you can still see its head. The pane read returns a bounded window (about 1000 rows) shared with whatever preceded the reply, so a long reply loses its beginning. `full_answer_capture` is always reported as `unverified` for that reason. Dump the read to a file the moment the verdict lands and check both ends; successive reads return different windows, not supersets. When the head is gone, ask the peer to re-emit the missing part. That is retrieval, not a review round, so do not count it against the round cap.
 
 4. Integrate the result. If the round produced loop-blocking findings and fixing is authorized, verify them, batch the fixes, then repeat steps 1–3 once per follow-up round using the delta template:
 

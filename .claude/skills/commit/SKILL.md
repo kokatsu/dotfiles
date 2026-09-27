@@ -28,8 +28,6 @@ Create a git commit following Conventional Commits (`@commitlint/config-conventi
 
 ## Commit Convention
 
-Follow Conventional Commits (`@commitlint/config-conventional`).
-
 Project-specific guidelines:
 
 - Config file tweaks (e.g. renovate.json5, flake.nix settings) → `chore`, not `feat`
