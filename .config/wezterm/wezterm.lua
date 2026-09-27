@@ -76,6 +76,13 @@ wezterm.on('open-uri', function(window, pane, uri)
   end
 
   if path then
+    -- herdr 配下では WezTerm から見える cwd が herdr クライアントのものになるため、
+    -- 相対パスの解決は open-in-nvim.sh (フォーカス中の herdr ペインの cwd を使う) に任せる
+    local in_herdr = (pane:get_foreground_process_name() or ''):match('herdr$') ~= nil
+    if in_herdr then
+      path = path:gsub('$PWD/', '')
+    end
+
     local start = path:find('$PWD', 1, true)
     if start then
       local cwd_uri = pane:get_current_working_dir()
@@ -127,7 +134,17 @@ wezterm.on('open-uri', function(window, pane, uri)
           { label = 'Cancel', id = 'cancel' },
         },
         action = wezterm.action_callback(function(win, p, id, _)
-          if id == 'open' then
+          if id == 'open' and in_herdr then
+            wezterm.background_child_process({
+              '/bin/zsh',
+              '-l',
+              '-c',
+              '"$0" "$@"',
+              wezterm.home_dir .. '/.config/herdr/scripts/open-in-nvim.sh',
+              file,
+              line or '',
+            })
+          elseif id == 'open' then
             win:perform_action(
               wezterm.action.SpawnCommandInNewTab({
                 args = { '/bin/zsh', '-l', '-c', 'nvim ' .. nvim_args },
