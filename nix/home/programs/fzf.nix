@@ -7,7 +7,7 @@ _: {
     defaultCommand = "fd --type f --hidden --strip-cwd-prefix --exclude .git";
 
     # 全 fzf 起動の共通オプション (FZF_DEFAULT_OPTS)
-    # 色は catppuccin/nix の programs.fzf.colors が連結するため指定しない
+    # 色は themes/catppuccin-env.nix の FZF_DEFAULT_OPTS_FILE で読み込むため指定しない
     defaultOptions = [
       "--height=60%"
       "--layout=reverse"

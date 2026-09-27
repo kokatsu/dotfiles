@@ -79,6 +79,7 @@ in {
     ./services/disk-watch.nix
     ./services/feed-watch.nix
     ./services/status-watch.nix
+    ./themes/catppuccin-env.nix
     ./themes/claude-code.nix
   ];
 
