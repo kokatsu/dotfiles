@@ -1,6 +1,8 @@
 #!/usr/bin/env -S deno run --no-prompt
 // gh-api-guard.ts — `gh api` が GET を明示した読み取りだと証明できたときだけ
-// allow を返す PreToolUse フック。証明できなければ ask へ落とす。
+// allow を返す PreToolUse フック。証明できなければ ask へ落とす。ただしメソッドの
+// 書き忘れだけは deny にする。ask の理由はユーザーにしか見えず、deny の理由だけが
+// Claude に届くので、deny なら Claude が -X GET を足して自分で再実行できる。
 //
 // argv[1] は shfmt の絶対パス。ランチャーが command -v で解決して渡す。
 //
@@ -60,7 +62,8 @@ const UNREADABLE_REASON =
   "gh api: an expanded word hides what runs — confirm intent";
 const UNPARSED_REASON =
   "gh api: could not parse this command as bash — confirm intent";
-const NO_METHOD_REASON = "gh api: no explicit -X GET — confirm intent";
+const NO_METHOD_REASON =
+  "gh api: no explicit HTTP method — re-run with -X GET for a read";
 const ALLOW_REASON = "gh api: explicit GET";
 
 function methodReason(verb: string | null): string {
@@ -294,7 +297,7 @@ function hidesGhApi(texts: string[]): boolean {
 }
 
 interface Decision {
-  decision: "allow" | "ask";
+  decision: "allow" | "ask" | "deny";
   reason: string;
 }
 
@@ -345,7 +348,9 @@ export function decide(ast: unknown): Decision | null {
   // bash では api になるため。字面の gh の直後が展開なら api になりうるので残す。
   // gh まで展開に隠した形はここで抜けるが、フックが無い場合と同じ扱いになる。
   if (!seen && !mayBeApi) return null;
-  if (reason !== null) return { decision: "ask", reason };
+  if (reason !== null) {
+    return { decision: reason === NO_METHOD_REASON ? "deny" : "ask", reason };
+  }
   return seen ? { decision: "allow", reason: ALLOW_REASON } : null;
 }
 

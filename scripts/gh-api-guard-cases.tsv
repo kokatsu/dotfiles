@@ -36,8 +36,8 @@ A20	ask	gh api: HTTP method override to 'i' (not GET) — confirm intent	gh api 
 A21	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -Fname=v
 A22	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -F'name=v'
 A23	ask	gh api: HTTP method override to 'head' (not GET) — confirm intent	gh api repos/o/r --method head
-A24	ask	gh api: no explicit -X GET — confirm intent	gh api repos/o/r
-A25	ask	gh api: no explicit -X GET — confirm intent	gh api repos/o/r -X GET && gh api repos/o/s
+A24	deny	gh api: no explicit HTTP method — re-run with -X GET for a read	gh api repos/o/r
+A25	deny	gh api: no explicit HTTP method — re-run with -X GET for a read	gh api repos/o/r -X GET && gh api repos/o/s
 B1	allow	gh api: explicit GET	gh api repos/o/r -XGET
 B2	allow	gh api: explicit GET	gh api repos/o/r -X GET
 B3	allow	gh api: explicit GET	gh api repos/o/r --method get
@@ -64,7 +64,7 @@ E1	none	-	echo hello
 E2	none	-	VIS=/x/vis && $VIS in out --no-vis
 E3	none	-	$SP/b.out < in.txt > out.txt
 F1	allow	gh api: explicit GET	gh api -X GET -- "$X"
-F2	ask	gh api: no explicit -X GET — confirm intent	gh api -- -X DELETE
+F2	deny	gh api: no explicit HTTP method — re-run with -X GET for a read	gh api -- -X DELETE
 F3	allow	gh api: explicit GET	gh api -X GET repos/o/r -H"$V"
 F4	ask	gh api: unknown flag '--nonesuch' — confirm intent	gh api repos/o/r --nonesuch
 F5	ask	gh api: an expanded argument could add a flag — confirm intent	gh api "repos/${a[@]}"
