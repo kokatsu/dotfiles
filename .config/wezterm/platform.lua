@@ -44,4 +44,16 @@ function M.is_wsl_domain(pane)
   return domain and domain:match('^WSL:') ~= nil
 end
 
+--- WSLドメインのペインが属するディストリビューションで cmd を実行する wsl.exe の引数
+---@param pane table WezTermのペインオブジェクト
+---@param cmd string[]
+---@return string[]
+function M.wsl_args(pane, cmd)
+  local args = { 'wsl.exe', '-d', pane:get_domain_name():sub(#'WSL:' + 1), '-e' }
+  for _, arg in ipairs(cmd) do
+    table.insert(args, arg)
+  end
+  return args
+end
+
 return M

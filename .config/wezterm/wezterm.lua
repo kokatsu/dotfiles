@@ -46,7 +46,7 @@ wezterm.on('gui-startup', function(cmd)
     -- herdr を常時ハブとして自動起動（明示的にコマンド指定が無い場合のみ）。
     -- argsを明示指定するとWezTermのデフォルトログインシェル起動処理がバイパスされるため、
     -- herdr(nix profile)のPATHを通すためにzsh -lでラップする
-    spawn_cmd.args = { '/bin/zsh', '-l', '-c', 'herdr' }
+    spawn_cmd.args = { '/bin/zsh', '-l', '-c', '"$HOME/.config/herdr/scripts/herdr-client.sh"' }
   end
   local _, _, window = wezterm.mux.spawn_window(spawn_cmd)
   window:gui_window():maximize()
@@ -78,7 +78,10 @@ wezterm.on('open-uri', function(window, pane, uri)
   if path then
     -- herdr 配下では WezTerm から見える cwd が herdr クライアントのものになるため、
     -- 相対パスの解決は open-in-nvim.sh (フォーカス中の herdr ペインの cwd を使う) に任せる
-    local in_herdr = (pane:get_foreground_process_name() or ''):match('herdr$') ~= nil
+    -- HERDR_CLIENT は herdr-client.sh が立てる。Windows の WezTerm からは WSL 内の
+    -- プロセス名が見えないため、プロセス名での判定は macOS でしか効かない
+    local in_herdr = pane:get_user_vars().HERDR_CLIENT == '1'
+      or (pane:get_foreground_process_name() or ''):match('herdr$') ~= nil
     if in_herdr then
       path = path:gsub('$PWD/', '')
     end
@@ -108,7 +111,7 @@ wezterm.on('open-uri', function(window, pane, uri)
       local opener
       if platform.is_wsl_domain(pane) then
         -- WezTerm が Windows ホスト + WSL ペイン
-        opener = { 'wsl.exe', 'wslview', file }
+        opener = platform.wsl_args(pane, { 'wslview', file })
       elseif platform.is_wsl_host then
         -- WezTerm 自身が WSL 内で動作（wslview が cmd.exe 経由で Windows 既定ブラウザを開く）
         opener = { 'wslview', file }
@@ -135,15 +138,19 @@ wezterm.on('open-uri', function(window, pane, uri)
         },
         action = wezterm.action_callback(function(win, p, id, _)
           if id == 'open' and in_herdr then
-            wezterm.background_child_process({
+            local args = {
               '/bin/zsh',
               '-l',
               '-c',
-              '"$0" "$@"',
-              wezterm.home_dir .. '/.config/herdr/scripts/open-in-nvim.sh',
+              '"$HOME/.config/herdr/scripts/open-in-nvim.sh" "$@"',
+              'open-in-nvim',
               file,
               line or '',
-            })
+            }
+            if platform.is_wsl_domain(p) then
+              args = platform.wsl_args(p, args)
+            end
+            wezterm.background_child_process(args)
           elseif id == 'open' then
             win:perform_action(
               wezterm.action.SpawnCommandInNewTab({
