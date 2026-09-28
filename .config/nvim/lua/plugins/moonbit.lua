@@ -18,10 +18,10 @@ return {
       enabled = true,
       auto_install = true,
     },
-    -- LSP: Nix 導入済みの moonbit-lsp を PATH 経由で起動 (vim.lsp.config + enable)。
+    -- LSP: Nix 導入済みの moon-lsp(native) --stdio を PATH 経由で起動 (vim.lsp.config + enable)。
     -- 注意: lsp は必ずテーブルで渡す。lsp = true はプラグイン内部で boolean を
     -- index してクラッシュする (lsp = false なら無効化)。
-    -- native = true にすると moonbit-lsp(Node) でなく moon-lsp(native) --stdio を使う。
+    -- native = false は Node 版 moonbit-lsp を使うが、Nix のツールチェーンには含まれない。
     lsp = {},
     -- jsonls (moon.mod.json/moon.pkg.json のスキーマ) と mooncakes (依存補完) は
     -- デフォルト有効のまま使用。

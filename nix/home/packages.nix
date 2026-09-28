@@ -51,10 +51,10 @@ in {
       cargo-with-openssl # openssl-sys が必要な Cargo コマンド用 wrapper
       # https://github.com/moonbit-community/moonbit-overlay
       # MoonBit ツールチェーン (moon/moonc/moonrun + LSP 同梱)。特定バージョンをピン留め:
-      # v0.9.3+b53c2807d+4a0c52f を overlay のエスケープ規則 (. → _, + → -) で属性化したもの。
       # 更新時は overlay の versions/toolchains/ から版を選び、ここの属性名を差し替える
       # (必要なら `nix flake update moonbit-overlay` で overlay 側も追従させる)。
-      moonbit-bin.moonbit.v0_9_3-b53c2807d-4a0c52f
+      # overlay は 0.10.0 未満の版を公開しない。
+      moonbit-bin."v0.10.14+7d59c7ec9+914d7da"
 
       #--- Playwright (ブラウザ自動化) ---#
       # https://github.com/microsoft/playwright
