@@ -147,18 +147,19 @@ run_cases
 mkdir -p "$workdir/claude/hooks"
 ln -s "$config" "$workdir/claude/hooks/textlint-response.json"
 run_real_hook() {
-  jq -cn --arg m "$1" '{last_assistant_message: $m, stop_hook_active: false}' |
+  printf '%s\n' "$1" >"$workdir/$2"
+  jq -cn --arg p "$workdir/$2" '{tool_name: "Write", tool_input: {file_path: $p}}' |
     XDG_CONFIG_HOME="$workdir" bash "$repo_root/.config/claude/hooks/check-ai-writing.sh"
 }
 for message in '> これは革命的な技術です。' '必要に応じて設定します。'; do
-  [ -z "$(run_real_hook "$message")" ] || fail "hook should pass: $message"
+  [ -z "$(run_real_hook "$message" note.md)" ] || fail "hook should pass: $message"
 done
-run_real_hook 'これは革命的な技術です。' | jq -e '.decision == "block"' >/dev/null ||
+run_real_hook 'これは革命的な技術です。' note.md | jq -e '.decision == "block"' >/dev/null ||
   fail "hook should still block unquoted hype"
-html_file="$workdir/page.html"
-printf '<html><body>\n<p>設定します。</p>\n<p>これは革命的な技術です。</p>\n</body></html>\n' >"$html_file"
-jq -cn --arg p "$html_file" '{tool_name: "Write", tool_input: {file_path: $p}}' |
-  XDG_CONFIG_HOME="$workdir" bash "$repo_root/.config/claude/hooks/check-ai-writing.sh" |
+run_real_hook '<html><body>
+<p>設定します。</p>
+<p>これは革命的な技術です。</p>
+</body></html>' page.html |
   jq -e '.decision == "block" and (.reason | contains("line 3,"))' >/dev/null ||
   fail "hook should block hype in an HTML file at its source line"
 

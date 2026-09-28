@@ -230,11 +230,11 @@ banned-commands-test:
 herdr-peer-guard-test:
     bash scripts/test-herdr-peer-command-guard.sh
 
-# Verify the AI writing Stop hook blocks, passes, and bails out on the right inputs
+# Verify the AI writing hook blocks, passes, and bails out on the right inputs
 ai-writing-hook-test:
     bash scripts/test-ai-writing-hook.sh
 
-# Verify which textlint rules the Stop hook enforces and how they treat decisive inputs
+# Verify which textlint rules the AI writing hook enforces and how they treat decisive inputs
 textlint-response-config-test:
     bash scripts/test-textlint-response-config.sh
 

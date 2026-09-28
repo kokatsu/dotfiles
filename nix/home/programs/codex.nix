@@ -132,6 +132,18 @@ in {
       };
       ".config/codex/hooks.json".text = builtins.toJSON {
         hooks = {
+          PostToolUse = [
+            {
+              matcher = "^apply_patch$";
+              hooks = [
+                {
+                  command = "bash '${config.xdg.configHome}/codex/check-ai-writing.sh'";
+                  timeout = 15;
+                  type = "command";
+                }
+              ];
+            }
+          ];
           PreToolUse = [
             {
               matcher = "^Bash$";
@@ -154,17 +166,6 @@ in {
                   # herdr.nix が配置する共有フック (Claude Code 側と同じ実装)。
                   command = "bash '${config.xdg.configHome}/herdr/hooks/report-agent-session.sh' session codex";
                   timeout = 10;
-                  type = "command";
-                }
-              ];
-            }
-          ];
-          Stop = [
-            {
-              hooks = [
-                {
-                  command = "bash '${config.xdg.configHome}/codex/check-ai-writing.sh'";
-                  timeout = 15;
                   type = "command";
                 }
               ];

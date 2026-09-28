@@ -14,7 +14,7 @@ stub_dir="$workdir/bin"
 mkdir -p "$stub_dir"
 cat >"$stub_dir/textlint" <<'STUB'
 #!/usr/bin/env bash
-printf '%s\n' "$@" >"$STUB_ARGS"
+printf '%s\n' "$@" >>"$STUB_ARGS"
 [ -n "$STUB_OUT" ] && printf '%s\n' "$STUB_OUT"
 exit "$STUB_EXIT"
 STUB
@@ -24,6 +24,7 @@ xdg="$workdir/config"
 args_file="$workdir/args"
 
 run_hook() {
+  : >"$args_file"
   printf '%s' "$3" | env \
     PATH="$stub_dir:$PATH" \
     XDG_CONFIG_HOME="$xdg" \
@@ -34,11 +35,15 @@ run_hook() {
 }
 
 payload() {
-  jq -cn --arg m "$1" --argjson active "${2:-false}" \
-    '{last_assistant_message: $m, stop_hook_active: $active}'
+  jq -cn --arg p "$1" '{tool_name: "Write", tool_input: {file_path: $p}}'
 }
 
-finding='response.md: line 1, col 1, Error - 指摘 (rule-id)'
+patch_payload() {
+  jq -cn --arg c "$1" --arg cwd "$workdir" \
+    '{tool_name: "apply_patch", cwd: $cwd, tool_input: {command: $c}}'
+}
+
+finding() { printf '%s: line 1, col 1, Error - 指摘 (rule-id)' "$1"; }
 
 fail() {
   printf '%s\n' "$1" >&2
@@ -67,51 +72,68 @@ expect_silent() {
   [ -z "$out" ] || fail "expected no output: $4"
 }
 
-expect_block 1 "$finding" "$(payload 'テストです。')" "lint finding"
+md_file="$workdir/note.md"
+printf 'テストです。\n' >"$md_file"
+html_file="$workdir/page.html"
+printf '<p>テストです。</p>\n' >"$html_file"
 
-expect_silent 0 "" "$(payload 'テストです。')" "clean message"
+out=$(run_hook 1 "$(finding "$md_file")" "$(payload "$md_file")")
+printf '%s' "$out" | jq -e --arg p "$md_file" '.decision == "block" and (.reason | contains($p))' >/dev/null ||
+  fail "expected a block naming the file: markdown finding"
+
+expect_silent 0 "" "$(payload "$md_file")" "clean markdown file"
 
 # textlint は設定を読めない場合も終了コード 1 を返す。指摘と取り違えて空の書き直しを
 # 要求しないことを確かめる。
 expect_system_message 1 '
 == No rules found, textlint hasn'"'"'t done anything ==' \
-  "$(payload 'テストです。')" "unreadable config"
+  "$(payload "$md_file")" "unreadable config"
 
-expect_system_message 70 'textlint: command failed' "$(payload 'テストです。')" "textlint crash"
-
-# 書き直し後も指摘が残る場合、Stop hook の再帰を避けて打ち切る
-expect_system_message 1 "$finding" "$(payload 'テストです。' true)" "second pass"
+expect_system_message 70 'textlint: command failed' "$(payload "$md_file")" "textlint crash"
 
 expect_system_message 0 "" 'not json at all' "malformed payload"
 
-expect_silent 0 "" "$(payload '')" "empty message"
-
-run_hook 0 "" "$(payload 'テストです。')" >/dev/null
+run_hook 0 "" "$(payload "$md_file")" >/dev/null
 grep -qx -- "--config" "$args_file" ||
   fail "expected textlint to be invoked with --config"
 grep -qx -- "$xdg/claude/hooks/textlint-response.json" "$args_file" ||
   fail "expected the config path to resolve under XDG_CONFIG_HOME"
 
-md_file="$workdir/note.md"
-printf 'テストです。\n' >"$md_file"
-file_payload() {
-  jq -cn --arg p "$1" '{tool_name: "Write", tool_input: {file_path: $p}}'
-}
+expect_block 1 "$(finding "$html_file")" "$(payload "$html_file")" "HTML finding"
+grep -qx -- "$html_file" "$args_file" ||
+  fail "expected textlint to receive the HTML file path"
 
-out=$(run_hook 1 "$finding" "$(file_payload "$md_file")")
-printf '%s' "$out" | jq -e --arg p "$md_file" '.decision == "block" and (.reason | contains($p))' >/dev/null ||
-  fail "expected a block naming the file: markdown finding"
+expect_silent 1 "$(finding "$workdir/script.sh")" "$(payload "$workdir/script.sh")" "unsupported file"
+[ ! -s "$args_file" ] || fail "expected textlint not to run for an unsupported file"
 
-expect_silent 0 "" "$(file_payload "$md_file")" "clean markdown file"
+# Codex の apply_patch は相対パスを cwd 基準で渡し、1 回で複数ファイルを変更できる
+out=$(run_hook 1 "$(finding "$md_file")
+$(finding "$html_file")" "$(patch_payload '*** Begin Patch
+*** Update File: note.md
+@@
+-a
++b
+*** Delete File: gone.md
+*** Update File: old.html
+*** Move to: page.html
+@@
+-a
++b
+*** Add File: script.sh
++echo
+*** End Patch')")
+printf '%s' "$out" | jq -e --arg md "$md_file" --arg html "$html_file" \
+  '.decision == "block" and (.reason | contains($md) and contains($html))' >/dev/null ||
+  fail "expected a block naming both patched files: apply_patch"
+# textlint の起動は 1 回 2.5 秒ほどかかるため、hook の timeout 内に収まるよう 1 プロセスにまとめる
+[ "$(grep -cx -- '--config' "$args_file")" = 1 ] ||
+  fail "expected a single textlint process for the whole patch: apply_patch"
+[ "$(sed -n '/^--$/,$p' "$args_file" | tail -n +2)" = "$md_file
+$html_file" ] ||
+  fail "expected exactly the existing supported files as arguments: apply_patch"
 
-html_file="$workdir/page.html"
-printf '<p>テストです。</p>\n' >"$html_file"
-expect_block 1 'response.html: line 1, col 1, Error - 指摘 (rule-id)' "$(file_payload "$html_file")" "HTML finding"
-grep -qx -- "response.html" "$args_file" ||
-  fail "expected an HTML file to be linted as response.html"
+expect_silent 1 "$(finding "$md_file")" "$(patch_payload '*** Begin Patch
+*** Delete File: note.md
+*** End Patch')" "apply_patch delete"
 
-rm -f "$args_file"
-expect_silent 1 "$finding" "$(file_payload "$workdir/script.sh")" "unsupported file"
-[ ! -e "$args_file" ] || fail "expected textlint not to run for an unsupported file"
-
-printf 'ai-writing hook: 12 cases passed\n'
+printf 'ai-writing hook: 11 cases passed\n'
