@@ -117,6 +117,18 @@ local unified_keys = {
   { key = 'X', mods = 'CTRL', action = act.ActivateCopyMode },
   -- QuickSelect モード
   { key = 'q', mods = 'ALT', action = act.QuickSelect },
+  -- `Alt + r` で claude / codex の再開コマンドを選んでコピー
+  {
+    key = 'r',
+    mods = 'ALT',
+    action = act.QuickSelectArgs({
+      label = 'copy resume',
+      patterns = {
+        'claude --resume [0-9a-f-]{36}',
+        'codex resume [0-9a-f-]{36}',
+      },
+    }),
+  },
   -- 選択中の文字列を検索モードに渡し、画面内の同じ文字列をすべて強調する。
   -- alternate screen のスクロールバックは ConPTY のリサイズが残した過去の
   -- フレームでしかなく、消しても失うものがない
