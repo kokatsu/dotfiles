@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Control-flow regression tests for the AI writing Stop hook. textlint is stubbed
+# Control-flow regression tests for the AI writing hook. textlint is stubbed
 # so the branches are exercised without depending on rule behavior; the config
 # itself is covered by test-textlint-response-config.sh.
 set -euo pipefail
@@ -92,4 +92,26 @@ grep -qx -- "--config" "$args_file" ||
 grep -qx -- "$xdg/claude/hooks/textlint-response.json" "$args_file" ||
   fail "expected the config path to resolve under XDG_CONFIG_HOME"
 
-printf 'ai-writing hook: 8 cases passed\n'
+md_file="$workdir/note.md"
+printf 'テストです。\n' >"$md_file"
+file_payload() {
+  jq -cn --arg p "$1" '{tool_name: "Write", tool_input: {file_path: $p}}'
+}
+
+out=$(run_hook 1 "$finding" "$(file_payload "$md_file")")
+printf '%s' "$out" | jq -e --arg p "$md_file" '.decision == "block" and (.reason | contains($p))' >/dev/null ||
+  fail "expected a block naming the file: markdown finding"
+
+expect_silent 0 "" "$(file_payload "$md_file")" "clean markdown file"
+
+html_file="$workdir/page.html"
+printf '<p>テストです。</p>\n' >"$html_file"
+expect_block 1 'response.html: line 1, col 1, Error - 指摘 (rule-id)' "$(file_payload "$html_file")" "HTML finding"
+grep -qx -- "response.html" "$args_file" ||
+  fail "expected an HTML file to be linted as response.html"
+
+rm -f "$args_file"
+expect_silent 1 "$finding" "$(file_payload "$workdir/script.sh")" "unsupported file"
+[ ! -e "$args_file" ] || fail "expected textlint not to run for an unsupported file"
+
+printf 'ai-writing hook: 12 cases passed\n'

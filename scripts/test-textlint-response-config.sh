@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Behavior tests for the rule set the AI writing Stop hook enforces. Renovate
+# Behavior tests for the rule set the AI writing hook enforces. Renovate
 # bumps @textlint-ja/textlint-rule-preset-ai-writing without review, so the rules
 # in effect and the shape of a few decisive inputs are pinned here. The hook's
 # own branches are covered by test-ai-writing-hook.sh.
@@ -155,6 +155,12 @@ for message in '> これは革命的な技術です。' '必要に応じて設�
 done
 run_real_hook 'これは革命的な技術です。' | jq -e '.decision == "block"' >/dev/null ||
   fail "hook should still block unquoted hype"
+html_file="$workdir/page.html"
+printf '<html><body>\n<p>設定します。</p>\n<p>これは革命的な技術です。</p>\n</body></html>\n' >"$html_file"
+jq -cn --arg p "$html_file" '{tool_name: "Write", tool_input: {file_path: $p}}' |
+  XDG_CONFIG_HOME="$workdir" bash "$repo_root/.config/claude/hooks/check-ai-writing.sh" |
+  jq -e '.decision == "block" and (.reason | contains("line 3,"))' >/dev/null ||
+  fail "hook should block hype in an HTML file at its source line"
 
 config="$repo_root/.textlintrc-commit.json"
 expect_rule terminology 'feat: update readme' 'README spelling'

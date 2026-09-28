@@ -2,6 +2,7 @@
   "filters": {
     "quotes": true
   },
+  "plugins": ["html"],
   "rules": {
     "@textlint-ja/preset-ai-writing": {
       "ai-tech-writing-guideline": false

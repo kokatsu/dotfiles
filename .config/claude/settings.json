@@ -99,7 +99,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/check-ai-writing.sh ~/.config/claude/hooks/notify.sh",
+            "command": "~/.config/claude/hooks/notify.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/claude/hooks/check-ai-writing.sh",
             "timeout": 15
           }
         ]
