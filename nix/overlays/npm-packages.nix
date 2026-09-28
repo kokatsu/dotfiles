@@ -98,19 +98,22 @@
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-Sv4t7GR8SJpbfiEGX5TxduWG8zI6HBOnHMmIMgTPTXg=";
+      npmDepsHash = "sha256-HzDmFFkTrb8O1JQ7RkhZ8Y44zZDcB2p1PxeniJlDU/w=";
       dontNpmBuild = true;
 
       # nixpkgs の textlint ルールパッケージと同じ構造にする:
-      # トップレベルにはルール本体 (@textlint-ja/...) のみを公開し、依存はその
-      # node_modules にネストする。これで textlint の symlinkJoin 時に衝突しない。
+      # トップレベルにはルール本体 (@textlint-ja/...) と HTML plugin のみを公開し、依存は
+      # ルール本体の node_modules にネストする。これで textlint の symlinkJoin 時に衝突しない。
+      # wrapper が同梱する textlint-plugin-html は同じ依存ツリーを symlink で参照する。
       installPhase = ''
         runHook preInstall
         dest=$out/lib/node_modules/@textlint-ja/textlint-rule-preset-ai-writing
         mkdir -p "$(dirname "$dest")"
         mv node_modules/@textlint-ja/textlint-rule-preset-ai-writing "$dest"
+        mv node_modules/textlint-plugin-html $out/lib/node_modules/textlint-plugin-html
         rmdir node_modules/@textlint-ja 2>/dev/null || true
         mv node_modules "$dest/node_modules"
+        ln -s "$dest/node_modules" $out/lib/node_modules/textlint-plugin-html/node_modules
         runHook postInstall
       '';
 
