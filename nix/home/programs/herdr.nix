@@ -307,7 +307,7 @@ in {
           # feed-watch のデータ生成 (systemd timer) が WSL 限定のため実質 WSL 専用
           # (macOS ではデータなしメッセージのみ)
           [[keys.command]]
-          key = "alt+r"
+          key = "prefix+f"
           type = "popup"
           command = "${scriptsDir}/feed-open.sh"
           description = "未読フィードを開く"
