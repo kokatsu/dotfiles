@@ -13,45 +13,48 @@
 # H: 語分割が旗やコマンドを増やす形
 # I: 改行を含む形。この表には書けないので test-gh-api-guard.sh が直接渡す
 
-A1	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	gh api repos/o/r -X DELETE
-A2	ask	gh api: HTTP method override to 'POST' (not GET/HEAD) — confirm intent	gh api repos/o/r -iX POST
-A3	ask	gh api: HTTP method override to 'PATCH' (not GET/HEAD) — confirm intent	gh api repos/o/r -XPATCH
-A4	ask	gh api: HTTP method override to 'PUT' (not GET/HEAD) — confirm intent	gh api repos/o/r --method=PUT
-A5	ask	gh api: HTTP method override to 'put' (not GET/HEAD) — confirm intent	gh api repos/o/r --method put
+A1	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api repos/o/r -X DELETE
+A2	ask	gh api: HTTP method override to 'POST' (not GET) — confirm intent	gh api repos/o/r -iX POST
+A3	ask	gh api: HTTP method override to 'PATCH' (not GET) — confirm intent	gh api repos/o/r -XPATCH
+A4	ask	gh api: HTTP method override to 'PUT' (not GET) — confirm intent	gh api repos/o/r --method=PUT
+A5	ask	gh api: HTTP method override to 'put' (not GET) — confirm intent	gh api repos/o/r --method put
 A6	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -F a=b
 A7	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -f a=b
 A8	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r --input body.json
 A9	ask	gh api: an expanded argument could add a flag — confirm intent	gh api repos/o/r --method$M
-A10	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	gh api repos/o/r -X GET -X DELETE
+A10	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api repos/o/r -X GET -X DELETE
 A11	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	sh -c 'gh api r -X DELETE'
 A12	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	xargs gh api
-A13	ask	gh api: an expanded word hides what runs — confirm intent	gh api r && `gh api r -X DELETE`
-A14	ask	gh api: HTTP method override to '\ DELETE' (not GET/HEAD) — confirm intent	gh api repos/o/r -X\ DELETE
-A15	ask	gh api: HTTP method override to '?' (not GET/HEAD) — confirm intent	gh api repos/o/r -X $'\x44ELETE'
-A16	ask	gh api: HTTP method override to '?' (not GET/HEAD) — confirm intent	gh api repos/o/r --method=$'DELETE'
-A17	ask	gh api: HTTP method override to '?' (not GET/HEAD) — confirm intent	gh api repos/o/r -X "$M"
-A18	ask	gh api: HTTP method override to '?' (not GET/HEAD) — confirm intent	gh api repos/o/r --method="$M"
-A19	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	sudo gh api r -X DELETE
-A20	ask	gh api: HTTP method override to 'i' (not GET/HEAD) — confirm intent	gh api repos/o/r -Xi
+A13	ask	gh api: an expanded word hides what runs — confirm intent	gh api r -X GET && `gh api r -X DELETE`
+A14	ask	gh api: HTTP method override to '\ DELETE' (not GET) — confirm intent	gh api repos/o/r -X\ DELETE
+A15	ask	gh api: HTTP method override to '?' (not GET) — confirm intent	gh api repos/o/r -X $'\x44ELETE'
+A16	ask	gh api: HTTP method override to '?' (not GET) — confirm intent	gh api repos/o/r --method=$'DELETE'
+A17	ask	gh api: HTTP method override to '?' (not GET) — confirm intent	gh api repos/o/r -X "$M"
+A18	ask	gh api: HTTP method override to '?' (not GET) — confirm intent	gh api repos/o/r --method="$M"
+A19	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	sudo gh api r -X DELETE
+A20	ask	gh api: HTTP method override to 'i' (not GET) — confirm intent	gh api repos/o/r -Xi
 A21	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -Fname=v
 A22	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -F'name=v'
-B1	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r
-B2	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -X GET
-B3	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --method head
-B4	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -H "Accept: application/vnd.github+json"
-B5	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --paginate
-B6	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --jq ".name"
-B7	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -q .name
-B8	allow	gh api: read-only (GET/HEAD)	gh api "repos/$O/commits"
-B9	allow	gh api: read-only (GET/HEAD)	gh api -H "$H" repos/o/r
-B10	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --jq "$Q"
-B11	allow	gh api: read-only (GET/HEAD)	gh a"pi" repos/o/r
-B12	allow	gh api: read-only (GET/HEAD)	gh ap\i repos/o/r
-C1	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r --jq "select(.x) | -X DELETE"
-C2	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r | grep -F name
-C3	allow	gh api: read-only (GET/HEAD)	echo $(date) && gh api repos/o/r
-C4	allow	gh api: read-only (GET/HEAD)	x=$(gh api repos/o/r)
-C5	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r && rm -f /tmp/x
+A23	ask	gh api: HTTP method override to 'head' (not GET) — confirm intent	gh api repos/o/r --method head
+A24	ask	gh api: no explicit -X GET — confirm intent	gh api repos/o/r
+A25	ask	gh api: no explicit -X GET — confirm intent	gh api repos/o/r -X GET && gh api repos/o/s
+B1	allow	gh api: explicit GET	gh api repos/o/r -XGET
+B2	allow	gh api: explicit GET	gh api repos/o/r -X GET
+B3	allow	gh api: explicit GET	gh api repos/o/r --method get
+B4	allow	gh api: explicit GET	gh api -X GET repos/o/r -H "Accept: application/vnd.github+json"
+B5	allow	gh api: explicit GET	gh api -X GET repos/o/r --paginate
+B6	allow	gh api: explicit GET	gh api -X GET repos/o/r --jq ".name"
+B7	allow	gh api: explicit GET	gh api -X GET repos/o/r -q .name
+B8	allow	gh api: explicit GET	gh api -X GET "repos/$O/commits"
+B9	allow	gh api: explicit GET	gh api -X GET -H "$H" repos/o/r
+B10	allow	gh api: explicit GET	gh api -X GET repos/o/r --jq "$Q"
+B11	allow	gh api: explicit GET	gh a"pi" -X GET repos/o/r
+B12	allow	gh api: explicit GET	gh ap\i -X GET repos/o/r
+C1	allow	gh api: explicit GET	gh api -X GET repos/o/r --jq "select(.x) | -X DELETE"
+C2	allow	gh api: explicit GET	gh api -X GET repos/o/r | grep -F name
+C3	allow	gh api: explicit GET	echo $(date) && gh api -X GET repos/o/r
+C4	allow	gh api: explicit GET	x=$(gh api -X GET repos/o/r)
+C5	allow	gh api: explicit GET	gh api -X GET repos/o/r && rm -f /tmp/x
 D1	ask	gh api: an expanded argument could add a flag — confirm intent	gh api repos/o/r/issues $X
 D2	ask	gh api: an expanded argument could add a flag — confirm intent	gh api repos/o/r "$@"
 D3	ask	gh api: an expanded argument could add a flag — confirm intent	gh api $FLAGS repos/o/r
@@ -60,19 +63,19 @@ D5	ask	gh api: an expanded argument could add a flag — confirm intent	gh api "
 E1	none	-	echo hello
 E2	none	-	VIS=/x/vis && $VIS in out --no-vis
 E3	none	-	$SP/b.out < in.txt > out.txt
-F1	allow	gh api: read-only (GET/HEAD)	gh api -- "$X"
-F2	allow	gh api: read-only (GET/HEAD)	gh api -- -X DELETE
-F3	allow	gh api: read-only (GET/HEAD)	gh api repos/o/r -H"$V"
+F1	allow	gh api: explicit GET	gh api -X GET -- "$X"
+F2	ask	gh api: no explicit -X GET — confirm intent	gh api -- -X DELETE
+F3	allow	gh api: explicit GET	gh api -X GET repos/o/r -H"$V"
 F4	ask	gh api: unknown flag '--nonesuch' — confirm intent	gh api repos/o/r --nonesuch
 F5	ask	gh api: an expanded argument could add a flag — confirm intent	gh api "repos/${a[@]}"
-F6	ask	gh api: HTTP method override to 'DELETE' (not GET/HEAD) — confirm intent	env GH_HOST=x gh api r -X DELETE
+F6	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	env GH_HOST=x gh api r -X DELETE
 F7	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r --input"$F"
 G1	ask	gh api: could not parse this command as bash — confirm intent	gh api 'unterminated
 G2	none	-	echo 'unterminated
 H1	ask	gh api: an expanded argument could add a flag — confirm intent	gh api r -H $H
 H2	ask	gh api: an expanded argument could add a flag — confirm intent	gh api r --header $H
 H3	ask	gh api: an expanded word hides what runs — confirm intent	env -u $V gh api r
-H4	ask	gh api: an expanded word hides what runs — confirm intent	gh api r && $CMD api r -X DELETE
+H4	ask	gh api: an expanded word hides what runs — confirm intent	gh api r -X GET && $CMD api r -X DELETE
 H5	ask	gh api: an expanded word hides what runs — confirm intent	$CMD api r -X DELETE
 H6	ask	gh api: an expanded word hides what runs — confirm intent	env -u $V gh a${P}i r -X DELETE
 H7	ask	gh api: an expanded word hides what runs — confirm intent	gh a${P}i r -X DELETE

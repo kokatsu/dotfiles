@@ -1,6 +1,6 @@
 #!/usr/bin/env -S deno run --no-prompt
-// gh-api-guard.ts — `gh api` が読み取りだと証明できたときだけ allow を返す
-// PreToolUse フック。証明できなければ ask へ落とす。
+// gh-api-guard.ts — `gh api` が GET を明示した読み取りだと証明できたときだけ
+// allow を返す PreToolUse フック。証明できなければ ask へ落とす。
 //
 // argv[1] は shfmt の絶対パス。ランチャーが command -v で解決して渡す。
 //
@@ -60,12 +60,13 @@ const UNREADABLE_REASON =
   "gh api: an expanded word hides what runs — confirm intent";
 const UNPARSED_REASON =
   "gh api: could not parse this command as bash — confirm intent";
-const ALLOW_REASON = "gh api: read-only (GET/HEAD)";
+const NO_METHOD_REASON = "gh api: no explicit -X GET — confirm intent";
+const ALLOW_REASON = "gh api: explicit GET";
 
 function methodReason(verb: string | null): string {
   return `gh api: HTTP method override to '${
     verb ?? "?"
-  }' (not GET/HEAD) — confirm intent`;
+  }' (not GET) — confirm intent`;
 }
 
 // 語分割を起こす部分。引用の外の展開はすべて、引用の中でも "$@" と添字つきは
@@ -148,8 +149,8 @@ function readWord(word: unknown): Word {
   return { literal, prefix, splittable };
 }
 
-function isReadOnlyVerb(verb: string | null): boolean {
-  return verb !== null && /^(get|head)$/i.test(verb);
+function isGet(verb: string | null): boolean {
+  return verb !== null && /^get$/i.test(verb);
 }
 
 // 束ねられた短オプションを左から解く。値を取る文字が現れたら束の残りが値になり、
@@ -157,7 +158,12 @@ function isReadOnlyVerb(verb: string | null): boolean {
 function shortCluster(
   cluster: string,
   next: Word | undefined,
-): { reason: string | null; eatsNext: boolean; valueTaken: boolean } {
+): {
+  reason: string | null;
+  eatsNext: boolean;
+  valueTaken: boolean;
+  sawGet: boolean;
+} {
   for (let i = 0; i < cluster.length; i++) {
     const letter = cluster[i];
     if (SHORT_BOOL.includes(letter)) continue;
@@ -166,23 +172,35 @@ function shortCluster(
         reason: `gh api: unknown flag '-${letter}' — confirm intent`,
         eatsNext: false,
         valueTaken: false,
+        sawGet: false,
       };
     }
     if (SHORT_BODY.includes(letter)) {
-      return { reason: BODY_REASON, eatsNext: false, valueTaken: true };
+      return {
+        reason: BODY_REASON,
+        eatsNext: false,
+        valueTaken: true,
+        sawGet: false,
+      };
     }
     const glued = cluster.slice(i + 1);
     if (letter !== "X") {
-      return { reason: null, eatsNext: glued === "", valueTaken: true };
+      return {
+        reason: null,
+        eatsNext: glued === "",
+        valueTaken: true,
+        sawGet: false,
+      };
     }
     const verb = glued !== "" ? glued : next?.literal ?? null;
     return {
-      reason: isReadOnlyVerb(verb) ? null : methodReason(verb),
+      reason: isGet(verb) ? null : methodReason(verb),
       eatsNext: glued === "",
       valueTaken: true,
+      sawGet: isGet(verb),
     };
   }
-  return { reason: null, eatsNext: false, valueTaken: false };
+  return { reason: null, eatsNext: false, valueTaken: false, sawGet: false };
 }
 
 // 展開を含む語。語分割が起きず、字面で読めた頭が旗でなければオペランドであり、
@@ -213,6 +231,7 @@ function nonLiteralReason(word: Word): string | null {
 // gh api の後ろの argv を歩き、読み取りと証明できなければ理由を返す。
 function argvReason(words: Word[]): string | null {
   let endOfOptions = false;
+  let sawGet = false;
 
   // 旗の値として次の語を飲み込むとき、その語が語分割を起こすなら飲み込めない。
   // `-H $H` は H="x -X DELETE" なら 3 語に増え、値の後ろに旗が残る。
@@ -245,7 +264,8 @@ function argvReason(words: Word[]): string | null {
       const glued = equals < 0 ? null : text.slice(equals + 1);
       if (name === "method") {
         const verb = glued ?? words[i + 1]?.literal ?? null;
-        if (!isReadOnlyVerb(verb)) return methodReason(verb);
+        if (!isGet(verb)) return methodReason(verb);
+        sawGet = true;
       }
       if (LONG_VALUE.has(name) && glued === null) {
         if (!eats(i)) return NON_LITERAL_REASON;
@@ -254,15 +274,16 @@ function argvReason(words: Word[]): string | null {
       continue;
     }
 
-    const { reason, eatsNext } = shortCluster(text.slice(1), words[i + 1]);
-    if (reason !== null) return reason;
-    if (eatsNext) {
+    const cluster = shortCluster(text.slice(1), words[i + 1]);
+    if (cluster.reason !== null) return cluster.reason;
+    if (cluster.sawGet) sawGet = true;
+    if (cluster.eatsNext) {
       if (!eats(i)) return NON_LITERAL_REASON;
       i += 1;
     }
   }
 
-  return null;
+  return sawGet ? null : NO_METHOD_REASON;
 }
 
 // gh api を自分の argv の外へ隠している呼び出し。中身を読めないので ask にする。
