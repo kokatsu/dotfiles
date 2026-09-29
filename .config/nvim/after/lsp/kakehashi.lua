@@ -77,5 +77,14 @@ return {
         },
       },
     },
+    features = {
+      ['textDocument/semanticTokens'] = {
+        captureMappings = {
+          -- 既定の string のままだとフェンス行や埋め込みコードの文字列と区別できない。
+          -- 独自のトークン種別は legend 外で描画されないため、修飾子で区別する
+          markdown_inline = { ['markup.raw'] = 'string.documentation' },
+        },
+      },
+    },
   },
 }

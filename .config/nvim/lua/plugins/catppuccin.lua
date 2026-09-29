@@ -31,6 +31,8 @@ return {
         WinSeparator = { fg = colors.overlay0, bg = 'NONE' },
         LineNr = { fg = colors.overlay0, bg = 'NONE' },
         LineNrNC = { fg = colors.surface1, bg = 'NONE' },
+        -- Markdown のインラインコード (after/lsp/kakehashi.lua の captureMappings)
+        ['@lsp.typemod.string.documentation.markdown'] = { fg = colors.subtext0, bg = colors.surface0 },
       }
     end,
     auto_integrations = true,
