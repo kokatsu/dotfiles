@@ -101,6 +101,8 @@ in {
     ];
 
     file = {
+      ".config/codex/AGENTS.md".source = ../../../.config/codex/.AGENTS.md;
+
       # ペットを有効にするとTUIがKitty graphicsのスプライトをアイドル中も
       # 描き続け、herdr serverが全ペインの出力を端末エミュレートするCPUに
       # 直撃してペイン切替が詰まる。config.tomlのtui.petは未設定のままにする。
