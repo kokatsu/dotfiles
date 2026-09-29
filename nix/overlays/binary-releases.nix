@@ -90,9 +90,9 @@ in {
     # 汎用 prefetch ループの対象外。更新は pr.yml の個別ステップが担う。
     hashSource = "manifest";
     hashes = {
-      "aarch64-darwin" = "sha256-UKFML1D1Zmg4D92kkBZ/HTYw1cwY+4rtMHPCx+pzFP4=";
-      "aarch64-linux" = "sha256-PdD5bXraRjFS0gMAGG9s/Gq5S1fiGPSeOshttCrGlaY=";
-      "x86_64-linux" = "sha256-XNkKq9g/ihUTbDWqN7sdkrNImTVzMWZD3D/k4Er7+I8=";
+      "aarch64-darwin" = "sha256-UfCb0eAh2fqKGGTBeXmb03yzmWKpN5NcXPaCM5jobbQ=";
+      "aarch64-linux" = "sha256-JPrHd0m+09kTZda2kVqkuCThQxjstrwXrbwZLwHJFz0=";
+      "x86_64-linux" = "sha256-M9rR7GFaLgjMeLSU8FwRDkmRbeLHnXjsh5nr9GsjPSk=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
