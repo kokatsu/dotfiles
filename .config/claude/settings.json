@@ -145,6 +145,7 @@
     "codex@openai-codex": true
   },
   "language": "japanese",
+  "feedbackDrafts": "off",
   "alwaysThinkingEnabled": true,
   "modelSettings": {
     "claude-opus-5": {
