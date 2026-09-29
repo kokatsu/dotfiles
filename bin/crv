@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: crv [--uncommitted | --commit REF | --base BRANCH]
+
+  --uncommitted  Review staged, unstaged, and untracked changes (default)
+  --commit REF   Review the changes introduced by a commit
+  --base BRANCH  Review HEAD against its merge base with BRANCH (PR style)
+  -h, --help     Show this help
+EOF
+}
+
+case "${1:---uncommitted}" in
+-h | --help)
+  usage
+  exit 0
+  ;;
+--uncommitted)
+  [[ $# -le 1 ]] || {
+    usage >&2
+    exit 2
+  }
+  target='staged・unstaged・untracked を含む未コミットの変更をレビューしてください。'
+  ;;
+--commit | --base)
+  [[ $# -eq 2 ]] || {
+    usage >&2
+    exit 2
+  }
+  commit=$(git rev-parse --verify --end-of-options "${2}^{commit}")
+  if [[ $1 == --commit ]]; then
+    rev=$commit
+    if ! base=$(git rev-parse --verify --quiet "${commit}^1"); then
+      base=$(git hash-object -t tree /dev/null)
+    fi
+    target="コミット $commit が導入した変更（git diff $base $commit）をレビューしてください。"
+  else
+    rev=$(git rev-parse HEAD)
+    base=$(git merge-base HEAD "$commit")
+    target="共通祖先 $base から現在の HEAD までの差分（git diff $base HEAD）をレビューしてください。未コミットの変更は対象に含めません。"
+  fi
+  target+="
+周辺コードは作業ツリーではなく $rev 時点の内容（git show $rev:<path>）で確認し、必要に応じて比較元 $base の内容も参照してください。"
+  ;;
+*)
+  usage >&2
+  exit 2
+  ;;
+esac
+
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+prompt=$(cat "$script_dir/assets/crv-prompt.md")
+
+# Codex 0.159.0 rejects target flags combined with a custom review prompt.
+exec codex review "$prompt
+
+## 今回のレビュー対象
+
+$target"
