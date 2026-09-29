@@ -151,6 +151,7 @@ in {
     inherit username;
     homeDirectory = homeDir;
     stateVersion = "24.11";
+    preferXdgDirectories = true;
 
     # PATH に追加 (ユーザースクリプト)
     sessionPath = [
