@@ -256,10 +256,12 @@ managed-paths-test:
 regex-dialect-check:
     bash scripts/check-regex-dialect.sh
 
-# Verify the POSIX-to-ECMAScript converter, and that check-regex-dialect.sh fails on a broken one
+# Verify the POSIX-to-ECMAScript converter, and the dialect gap against the OS locale data
+# nix の stdenv-darwin は PATH_LOCALE を nixpkgs のロケールデータへ向け、文字クラスが
+# OS 標準と変わる。フックが動くのは devshell の外なので、OS 標準のデータで測る。
 regex-dialect-test:
     deno test --allow-read scripts/test-regex-dialect-check.ts
-    bash scripts/test-regex-dialect.sh
+    env -u PATH_LOCALE bash scripts/check-regex-dialect.sh
 
 # Verify peer resolution and session bootstrap behavior
 herdr-peer-test:

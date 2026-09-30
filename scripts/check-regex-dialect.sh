@@ -31,8 +31,7 @@ set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
 rules="$repo_root/.config/claude/hooks/banned-commands.json"
-# scripts/test-regex-dialect.sh が壊した複製を指すために差し替える
-helper="${REGEX_DIALECT_HELPER:-$repo_root/scripts/regex-dialect-check.ts}"
+helper="$repo_root/scripts/regex-dialect-check.ts"
 corpus="$repo_root/scripts/regex-dialect-corpus.txt"
 
 work=$(mktemp -d)
@@ -60,28 +59,21 @@ scan_posix_class() {
 }
 
 # --- 1. whitespace: POSIX [[:space:]] と ECMAScript \s ---
-# BMP 全域の走査に 1 秒強かかる。scripts/test-regex-dialect.sh は変換器を壊して
-# 2 と 3 が落ちることだけを見るので、そこからは飛ばす。1 が見ているのは実行環境
-# の locale であって、helper の実装ではない。
-if [[ ${REGEX_DIALECT_SKIP_SCAN:-} == 1 ]]; then
-  printf '[whitespace class]\n  skipped (REGEX_DIALECT_SKIP_SCAN=1)\n\n'
-else
-  scan_posix_class space | sort >"$work/posix-space.txt"
-  deno run --no-prompt "$helper" space-set | sort >"$work/ecma-space.txt"
+scan_posix_class space | sort >"$work/posix-space.txt"
+deno run --no-prompt "$helper" space-set | sort >"$work/ecma-space.txt"
 
-  comm -23 "$work/posix-space.txt" "$work/ecma-space.txt" >"$work/space-posix-only.txt"
-  comm -13 "$work/posix-space.txt" "$work/ecma-space.txt" >"$work/space-ecma-only.txt"
+comm -23 "$work/posix-space.txt" "$work/ecma-space.txt" >"$work/space-posix-only.txt"
+comm -13 "$work/posix-space.txt" "$work/ecma-space.txt" >"$work/space-ecma-only.txt"
 
-  printf '[whitespace class]\n'
-  printf '  POSIX [[:space:]]: %s code points\n' "$(wc -l <"$work/posix-space.txt")"
-  printf '  ECMAScript \\s:     %s code points\n' "$(wc -l <"$work/ecma-space.txt")"
-  printf '  ECMAScript のみ (過剰ブロック、許容): %s\n' "$(tr '\n' ' ' <"$work/space-ecma-only.txt")"
-  printf '  POSIX のみ (取りこぼし、不可):        %s\n\n' "$(tr '\n' ' ' <"$work/space-posix-only.txt")"
+printf '[whitespace class]\n'
+printf '  POSIX [[:space:]]: %s code points\n' "$(wc -l <"$work/posix-space.txt")"
+printf '  ECMAScript \\s:     %s code points\n' "$(wc -l <"$work/ecma-space.txt")"
+printf '  ECMAScript のみ (過剰ブロック、許容): %s\n' "$(tr '\n' ' ' <"$work/space-ecma-only.txt")"
+printf '  POSIX のみ (取りこぼし、不可):        %s\n\n' "$(tr '\n' ' ' <"$work/space-posix-only.txt")"
 
-  if [[ -s $work/space-posix-only.txt ]]; then
-    echo 'FAIL: POSIX [[:space:]] のみに一致する符号位置がある。変換すると取りこぼしになる。' >&2
-    failed=1
-  fi
+if [[ -s $work/space-posix-only.txt ]]; then
+  echo 'FAIL: POSIX [[:space:]] のみに一致する符号位置がある。変換すると取りこぼしになる。' >&2
+  failed=1
 fi
 
 # --- 2. alnum: A-Za-z0-9 が POSIX [[:alnum:]] の部分集合か ---
