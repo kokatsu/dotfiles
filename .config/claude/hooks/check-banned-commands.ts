@@ -771,6 +771,49 @@ export function matchTextRule(command: string, rules: Rule[]): string | null {
 
 const RULES_PATH = new URL("./banned-commands.json", import.meta.url);
 
+const PARSE_FAILURE =
+  "banned-commands hook could not parse this command as bash (syntax error, or shfmt unavailable); refusing to run it unchecked. Fix the command and retry.";
+
+// ブロックするならその理由を、通すなら null を返す。
+export async function check(
+  command: string,
+  shfmt: string,
+): Promise<string | null> {
+  const message = matchTextRule(
+    command,
+    JSON.parse(Deno.readTextFileSync(RULES_PATH)) as Rule[],
+  );
+  if (message !== null) return message;
+
+  // shfmt は stdin だけで動くので環境変数を渡さない。渡すと Deno が
+  // LD_LIBRARY_PATH の継承に --allow-env まで要求する。
+  const shfmtRun = new Deno.Command(shfmt, {
+    args: ["--tojson"],
+    clearEnv: true,
+    stdin: "piped",
+    stdout: "piped",
+    stderr: "null",
+  }).spawn();
+  const writer = shfmtRun.stdin.getWriter();
+  await writer.write(new TextEncoder().encode(command + "\n"));
+  await writer.close();
+  const { code, stdout } = await shfmtRun.output();
+  if (code !== 0) return PARSE_FAILURE;
+
+  let ast: unknown;
+  try {
+    ast = JSON.parse(new TextDecoder().decode(stdout));
+  } catch {
+    return PARSE_FAILURE;
+  }
+
+  const verdict = analyze(ast)[0];
+  if (verdict === undefined) return null;
+
+  return VERDICT_MESSAGES[verdict] ??
+    "banned-commands hook produced an unknown verdict; refusing to run the command unchecked.";
+}
+
 function block(message: string): never {
   console.error(message);
   Deno.exit(2);
@@ -787,48 +830,8 @@ async function main(): Promise<void> {
     );
   }
 
-  const message = matchTextRule(
-    command,
-    JSON.parse(Deno.readTextFileSync(RULES_PATH)) as Rule[],
-  );
+  const message = await check(command, shfmt);
   if (message !== null) block(message);
-
-  // shfmt は stdin だけで動くので環境変数を渡さない。渡すと Deno が
-  // LD_LIBRARY_PATH の継承に --allow-env まで要求する。
-  const shfmtRun = new Deno.Command(shfmt, {
-    args: ["--tojson"],
-    clearEnv: true,
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "null",
-  }).spawn();
-  const writer = shfmtRun.stdin.getWriter();
-  await writer.write(new TextEncoder().encode(command + "\n"));
-  await writer.close();
-  const { code, stdout } = await shfmtRun.output();
-  if (code !== 0) {
-    block(
-      "banned-commands hook could not parse this command as bash (syntax error, or shfmt unavailable); refusing to run it unchecked. Fix the command and retry.",
-    );
-  }
-
-  let ast: unknown;
-  try {
-    ast = JSON.parse(new TextDecoder().decode(stdout));
-  } catch {
-    block(
-      "banned-commands hook could not parse this command as bash (syntax error, or shfmt unavailable); refusing to run it unchecked. Fix the command and retry.",
-    );
-  }
-
-  const verdict = analyze(ast)[0];
-  if (verdict === undefined) return;
-
-  const text = VERDICT_MESSAGES[verdict];
-  block(
-    text ??
-      "banned-commands hook produced an unknown verdict; refusing to run the command unchecked.",
-  );
 }
 
 if (import.meta.main) {

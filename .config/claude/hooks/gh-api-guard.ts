@@ -366,14 +366,10 @@ function emit(result: Decision): void {
   }));
 }
 
-async function main(): Promise<void> {
-  const shfmt = Deno.args[0] || "shfmt";
-  const payload = JSON.parse(await new Response(Deno.stdin.readable).text());
-  const command = payload?.tool_input?.command;
-  if (typeof command !== "string") {
-    return emit({ decision: "ask", reason: UNPARSED_REASON });
-  }
-
+export async function check(
+  command: string,
+  shfmt: string,
+): Promise<Decision | null> {
   // shfmt は stdin だけで動くので環境変数を渡さない。渡すと Deno が
   // LD_LIBRARY_PATH の継承に --allow-env まで要求する。
   const run = new Deno.Command(shfmt, {
@@ -391,13 +387,23 @@ async function main(): Promise<void> {
   if (code !== 0) {
     // 解析できないコマンドにも if ゲートは反応する。gh api が見当たらなければ
     // 判定する対象が無いので黙って通す。
-    if (GH_API_TEXT.test(command)) {
-      emit({ decision: "ask", reason: UNPARSED_REASON });
-    }
-    return;
+    return GH_API_TEXT.test(command)
+      ? { decision: "ask", reason: UNPARSED_REASON }
+      : null;
   }
 
-  const result = decide(JSON.parse(new TextDecoder().decode(stdout)));
+  return decide(JSON.parse(new TextDecoder().decode(stdout)));
+}
+
+async function main(): Promise<void> {
+  const shfmt = Deno.args[0] || "shfmt";
+  const payload = JSON.parse(await new Response(Deno.stdin.readable).text());
+  const command = payload?.tool_input?.command;
+  if (typeof command !== "string") {
+    return emit({ decision: "ask", reason: UNPARSED_REASON });
+  }
+
+  const result = await check(command, shfmt);
   if (result !== null) emit(result);
 }
 
