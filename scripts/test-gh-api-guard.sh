@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
 
-# scripts/gh-api-guard-cases.tsv の各行を PreToolUse の入力として食わせ、
-# 判定と理由を突き合わせる。フックを外から叩くだけなので、実装言語が変わっても
-# 同じケース表がそのまま使える。
+# gh-api-guard.sh をラッパーごと PreToolUse の入力で叩き、Deno の起動、権限指定、
+# payload の読み取り、JSON の出力までが繋がっていることを判定 1 種につき 1 件で
+# 確かめる。判定そのものは scripts/test-gh-api-guard.ts が gh-api-guard-cases.tsv
+# で固定する。
 
 report_failure() {
   local rc=$? line=$1
@@ -13,7 +14,6 @@ trap 'report_failure "$LINENO"' ERR
 
 repo_root=$(git rev-parse --show-toplevel)
 guard="$repo_root/.config/claude/hooks/gh-api-guard.sh"
-cases="$repo_root/scripts/gh-api-guard-cases.tsv"
 
 pass=0
 fail=0
@@ -43,13 +43,10 @@ check() {
     "$id" "$cmd" "$want_decision" "$want_reason" "$decision" "$reason" >&2
 }
 
-while IFS=$'\t' read -r id decision reason cmd; do
-  [[ -n $id && $id != \#* ]] || continue
-  check "$id" "$decision" "$reason" "$cmd"
-done <"$cases"
+check allow allow "gh api: explicit GET" 'gh api repos/o/r -X GET'
+check ask ask "HTTP method override to 'DELETE'" 'gh api repos/o/r -X DELETE'
+check deny deny "gh api: no explicit HTTP method" 'gh api repos/o/r'
+check none none - 'echo hello'
 
-check I1 allow "gh api: explicit GET" $'gh ap\\\ni repos/o/r -X GET'
-check I2 allow "gh api: explicit GET" $'gh a\\\np\\\ni repos/o/r -X GET'
-
-printf '=== gh-api-guard: %s cases, %s failures ===\n' "$((pass + fail))" "$fail"
+printf '=== gh-api-guard wrapper: %s cases, %s failures ===\n' "$((pass + fail))" "$fail"
 [[ $fail -eq 0 ]]

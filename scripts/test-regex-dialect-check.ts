@@ -5,7 +5,7 @@
 // 両方言で判定が一致する入力だけなので、包含の向きが変わらない範囲の変換ミスを
 // 通してしまう。特に [:alnum:] は corpus のどの行にも現れない。ここでは変換
 // 結果そのものと、banned-commands.json の方言を見る。変換後のルールが実際の
-// コマンドをどう判定するかは scripts/test-banned-commands.sh がフック越しに見る。
+// コマンドをどう判定するかは scripts/test-check-banned-commands.ts が見る。
 
 import { toEcmaScript } from "./regex-dialect-check.ts";
 

@@ -117,7 +117,7 @@ const ANSI_SHORTHAND: Record<string, string> = {
 };
 
 // $'...' の中身を展開する。範囲外の符号位置では入力文字列をそのまま返す。
-// この差が禁止判定を変えないことは scripts/test-banned-commands.sh が固定している。
+// この差が禁止判定を変えないことは scripts/test-check-banned-commands.ts が固定している。
 function ansiDecode(value: string): string {
   try {
     return (value.match(ANSI_TOKEN) ?? [])

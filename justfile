@@ -224,6 +224,7 @@ hash-patterns-test:
 
 # Verify the banned-commands hook blocks shallow git fetch/pull without false positives
 banned-commands-test:
+    deno test --no-prompt --allow-read=.config/claude/hooks,scripts/verdict-precedence-cases.txt --allow-run="$(command -v shfmt)" scripts/test-check-banned-commands.ts -- "$(command -v shfmt)"
     bash scripts/test-banned-commands.sh
 
 # Verify raw Herdr input commands cannot bypass the shared peer guard
@@ -240,6 +241,7 @@ textlint-response-config-test:
 
 # Verify `gh api` is auto-allowed only when it is provably read-only
 gh-api-guard-test:
+    deno test --no-prompt --allow-read=scripts/gh-api-guard-cases.tsv --allow-run="$(command -v shfmt)" scripts/test-gh-api-guard.ts -- "$(command -v shfmt)"
     bash scripts/test-gh-api-guard.sh
 
 # Verify the Codex `gh api` hook denies only real invocations without an explicit method

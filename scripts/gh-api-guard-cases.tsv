@@ -11,7 +11,7 @@
 # F: argv の境界
 # G: bash として解析できない入力
 # H: 語分割が旗やコマンドを増やす形
-# I: 改行を含む形。この表には書けないので test-gh-api-guard.sh が直接渡す
+# I: 改行を含む形。この表には書けないので test-gh-api-guard.ts が直接渡す
 
 A1	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api repos/o/r -X DELETE
 A2	ask	gh api: HTTP method override to 'POST' (not GET) — confirm intent	gh api repos/o/r -iX POST
