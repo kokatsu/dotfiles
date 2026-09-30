@@ -22,7 +22,7 @@ BASE=${1:?usage: $0 <base-ref>}
 # name|output_key|file|grep_after|renovate_grep
 #   grep_after    : Renovate コメントから version 行までの最大行数 (grep -A)
 #   renovate_grep : Renovate コメントの grep パターン
-# scripts/test-hash-patterns.sh の BESPOKE テーブルと対で保守する
+# scripts/test-hash-patterns.sh の BESPOKE テーブルと対で保守する (一致はそのテストが照合する)
 PACKAGES=(
   'cssmodules-language-server|cssmodules_language_server|nix/overlays/source-builds.nix|20|# Renovate:.*depName=.*cssmodules-language-server'
   'vite-plus|vite_plus|nix/overlays/npm-packages.nix|20|# Renovate:.*depName=vite-plus'

@@ -11,6 +11,7 @@
 #     detect の version 抽出 (grep -A N "# Renovate:..." → version) も workflow と同形で検証する。
 #   - 追加忘れ防止に、hashSource 付き binary と全 _final: prev: セクションが BESPOKE に
 #     含まれているかを照合する。
+#   - detect-hash-updates.sh の PACKAGES が BESPOKE と同じ値を持つかを照合する。
 
 set -euo pipefail
 
@@ -271,6 +272,44 @@ for file in source-builds.nix npm-packages.nix; do
       fail "$sec ($file) has no BESPOKE entry — add it"
     fi
   done < <(grep -oE '^  [A-Za-z0-9_-]+ = _final: prev:' "$filepath" | sed -E 's/^  ([A-Za-z0-9_-]+) .*/\1/')
+done
+echo ""
+
+# ============================================================================
+# 4. detect-hash-updates.sh の PACKAGES と BESPOKE の一致
+#    2 の version 抽出はこのテストのテーブルで試すので、detect 側だけがずれると
+#    detect は空の version を読んでそのパッケージを黙って飛ばし、ここは通ってしまう。
+# ============================================================================
+echo "=== detect-hash-updates.sh PACKAGES match BESPOKE ==="
+DETECT=scripts/detect-hash-updates.sh
+DETECT_NAMES=()
+while IFS='|' read -r name _key file grep_after renovate_grep; do
+  DETECT_NAMES+=("$name")
+  want=""
+  for entry in "${BESPOKE[@]}"; do
+    [ "${entry%%|*}" = "$name" ] && want="$entry"
+  done
+  if [ -z "$want" ]; then
+    fail "[$name] is in PACKAGES but has no BESPOKE entry"
+    continue
+  fi
+  IFS='|' read -r _ b_file _ _ b_after b_grep <<<"$want"
+  if [ "${file##*/}" = "$b_file" ] && [ "$grep_after" = "$b_after" ] && [ "$renovate_grep" = "$b_grep" ]; then
+    pass "[$name] file / grep_after / renovate_grep match"
+  else
+    fail "[$name] PACKAGES ($file|$grep_after|$renovate_grep) differs from BESPOKE ($b_file|$b_after|$b_grep)"
+  fi
+done < <(sed -n "/^PACKAGES=(/,/^)/s/^  '\(.*\)'\$/\1/p" "$DETECT")
+
+if [ "${#DETECT_NAMES[@]}" -eq 0 ]; then
+  fail "no PACKAGES entries read from $DETECT (format drift?)"
+fi
+for entry in "${BESPOKE[@]}"; do
+  name="${entry%%|*}"
+  case " ${DETECT_NAMES[*]} " in
+  *" $name "*) ;;
+  *) fail "[$name] is in BESPOKE but missing from PACKAGES in $DETECT" ;;
+  esac
 done
 echo ""
 
