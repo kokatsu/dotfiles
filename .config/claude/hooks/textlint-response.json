@@ -10,7 +10,7 @@
     "preset-ja-technical-writing": {
       "ja-no-redundant-expression": true,
       "no-mix-dearu-desumasu": {
-        "preferInBody": "ですます",
+        "preferInBody": "",
         "preferInHeader": "",
         "preferInList": "",
         "strict": false

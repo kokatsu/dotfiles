@@ -95,8 +95,6 @@ dearu_options=$(
   printf '%s' "$print_config" |
     jq -c '.rule[] | select(.id == "ja-technical-writing/no-mix-dearu-desumasu") | .options'
 )
-[ "$(printf '%s' "$dearu_options" | jq -r '.preferInBody')" = ですます ] ||
-  fail "no-mix-dearu-desumasu lost preferInBody"
 [ "$(printf '%s' "$dearu_options" | jq -r '.preferInList')" = "" ] ||
   fail "no-mix-dearu-desumasu lost the list exemption"
 
@@ -117,6 +115,11 @@ expect_rule ja-technical-writing/no-mix-dearu-desumasu \
 ルールをここで制御します。
 
 それ以外は無効である。' 'mixed style in the body'
+
+expect_no_rule ja-technical-writing/no-mix-dearu-desumasu \
+  'これは設定ファイルである。
+
+それ以外は無効である。' 'a body written only in dearu'
 
 expect_no_rule ja-technical-writing/no-mix-dearu-desumasu \
   'これは設定ファイルです。
