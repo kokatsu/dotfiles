@@ -97,6 +97,24 @@ local unified_keys = {
   { key = 'v', mods = 'CTRL', action = act.PasteFrom('Clipboard') },
   -- `Ctrl + Shift + n` で新しいウィンドウを作成 (herdr 外の生シェル escape hatch)
   { key = 'N', mods = 'CTRL', action = act.SpawnWindow },
+  -- `Ctrl + Shift + m` で画面中央 80% と最大化を切り替える
+  -- 状態を持たず、今の幅が 80% に近いかで判定する
+  {
+    key = 'M',
+    mods = 'CTRL',
+    action = wezterm.action_callback(function(window, _)
+      local screen = wezterm.gui.screens().active
+      local width = math.floor(screen.width * 0.8)
+      local height = math.floor(screen.height * 0.8)
+      if math.abs(window:get_dimensions().pixel_width - width) < screen.width * 0.02 then
+        window:maximize()
+        return
+      end
+      window:restore()
+      window:set_inner_size(width, height)
+      window:set_position(screen.x + (screen.width - width) / 2, screen.y + (screen.height - height) / 2)
+    end),
+  },
   -- `Ctrl + 左矢印` で前の単語に移動 (Esc+b)
   -- selene: allow(bad_string_escape)
   { key = 'LeftArrow', mods = 'CTRL', action = act.SendString('\x1bb') },
