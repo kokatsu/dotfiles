@@ -4,9 +4,12 @@
   config,
   isWSL,
   isCI ? false,
+  validDotfilesDir,
   ...
 }: let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
+  # gitignore 対象のため flake のソースに入らず、作業ツリーから直接リンクする
+  backgroundsLua = "${validDotfilesDir}/.config/wezterm/backgrounds.lua";
   p = config.catppuccinLib.palettes.${config.catppuccin.flavor};
   accent = p.${config.catppuccin.accent};
   names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
@@ -88,6 +91,9 @@ in {
       ".config/wezterm/stylua.toml".source = ../../../.config/wezterm/stylua.toml;
       ".config/wezterm/wezterm.lua".source = ../../../.config/wezterm/wezterm.lua;
       ".config/wezterm/windows.lua".source = ../../../.config/wezterm/windows.lua;
+      ".config/wezterm/backgrounds.lua" = lib.mkIf (!isCI && builtins.pathExists backgroundsLua) {
+        source = config.lib.file.mkOutOfStoreSymlink backgroundsLua;
+      };
     };
 
     # WSLからWindows側へ設定を再帰コピーする。
