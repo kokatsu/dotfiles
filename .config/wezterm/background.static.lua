@@ -1,6 +1,8 @@
 ---@diagnostic disable-next-line: assign-type-mismatch
 local wezterm = require('wezterm') ---@type Wezterm
 
+local colors = require('colors')
+
 ---@class BackgroundConfig
 ---@diagnostic disable-next-line: duplicate-doc-field
 ---@field file string ファイル名（拡張子なしの場合は .jpg, .png, .jpeg, .webp, .gif を自動判定）
@@ -116,11 +118,60 @@ local default_background = {
 
 M.default_background = default_background
 
--- InputSelector 用の choices を事前に生成（起動時に1回だけ）
-local selector_choices = { { label = 'デフォルト（なし）', id = '0' } }
-for i, bg in ipairs(background_images) do
-  local label = bg.label .. ' (opacity: ' .. bg.opacity .. ')'
-  table.insert(selector_choices, { label = label, id = tostring(i) })
+local label_width = 0
+for _, bg in ipairs(background_images) do
+  label_width = math.max(label_width, wezterm.column_width(bg.label))
+end
+
+local BAR_CELLS = 10
+
+---@param opacity number
+local function opacity_bar(opacity)
+  local filled = math.floor(opacity * BAR_CELLS + 0.5)
+  return string.rep('▰', filled)
+    .. string.rep('▱', BAR_CELLS - filled)
+    .. string.format(' %3d%%', math.floor(opacity * 100 + 0.5))
+end
+
+-- InputSelector はカーソル行を反転表示し、文字色がそのまま背景色になる。
+-- 行内で色を変えるとカーソル行の背景がまだらになるため、1 行を単色で描く
+---@param active boolean
+---@param icon string
+---@param label string
+---@param trailing? string
+local function choice_label(active, icon, label, trailing)
+  return wezterm.format({
+    { Foreground = { Color = active and colors.palette.accent or colors.palette.text } },
+    { Attribute = { Intensity = active and 'Bold' or 'Normal' } },
+    {
+      Text = (active and '● ' or '  ')
+        .. icon
+        .. '  '
+        .. wezterm.pad_right(label, label_width)
+        .. '  '
+        .. (trailing or ''),
+    },
+    'ResetAttributes',
+  })
+end
+
+-- 現在の選択に印を付けるため、開くたびに生成する
+local function build_choices()
+  local choices = {
+    {
+      label = choice_label(current_image_index == nil, wezterm.nerdfonts.md_image_off, 'デフォルト（なし）'),
+      id = '0',
+    },
+  }
+  for i, bg in ipairs(background_images) do
+    local active = current_image_index == i
+    local opacity = active and image_opacity or bg.opacity
+    table.insert(choices, {
+      label = choice_label(active, wezterm.nerdfonts.md_image, bg.label, opacity_bar(opacity)),
+      id = tostring(i),
+    })
+  end
+  return choices
 end
 
 -- 現在の状態から背景オーバーライドを再適用する
@@ -178,18 +229,25 @@ M.apply_to_keys = function(keys, background_modifier, opacity_modifier)
   table.insert(keys, {
     key = 'b',
     mods = background_modifier,
-    ---@diagnostic disable-next-line: missing-fields
-    action = wezterm.action.InputSelector({
-      title = '背景画像を選択',
-      choices = selector_choices, -- 事前生成済みの choices を使用
-      action = wezterm.action_callback(function(window, _, id, _)
-        if id == '0' then
-          apply_background(window, nil)
-        elseif id then
-          apply_background(window, tonumber(id))
-        end
-      end),
-    }),
+    action = wezterm.action_callback(function(window, pane)
+      window:perform_action(
+        ---@diagnostic disable-next-line: missing-fields
+        wezterm.action.InputSelector({
+          title = '背景画像を選択',
+          description = '背景画像を選択    Enter: 適用  /: 検索  Esc: 閉じる',
+          fuzzy_description = '検索: ',
+          choices = build_choices(),
+          action = wezterm.action_callback(function(win, _, id, _)
+            if id == '0' then
+              apply_background(win, nil)
+            elseif id then
+              apply_background(win, tonumber(id))
+            end
+          end),
+        }),
+        pane
+      )
+    end),
   })
 
   -- opacity 変更も直接処理（イベント経由をやめる）
