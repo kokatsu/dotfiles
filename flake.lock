@@ -84,11 +84,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1789584188,
-        "narHash": "sha256-pF5lpNIk2wdLpcDOl1M27IwapP5784JdzxkCQr2gcho=",
+        "lastModified": 1790710339,
+        "narHash": "sha256-PSVLZbAfIeM/aCEG08eu0qlMjN6vHikc2F6H0Y2XNZ0=",
         "owner": "herdrdev",
         "repo": "herdr-nix",
-        "rev": "2bcfa02424385730d0c65cfa8cd355bb3afecef8",
+        "rev": "2298bb926bee66b70b2f9a51de8649aa127d50e6",
         "type": "github"
       },
       "original": {
