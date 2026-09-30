@@ -20,9 +20,11 @@
       # .app ごと差し替えられる。起動中の Chrome があると新規タブが真っ白に
       # なるため、darwin-rebuild は Chrome を閉じてから実行すること。
       upgrade = true;
-      # Homebrew 5.x は `brew bundle --cleanup` に force 系フラグ必須 (非対話で
-      # 未掲載パッケージを zap するため)。これがないと activation が失敗する。
-      extraFlags = ["--force-cleanup"];
+      # activation は sudo 経由で走るため、シェルの HOMEBREW_* は引き継がれない
+      extraEnv = {
+        HOMEBREW_NO_ENV_HINTS = "1";
+        HOMEBREW_NO_UPDATE_REPORT_NEW = "1";
+      };
     };
     # Homebrew 6.0 以降、非公式 tap は信頼が必須 (HOMEBREW_REQUIRE_TAP_TRUST が
     # デフォルト true)。`trusted = true` で Brewfile に `trusted: true` が出力され、
