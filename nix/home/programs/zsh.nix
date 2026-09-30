@@ -30,13 +30,19 @@
       # evalcache は初期化コマンドの文字列だけをキーにするため、mise activate 等が
       # 出力に焼き込む store パス入りの PATH は世代が変わっても更新されない。
       # 世代切り替え時に消して次のシェルで再生成させる。
+      # brew shellenv は store パスを含まず、同期実行のため再生成メッセージが
+      # 毎回見えるので対象から外す。
       # .zshrc の ls_colors_cache も空でない限り再生成されず、catppuccin.flavor を
       # 変えても古い配色が残るため一緒に消す。
       clearZshEvalcache =
         lib.hm.dag.entryAfter ["linkGeneration"]
         # bash
         ''
-          $DRY_RUN_CMD rm -f "${config.xdg.cacheHome}"/zsh-evalcache/init-*.sh "${config.xdg.cacheHome}"/zsh-evalcache/init-*.sh.zwc "${config.xdg.cacheHome}"/zsh-evalcache/ls_colors_cache
+          if [ -d "${config.xdg.cacheHome}/zsh-evalcache" ]; then
+            $DRY_RUN_CMD find "${config.xdg.cacheHome}/zsh-evalcache" -maxdepth 1 \
+              \( -name 'init-*.sh' -o -name 'init-*.sh.zwc' -o -name ls_colors_cache \) \
+              ! -name 'init-brew-*' -delete
+          fi
         '';
 
       # zimfw モジュールをインストール (.zimrc に定義された未インストールモジュールを取得)
