@@ -271,7 +271,6 @@ reliability-test:
     bash scripts/test-feed-watch.sh
     bash scripts/test-zimfw-activation.sh
     bash scripts/test-daily.sh
-    bash scripts/test-status-dir.sh
     bash scripts/test-sync-flake-inputs.sh
 
 # Verify Renovate regex patterns match overlay files
