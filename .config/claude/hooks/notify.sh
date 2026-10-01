@@ -25,7 +25,7 @@ set -euo pipefail
 event=${1:-stop}
 payload=$(cat || true)
 
-# herdr 配下では herdr ネイティブ通知 ([ui.toast] delivery=terminal) が
+# herdr 配下では herdr ネイティブ通知 ([ui.toast]) が
 # エージェント状態変化を通知するため、二重通知を避けてスキップする
 if [ -n "${HERDR_PANE_ID:-}" ]; then
   exit 0

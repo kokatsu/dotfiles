@@ -145,11 +145,13 @@ in {
           rows = [["state_icon", { token = "$number", fg = "${p.subtext0.hex}", bold = true, dim = false }, { token = "workspace", bold = true }], ["branch", "git_status"]]
           row_gap = 1
 
+          # macOS の "terminal" は外側の WezTerm に OSC 9 で表示を任せるが、
+          # WezTerm は macOS でデスクトップ通知を出せないので OS へ直接送る
           [ui.toast]
           delivery = "${
             if pkgs.stdenv.hostPlatform.isLinux
             then "herdr"
-            else "terminal"
+            else "system"
           }"
 
           [ui.toast.herdr]
