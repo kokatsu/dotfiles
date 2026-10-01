@@ -152,6 +152,11 @@ in {
             desc = "Edit with $EDITOR";
           }
           {
+            on = "i";
+            run = "shell '\"$HOME/.config/herdr/scripts/path-send-yazi.sh\" %s && ya emit quit'";
+            desc = "Insert paths into the herdr pane that opened Yazi";
+          }
+          {
             on = "b";
             run = "shell '${openWithDefaultApp "%s"}' --orphan";
             desc = "Open with default app";
