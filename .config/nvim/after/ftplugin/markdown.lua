@@ -45,7 +45,6 @@ local function conceal_code_span_delimiters(bufnr)
 end
 
 local bufnr = vim.api.nvim_get_current_buf()
-vim.opt_local.conceallevel = 2
 conceal_code_span_delimiters(bufnr)
 local group = vim.api.nvim_create_augroup('markdown_code_span_conceal', { clear = false })
 vim.api.nvim_clear_autocmds({ group = group, buffer = bufnr })

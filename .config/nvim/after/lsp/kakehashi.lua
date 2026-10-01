@@ -13,6 +13,10 @@ return {
       callback = function()
         vim.bo[bufnr].syntax = 'OFF'
         vim.treesitter.stop(bufnr)
+        -- Tree-sitter の稼働中に有効にすると、highlights.scm の conceal でフェンス行や ``` まで隠れる
+        for _, win in ipairs(vim.fn.win_findbuf(bufnr)) do
+          vim.wo[win][0].conceallevel = 2
+        end
       end,
     })
   end,
