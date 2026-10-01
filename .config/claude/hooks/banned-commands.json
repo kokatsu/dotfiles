@@ -10,5 +10,9 @@
   {
     "pattern": "(^|&&|;|\\|\\|?|\\()[[:space:]]*:[[:space:]]*>[[:space:]]*/",
     "message": "Refuse truncate-to-absolute-path pattern (: > /...). Scope the path."
+  },
+  {
+    "pattern": "<[[:space:]]*/dev/(zero|u?random)([^[:alnum:]_]|$)|(^|[^[:alnum:]_])cat[[:space:]]+/dev/(zero|u?random)([^[:alnum:]_]|$)",
+    "message": "Refuse an endless /dev/zero or /dev/urandom stream as input: a pty wrapper like script buffers it without bound. Use </dev/null, or bound it with head -c N."
   }
 ]

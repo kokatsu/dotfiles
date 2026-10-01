@@ -913,6 +913,13 @@ const cases: Case[] = [
   { want: "block", command: ": > /etc/motd" },
   { want: "block", command: "echo a && : > /var/log/x" },
   { want: "block", command: ":>/tmp/x", label: "区切りなし: :>/tmp/x" },
+  {
+    want: "block",
+    command: 'script -qfc "nvim --listen s t.md" /dev/null </dev/zero &',
+  },
+  { want: "block", command: "nvim < /dev/urandom" },
+  { want: "block", command: "cat /dev/zero | nvim -" },
+  { want: "block", command: "x=1; cat /dev/random | od" },
 
   // --- banned-commands.json のテキストルール: 誤検知しないこと ---
   {
@@ -949,6 +956,18 @@ const cases: Case[] = [
     want: "allow",
     command: "cat /dev/null > /tmp/x",
     label: ": を使わない truncate",
+  },
+  {
+    want: "allow",
+    command: "head -c 16 /dev/urandom | base64",
+    label: "量を区切った /dev/urandom",
+  },
+  { want: "allow", command: "nvim --headless --listen s t.md </dev/null" },
+  { want: "allow", command: "ls -l /dev/zero /dev/urandom" },
+  {
+    want: "allow",
+    command: "concat /dev/zero",
+    label: "cat で終わる別コマンド",
   },
 
   // [[:space:]] は \s に、[^[:alnum:]_] は [^A-Za-z0-9_] になる。ECMAScript 側が
