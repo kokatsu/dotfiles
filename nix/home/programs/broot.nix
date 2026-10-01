@@ -14,6 +14,10 @@ _: {
       # アイコン表示 (Nerd Font をターミナルに設定済みであること)
       icon_theme = "nerdfont";
 
+      # キーボード拡張が有効だと Space や Ctrl 付きのキーは離した時点で確定する。
+      # herdr のポップアップではそれらのキーが効かなかった (離したイベントが届かないとみられる)
+      enable_kitty_keyboard = false;
+
       # catppuccin/nix が公式 skin を後から import して丸ごと上書きするため、
       # ここには skin を定義せず flavor / accent の追従を一元化する。
 
@@ -47,9 +51,19 @@ _: {
           execution = ":toggle_stage";
         }
         # Ctrl+a: staged したパスを改行区切りでまとめて送信 (複数選択の確定)
+        # verb に渡る選択は対象パネルのものなので、ツリーにフォーカスがあっても
+        # 右の staging area を対象にする。staging area が無いときは下の verb へ落ちる
         {
           key = "ctrl-a";
-          execution = "printf '%s' {file:new-line-separated} > $CLAUDE_PATH_PICK_FILE";
+          execution = "printf '%s\\n' {file:space-separated} > $CLAUDE_PATH_PICK_FILE";
+          from_shell = true;
+          leave_broot = true;
+          impacted_panel = "right";
+          panels = ["stage"];
+        }
+        {
+          key = "ctrl-a";
+          execution = "printf '%s\\n' {file} > $CLAUDE_PATH_PICK_FILE";
           from_shell = true;
           leave_broot = true;
         }

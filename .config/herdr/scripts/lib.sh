@@ -22,3 +22,32 @@ open_url() {
     xdg-open "$1" >/dev/null 2>&1 || open "$1" >/dev/null 2>&1
   fi
 }
+
+# 標準入力の改行区切りのパスを、起動元ペインのエージェントに合わせた形で送る。
+# herdr は 1 キー = 1 コマンド固定で bind 時点の振り分けができないため、
+# 送信時に herdr pane get の .result.pane.agent (なしは null) で判定する。
+# Codex CLI は入力欄で "@" を打つと内蔵 fuzzy picker が開くため "@" を付けない。
+# $PWD 配下のパスは $PWD からの相対パスにする
+send_paths() {
+  local pane_id=$1 agent p payload=""
+  # 取得に失敗しても中断せず、シェル向けの形式にフォールバックする
+  agent=$("$herdr_bin" pane get "$pane_id" |
+    jq -r '.result.pane.agent // ""') || agent=""
+  # 最終行が改行で終わらない場合にも読み取れるよう `|| [[ -n "$p" ]]` を付ける
+  while IFS= read -r p || [[ -n "$p" ]]; do
+    [[ -z "$p" ]] && continue
+    [[ $p == / ]] || p=${p%/}
+    case "$p" in
+    "$PWD") p=. ;;
+    "$PWD"/*) p=${p#"$PWD"/} ;;
+    esac
+    case "$agent" in
+    claude) payload+="@${p} " ;;
+    codex) payload+="${p} " ;;
+    # シェルなど: コマンド引数としてそのまま使えるようクォートする
+    *) payload+="$(printf '%q' "$p") " ;;
+    esac
+  done
+  [[ -n "$payload" ]] || return 0
+  "$herdr_bin" pane send-text "$pane_id" "$payload"
+}

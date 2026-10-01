@@ -62,7 +62,7 @@ lua-fmt-check:
 
 # Lint Lua files with selene
 # lua_dirs 以外の Lua も見る: scripts/test-nvim-config.lua は vim グローバルを使うので
-# nvim の設定、.config/yazi/init.lua は素の Lua なのでリポジトリ直下の selene.toml で検査する
+# nvim の設定、.config/yazi/init.lua はリポジトリ直下の selene.toml で検査する (Yazi のグローバルはファイル側で許可)
 lua-lint:
     @for dir in {{ lua_dirs }}; do \
       echo "selene: $dir"; \

@@ -9,13 +9,11 @@
 #
 # broot の from_shell verb は outcmd にシェルコマンドを書くだけで
 # 本来は br 関数が eval する必要があるため、このスクリプトが同じ処理を行う
-#
-# path-pick-fzf.sh と同じ理由で agent 判定を実行時に行い (herdr pane get の
-# .result.pane.agent)、Codex CLI には "@" prefix を付けずに送る。
 
 set -euo pipefail
 
-herdr_bin=${HERDR_BIN_PATH:-herdr}
+# shellcheck source=.config/herdr/scripts/lib.sh
+source "$(dirname "$0")/lib.sh"
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
 
 cd "${HERDR_ACTIVE_PANE_CWD:?HERDR_ACTIVE_PANE_CWD is not set}"
@@ -33,27 +31,4 @@ if [[ -s "$OUTCMD_FILE" ]]; then
   . "$OUTCMD_FILE"
 fi
 
-[[ ! -s "$CLAUDE_PATH_PICK_FILE" ]] && exit 0
-
-# 取得に失敗しても中断せず、シェル向けの形式にフォールバックする
-agent=$("$herdr_bin" pane get "$active_pane_id" |
-  jq -r '.result.pane.agent // ""') || agent=""
-
-# 改行区切りで複数パスに対応 (単一パスでも 1 行として処理)
-# 最終行が改行で終わらない場合にも読み取れるよう `|| [[ -n "$p" ]]` を付ける
-payload=""
-while IFS= read -r p || [[ -n "$p" ]]; do
-  [[ -z "$p" ]] && continue
-  case "$p" in
-  "$PWD"/*) p=${p#"$PWD"/} ;;
-  "$PWD") p=. ;;
-  esac
-  case "$agent" in
-  claude) payload+="@${p} " ;;
-  codex) payload+="${p} " ;;
-  # シェルなど: コマンド引数としてそのまま使えるようクォートする
-  *) payload+="$(printf '%q' "$p") " ;;
-  esac
-done <"$CLAUDE_PATH_PICK_FILE"
-
-"$herdr_bin" pane send-text "$active_pane_id" "$payload"
+send_paths "$active_pane_id" <"$CLAUDE_PATH_PICK_FILE"

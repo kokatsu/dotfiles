@@ -3,14 +3,6 @@
 # Alt-c で fzf を起動し、選択したパスを起動元ペイン (Claude Code / Codex CLI / シェル) に送信する
 # ファイルとディレクトリを fuzzy に絞り込めるほか、Ctrl-l で選択中のディレクトリへ潜り、
 # Ctrl-h で親へ上がれる。複数選択 (Tab) 対応、プレビュー付き
-#
-# herdr は 1 キー = 1 コマンド固定で bind 時点の振り分けができないため、
-# 起動元ペインのエージェントを herdr pane get で調べて実行時に判定する。
-# foreground process 名の手動マッチではなく herdr 自身の検出結果
-# (.result.pane.agent) を使う。エージェントなしのペインは null
-#
-# Codex CLI は入力欄で "@" を打つと内蔵fuzzy pickerが開く仕様のため、
-# "@" prefixを付けずに相対パス文字列だけを送る。
 
 set -euo pipefail
 
@@ -62,7 +54,8 @@ case "${1:-}" in
   ;;
 esac
 
-herdr_bin=${HERDR_BIN_PATH:-herdr}
+# shellcheck source=.config/herdr/scripts/lib.sh
+source "$(dirname "$0")/lib.sh"
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
 
 cd "${HERDR_ACTIVE_PANE_CWD:?HERDR_ACTIVE_PANE_CWD is not set}"
@@ -90,23 +83,6 @@ selected=$({
   printf '%s\n' "$chosen"
 } | awk '!seen[$0]++')
 
-# 取得に失敗しても中断せず、シェル向けの形式にフォールバックする
-agent=$("$herdr_bin" pane get "$active_pane_id" |
-  jq -r '.result.pane.agent // ""') || agent=""
-
-payload=""
 while IFS=$'\t' read -r root rel; do
-  p=${root%/}/${rel%/}
-  case "$p" in
-  "$PWD") p=. ;;
-  "$PWD"/*) p=${p#"$PWD"/} ;;
-  esac
-  case "$agent" in
-  claude) payload+="@${p} " ;;
-  codex) payload+="${p} " ;;
-  # シェルなど: コマンド引数としてそのまま使えるようクォートする
-  *) payload+="$(printf '%q' "$p") " ;;
-  esac
-done <<<"$selected"
-
-"$herdr_bin" pane send-text "$active_pane_id" "$payload"
+  printf '%s\n' "${root%/}/${rel%/}"
+done <<<"$selected" | send_paths "$active_pane_id"
