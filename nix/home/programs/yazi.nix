@@ -11,6 +11,8 @@
     ++ map (name: "plugins/${name}.yazi") (builtins.attrNames config.programs.yazi.plugins)
     ++ map (name: "flavors/${name}.yazi") (builtins.attrNames config.programs.yazi.flavors);
   managedFiles = map (name: "yazi/${name}") files;
+  # opener の `for` は WSL と素の Linux を区別できないため、実行時に判定する
+  openWithDefaultApp = arg: "if command -v wslview >/dev/null 2>&1; then wslview ${arg}; elif [ \"$(uname)\" = \"Darwin\" ]; then open ${arg}; else xdg-open ${arg}; fi";
 in {
   assertions = [
     {
@@ -21,8 +23,8 @@ in {
       message = "Yazi config files differ from the linkFarm file list. Update nix/home/programs/yazi.nix to include every yazi/ entry.";
     }
   ];
-  # vendored sources: yazi-rs/plugins 044c3cc, kokatsu/ansi-preview 865f404,
-  # yazi-rs/flavors 20b47bf。更新はリポジトリのソースを更新して switch する。
+  # vendored sources: yazi-rs/plugins 4dc7f1b, kokatsu/ansi-preview 865f404,
+  # llanosrocas/githead 317d09f (patched: load と bulk-rename を購読), yazi-rs/flavors 20b47bf。更新はリポジトリのソースを更新して switch する。
   # ya pkg は使用しない。シェルの yi 関数は既存の functions.zsh が管理する。
   programs.yazi = {
     enable = true;
@@ -32,7 +34,7 @@ in {
     enableZshIntegration = false;
     settings = {
       mgr = {
-        linemode = "size";
+        linemode = "size_mtime";
         ratio = [
           1
           3
@@ -47,6 +49,14 @@ in {
         max_height = 3600;
       };
       opener = {
+        open = [
+          {
+            run = openWithDefaultApp "%s1";
+            desc = "Open";
+            orphan = true;
+            for = "unix";
+          }
+        ];
         edit = [
           {
             run = "nvim %s";
@@ -99,6 +109,29 @@ in {
             desc = "Smart filter";
           }
           {
+            on = "F";
+            run = "plugin jump-to-char";
+            desc = "Jump to the next file starting with a char";
+          }
+          {
+            on = "p";
+            run = "plugin smart-paste";
+            desc = "Paste into the hovered directory or CWD";
+          }
+          {
+            on = [
+              "c"
+              "m"
+            ];
+            run = "plugin chmod";
+            desc = "Chmod on selected files";
+          }
+          {
+            on = "=";
+            run = "plugin diff";
+            desc = "Copy the diff of the selected and hovered file";
+          }
+          {
             on = "<C-h>";
             run = "hidden toggle";
             desc = "Toggle hidden files";
@@ -120,7 +153,7 @@ in {
           }
           {
             on = "b";
-            run = "shell 'if command -v wslview >/dev/null 2>&1; then wslview %s; elif [ \"$(uname)\" = \"Darwin\" ]; then open %s; else xdg-open %s; fi' --orphan";
+            run = "shell '${openWithDefaultApp "%s"}' --orphan";
             desc = "Open with default app";
           }
           {
@@ -186,9 +219,15 @@ in {
     initLua = ../../../.config/yazi/init.lua;
     plugins = {
       ansi-preview = ../../../.config/yazi/plugins/ansi-preview.yazi;
+      chmod = ../../../.config/yazi/plugins/chmod.yazi;
+      diff = ../../../.config/yazi/plugins/diff.yazi;
+      full-border = ../../../.config/yazi/plugins/full-border.yazi;
       git = ../../../.config/yazi/plugins/git.yazi;
+      githead = ../../../.config/yazi/plugins/githead.yazi;
+      jump-to-char = ../../../.config/yazi/plugins/jump-to-char.yazi;
       smart-enter = ../../../.config/yazi/plugins/smart-enter.yazi;
       smart-filter = ../../../.config/yazi/plugins/smart-filter.yazi;
+      smart-paste = ../../../.config/yazi/plugins/smart-paste.yazi;
       toggle-pane = ../../../.config/yazi/plugins/toggle-pane.yazi;
       vcs-files = ../../../.config/yazi/plugins/vcs-files.yazi;
       zoom = ../../../.config/yazi/plugins/zoom.yazi;
