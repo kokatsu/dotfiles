@@ -415,14 +415,5 @@ in {
       mermaid-cli # Mermaid 図の SVG 事前レンダリング (md2html 用)
       # https://github.com/googlefonts/noto-cjk
       noto-fonts-cjk-sans # 日本語フォント
-    ]
-    ++ lib.optionals (isDarwin && !isCI) [
-      # macOS専用 (CI ではスキップ)
-
-      # ターミナル (WezTerm nightly)
-      # Ghostty は Homebrew cask で管理 (nix/darwin/default.nix)
-      # WSLではWindows側にインストールするためLinuxでは除外
-      # https://github.com/wez/wezterm
-      wezterm
     ];
 }
