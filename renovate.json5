@@ -86,6 +86,7 @@
       ],
       minimumReleaseAge: '0 days',
       sourceUrl: 'https://github.com/anthropics/claude-code',
+      prPriority: 10,
     },
     {
       matchDatasources: [
@@ -95,6 +96,7 @@
         'openai/codex',
       ],
       minimumReleaseAge: '0 days',
+      prPriority: 10,
     },
   ],
 }
