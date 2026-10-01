@@ -39,6 +39,7 @@
       },
       "lua-lint-yazi": {
         "glob": [".config/yazi/*.lua"],
+        "exclude": [".config/yazi/plugins/**/*"],
         "run": "selene {staged_files}"
       },
       "lua-format": {
@@ -132,6 +133,7 @@
       },
       "lua-lint-yazi": {
         "glob": [".config/yazi/*.lua"],
+        "exclude": [".config/yazi/plugins/**/*"],
         "run": "selene {push_files}"
       },
       "toml-check": {
