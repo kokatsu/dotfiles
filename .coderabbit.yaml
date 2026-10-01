@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: ja-JP
+
+reviews:
+  path_filters:
+    - "!.config/yazi/plugins/**"
+    - "!**/*.lock"
+    - "!**/lazy-lock.json"
+    - "!**/package-lock.json"
+    - "!**/devcontainer-lock.json"
+  tools:
+    # Lua is linted by selene with per-directory configs; luacheck lacks them and flags vim/wezterm globals.
+    luacheck:
+      enabled: false
+
+knowledge_base:
+  code_guidelines:
+    filePatterns:
+      - ".claude/rules/*.md"
