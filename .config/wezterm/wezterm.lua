@@ -128,40 +128,76 @@ wezterm.on('open-uri', function(window, pane, uri)
 
     local nvim_args = line and ('+' .. line .. ' "' .. file .. '"') or ('"' .. file .. '"')
 
-    local function herdr_open_args(p, ...)
+    local function herdr_script_args(p, script_args)
       local args = {
         '/bin/zsh',
         '-l',
         '-c',
         '"$HOME/.config/herdr/scripts/open-in-nvim.sh" "$@"',
         'open-in-nvim',
-        ...,
       }
-      table.insert(args, file)
-      table.insert(args, line or '')
+      for _, arg in ipairs(script_args) do
+        table.insert(args, arg)
+      end
       if platform.is_wsl_domain(p) then
         args = platform.wsl_args(p, args)
       end
       return args
     end
 
-    -- 同じタブの nvim がちょうど 1 つならそこで開き、確認画面を出さない
-    if in_herdr and wezterm.run_child_process(herdr_open_args(pane, '--existing-only')) then
-      return false
+    local function choice_label(action, detail)
+      return wezterm.format({
+        { Attribute = { Intensity = 'Bold' } },
+        { Text = action .. '  ' },
+        'ResetAttributes',
+        { Foreground = { AnsiColor = 'Grey' } },
+        { Text = detail },
+      })
     end
+
+    local choices = {}
+    local description = 'Enter: 新規タブで開く / Esc: キャンセル'
+    -- 確認画面の間にフォーカスが移っても開くファイルと開き先が変わらないよう、ここで確定した値を使い続ける
+    local target
+    if in_herdr then
+      -- 同じタブの nvim がちょうど 1 つならそこで開き、確認画面を出さない
+      local ok, stdout, stderr =
+        wezterm.run_child_process(herdr_script_args(pane, { '--existing-only', file, line or '' }))
+      if ok then
+        return false
+      end
+      local lines = wezterm.split_by_newlines(stdout)
+      local abs, cwd, workspace = (lines[1] or ''):match('^([^\t]+)\t([^\t]+)\t([^\t]+)$')
+      if not abs then
+        wezterm.log_error('open-in-nvim: ' .. stderr)
+        return false
+      end
+      target = { file = abs, cwd = cwd, workspace = workspace }
+      for i = 2, #lines do
+        local socket, label = lines[i]:match('^([^\t]+)\t(.+)$')
+        if socket then
+          table.insert(choices, { id = socket, label = choice_label('この nvim で開く', label) })
+        end
+      end
+      description = #choices > 0 and '同じタブに nvim が複数あります  Enter: 開く / Esc: キャンセル'
+        or '同じタブの nvim で開けなかったため、新規タブで開きます  Enter: 開く / Esc: キャンセル'
+    end
+    table.insert(choices, { id = 'new-tab', label = choice_label('新規タブで開く', path) })
 
     window:perform_action(
       ---@diagnostic disable-next-line: missing-fields
       wezterm.action.InputSelector({
-        title = 'Open in nvim?',
-        choices = {
-          { label = 'Open: ' .. path, id = 'open' },
-          { label = 'Cancel', id = 'cancel' },
-        },
+        title = 'nvim で開く',
+        description = description,
+        choices = choices,
         action = wezterm.action_callback(function(win, p, id, _)
-          if id == 'open' and in_herdr then
-            wezterm.background_child_process(herdr_open_args(p))
-          elseif id == 'open' then
+          if id and in_herdr then
+            local args = id == 'new-tab' and { '--new-tab' } or { '--server', id }
+            for _, arg in ipairs({ '--cwd', target.cwd, '--workspace', target.workspace, target.file, line or '' }) do
+              table.insert(args, arg)
+            end
+            wezterm.background_child_process(herdr_script_args(p, args))
+          elseif id == 'new-tab' then
             win:perform_action(
               wezterm.action.SpawnCommandInNewTab({
                 args = { '/bin/zsh', '-l', '-c', 'nvim ' .. nvim_args },
