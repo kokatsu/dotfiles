@@ -102,6 +102,25 @@
             "command": "~/.config/claude/hooks/notify.sh"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "You audit one assistant response for unsupported factual claims. Hook input: $ARGUMENTS\n\nJudge the text in last_assistant_message; do not take it from the transcript, which may lag. To learn what the assistant actually checked, Grep transcript_path for tool calls and tool results; do not Read the whole file. Flag a sentence only if it asserts a fact about code, files, specs, external services or tools, or the assistant's own past actions, and no tool result earlier in this session supports it. This includes negative and capability claims (that something does not exist, cannot be done, or is not visible to the assistant) and claims about how Claude Code, its hooks and tools, or the assistant's own context work. An explanation or reason given in the response is not support. A search with zero results does not support a claim that something does not exist. Do not flag: a claim whose own sentence labels it as unverified, inferred, or a guess in any language (e.g. 未確認, 未検証, 推定); a sentence that explicitly says it covers everything that follows, or names the sentences it covers (e.g. 以下はすべて未検証), exempts those sentences, but a heading alone or a label on an unrelated sentence does not; opinions, recommendations, and plans; restatements of what the user said; small talk. If stop_hook_active is true, flag only sentences in this new response that are still unsupported and unlabeled. If the transcript cannot be checked in time, judge by whether the response cites a source or labels the claim. Return {\"ok\": true} when nothing is flagged. Otherwise put every flagged sentence in this one reason; do not hold any back for a later round. Return {\"ok\": false, \"reason\": \"Unsupported: <every flagged sentence, quoted>. Verify each with a tool, or label it unverified.\"}. Your own knowledge is not support, even when you believe the claim is true; judge only by evidence in the transcript. Judge only evidential support; never request any other work.",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Before asserting a fact, check it this turn (file, command output, docs). Label anything unchecked as unverified.'"
+          }
+        ]
       }
     ],
     "PostToolUse": [
