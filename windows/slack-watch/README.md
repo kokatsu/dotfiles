@@ -53,13 +53,13 @@ slack-watch start     # 起動
 slack-watch status    # status.json を表示して動作確認
 ```
 
-WezTerm 側のバッジと `Alt + k` は `.config/wezterm/*.lua` を Windows へコピーしてから有効になるので、初回は `home-manager switch --flake . --impure` も実行する。
+WezTerm 側のバッジと `Alt + s` は `.config/wezterm/*.lua` を Windows へコピーしてから有効になるので、初回は `home-manager switch --flake . --impure` も実行する。
 
 必要なのは .NET SDK (Windows 側) だけ。証明書も sparse package も管理者権限も要らない。
 
 ## 既読クリア
 
-WezTerm から `Alt + k`。`%USERPROFILE%\.cache\slack-watch\clear.request` を置くと、リスナーが次の巡回で Slack のトーストを通知センターから削除する。
+WezTerm から `Alt + s`。`%USERPROFILE%\.cache\slack-watch\clear.request` を置くと、リスナーが次の巡回で Slack のトーストを通知センターから削除する。
 
 シェルからは `slack-watch clear`。
 
