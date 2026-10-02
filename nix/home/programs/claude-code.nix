@@ -67,6 +67,11 @@
       source = ../../../.config/claude/hooks/notify.sh;
       executable = true;
     };
+    ".config/claude/hooks/transcript-grep-guard.sh" = {
+      source = ../../../.config/claude/hooks/transcript-grep-guard.sh;
+      executable = true;
+    };
+    ".config/claude/hooks/transcript-grep-guard.ts".source = ../../../.config/claude/hooks/transcript-grep-guard.ts;
     ".config/claude/hooks/textlint-response.json".source = ../../../.config/claude/hooks/textlint-response.json;
     ".config/claude/keybindings.json".text = builtins.toJSON {
       "$schema" = "https://platform.claude.com/docs/schemas/claude-code/keybindings.json";

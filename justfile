@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test gh-api-method-test managed-paths-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test"
+test_recipes := "banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test transcript-grep-guard-test gh-api-method-test managed-paths-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -243,6 +243,11 @@ textlint-response-config-test:
 gh-api-guard-test:
     deno test --no-prompt --allow-read=scripts/gh-api-guard-cases.tsv --allow-run="$(command -v shfmt)" scripts/test-gh-api-guard.ts -- "$(command -v shfmt)"
     bash scripts/test-gh-api-guard.sh
+
+# Verify grep is auto-allowed only when it reads exactly one transcript file
+transcript-grep-guard-test:
+    deno test --no-prompt --allow-read --allow-write --allow-run="$(command -v shfmt)" scripts/test-transcript-grep-guard.ts -- "$(command -v shfmt)"
+    bash scripts/test-transcript-grep-guard.sh
 
 # Verify the Codex `gh api` hook denies only real invocations without an explicit method
 gh-api-method-test:
