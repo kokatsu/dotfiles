@@ -205,11 +205,11 @@ end
 
 -- Windows 固有キーバインド
 local windows_specific_keys = {
-  -- `Alt + k` で Slack の未読バッジをクリアする。
+  -- `Alt + s` で Slack の未読バッジをクリアする。
   -- 常駐リスナー (windows/slack-watch) がこのマーカーを見つけて通知センターから
   -- Slack のトーストを消すので、Windows の通知センター側も同時に空になる
   {
-    key = 'k',
+    key = 's',
     mods = 'ALT',
     action = wezterm.action_callback(function(_window, _pane)
       local userprofile = os.getenv('USERPROFILE')
