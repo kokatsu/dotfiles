@@ -128,6 +128,28 @@ wezterm.on('open-uri', function(window, pane, uri)
 
     local nvim_args = line and ('+' .. line .. ' "' .. file .. '"') or ('"' .. file .. '"')
 
+    local function herdr_open_args(p, ...)
+      local args = {
+        '/bin/zsh',
+        '-l',
+        '-c',
+        '"$HOME/.config/herdr/scripts/open-in-nvim.sh" "$@"',
+        'open-in-nvim',
+        ...,
+      }
+      table.insert(args, file)
+      table.insert(args, line or '')
+      if platform.is_wsl_domain(p) then
+        args = platform.wsl_args(p, args)
+      end
+      return args
+    end
+
+    -- 同じタブの nvim がちょうど 1 つならそこで開き、確認画面を出さない
+    if in_herdr and wezterm.run_child_process(herdr_open_args(pane, '--existing-only')) then
+      return false
+    end
+
     window:perform_action(
       ---@diagnostic disable-next-line: missing-fields
       wezterm.action.InputSelector({
@@ -138,19 +160,7 @@ wezterm.on('open-uri', function(window, pane, uri)
         },
         action = wezterm.action_callback(function(win, p, id, _)
           if id == 'open' and in_herdr then
-            local args = {
-              '/bin/zsh',
-              '-l',
-              '-c',
-              '"$HOME/.config/herdr/scripts/open-in-nvim.sh" "$@"',
-              'open-in-nvim',
-              file,
-              line or '',
-            }
-            if platform.is_wsl_domain(p) then
-              args = platform.wsl_args(p, args)
-            end
-            wezterm.background_child_process(args)
+            wezterm.background_child_process(herdr_open_args(p))
           elseif id == 'open' then
             win:perform_action(
               wezterm.action.SpawnCommandInNewTab({
