@@ -17,4 +17,4 @@ indent_size = unset
 # gofmt がタブでインデントする
 [{*.go,go.mod}]
 indent_style = tab
-indent_size = unset
+indent_size = 4
