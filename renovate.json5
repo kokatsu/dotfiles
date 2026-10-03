@@ -81,6 +81,13 @@
       enabled: false,
     },
     {
+      description: 'Propose only versions that build with the go directive; agent-guard builds with the Go from nixpkgs',
+      matchManagers: [
+        'gomod',
+      ],
+      constraintsFiltering: 'strict',
+    },
+    {
       matchDatasources: [
         'custom.claude-code',
       ],
