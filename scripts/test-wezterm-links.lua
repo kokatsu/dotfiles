@@ -87,8 +87,8 @@ for _, case in ipairs(cases) do
   local args = actions[2].spawn.args
   local expected = case.line and { case.line, '--', case.file } or { '--', case.file }
   assert(vim.deep_equal(vim.list_slice(args, 6), expected), 'wrong nvim argv: ' .. case.uri)
-  -- Avoid login startup files while running the actual command and positional arguments.
-  local cmd = { args[1], '-f', '-c', args[4], args[5] }
+  -- Resolve Zsh from PATH for Linux CI and avoid login startup files.
+  local cmd = { vim.fn.exepath('zsh'), '-f', '-c', args[4], args[5] }
   vim.list_extend(cmd, vim.list_slice(args, 6))
   local result = vim.system(cmd, { env = { PATH = stub_dir .. ':' .. vim.env.PATH } }):wait()
   assert(result.code == 0, result.stderr)
