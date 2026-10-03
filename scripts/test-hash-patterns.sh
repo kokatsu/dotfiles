@@ -257,6 +257,12 @@ for entry in "${BESPOKE[@]}"; do
   echo ""
 done
 
+# agent-guard はソースがリポジトリ内にあり Renovate コメントを持たないので、
+# BESPOKE ではなく vendorHash の sed だけを見る
+echo "=== agent-guard (vendorHash only) ==="
+check_section_sed "vendorHash" "$OVERLAY_DIR/agent-guard.nix" 'agent-guard = _final: prev: {' 'vendorHash = "sha256-[^"]*";'
+echo ""
+
 # ============================================================================
 # 3. 追加忘れ検出: source-builds / npm の _final: prev: セクションが
 #    全て BESPOKE に登録されているか照合する

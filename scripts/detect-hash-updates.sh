@@ -14,6 +14,7 @@
 #   packages=<name ver, name ver>           コミットメッセージ用
 #   has_karabinerts_deno_lock=true          karabiner-config/deno.{json,lock} が変わったとき
 #   has_flake_nix=true                      flake.nix が変わったとき
+#   has_agent_guard=true                    tools/agent-guard/go.sum が変わったとき
 
 set -euo pipefail
 
@@ -77,6 +78,13 @@ fi
 # そのスクリプトが Deno ヘルパーで input を抽出する
 if ! git diff --quiet "$BASE" -- flake.nix; then
   echo "has_flake_nix=true"
+fi
+
+# agent-guard の依存は Renovate の gomod が go.mod と go.sum を書き換えるだけで、
+# overlay の version は変わらない。vendorHash は go.sum で決まるので、その差分で見る
+if ! git diff --quiet "$BASE" -- tools/agent-guard/go.sum; then
+  echo "has_agent_guard=true"
+  packages="${packages:+$packages, }agent-guard"
 fi
 
 echo "packages=$packages"

@@ -284,6 +284,29 @@ jobs:
             exit 1
           fi
 
+      - name: Update agent-guard vendorHash
+        if: steps.detect.outputs.has_agent_guard == 'true'
+        run: |
+          OVERLAY="nix/overlays/agent-guard.nix"
+
+          # ソースはリポジトリ内にあるので、go.sum から決まる vendorHash だけを直す
+          FAKE_HASH="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+          sed -i "/agent-guard = _final: prev: {/,/^  };/{s|vendorHash = \"sha256-[^\"]*\";|vendorHash = \"${FAKE_HASH}\";|}" "$OVERLAY"
+          # nixpkgs は runner の registry ではなく flake.lock のものを使う
+          VENDOR_HASH=$(nix build --no-link --impure --expr '
+            let pkgs = import (builtins.getFlake (toString ./.)).inputs.nixpkgs {
+              system = "x86_64-linux";
+              overlays = [ (import ./nix/overlays/agent-guard.nix).agent-guard ];
+            };
+            in pkgs.agent-guard
+          ' 2>&1 | grep -oP "got:\s+\Ksha256-\S+" | head -1)
+          if [ -n "$VENDOR_HASH" ]; then
+            sed -i "/agent-guard = _final: prev: {/,/^  };/{s|vendorHash = \"sha256-[^\"]*\";|vendorHash = \"${VENDOR_HASH}\";|}" "$OVERLAY"
+          else
+            echo "::error::Failed to compute vendorHash for agent-guard"
+            exit 1
+          fi
+
       - name: Format code
         run: nix fmt -- .
 
