@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/check-banned-commands.sh"
+            "command": "command -v agent-guard >/dev/null || { echo 'agent-guard not found; run home-manager switch' >&2; exit 2; }; exec agent-guard banned"
           },
           {
             "type": "command",
@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/check-managed-paths.sh"
+            "command": "command -v agent-guard >/dev/null || { echo 'agent-guard not found; run home-manager switch' >&2; exit 2; }; exec agent-guard managed-paths"
           }
         ]
       }

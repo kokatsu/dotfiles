@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# check-regex-dialect.sh — banned-commands.json の POSIX ERE を ECMAScript へ
+# check-regex-dialect.sh — banned-commands.json の POSIX ERE を Go の正規表現へ
 # 変換したときの差を、実行中の OS と locale で測る。
 #
-# banned-commands.json の正本方言は POSIX ERE で、フックは toEcmaScript() を
-# 通してから RegExp に渡す。ここで確かめるのはその変換が取りこぼしを生まないこと
+# banned-commands.json の正本方言は POSIX ERE で、フック (agent-guard) は
+# rules.Convert() を通してからコンパイルする。ここで確かめるのはその変換が取りこぼしを生まないこと
 # である。locale を変えると POSIX 側の文字クラスが変わるので、対象環境ごとに
 # 走らせる。macOS の BSD libc は LANG=en_US.UTF-8 で通ることを確かめてある。
 #
@@ -11,27 +11,29 @@
 #
 #   1. POSIX [[:space:]] のみに一致する符号位置が空であること
 #   2. A-Za-z0-9 が POSIX [[:alnum:]] の部分集合であること
-#   3. jq (Oniguruma) の [[:space:]] をフックの JQ_SPACE が包含すること
+#   3. jq (Oniguruma) の [[:space:]] をフックの JQSpaceClass が包含すること
 #   4. corpus の判定が両方言で一致すること
 #
-# 1 と 2 は「ECMAScript 側が POSIX 側を包含する」ことの確認である。包含して
+# 1 と 2 は「Go 側が POSIX 側を包含する」ことの確認である。包含して
 # いる限り差は過剰ブロックにしか出ず、禁止ルールでは fail-safe になる。逆向き
 # の差は取りこぼしなので許容しない。corpus は特定の入力しか見ないので、一般の
 # 場合を保証するのはこの 2 つだけである。
 #
 # 3 は sSplit と ansiDecode のための別の包含関係である。この 2 つは jq の
 # プログラムから書き写しており、jq は Oniguruma なので集合が POSIX とも
-# ECMAScript とも違う。
+# Go とも違う。
 #
-# 4 は変換器そのものの検査である。1 から 3 が成り立っていても toEcmaScript() が
+# 4 は変換器そのものの検査である。1 から 3 が成り立っていても rules.Convert() が
 # 壊れれば判定は変わる。corpus は判定が一致する入力だけで構成してあるため、
 # 差分はすべて異常として扱う。過剰ブロック側の入力を corpus へ入れるなら、
 # 行ごとの期待値を持たせてから入れる。
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-rules="$repo_root/.config/claude/hooks/banned-commands.json"
-helper="$repo_root/scripts/regex-dialect-check.ts"
+rules="$repo_root/tools/agent-guard/rules/banned-commands.json"
+# go run はモジュールのディレクトリで走らせる。補助ツールは標準ライブラリだけを
+# 使うので、依存の取得は起きない。
+helper() { (cd "$repo_root/tools/agent-guard" && go run ./cmd/regex-dialect "$@"); }
 corpus="$repo_root/scripts/regex-dialect-corpus.txt"
 
 work=$(mktemp -d)
@@ -58,17 +60,17 @@ scan_posix_class() {
   done
 }
 
-# --- 1. whitespace: POSIX [[:space:]] と ECMAScript \s ---
+# --- 1. whitespace: POSIX [[:space:]] と Go 側の SpaceClass ---
 scan_posix_class space | sort >"$work/posix-space.txt"
-deno run --no-prompt "$helper" space-set | sort >"$work/ecma-space.txt"
+helper space-set | sort >"$work/go-space.txt"
 
-comm -23 "$work/posix-space.txt" "$work/ecma-space.txt" >"$work/space-posix-only.txt"
-comm -13 "$work/posix-space.txt" "$work/ecma-space.txt" >"$work/space-ecma-only.txt"
+comm -23 "$work/posix-space.txt" "$work/go-space.txt" >"$work/space-posix-only.txt"
+comm -13 "$work/posix-space.txt" "$work/go-space.txt" >"$work/space-go-only.txt"
 
 printf '[whitespace class]\n'
 printf '  POSIX [[:space:]]: %s code points\n' "$(wc -l <"$work/posix-space.txt")"
-printf '  ECMAScript \\s:     %s code points\n' "$(wc -l <"$work/ecma-space.txt")"
-printf '  ECMAScript のみ (過剰ブロック、許容): %s\n' "$(tr '\n' ' ' <"$work/space-ecma-only.txt")"
+printf '  Go SpaceClass:      %s code points\n' "$(wc -l <"$work/go-space.txt")"
+printf '  Go のみ (過剰ブロック、許容): %s\n' "$(tr '\n' ' ' <"$work/space-go-only.txt")"
 printf '  POSIX のみ (取りこぼし、不可):        %s\n\n' "$(tr '\n' ' ' <"$work/space-posix-only.txt")"
 
 if [[ -s $work/space-posix-only.txt ]]; then
@@ -98,22 +100,22 @@ if [[ -s $work/alnum-ascii-only.txt ]]; then
   failed=1
 fi
 
-# --- 3. jq (Oniguruma) の [[:space:]] を JQ_SPACE が包含するか ---
-# banned-commands.json と違い、check-banned-commands.ts の sSplit と ansiDecode は
+# --- 3. jq (Oniguruma) の [[:space:]] を JQSpaceClass が包含するか ---
+# banned-commands.json と違い、agent-guard の sSplit は
 # jq のプログラムから書き写した。jq は Oniguruma なので集合が POSIX とも
-# ECMAScript とも違い、jq だけが U+0085 に一致する。
-# フック側の JQ_SPACE ([\s\u0085]) がこの集合を包含することをここで確かめる。
+# Go とも違い、jq だけが U+0085 に一致する。
+# フック側の JQSpaceClass (SpaceClass と U+0085) がこの集合を包含することをここで確かめる。
 jq -nr 'range(1;65536) | select(. < 55296 or . > 57343)
         | select(([.] | implode) | test("[[:space:]]")) | .' |
   awk '{printf "U+%04X\n", $1}' | sort >"$work/jq-space.txt"
 
-deno run --no-prompt "$helper" jq-space-set | sort >"$work/hook-space.txt"
+helper jq-space-set | sort >"$work/hook-space.txt"
 
 comm -23 "$work/jq-space.txt" "$work/hook-space.txt" >"$work/jq-only.txt"
 
-printf '[jq whitespace class vs the hook JQ_SPACE]\n'
+printf '[jq whitespace class vs the hook JQSpaceClass]\n'
 printf '  jq [[:space:]]: %s code points\n' "$(wc -l <"$work/jq-space.txt")"
-printf '  hook JQ_SPACE:  %s code points\n' "$(wc -l <"$work/hook-space.txt")"
+printf '  hook JQSpaceClass: %s code points\n' "$(wc -l <"$work/hook-space.txt")"
 printf '  jq のみ (取りこぼし、不可): %s\n\n' "$(tr '\n' ' ' <"$work/jq-only.txt")"
 
 if [[ -s $work/jq-only.txt ]]; then
@@ -137,11 +139,10 @@ while IFS= read -r line; do
   printf '%s\t%s\n' "$verdict" "$line"
 done <"$corpus" >"$work/posix-verdicts.txt"
 
-deno run --no-prompt --allow-read="$rules" "$helper" match-corpus "$rules" \
-  <"$corpus" >"$work/ecma-verdicts.txt"
+helper match-corpus <"$corpus" >"$work/go-verdicts.txt"
 
 printf '[corpus verdicts]\n'
-if diff -u "$work/posix-verdicts.txt" "$work/ecma-verdicts.txt" >"$work/corpus.diff"; then
+if diff -u "$work/posix-verdicts.txt" "$work/go-verdicts.txt" >"$work/corpus.diff"; then
   printf '  %s 行すべて一致\n\n' "$(wc -l <"$work/posix-verdicts.txt")"
 else
   printf '  差分あり:\n'

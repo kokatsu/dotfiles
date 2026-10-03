@@ -142,6 +142,7 @@
       # upstream overlay (pkgs.moonbit-bin.* を生やす)
       inputs.moonbit-overlay.overlays.default
       customOverlays.cc-statusline
+      customOverlays.agent-guard
       customOverlays.claude-code
       customOverlays.codex
       customOverlays.cssmodules-language-server
@@ -314,6 +315,9 @@
             jq # Feed state regression tests
             shellcheck # シェルスクリプト linter
             shfmt # シェルスクリプト formatter
+
+            # Go (tools/agent-guard)
+            go # gofmt / go vet / go test
 
             # Web / TypeScript
             biome # formatter + linter

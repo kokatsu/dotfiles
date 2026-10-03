@@ -128,10 +128,6 @@ in {
         source = ../../../.config/claude/hooks/check-ai-writing.sh;
         executable = true;
       };
-      ".config/codex/herdr-peer-command-guard.sh" = {
-        source = ../../../.config/claude/hooks/herdr-peer-command-guard.sh;
-        executable = true;
-      };
       ".config/codex/hooks.json".text = builtins.toJSON {
         hooks = {
           PostToolUse = [
@@ -155,7 +151,7 @@ in {
                   type = "command";
                 }
                 {
-                  command = "bash '${config.xdg.configHome}/codex/herdr-peer-command-guard.sh'";
+                  command = "${lib.getExe pkgs.agent-guard} herdr-peer";
                   type = "command";
                 }
               ];
