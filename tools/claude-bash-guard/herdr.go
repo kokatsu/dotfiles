@@ -1,6 +1,9 @@
 package main
 
-import "regexp"
+import (
+	"regexp"
+	"slices"
+)
 
 // Herdr の入力系コマンドを、シェルコマンドの境界 (制御構文のキーワードと
 // よく使うラッパーを含む) で字面のまま探す。ベストエフォートのガードであり
@@ -22,6 +25,9 @@ var herdrInput = func() *regexp.Regexp {
 
 const herdrInputMessage = "Use herdr-peer instead of raw Herdr input commands so the same-tab peer checks are applied."
 
-func herdrInputCommand(command string) bool {
-	return herdrInput.MatchString(command)
+// 字面の正規表現と AST の判定の両方で見る。AST はラッパーの奥
+// (`timeout 5 herdr ...`) や sh -c の文字列の中まで届き、正規表現は解析できない
+// 入力にも効く。
+func herdrInputCommand(command string, verdicts []verdict) bool {
+	return herdrInput.MatchString(command) || slices.Contains(verdicts, "HERDR_INPUT")
 }

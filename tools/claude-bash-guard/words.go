@@ -1,7 +1,9 @@
 package main
 
 import (
+	"path"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -82,6 +84,53 @@ func wordText(word *syntax.Word) string {
 				}
 			}
 		}
+	}
+	return b.String()
+}
+
+// 語を bash が実際に渡す文字列へ戻す。sh -c の文字列を解析し直すために使う。
+// wordText と違い引用の規則どおりにバックスラッシュを外すので、"echo \"a; b\""
+// の中のセミコロンは区切りにならない。展開の部分は wordText と同じく空文字になる。
+func scriptText(word *syntax.Word) string {
+	var b strings.Builder
+	for _, part := range word.Parts {
+		switch part := part.(type) {
+		case *syntax.Lit:
+			b.WriteString(unescape(part.Value, func(byte) bool { return true }))
+		case *syntax.SglQuoted:
+			if part.Dollar {
+				b.WriteString(ansiDecode(part.Value))
+			} else {
+				b.WriteString(part.Value)
+			}
+		case *syntax.DblQuoted:
+			for _, inner := range part.Parts {
+				if lit, ok := inner.(*syntax.Lit); ok {
+					b.WriteString(unescape(lit.Value, func(c byte) bool {
+						return strings.IndexByte("$`\"\\", c) >= 0
+					}))
+				}
+			}
+		}
+	}
+	return b.String()
+}
+
+// バックスラッシュと次の 1 文字のうち、escapes が真を返す文字ならバックスラッシュを
+// 落とす。改行が続く場合は行継続なので両方を落とす。
+func unescape(value string, escapes func(byte) bool) string {
+	var b strings.Builder
+	for i := 0; i < len(value); i++ {
+		if value[i] == '\\' && i+1 < len(value) {
+			switch next := value[i+1]; {
+			case next == '\n':
+				i++
+				continue
+			case escapes(next):
+				i++
+			}
+		}
+		b.WriteByte(value[i])
 	}
 	return b.String()
 }
@@ -258,9 +307,45 @@ func stripExecOpts(args []string) []string {
 	return args
 }
 
+// 値を別語で取る短オプションの文字と長オプションを渡し、コマンドの手前の
+// オプション列を剥がす。"--" の次はオプションに見えてもコマンドとして扱う。
+func stripOpts(args []string, valueShort string, valueLong []string) []string {
+	for len(args) > 0 {
+		head := args[0]
+		switch {
+		case head == "--":
+			return args[1:]
+		case strings.HasPrefix(head, "--"):
+			if !strings.Contains(head, "=") && slices.Contains(valueLong, head) {
+				args = drop(args, 2)
+			} else {
+				args = args[1:]
+			}
+		case shortCluster.MatchString(head) && clusterEats(head[1:], valueShort):
+			args = drop(args, 2)
+		case strings.HasPrefix(head, "-"):
+			args = args[1:]
+		default:
+			return args
+		}
+	}
+	return args
+}
+
+var shortCluster = regexp.MustCompile(`^-[A-Za-z0-9]+$`)
+
+// /bin/rm も ./rm も rm として読む。同名の自作スクリプトまで止めるが、取りこぼす
+// より過剰に一致させる側へ倒す。
+func commandName(word string) string {
+	if strings.Contains(word, "/") {
+		return path.Base(word)
+	}
+	return word
+}
+
 func stripWrappers(args []string) []string {
 	for len(args) > 0 {
-		switch args[0] {
+		switch commandName(args[0]) {
 		case "command":
 			args = stripCommandOpts(args[1:])
 		case "env":
@@ -274,8 +359,27 @@ func stripWrappers(args []string) []string {
 			if len(args) > 0 && args[0] == "--" {
 				args = args[1:]
 			}
+		case "busybox":
+			args = args[1:]
+		case "nohup", "setsid":
+			args = stripOpts(args[1:], "", nil)
+		case "nice":
+			args = stripOpts(args[1:], "n", []string{"--adjustment"})
+		case "timeout":
+			// オプションの後ろの 1 語は時間で、その次がコマンドになる。
+			args = drop(stripOpts(args[1:], "sk", []string{"--signal", "--kill-after"}), 1)
+		case "time":
+			args = stripOpts(args[1:], "of", []string{"--output", "--format"})
+		case "xargs":
+			args = stripOpts(args[1:], "adEILnPsRSJ", []string{
+				"--arg-file", "--delimiter", "--max-args", "--max-procs", "--max-chars", "--process-slot-var",
+			})
+		case "stdbuf":
+			args = stripOpts(args[1:], "ioe", []string{"--input", "--output", "--error"})
+		case "caffeinate":
+			args = stripOpts(args[1:], "tw", nil)
 		default:
-			return args
+			return append([]string{commandName(args[0])}, args[1:]...)
 		}
 	}
 	return args

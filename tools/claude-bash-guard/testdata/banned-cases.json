@@ -1244,5 +1244,270 @@
     "want": "block",
     "command": "rm $'\\U00110000'",
     "label": "壊れた引数でもコマンド名は読める"
+  },
+  {
+    "want": "block",
+    "command": "nohup rm -rf x"
+  },
+  {
+    "want": "block",
+    "command": "/bin/rm x",
+    "label": "絶対パスのコマンド名"
+  },
+  {
+    "want": "block",
+    "command": "./rm x",
+    "label": "相対パスのコマンド名"
+  },
+  {
+    "want": "block",
+    "command": "sudo /bin/rm x"
+  },
+  {
+    "want": "block",
+    "command": "/usr/bin/env rm x"
+  },
+  {
+    "want": "block",
+    "command": "command /bin/rm x"
+  },
+  {
+    "want": "block",
+    "command": "timeout 5 rm x"
+  },
+  {
+    "want": "block",
+    "command": "timeout -s KILL -k 2 5 rm x",
+    "label": "値を取る timeout のオプション"
+  },
+  {
+    "want": "block",
+    "command": "timeout --signal=KILL 5 rm x"
+  },
+  {
+    "want": "block",
+    "command": "nice git push --force"
+  },
+  {
+    "want": "block",
+    "command": "nice -n 5 rm x"
+  },
+  {
+    "want": "block",
+    "command": "nice -10 rm x",
+    "label": "旧形式の nice -N"
+  },
+  {
+    "want": "block",
+    "command": "nice --adjustment 5 rm x"
+  },
+  {
+    "want": "block",
+    "command": "xargs rm < list"
+  },
+  {
+    "want": "block",
+    "command": "xargs -I {} rm {} < list"
+  },
+  {
+    "want": "block",
+    "command": "xargs -0 -n 1 rm < list"
+  },
+  {
+    "want": "block",
+    "command": "find . -print0 | xargs -0 grep -r foo"
+  },
+  {
+    "want": "block",
+    "command": "busybox rm x"
+  },
+  {
+    "want": "block",
+    "command": "/usr/bin/time rm x"
+  },
+  {
+    "want": "block",
+    "command": "/usr/bin/time -o out rm x"
+  },
+  {
+    "want": "block",
+    "command": "stdbuf -o0 rm x"
+  },
+  {
+    "want": "block",
+    "command": "stdbuf -o 0 rm x"
+  },
+  {
+    "want": "block",
+    "command": "setsid rm x"
+  },
+  {
+    "want": "block",
+    "command": "caffeinate -t 60 rm x"
+  },
+  {
+    "want": "block",
+    "command": "nohup nice timeout 5 git fetch --depth 1",
+    "label": "ラッパーの多重"
+  },
+  {
+    "want": "block",
+    "command": "/usr/bin/git push -f",
+    "label": "絶対パスの git"
+  },
+  {
+    "want": "block",
+    "command": "timeout 5 herdr agent prompt w1:p1 hi",
+    "label": "ラッパー経由の Herdr 入力"
+  },
+  {
+    "want": "block",
+    "command": "bash -c 'rm x'"
+  },
+  {
+    "want": "block",
+    "command": "sh -c 'git push -f'"
+  },
+  {
+    "want": "block",
+    "command": "bash -ec 'rm x'",
+    "label": "束ねた -c"
+  },
+  {
+    "want": "block",
+    "command": "bash -eo pipefail -c 'rm x'",
+    "label": "値を取る -o の後ろの -c"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'rm x'"
+  },
+  {
+    "want": "block",
+    "command": "/bin/sh -c 'rm x'"
+  },
+  {
+    "want": "block",
+    "command": "xargs sh -c 'rm \"$1\"' _ < list",
+    "label": "xargs から sh -c"
+  },
+  {
+    "want": "block",
+    "command": "bash -c 'sh -c \"rm x\"'",
+    "label": "入れ子の sh -c"
+  },
+  {
+    "want": "block",
+    "command": "bash -c $'echo ok\\nrm x'",
+    "label": "ANSI-C 引用の -c"
+  },
+  {
+    "want": "block",
+    "command": "bash -c 'rm x; if'",
+    "label": "解析できない -c の文字列"
+  },
+  {
+    "want": "block",
+    "command": "bash -c 'GIT_AUTHOR_NAME=x git commit'",
+    "label": "-c の中の identity 変数"
+  },
+  {
+    "want": "allow",
+    "command": "nice -n 5 ls"
+  },
+  {
+    "want": "allow",
+    "command": "timeout 5 git fetch"
+  },
+  {
+    "want": "allow",
+    "command": "xargs echo < list"
+  },
+  {
+    "want": "allow",
+    "command": "nohup sleep 1"
+  },
+  {
+    "want": "allow",
+    "command": "bash -c 'echo hi'"
+  },
+  {
+    "want": "allow",
+    "command": "sh script.sh rm x",
+    "label": "-c の無いシェルの引数はスクリプトのもの"
+  },
+  {
+    "want": "allow",
+    "command": "bash -c 'echo' rm",
+    "label": "-c の後の引数は $0"
+  },
+  {
+    "want": "allow",
+    "command": "/usr/bin/rmdir x",
+    "label": "rm で始まる別コマンド"
+  },
+  {
+    "want": "allow",
+    "command": "echo /bin/rm",
+    "label": "引数位置のパス"
+  },
+  {
+    "want": "allow",
+    "command": "timeout 5"
+  },
+  {
+    "want": "allow",
+    "command": "nohup"
+  },
+  {
+    "want": "allow",
+    "command": "bash script.sh"
+  },
+  {
+    "want": "allow",
+    "command": "bash -o pipefail script.sh"
+  },
+  {
+    "want": "allow",
+    "command": "timeout 5 herdr pane list"
+  },
+  {
+    "want": "allow",
+    "command": "bash -c \"echo \\\"a; rm x\\\"\"",
+    "label": "-c の二重引用符内の \\\" は引用符に戻る"
+  },
+  {
+    "want": "allow",
+    "command": "bash -c \"echo \\\"(hello)\\\"\"",
+    "label": "-c の二重引用符内の括弧は文字列"
+  },
+  {
+    "want": "allow",
+    "command": "bash -c echo\\ \\\"a\\;\\ rm\\ x\\\"",
+    "label": "引用外のエスケープで組んだ -c の文字列"
+  },
+  {
+    "want": "block",
+    "command": "bash -c \"echo a; rm x\""
+  },
+  {
+    "want": "block",
+    "command": "bash -c \"rm \\\"x\\\"\"",
+    "label": "-c の中の引用付き引数"
+  },
+  {
+    "want": "block",
+    "command": "bash -c rm\\ x",
+    "label": "引用外のエスケープで組んだ rm"
+  },
+  {
+    "want": "block",
+    "command": "bash -c \"r\\m x\"",
+    "label": "二重引用符は \\m のバックスラッシュを残す"
+  },
+  {
+    "want": "allow",
+    "command": "bash -c \"echo ok\\\nrm x\"",
+    "label": "二重引用符内の行継続は改行にならない"
   }
 ]

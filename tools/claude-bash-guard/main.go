@@ -11,12 +11,12 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"mvdan.cc/sh/v3/fileutil"
@@ -65,28 +65,39 @@ func readCommand(r io.Reader) (command string, present bool, err error) {
 // parse は shfmt が stdin を読むときと同じ方言を選ぶ。先頭の shebang が分かる
 // 方言ならそれを、そうでなければ bash を使う。
 func parse(command string) (*syntax.File, error) {
-	src := []byte(command + "\n")
 	lang := syntax.LangBash
-	if err := lang.Set(fileutil.Shebang(src)); err != nil || lang == syntax.LangAuto {
+	if err := lang.Set(fileutil.Shebang([]byte(command))); err != nil || lang == syntax.LangAuto {
 		lang = syntax.LangBash
 	}
+	return parseAs(command, lang)
+}
+
+func commandVerdicts(command string) ([]verdict, error) {
+	file, err := parse(command)
+	if err != nil {
+		return nil, err
+	}
+	return analyze(file), nil
+}
+
+func parseAs(command string, lang syntax.LangVariant) (*syntax.File, error) {
 	parser := syntax.NewParser(syntax.KeepComments(true), syntax.Variant(lang))
-	return parser.Parse(bytes.NewReader(src), "")
+	return parser.Parse(strings.NewReader(command+"\n"), "")
 }
 
 // checkBanned はブロックするならその理由を、通すなら "" を返す。
 func checkBanned(command string, ruleSet []rules.Rule) string {
-	if herdrInputCommand(command) {
+	verdicts, err := commandVerdicts(command)
+	if herdrInputCommand(command, verdicts) {
 		return herdrInputMessage
 	}
 	if message, ok := rules.Match(command, ruleSet); ok {
 		return message
 	}
-	file, err := parse(command)
 	if err != nil {
 		return parseFailure
 	}
-	if verdicts := analyze(file); len(verdicts) > 0 {
+	if len(verdicts) > 0 {
 		return verdictMessages[verdicts[0]]
 	}
 	return ""
@@ -107,7 +118,13 @@ func run(mode string) {
 	case "herdr-peer":
 		// Codex は Bash 以外の入力もこのフックに渡しうる。コマンドが無ければ
 		// 見るものが無い。
-		if present && herdrInputCommand(command) {
+		if !present {
+			return
+		}
+		// 解析できない入力は正規表現だけで見る。Codex 側では禁止コマンドの判定を
+		// しないので、解析の失敗そのものではブロックしない。
+		verdicts, _ := commandVerdicts(command)
+		if herdrInputCommand(command, verdicts) {
 			block(herdrInputMessage)
 		}
 	case "banned":

@@ -18,22 +18,24 @@ import (
 type verdict string
 
 var verdictMessages = map[verdict]string{
-	"RM":             "Use gomi instead of rm",
-	"EVAL":           "Refuse eval. Review the command and run it directly instead.",
-	"SHRED":          "Refuse shred. Confirm intent and run manually.",
-	"PKILL_F":        "Refuse pkill -f: it pattern-matches every command line, including this harness and its live servers. Kill by a recorded PID or use the tool's own stop command.",
-	"KILLALL":        "Refuse killall. Kill by a recorded PID or use the tool's own stop command.",
-	"MKFS":           "Refuse mkfs. Run manually if intentional.",
-	"DD_DEV":         "Refuse dd writing to a device. Run manually if intentional.",
-	"CHMOD_R_777":    "Refuse chmod -R 777. Use a tighter mode.",
-	"CHMOD_777_ROOT": "Refuse chmod 777 /. Scope the path.",
-	"GREP_R":         "Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.config/ripgrep/ripgreprc glob excludes.",
-	"FORCE_PUSH":     "Refuse git push -f/--force. Use --force-with-lease or run manually.",
-	"GIT_CLEAN":      "Refuse git clean -fd/-fx (destructive). Inspect untracked files first.",
-	"GIT_RESET_HARD": "Refuse git reset --hard to a remote/historical ref. Confirm intent and run manually.",
-	"SHALLOW":        "Refuse shallow git fetch/pull (--depth/--shallow-*) because it makes the existing repository shallow. Use a temporary shallow clone (git clone --depth), or fetch normally. --deepen/--unshallow remain allowed.",
-	"GIT_IDENTITY":   "Don't set or override Git identity. ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes Git fail loudly where no entry matches. Ask the user instead of choosing a value.",
-	"EXTDIFF":        "Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out).",
+	"RM":               "Use gomi instead of rm",
+	"EVAL":             "Refuse eval. Review the command and run it directly instead.",
+	"SHRED":            "Refuse shred. Confirm intent and run manually.",
+	"PKILL_F":          "Refuse pkill -f: it pattern-matches every command line, including this harness and its live servers. Kill by a recorded PID or use the tool's own stop command.",
+	"KILLALL":          "Refuse killall. Kill by a recorded PID or use the tool's own stop command.",
+	"MKFS":             "Refuse mkfs. Run manually if intentional.",
+	"DD_DEV":           "Refuse dd writing to a device. Run manually if intentional.",
+	"CHMOD_R_777":      "Refuse chmod -R 777. Use a tighter mode.",
+	"CHMOD_777_ROOT":   "Refuse chmod 777 /. Scope the path.",
+	"GREP_R":           "Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.config/ripgrep/ripgreprc glob excludes.",
+	"FORCE_PUSH":       "Refuse git push -f/--force. Use --force-with-lease or run manually.",
+	"GIT_CLEAN":        "Refuse git clean -fd/-fx (destructive). Inspect untracked files first.",
+	"GIT_RESET_HARD":   "Refuse git reset --hard to a remote/historical ref. Confirm intent and run manually.",
+	"SHALLOW":          "Refuse shallow git fetch/pull (--depth/--shallow-*) because it makes the existing repository shallow. Use a temporary shallow clone (git clone --depth), or fetch normally. --deepen/--unshallow remain allowed.",
+	"GIT_IDENTITY":     "Don't set or override Git identity. ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes Git fail loudly where no entry matches. Ask the user instead of choosing a value.",
+	"HERDR_INPUT":      herdrInputMessage,
+	"SHELL_C_UNPARSED": "Refuse sh -c with a command string that does not parse as shell: it cannot be checked, and the shell runs the lines before the error. Run the commands directly instead.",
+	"EXTDIFF":          "Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out).",
 }
 
 var shortOpt = regexp.MustCompile(`^-[A-Za-z0-9]`)
@@ -421,12 +423,71 @@ func gitVerdict(args []string) verdict {
 
 // --- コマンド単位の判定 ---------------------------------------------------
 
+func shellVariant(shell string) (syntax.LangVariant, bool) {
+	switch shell {
+	case "sh", "bash", "dash", "ash":
+		return syntax.LangBash, true
+	case "zsh":
+		return syntax.LangZsh, true
+	case "ksh", "mksh":
+		return syntax.LangMirBSDKorn, true
+	}
+	return 0, false
+}
+
+// シェルの引数から -c に渡した文字列を探す。-c が無ければ最初のオペランドは
+// スクリプトのファイルで、そこから先はその引数なので見ない。-o/-O は値を取り、
+// 束 ("-eo pipefail") の末尾にあっても次の語を食べる。
+func shellCommandString(args []string) (int, bool) {
+	hasC := false
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "--" || a == "-":
+			if hasC && i+1 < len(args) {
+				return i + 1, true
+			}
+			return 0, false
+		case a == "--rcfile" || a == "--init-file":
+			i++
+		case strings.HasPrefix(a, "--"):
+		case len(a) > 1 && (a[0] == '-' || a[0] == '+'):
+			if a[0] == '-' && strings.Contains(a[1:], "c") {
+				hasC = true
+			}
+			if last := a[len(a)-1]; last == 'o' || last == 'O' {
+				i++
+			}
+		default:
+			if hasC {
+				return i, true
+			}
+			return 0, false
+		}
+	}
+	return 0, false
+}
+
+func isHerdrInput(rest []string) bool {
+	if len(rest) < 2 {
+		return false
+	}
+	switch rest[0] {
+	case "agent":
+		return rest[1] == "prompt" || rest[1] == "send-keys"
+	case "pane":
+		return rest[1] == "send-text" || rest[1] == "send-keys" || rest[1] == "run"
+	}
+	return false
+}
+
 var (
 	pkillFull   = regexp.MustCompile(`^-[A-Za-z]*f`)
 	chmodRecurs = regexp.MustCompile(`^-[a-zA-Z]*R`)
 )
 
-func commandVerdict(words []string) verdict {
+// scripts は words と同じ並びの、bash が実際に渡す文字列 (scriptText)。
+func commandVerdict(words, scripts []string) verdict {
 	args := stripWrappers(words)
 	if len(args) == 0 {
 		return ""
@@ -435,7 +496,29 @@ func commandVerdict(words []string) verdict {
 	cmd := args[0]
 	rest := args[1:]
 
+	// 文字列で受け取ったコマンドを解析し直して、同じ判定にかける。
+	if lang, ok := shellVariant(cmd); ok {
+		if i, ok := shellCommandString(rest); ok {
+			// ラッパーを剥がした後の引数は元の語の末尾と並びが揃う。env -S が
+			// 分割して作った語は元の語と一致しないので、分割後の文字列を使う。
+			script := rest[i]
+			if k := len(words) - len(rest) + i; k >= 0 && words[k] == rest[i] {
+				script = scripts[k]
+			}
+			file, err := parseAs(script, lang)
+			if err != nil {
+				return "SHELL_C_UNPARSED"
+			}
+			if verdicts := analyze(file); len(verdicts) > 0 {
+				return verdicts[0]
+			}
+		}
+		return ""
+	}
+
 	switch {
+	case cmd == "herdr" && isHerdrInput(rest):
+		return "HERDR_INPUT"
 	case cmd == "rm":
 		return "RM"
 	case cmd == "eval":
@@ -490,7 +573,8 @@ var (
 // 打ち切らずに並びとして組み立てる。
 func analyze(file *syntax.File) []verdict {
 	var verdicts []verdict
-	var calls [][]string
+	type call struct{ words, scripts []string }
+	var calls []call
 
 	syntax.Walk(file, func(node syntax.Node) bool {
 		// GIT_AUTHOR_* / GIT_COMMITTER_* は config を触らずに identity を変える。
@@ -505,11 +589,12 @@ func analyze(file *syntax.File) []verdict {
 		case *syntax.FuncDecl:
 			name = node.Name
 		case *syntax.CallExpr:
-			words := make([]string, len(node.Args))
+			c := call{make([]string, len(node.Args)), make([]string, len(node.Args))}
 			for i, word := range node.Args {
-				words[i] = wordText(word)
+				c.words[i] = wordText(word)
+				c.scripts[i] = scriptText(word)
 			}
-			calls = append(calls, words)
+			calls = append(calls, c)
 		}
 		if name != nil && gitIdentityVar.MatchString(name.Value) {
 			verdicts = append(verdicts, "GIT_IDENTITY")
@@ -518,16 +603,16 @@ func analyze(file *syntax.File) []verdict {
 	})
 
 	// env 経由なら素の語として届く。
-	for _, words := range calls {
-		for _, word := range words {
+	for _, c := range calls {
+		for _, word := range c.words {
 			if gitIdentityAssign.MatchString(word) {
 				verdicts = append(verdicts, "GIT_IDENTITY")
 			}
 		}
 	}
 
-	for _, words := range calls {
-		if v := commandVerdict(words); v != "" {
+	for _, c := range calls {
+		if v := commandVerdict(c.words, c.scripts); v != "" {
 			verdicts = append(verdicts, v)
 		}
 	}
