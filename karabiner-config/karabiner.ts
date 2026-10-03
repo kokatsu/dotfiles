@@ -5,7 +5,7 @@
  * Build: deno run --allow-env --allow-read --allow-write --allow-sys=homedir karabiner.ts
  */
 import { createRequire } from "node:module";
-import { ifApp, map, rule, writeToProfile } from "karabiner.ts";
+import { ifApp, ifInputSource, map, rule, writeToProfile } from "karabiner.ts";
 
 // The npm ESM bundle calls bare require() for node:path/os/fs, which Deno does
 // not define in ESM.
@@ -114,6 +114,15 @@ writeToProfile(
     rule("Disable Command+Tab app switcher").manipulators([
       map("tab", "command").toVar("__disabled__", 1),
       map("tab", ["command", "shift"]).toVar("__disabled__", 1),
+    ]),
+
+    // herdr switches to ABC during prefix mode, where the JIS yen key would
+    // otherwise type "¥" because the Japanese IM's yen-key setting doesn't apply
+    rule(
+      "ABC: Yen key types backslash",
+      ifInputSource({ input_source_id: "^com\\.apple\\.keylayout\\.ABC$" }),
+    ).manipulators([
+      map("international3").to("international3", "option"),
     ]),
 
     // Option+Tab to Raycast Switch Windows

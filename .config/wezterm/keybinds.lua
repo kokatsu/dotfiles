@@ -294,6 +294,14 @@ local windows_specific_keys = {
   },
 }
 
+-- macOS 固有キーバインド
+local darwin_specific_keys = {
+  -- ABC 入力ソースの JIS 配列で "\" を出せるのは Option+¥ だけで、Karabiner が
+  -- ABC 時の ¥ をこれに変換している。send_composed_key_* = false だと Alt+¥ として
+  -- 送られて化けるため、ここで "\" に戻す。raw:93 は JIS ¥ キーの macOS keycode
+  { key = 'raw:93', mods = 'ALT', action = act.SendString('\\') },
+}
+
 -- コピーモードのキーテーブル（Vim風操作）
 local copy_mode = {
   -- 移動
@@ -367,11 +375,11 @@ local search_mode = {
 
 return {
   windows_keys = merge_keys(common_keys, unified_keys, windows_specific_keys),
-  -- macOS 固有キーはない。Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替のため、
+  -- Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替のため、
   -- 物理 Ctrl = Ctrl として届く。
   -- 注意: OPT+矢印 を SendString で潰すと herdr の focus_pane (alt+矢印) に
   -- キーが届かなくなるため、単語移動は Ctrl+矢印 に一本化している
-  darwin_keys = merge_keys(common_keys, unified_keys),
+  darwin_keys = merge_keys(common_keys, unified_keys, darwin_specific_keys),
   key_tables = {
     copy_mode = copy_mode,
     search_mode = search_mode,
