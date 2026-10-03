@@ -1,4 +1,5 @@
-# Claude Code / Codex の PreToolUse (Bash) フック。ソースは tools/agent-guard
+# Claude Code / Codex の PreToolUse フック (Bash の禁止コマンドと Herdr 入力、
+# Edit/Write の Home Manager 管理下パス)。ソースは tools/agent-guard
 # checkPhase で go test が走るので、`nix flake check` の home ビルドが判定のテストを兼ねる
 {
   agent-guard = _final: prev: {
@@ -16,7 +17,7 @@
       excludedPackages = ["cmd/regex-dialect"];
 
       meta = {
-        description = "PreToolUse hook that blocks banned Bash commands";
+        description = "PreToolUse hook that blocks banned commands and edits to managed paths";
         mainProgram = "agent-guard";
       };
     };
