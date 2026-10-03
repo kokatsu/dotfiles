@@ -598,10 +598,13 @@ var (
 )
 
 // scripts は words と同じ並びの、bash が実際に渡す文字列 (scriptText)。
-func commandVerdict(words, scripts []string) verdict {
+//
+// 判定は出る順の並びで返す。入れ子 (sh -c、find -exec、fd -x) の中の判定を
+// 先頭 1 つに絞ると、後ろにある HERDR_INPUT が herdr-peer モードから見えなくなる。
+func commandVerdict(words, scripts []string) []verdict {
 	args := stripWrappers(words)
 	if len(args) == 0 {
-		return ""
+		return nil
 	}
 
 	cmd := args[0]
@@ -613,13 +616,11 @@ func commandVerdict(words, scripts []string) verdict {
 		if i, ok := shellCommandString(rest); ok {
 			file, err := parseAs(restScripts[i], lang)
 			if err != nil {
-				return "SHELL_C_UNPARSED"
+				return []verdict{"SHELL_C_UNPARSED"}
 			}
-			if verdicts := analyze(file); len(verdicts) > 0 {
-				return verdicts[0]
-			}
+			return analyze(file)
 		}
-		return ""
+		return nil
 	}
 
 	// 引数として受け取ったコマンドを同じ判定にかける。
@@ -631,17 +632,23 @@ func commandVerdict(words, scripts []string) verdict {
 		} else {
 			subs = fdCommands(rest, restScripts)
 		}
+		var out []verdict
 		for _, sub := range subs {
-			if v := commandVerdict(sub.words, sub.scripts); v != "" {
-				return v
-			}
+			out = append(out, commandVerdict(sub.words, sub.scripts)...)
 		}
 		if deletes {
-			return "FIND_DELETE"
+			out = append(out, "FIND_DELETE")
 		}
-		return ""
+		return out
 	}
 
+	if v := singleVerdict(cmd, rest); v != "" {
+		return []verdict{v}
+	}
+	return nil
+}
+
+func singleVerdict(cmd string, rest []string) verdict {
 	switch {
 	case cmd == "herdr" && isHerdrInput(rest):
 		return "HERDR_INPUT"
@@ -738,9 +745,7 @@ func analyze(file *syntax.File) []verdict {
 	}
 
 	for _, c := range calls {
-		if v := commandVerdict(c.words, c.scripts); v != "" {
-			verdicts = append(verdicts, v)
-		}
+		verdicts = append(verdicts, commandVerdict(c.words, c.scripts)...)
 	}
 
 	return verdicts

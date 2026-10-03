@@ -157,6 +157,9 @@ func TestHerdrInput(t *testing.T) {
 		"case x in x) herdr agent send-keys w1:p1 test ;; esac",
 		"while herdr pane run w1:p1 test; do true; done",
 		"true\nherdr pane send-keys w1:p1 test",
+		// 入れ子の中で別の判定より後ろにあっても見える。
+		"sh -c 'rm -f tmp; timeout 5 herdr pane run w1:p1 x'",
+		`find . -exec rm {} \; -exec timeout 5 herdr agent prompt w1:p1 x \;`,
 	}
 	allowed := []string{
 		"herdr agent list",
