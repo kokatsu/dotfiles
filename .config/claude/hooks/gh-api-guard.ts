@@ -20,7 +20,7 @@ import {
   stripWrappers,
   walk,
   wordText,
-} from "./check-banned-commands.ts";
+} from "./shell-words.ts";
 
 // gh api の短オプション。値を取る文字を取り違えると束の解釈が壊れる。真偽値を
 // 値を取る側に入れると `-iF a=b` の F が i に食われて POST が素通りするので、

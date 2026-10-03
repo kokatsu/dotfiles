@@ -10,6 +10,7 @@ Nix + Home Manager (with Flakes) で macOS/Linux のシェル・ツール設定�
 - `.config/` — 各ツールの設定ファイル (Home Manager が symlink で配置)
 - `bin/` — ユーザースクリプト (`~/.local/bin/scripts` に symlink され PATH に入る)
 - `scripts/` — CI と `just` が使うテスト・補助スクリプト、および Nix パッケージへ埋め込むスクリプト本体
+- `tools/` — このリポジトリでビルドする自作ツールのソース (`nix/overlays/` がパッケージ化する)
 - `.codex/rules/*.rules` — このリポジトリ専用の Codex コマンド承認ルール
 
 ## Apply Changes

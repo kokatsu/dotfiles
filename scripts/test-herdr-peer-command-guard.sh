@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Codex が登録する `claude-bash-guard herdr-peer` の入口を検証する。Claude Code 側の
+# `banned` から同じ判定を呼ぶ経路は scripts/test-banned-commands.sh が見る。
 repo_root=$(git rev-parse --show-toplevel)
-guard="$repo_root/.config/claude/hooks/herdr-peer-command-guard.sh"
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+guard="$work/claude-bash-guard"
+(cd "$repo_root/tools/claude-bash-guard" && go build -o "$guard" .)
 
 expect_blocked() {
   local command_text=$1 status
 
   set +e
-  jq -cn --arg command "$command_text" '{tool_input: {command: $command}}' | bash "$guard" >/dev/null 2>&1
+  jq -cn --arg command "$command_text" '{tool_input: {command: $command}}' | "$guard" herdr-peer >/dev/null 2>&1
   status=$?
   set -e
 
@@ -21,7 +26,7 @@ expect_blocked() {
 expect_allowed() {
   local command_text=$1
 
-  if ! jq -cn --arg command "$command_text" '{tool_input: {command: $command}}' | bash "$guard" >/dev/null 2>&1; then
+  if ! jq -cn --arg command "$command_text" '{tool_input: {command: $command}}' | "$guard" herdr-peer >/dev/null 2>&1; then
     printf 'expected guard to allow: %s\n' "$command_text" >&2
     return 1
   fi

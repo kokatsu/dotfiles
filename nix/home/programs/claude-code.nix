@@ -8,12 +8,14 @@
   # swap=0 の WSL では子プロセス 1 つの暴走が VM ごと落とす。全セッションを 1 つの slice に
   # まとめて上限を掛け、超過時はカーネルが slice 内の最大プロセスだけを OOM kill する。
   # OOMPolicy の既定 (stop) だと scope ごと止まり claude 本体も巻き添えになる
-  home.packages = lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-    (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
-      exec systemd-run --user --scope --quiet --collect --slice=claude.slice \
-        -p OOMPolicy=continue -- ${pkgs.claude-code}/bin/claude "$@"
-    ''))
-  ];
+  home.packages =
+    [pkgs.claude-bash-guard]
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+      (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
+        exec systemd-run --user --scope --quiet --collect --slice=claude.slice \
+          -p OOMPolicy=continue -- ${pkgs.claude-code}/bin/claude "$@"
+      ''))
+    ];
 
   systemd.user.slices = lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
     claude = {
@@ -35,12 +37,6 @@
       source = ../../../.config/claude/file-suggestion.sh;
       executable = true;
     };
-    ".config/claude/hooks/banned-commands.json".source = ../../../.config/claude/hooks/banned-commands.json;
-    ".config/claude/hooks/check-banned-commands.sh" = {
-      source = ../../../.config/claude/hooks/check-banned-commands.sh;
-      executable = true;
-    };
-    ".config/claude/hooks/check-banned-commands.ts".source = ../../../.config/claude/hooks/check-banned-commands.ts;
     ".config/claude/hooks/check-ai-writing.sh" = {
       source = ../../../.config/claude/hooks/check-ai-writing.sh;
       executable = true;
@@ -59,10 +55,7 @@
       executable = true;
     };
     ".config/claude/hooks/herdr-cache-token.ts".source = ../../../.config/claude/hooks/herdr-cache-token.ts;
-    ".config/claude/hooks/herdr-peer-command-guard.sh" = {
-      source = ../../../.config/claude/hooks/herdr-peer-command-guard.sh;
-      executable = true;
-    };
+    ".config/claude/hooks/shell-words.ts".source = ../../../.config/claude/hooks/shell-words.ts;
     ".config/claude/hooks/notify.sh" = {
       source = ../../../.config/claude/hooks/notify.sh;
       executable = true;

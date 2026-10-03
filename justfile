@@ -39,13 +39,13 @@ codex-auto-title-test:
     bash scripts/test-codex-auto.sh
 
 # Run all formatters
-fmt: lua-fmt nix-fmt biome-fmt deno-fmt shfmt toml-fmt yaml-fmt
+fmt: lua-fmt nix-fmt biome-fmt deno-fmt go-fmt shfmt toml-fmt yaml-fmt
 
 # Check all formatting (no write)。biome は format と lint をまとめて `biome-ci` (lint 側) で見る
-fmt-check: lua-fmt-check nix-fmt-check deno-fmt-check shfmt-check toml-fmt-check yaml-fmt-check
+fmt-check: lua-fmt-check nix-fmt-check deno-fmt-check go-fmt-check shfmt-check toml-fmt-check yaml-fmt-check
 
 # Run all linters
-lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint deno-lint deno-check biome-ci markdownlint toml-check editorconfig gitleaks-smoke-test gitleaks-scan
+lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint deno-lint deno-check go-vet biome-ci markdownlint toml-check editorconfig gitleaks-smoke-test gitleaks-scan
 
 # List git-tracked Lua files (vendored yazi plugins are excluded)
 # lua_dirs だけだと .config/yazi/init.lua や scripts/*.lua を取りこぼすため動的に列挙する。
@@ -111,6 +111,18 @@ _deno-each cmd:
       echo "deno {{ cmd }}: $file"; \
       deno {{ cmd }} "$file" || exit $?; \
     done
+
+# Format Go files
+go-fmt:
+    gofmt -w tools
+
+# Check Go formatting (no write)。gofmt -l は差分があっても exit 0 なので出力の有無で判定する
+go-fmt-check:
+    @out=$(gofmt -l tools); if [ -n "$out" ]; then echo "$out"; exit 1; fi
+
+# Vet Go packages
+go-vet:
+    cd tools/claude-bash-guard && go vet ./...
 
 # Format Deno TypeScript files
 deno-fmt:
@@ -222,9 +234,9 @@ hash-patterns-test:
     bash scripts/test-hash-patterns.sh
     bash scripts/test-detect-hash-updates.sh
 
-# Verify the banned-commands hook blocks shallow git fetch/pull without false positives
+# Verify the banned-commands hook (claude-bash-guard) verdicts and its fail-closed behavior
 banned-commands-test:
-    deno test --no-prompt --allow-read=.config/claude/hooks,scripts/verdict-precedence-cases.txt --allow-run="$(command -v shfmt)" scripts/test-check-banned-commands.ts -- "$(command -v shfmt)"
+    cd tools/claude-bash-guard && go test ./...
     bash scripts/test-banned-commands.sh
 
 # Verify raw Herdr input commands cannot bypass the shared peer guard
@@ -257,15 +269,14 @@ gh-api-method-test:
 managed-paths-test:
     bash scripts/test-check-managed-paths.sh
 
-# Measure the POSIX ERE / ECMAScript gap in banned-commands.json for this OS and locale
+# Measure the POSIX ERE / Go regexp gap in banned-commands.json for this OS and locale
 regex-dialect-check:
     bash scripts/check-regex-dialect.sh
 
-# Verify the POSIX-to-ECMAScript converter, and the dialect gap against the OS locale data
+# Verify the dialect gap against the OS locale data (変換器そのものは banned-commands-test の go test が見る)
 # nix の stdenv-darwin は PATH_LOCALE を nixpkgs のロケールデータへ向け、文字クラスが
 # OS 標準と変わる。フックが動くのは devshell の外なので、OS 標準のデータで測る。
 regex-dialect-test:
-    deno test --allow-read scripts/test-regex-dialect-check.ts
     env -u PATH_LOCALE bash scripts/check-regex-dialect.sh
 
 # Verify peer resolution and session bootstrap behavior

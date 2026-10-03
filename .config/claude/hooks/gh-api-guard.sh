@@ -7,7 +7,7 @@
 # Every failure here ends in "ask", never a block. `gh api *` is not
 # allowlisted, so an ask is exactly where the command would land without this
 # hook: it can only remove a prompt, never add one. That is the opposite of
-# check-banned-commands.sh, whose every failure must exit 2.
+# claude-bash-guard banned, whose every failure must exit 2.
 set -uo pipefail
 
 # The reasons below are fixed ASCII with no quote or backslash, so they need no

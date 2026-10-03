@@ -14,7 +14,7 @@
 // allow はメインの会話にも効く。過去のセッションの transcript を確認なしで
 // grep できるようになる点は承知の上で、範囲をこの形に絞っている。
 
-import { isNode, type Node } from "./check-banned-commands.ts";
+import { isNode, type Node } from "./shell-words.ts";
 
 // 値を取らない短オプション。束ねてもよい。ugrep の解釈と食い違うと値の位置が
 // ずれるので、値を取る文字は入れない。
