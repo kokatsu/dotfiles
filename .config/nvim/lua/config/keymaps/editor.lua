@@ -3,8 +3,17 @@
 -- 挿入モードで ESC: stopinsert + 自動保存
 vim.keymap.set('i', '<ESC>', function()
   vim.cmd('stopinsert')
-  if vim.bo.modifiable and not vim.bo.readonly and vim.bo.buftype == '' then
-    vim.cmd('silent! write')
+  if
+    vim.bo.modifiable
+    and not vim.bo.readonly
+    and vim.bo.buftype == ''
+    and vim.bo.modified
+    and vim.api.nvim_buf_get_name(0) ~= ''
+  then
+    local ok, err = pcall(vim.cmd, 'silent write')
+    if not ok then
+      vim.notify('Failed to save: ' .. tostring(err), vim.log.levels.ERROR)
+    end
   end
 end, {
   desc = 'Save file and exit insert mode',

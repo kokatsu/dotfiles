@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test transcript-grep-guard-test gh-api-method-test managed-paths-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test"
+test_recipes := "banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test transcript-grep-guard-test gh-api-method-test managed-paths-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -61,8 +61,8 @@ lua-fmt-check:
     @just _lua-files | xargs stylua --check
 
 # Lint Lua files with selene
-# lua_dirs 以外の Lua も見る: scripts/test-nvim-config.lua は vim グローバルを使うので
-# nvim の設定、.config/yazi/init.lua はリポジトリ直下の selene.toml で検査する (Yazi のグローバルはファイル側で許可)
+# scripts/test-nvim-config.lua と scripts/test-wezterm-links.lua は vim グローバルを使うので nvim の設定で検査する
+# .config/yazi/init.lua はリポジトリ直下の selene.toml で検査する (Yazi のグローバルはファイル側で許可)
 lua-lint:
     @for dir in {{ lua_dirs }}; do \
       echo "selene: $dir"; \
@@ -70,6 +70,8 @@ lua-lint:
     done
     @echo "selene: scripts/test-nvim-config.lua"
     @selene --config .config/nvim/selene.toml scripts/test-nvim-config.lua
+    @echo "selene: scripts/test-wezterm-links.lua"
+    @selene --config .config/nvim/selene.toml scripts/test-wezterm-links.lua
     @echo "selene: .config/yazi/init.lua"
     @selene .config/yazi/init.lua
 
@@ -228,6 +230,10 @@ typos-fix:
 # Test Neovim custom plugins (smoke test)
 nvim-test:
     nvim --headless --clean -l scripts/test-nvim-config.lua
+
+# Exercise the real open-uri callback and shell argument boundary
+wezterm-links-test:
+    nvim --headless --clean -l scripts/test-wezterm-links.lua
 
 # Verify pr.yml hash-update sed patterns match overlay structure, and the detect script against fixtures
 hash-patterns-test:

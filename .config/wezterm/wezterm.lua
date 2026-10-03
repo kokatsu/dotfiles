@@ -126,8 +126,6 @@ wezterm.on('open-uri', function(window, pane, uri)
       return false
     end
 
-    local nvim_args = line and ('+' .. line .. ' "' .. file .. '"') or ('"' .. file .. '"')
-
     local function herdr_script_args(p, script_args)
       local args = {
         '/bin/zsh',
@@ -198,9 +196,15 @@ wezterm.on('open-uri', function(window, pane, uri)
             end
             wezterm.background_child_process(herdr_script_args(p, args))
           elseif id == 'new-tab' then
+            local args = { '/bin/zsh', '-l', '-c', 'exec nvim "$@"', 'nvim' }
+            if line then
+              table.insert(args, '+' .. line)
+            end
+            table.insert(args, '--')
+            table.insert(args, file)
             win:perform_action(
               wezterm.action.SpawnCommandInNewTab({
-                args = { '/bin/zsh', '-l', '-c', 'nvim ' .. nvim_args },
+                args = args,
               }),
               p
             )

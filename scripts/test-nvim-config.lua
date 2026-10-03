@@ -483,6 +483,93 @@ test('code block helper includes the closing fence line as a cursor position', f
   end)
 end)
 
+require('config.keymaps.editor')
+local save_on_escape = vim.fn.maparg('<Esc>', 'i', false, true).callback
+
+local function with_save_buffer(fn)
+  local previous_buf = vim.api.nvim_get_current_buf()
+  local previous_notify = vim.notify
+  local dir = vim.fn.tempname()
+  vim.fn.mkdir(dir, 'p')
+  local buf = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_set_current_buf(buf)
+  vim.bo[buf].swapfile = false
+  vim.bo[buf].undofile = false
+  local state = { writes = 0, messages = {}, dir = dir }
+  local autocmd = vim.api.nvim_create_autocmd('BufWritePost', {
+    buffer = buf,
+    callback = function()
+      state.writes = state.writes + 1
+    end,
+  })
+  vim.notify = function(message, level)
+    table.insert(state.messages, { message = message, level = level })
+  end
+  local ok, err = pcall(fn, state)
+  vim.notify = previous_notify
+  vim.api.nvim_del_autocmd(autocmd)
+  vim.api.nvim_set_current_buf(previous_buf)
+  vim.api.nvim_buf_delete(buf, { force = true })
+  vim.fn.delete(dir, 'rf')
+  if not ok then
+    error(err)
+  end
+end
+
+test('ESC saves only modified named buffers', function()
+  with_save_buffer(function(state)
+    local path = state.dir .. '/new.txt'
+    vim.api.nvim_buf_set_name(0, path)
+    save_on_escape()
+    assert_true(state.writes == 0 and vim.fn.filereadable(path) == 0, 'unchanged new file was created')
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'content' })
+    save_on_escape()
+    assert_true(state.writes == 1 and not vim.bo.modified, 'modified file was not saved')
+    assert_true(vim.fn.readfile(path)[1] == 'content', 'saved content differs')
+    save_on_escape()
+    assert_true(state.writes == 1, 'unchanged file was written again')
+    assert_true(#state.messages == 0, 'successful save produced an error')
+  end)
+end)
+
+test('ESC keeps unnamed edits without saving or notifying', function()
+  with_save_buffer(function(state)
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'scratch content' })
+    save_on_escape()
+    assert_true(state.writes == 0 and #state.messages == 0, 'unnamed buffer was saved or notified')
+    assert_true(vim.bo.modified and vim.api.nvim_get_current_line() == 'scratch content', 'scratch edits were lost')
+  end)
+end)
+
+test('ESC reports failed writes and preserves edits', function()
+  with_save_buffer(function(state)
+    vim.api.nvim_buf_set_name(0, state.dir .. '/missing/failed.txt')
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'unsaved content' })
+    save_on_escape()
+    assert_true(state.writes == 0 and vim.bo.modified, 'failed save cleared modified state')
+    assert_true(vim.api.nvim_get_current_line() == 'unsaved content', 'failed save lost content')
+    assert_true(#state.messages == 1 and state.messages[1].level == vim.log.levels.ERROR, 'save failure was hidden')
+  end)
+end)
+
+test('ESC skips readonly, unmodifiable and special buffers', function()
+  with_save_buffer(function(state)
+    vim.api.nvim_buf_set_name(0, state.dir .. '/skip.txt')
+    vim.api.nvim_buf_set_lines(0, 0, -1, false, { 'keep content' })
+    vim.bo.readonly = true
+    save_on_escape()
+    vim.bo.readonly = false
+    vim.bo.modifiable = false
+    save_on_escape()
+    assert_true(vim.bo.modified, 'protected buffer lost modified state')
+    vim.bo.modifiable = true
+    vim.bo.buftype = 'nofile'
+    save_on_escape()
+    assert_true(state.writes == 0 and #state.messages == 0, 'protected buffer was saved or notified')
+    assert_true(vim.api.nvim_get_current_line() == 'keep content', 'protected buffer lost content')
+  end)
+end)
+
 -- Results
 print('')
 local total = pass_count + #errors

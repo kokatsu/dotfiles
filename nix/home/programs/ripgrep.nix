@@ -7,8 +7,6 @@ in {
     # --sort は単一スレッドになるのでここでは指定しない。目視用の並び替えは rgs 関数で行う。
     arguments = [
       "--hidden"
-      "--follow"
-      "--no-ignore"
       "--glob=!.anyenv"
       "--glob=!.bun"
       "--glob=!.bundle"
