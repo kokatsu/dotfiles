@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test transcript-grep-guard-test gh-api-method-test managed-paths-test herdr-peer-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
+test_recipes := "banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test transcript-grep-guard-test gh-api-method-test managed-paths-test herdr-peer-test herdr-macos-notify-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -288,6 +288,10 @@ regex-dialect-test:
 # Verify peer resolution and session bootstrap behavior
 herdr-peer-test:
     bash scripts/test-herdr-peer.sh
+
+# Verify notification clicks select their own pane and dismissals leave focus alone
+herdr-macos-notify-test:
+    bash scripts/test-herdr-macos-notify.sh
 
 # Verify check failures, concurrent feed updates, and activation retries
 reliability-test:

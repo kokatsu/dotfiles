@@ -34,9 +34,8 @@ in {
   # (.config/herdr/scripts/*.sh)。tmux 版と違い bind 時点での条件分岐が
   # できないため claude/codex 判定はスクリプト内で実行時に行う。
   #
-  # [ui.toast] は Claude Code Stop/Notification hook の通知 (tmux DCS
-  # passthrough 依存、herdr 配下では機能しない) の代わりに herdr ネイティブの
-  # 通知機構を使うためのもの。
+  # Claude Code Stop/Notification hook は herdr 配下では通知しない。
+  # 組み込みトーストに加え、macOS は macos-notify がデスクトップ通知を出す。
   #
   # [keys] は herdr を macOS の常用マルチプレクサとした再構築 (WezTerm は
   # タブ/ペイン管理を全撤去した薄い GUI シェル) に合わせた配置:
@@ -145,14 +144,10 @@ in {
           rows = [["state_icon", { token = "$number", fg = "${p.subtext0.hex}", bold = true, dim = false }, { token = "workspace", bold = true }], ["branch", "git_status"]]
           row_gap = 1
 
-          # macOS の "terminal" は外側の WezTerm に OSC 9 で表示を任せるが、
-          # WezTerm は macOS でデスクトップ通知を出せないので OS へ直接送る
+          # 操作結果の notification show も使うため、組み込みトーストは残す。
+          # macOS のデスクトップ通知は macos-notify に任せて重複を避ける。
           [ui.toast]
-          delivery = "${
-            if pkgs.stdenv.hostPlatform.isLinux
-            then "herdr"
-            else "system"
-          }"
+          delivery = "herdr"
 
           [ui.toast.herdr]
           position = "bottom-right"
@@ -335,7 +330,7 @@ in {
       };
       ".config/herdr/hooks/report-agent-session.ts".source = ../../../.config/herdr/hooks/report-agent-session.ts;
 
-      # .config/herdr/plugins/close-confirm は home.file で配置しない:
+      # ローカルの .config/herdr/plugins は home.file で配置しない:
       # plugin link が symlink を解決して plugin_root が /nix/store になり、
       # rebuild のたびに store パスが変わって登録が陳腐化するため。
       # リポジトリの実パスの登録は下の linkHerdrPlugins が行う
@@ -354,11 +349,17 @@ in {
   # 従来どおりチェックアウトの実パスを登録する
   home.activation.linkHerdrPlugins =
     lib.hm.dag.entryAfter ["linkGeneration"]
-    # bash
-    ''
-      $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
-        "${validDotfilesDir}/.config/herdr/plugins/close-confirm" > /dev/null
-      $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
-        "${inputs.herdr-tab-numbers}" > /dev/null
-    '';
+    (
+      # bash
+      ''
+        $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
+          "${validDotfilesDir}/.config/herdr/plugins/close-confirm" > /dev/null
+        $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
+          "${inputs.herdr-tab-numbers}" > /dev/null
+      ''
+      + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
+        $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
+          "${validDotfilesDir}/.config/herdr/plugins/macos-notify" > /dev/null
+      ''
+    );
 }
