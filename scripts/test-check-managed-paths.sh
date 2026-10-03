@@ -1,24 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# .config/claude/hooks/check-managed-paths.sh を PreToolUse の入力で叩き、
-# 「正規化した先が /nix/store の配下なら exit 2」を固定する。readlink -f は
-# 最後の要素が存在しなくても正規化するので、実在するストアパスは要らない。
+# settings.json の Edit/Write 用フック (claude-bash-guard managed-paths) を
+# PreToolUse の入力で叩き、「正規化した先が /nix/store の配下なら exit 2」と、
+# 判定に届かない失敗も exit 2 になることを固定する。最後の要素は存在しなくても
+# 正規化するので、実在するストアパスは要らない。正規化の細部は go test が見る。
 
 repo_root=$(git rev-parse --show-toplevel)
-hook="$repo_root/.config/claude/hooks/check-managed-paths.sh"
 fail=0
 
 test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT
+(cd "$repo_root/tools/claude-bash-guard" && go build -o "$test_dir/bin/claude-bash-guard" .)
 ln -s /nix/store/zzzz-nonexistent "$test_dir/storelink"
 ln -s /nix/store "$test_dir/storedir"
-ln -s "$hook" "$test_dir/repolink"
 touch "$test_dir/plain"
+ln -s "$test_dir/plain" "$test_dir/repolink"
+
+hook_command=$(jq -r '.hooks.PreToolUse[] | select(.matcher == "Edit|Write|MultiEdit") | .hooks[0].command' \
+  "$repo_root/.config/claude/settings.json")
+hook_path="$test_dir/bin:$PATH"
 
 check() {
   local want=$1 label=$2 payload=$3 rc=0
-  printf '%s' "$payload" | bash "$hook" >/dev/null 2>&1 || rc=$?
+  printf '%s' "$payload" | PATH="$hook_path" /bin/sh -c "$hook_command" >/dev/null 2>&1 || rc=$?
   if [[ $rc == "$want" ]]; then
     printf '  PASS exit %s: %s\n' "$rc" "$label"
   else
@@ -40,6 +45,12 @@ check_path 0 "$test_dir/repolink"
 check_path 0 "$test_dir/plain"
 check_path 0 "$test_dir/nodir/new.txt"
 check 0 'no file_path' '{"tool_input":{"notebook_path":"x"}}'
+
+# 判定に届かない失敗も、exit 2 でなければ Claude Code は編集を通す。
+check 2 'malformed payload' '{'
+check 2 'non-string file_path' '{"tool_input":{"file_path":42}}'
+hook_path=/usr/bin:/bin
+check 2 'binary not found' "$(jq -n --arg f "$test_dir/storelink" '{tool_input: {file_path: $f}}')"
 
 if [[ $fail -ne 0 ]]; then
   exit 1

@@ -63,7 +63,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/check-managed-paths.sh"
+            "command": "command -v claude-bash-guard >/dev/null || { echo 'claude-bash-guard not found; run home-manager switch' >&2; exit 2; }; exec claude-bash-guard managed-paths"
           }
         ]
       }

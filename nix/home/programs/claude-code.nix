@@ -41,10 +41,6 @@
       source = ../../../.config/claude/hooks/check-ai-writing.sh;
       executable = true;
     };
-    ".config/claude/hooks/check-managed-paths.sh" = {
-      source = ../../../.config/claude/hooks/check-managed-paths.sh;
-      executable = true;
-    };
     ".config/claude/hooks/gh-api-guard.sh" = {
       source = ../../../.config/claude/hooks/gh-api-guard.sh;
       executable = true;

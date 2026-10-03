@@ -130,7 +130,7 @@ func TestReadCommand(t *testing.T) {
 		{"{\"tool_input\":{\"command\":\"echo ok\"}}\x00x", false, true},
 	}
 	for _, c := range cases {
-		_, present, err := readCommand(strings.NewReader(c.payload))
+		_, present, err := readToolInput(strings.NewReader(c.payload), "command")
 		if present != c.present || (err != nil) != c.fails {
 			t.Errorf("%q: present=%v err=%v", c.payload, present, err)
 		}
