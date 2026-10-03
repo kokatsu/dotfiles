@@ -1509,5 +1509,190 @@
     "want": "allow",
     "command": "bash -c \"echo ok\\\nrm x\"",
     "label": "二重引用符内の行継続は改行にならない"
+  },
+  {
+    "want": "block",
+    "command": "find . -name '*.tmp' -exec rm {} \\;"
+  },
+  {
+    "want": "block",
+    "command": "find . -name '*.tmp' -exec rm {} +"
+  },
+  {
+    "want": "block",
+    "command": "find . -execdir rm {} \\;"
+  },
+  {
+    "want": "block",
+    "command": "find . -ok rm {} ';'",
+    "label": "引用した終端"
+  },
+  {
+    "want": "block",
+    "command": "find . -name x -delete"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec ls {} \\; -delete",
+    "label": "-exec の後ろの -delete"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec git push -f \\;",
+    "label": "rm 以外の禁止コマンド"
+  },
+  {
+    "want": "block",
+    "command": "find . -execdir git clean -fdx \\;"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec sh -c 'rm \"$1\"' _ {} \\;",
+    "label": "find から sh -c"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec echo {} \\; -exec rm {} \\;",
+    "label": "2 つ目の -exec"
+  },
+  {
+    "want": "block",
+    "command": "xargs find . -delete",
+    "label": "ラッパー経由の find"
+  },
+  {
+    "want": "block",
+    "command": "fd -e tmp -x rm"
+  },
+  {
+    "want": "block",
+    "command": "fd -e tmp --exec rm"
+  },
+  {
+    "want": "block",
+    "command": "fd -e tmp -X rm"
+  },
+  {
+    "want": "block",
+    "command": "fd -e tmp --exec-batch rm"
+  },
+  {
+    "want": "block",
+    "command": "fd -HIx rm",
+    "label": "束ねた -x"
+  },
+  {
+    "want": "block",
+    "command": "fd --exec=rm",
+    "label": "付属値のコマンド名"
+  },
+  {
+    "want": "block",
+    "command": "fd -X sh -c 'rm \"$@\"' _"
+  },
+  {
+    "want": "block",
+    "command": "fd -x echo \\; -x rm",
+    "label": "2 つ目の -x"
+  },
+  {
+    "want": "allow",
+    "command": "find . -name '*.tmp' -print"
+  },
+  {
+    "want": "allow",
+    "command": "find . -name '*.tmp' -exec gomi {} +"
+  },
+  {
+    "want": "allow",
+    "command": "find . -exec echo rm {} \\;",
+    "label": "埋め込みコマンドの引数の rm"
+  },
+  {
+    "want": "allow",
+    "command": "find . -name rm",
+    "label": "名前としての rm"
+  },
+  {
+    "want": "allow",
+    "command": "find . -exec sh -c \"echo \\\"a; rm\\\"\" \\;",
+    "label": "find から sh -c の引用"
+  },
+  {
+    "want": "allow",
+    "command": "fd -ex rm",
+    "label": "-e の値が x"
+  },
+  {
+    "want": "allow",
+    "command": "fd rm"
+  },
+  {
+    "want": "allow",
+    "command": "fd -x echo {} \\;"
+  },
+  {
+    "want": "allow",
+    "command": "fd --exec=echo rm",
+    "label": "--exec= の後ろは fd のパターン"
+  },
+  {
+    "want": "block",
+    "command": "fd . -xrm",
+    "label": "付属値の -x"
+  },
+  {
+    "want": "block",
+    "command": "fd . -HIxrm",
+    "label": "束ねた付属値の -x"
+  },
+  {
+    "want": "block",
+    "command": "fd -Xrm"
+  },
+  {
+    "want": "block",
+    "command": "find . -name '-exec' -exec rm {} \\;",
+    "label": "-name の値が -exec"
+  },
+  {
+    "want": "block",
+    "command": "find . -path -delete -delete",
+    "label": "-path の値の後ろの -delete"
+  },
+  {
+    "want": "block",
+    "command": "find . -newermt 2020-01-01 -exec rm {} \\;",
+    "label": "-newerXY の値"
+  },
+  {
+    "want": "allow",
+    "command": "find . -name '-delete'",
+    "label": "-name の値としての -delete"
+  },
+  {
+    "want": "allow",
+    "command": "find . -exec echo -delete {} \\;",
+    "label": "埋め込みコマンドの引数の -delete"
+  },
+  {
+    "want": "allow",
+    "command": "find . -name x -printf '%p -delete\\n'",
+    "label": "-printf の書式の中の -delete"
+  },
+  {
+    "want": "allow",
+    "command": "fd -xecho X rm",
+    "label": "-xCMD の後ろは fd のパターンとパス"
+  },
+  {
+    "want": "allow",
+    "command": "fd -- -xrm",
+    "label": "-- の後ろはパターン"
+  },
+  {
+    "want": "block",
+    "command": "fd -x rm -- x",
+    "label": "埋め込みコマンドの中の --"
   }
 ]

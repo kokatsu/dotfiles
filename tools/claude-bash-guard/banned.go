@@ -34,6 +34,7 @@ var verdictMessages = map[verdict]string{
 	"SHALLOW":          "Refuse shallow git fetch/pull (--depth/--shallow-*) because it makes the existing repository shallow. Use a temporary shallow clone (git clone --depth), or fetch normally. --deepen/--unshallow remain allowed.",
 	"GIT_IDENTITY":     "Don't set or override Git identity. ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes Git fail loudly where no entry matches. Ask the user instead of choosing a value.",
 	"HERDR_INPUT":      herdrInputMessage,
+	"FIND_DELETE":      "Refuse find -delete. Use find ... -exec gomi {} + instead, so the files stay recoverable.",
 	"SHELL_C_UNPARSED": "Refuse sh -c with a command string that does not parse as shell: it cannot be checked, and the shell runs the lines before the error. Run the commands directly instead.",
 	"EXTDIFF":          "Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out).",
 }
@@ -468,6 +469,116 @@ func shellCommandString(args []string) (int, bool) {
 	return 0, false
 }
 
+// ラッパーを剥がした後の引数は元の語の末尾と並びが揃うので、末尾から数えて
+// scriptText を対応づける。env -S が分割して作った語は元の語と一致しないので、
+// 分割後の文字列をそのまま使う。
+func alignScripts(words, scripts, rest []string) []string {
+	out := make([]string, len(rest))
+	for i, arg := range rest {
+		out[i] = arg
+		if k := len(words) - len(rest) + i; k >= 0 && words[k] == arg {
+			out[i] = scripts[k]
+		}
+	}
+	return out
+}
+
+type embedded struct{ words, scripts []string }
+
+// 実行するコマンドの範囲を start から終端の手前まで取り出す。find は ";" か
+// "{} +" で、fd は ";" で終わり、終端が無ければ末尾まで。返す添字は終端の位置。
+func embeddedSpan(cmd string, rest, scripts []string, start int) (embedded, int) {
+	end := start
+	for end < len(rest) && rest[end] != ";" &&
+		!(cmd == "find" && rest[end] == "+" && end > start && rest[end-1] == "{}") {
+		end++
+	}
+	return embedded{rest[start:end], scripts[start:end]}, end
+}
+
+// 値を 1 つ取る find の条件とオプション。値が "-exec" や "-delete" でも
+// アクションと読まないよう読み飛ばす。-newerXY と -anewer などは名前の形で見る。
+var findValueOpts = map[string]bool{
+	"-name": true, "-iname": true, "-path": true, "-ipath": true,
+	"-wholename": true, "-iwholename": true, "-regex": true, "-iregex": true,
+	"-lname": true, "-ilname": true, "-type": true, "-xtype": true,
+	"-user": true, "-group": true, "-uid": true, "-gid": true,
+	"-perm": true, "-size": true, "-mtime": true, "-atime": true,
+	"-ctime": true, "-Btime": true, "-mmin": true, "-amin": true,
+	"-cmin": true, "-Bmin": true, "-used": true, "-links": true,
+	"-inum": true, "-samefile": true, "-maxdepth": true, "-mindepth": true,
+	"-fstype": true, "-context": true, "-fprint": true, "-fprint0": true,
+	"-fls": true, "-printf": true, "-regextype": true, "-files0-from": true,
+	"-flags": true, "-D": true,
+}
+
+// find の式を走査し、-exec/-execdir/-ok/-okdir が実行するコマンドと、
+// アクションとしての -delete があるかを返す。条件の値と、実行するコマンドの
+// 引数は式として読まない。
+func findActions(rest, scripts []string) ([]embedded, bool) {
+	var subs []embedded
+	deletes := false
+	for i := 0; i < len(rest); i++ {
+		a := rest[i]
+		switch {
+		case a == "-exec" || a == "-execdir" || a == "-ok" || a == "-okdir":
+			var sub embedded
+			sub, i = embeddedSpan("find", rest, scripts, i+1)
+			subs = append(subs, sub)
+		case a == "-delete":
+			deletes = true
+		case a == "-fprintf":
+			i += 2
+		case findValueOpts[a] || strings.HasPrefix(a, "-newer") || strings.HasSuffix(a, "newer"):
+			i++
+		}
+	}
+	return subs, deletes
+}
+
+// fd の短オプションのうち値を取るもの。束の中でこれより後ろは値になる。
+const fdValueShort = "dEteSojcC"
+
+// fd の -x/--exec/-X/--exec-batch が実行するコマンドを返す。値が付属した形
+// (--exec=CMD、-xCMD) では付属した 1 語だけがコマンドで、後ろの語は fd の引数に
+// 戻る。"--" の後ろはパターンとパスなので、オプションとして読まない。
+func fdCommands(rest, scripts []string) []embedded {
+	var subs []embedded
+	oneWord := func(cmd string) {
+		subs = append(subs, embedded{[]string{cmd}, []string{cmd}})
+	}
+	for i := 0; i < len(rest); i++ {
+		a := rest[i]
+		switch {
+		case a == "--":
+			return subs
+		case a == "-x" || a == "--exec" || a == "-X" || a == "--exec-batch":
+			var sub embedded
+			sub, i = embeddedSpan("fd", rest, scripts, i+1)
+			subs = append(subs, sub)
+		case strings.HasPrefix(a, "--exec=") || strings.HasPrefix(a, "--exec-batch="):
+			oneWord(a[strings.Index(a, "=")+1:])
+		case strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "--"):
+			for j := 1; j < len(a); j++ {
+				if strings.IndexByte(fdValueShort, a[j]) >= 0 {
+					break
+				}
+				if a[j] == 'x' || a[j] == 'X' {
+					if j+1 < len(a) {
+						oneWord(a[j+1:])
+					} else {
+						var sub embedded
+						sub, i = embeddedSpan("fd", rest, scripts, i+1)
+						subs = append(subs, sub)
+					}
+					break
+				}
+			}
+		}
+	}
+	return subs
+}
+
 func isHerdrInput(rest []string) bool {
 	if len(rest) < 2 {
 		return false
@@ -495,23 +606,38 @@ func commandVerdict(words, scripts []string) verdict {
 
 	cmd := args[0]
 	rest := args[1:]
+	restScripts := alignScripts(words, scripts, rest)
 
 	// 文字列で受け取ったコマンドを解析し直して、同じ判定にかける。
 	if lang, ok := shellVariant(cmd); ok {
 		if i, ok := shellCommandString(rest); ok {
-			// ラッパーを剥がした後の引数は元の語の末尾と並びが揃う。env -S が
-			// 分割して作った語は元の語と一致しないので、分割後の文字列を使う。
-			script := rest[i]
-			if k := len(words) - len(rest) + i; k >= 0 && words[k] == rest[i] {
-				script = scripts[k]
-			}
-			file, err := parseAs(script, lang)
+			file, err := parseAs(restScripts[i], lang)
 			if err != nil {
 				return "SHELL_C_UNPARSED"
 			}
 			if verdicts := analyze(file); len(verdicts) > 0 {
 				return verdicts[0]
 			}
+		}
+		return ""
+	}
+
+	// 引数として受け取ったコマンドを同じ判定にかける。
+	if cmd == "find" || cmd == "fd" {
+		var subs []embedded
+		deletes := false
+		if cmd == "find" {
+			subs, deletes = findActions(rest, restScripts)
+		} else {
+			subs = fdCommands(rest, restScripts)
+		}
+		for _, sub := range subs {
+			if v := commandVerdict(sub.words, sub.scripts); v != "" {
+				return v
+			}
+		}
+		if deletes {
+			return "FIND_DELETE"
 		}
 		return ""
 	}
