@@ -1,4 +1,4 @@
-module claude-bash-guard
+module agent-guard
 
 go 1.26.0
 

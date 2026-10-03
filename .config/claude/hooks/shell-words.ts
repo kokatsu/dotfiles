@@ -1,7 +1,7 @@
 // shell-words.ts — shfmt --tojson の AST から語とコマンド名を読む共通部分。
 // gh-api-guard.ts と transcript-grep-guard.ts が使う。
 //
-// 同じ読み方の Go 版が tools/claude-bash-guard/words.go にあり、禁止コマンドの
+// 同じ読み方の Go 版が tools/agent-guard/words.go にあり、禁止コマンドの
 // 判定はそちらが行う。片方の解釈を変えたら、もう片方も揃えること。
 
 // --- shfmt --tojson のノード ---------------------------------------------

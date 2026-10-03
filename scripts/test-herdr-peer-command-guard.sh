@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Codex が登録する `claude-bash-guard herdr-peer` の入口を検証する。Claude Code 側の
+# Codex が登録する `agent-guard herdr-peer` の入口を検証する。Claude Code 側の
 # `banned` から同じ判定を呼ぶ経路は scripts/test-banned-commands.sh が見る。
 repo_root=$(git rev-parse --show-toplevel)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
-guard="$work/claude-bash-guard"
-(cd "$repo_root/tools/claude-bash-guard" && go build -o "$guard" .)
+guard="$work/agent-guard"
+(cd "$repo_root/tools/agent-guard" && go build -o "$guard" .)
 
 expect_blocked() {
   local command_text=$1 status

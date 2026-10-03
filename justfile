@@ -122,7 +122,7 @@ go-fmt-check:
 
 # Vet Go packages
 go-vet:
-    cd tools/claude-bash-guard && go vet ./...
+    cd tools/agent-guard && go vet ./...
 
 # Format Deno TypeScript files
 deno-fmt:
@@ -234,9 +234,9 @@ hash-patterns-test:
     bash scripts/test-hash-patterns.sh
     bash scripts/test-detect-hash-updates.sh
 
-# Verify the banned-commands hook (claude-bash-guard) verdicts and its fail-closed behavior
+# Verify the banned-commands hook (agent-guard) verdicts and its fail-closed behavior
 banned-commands-test:
-    cd tools/claude-bash-guard && go test ./...
+    cd tools/agent-guard && go test ./...
     bash scripts/test-banned-commands.sh
 
 # Verify raw Herdr input commands cannot bypass the shared peer guard

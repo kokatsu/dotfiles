@@ -142,7 +142,7 @@
       # upstream overlay (pkgs.moonbit-bin.* を生やす)
       inputs.moonbit-overlay.overlays.default
       customOverlays.cc-statusline
-      customOverlays.claude-bash-guard
+      customOverlays.agent-guard
       customOverlays.claude-code
       customOverlays.codex
       customOverlays.cssmodules-language-server
@@ -316,7 +316,7 @@
             shellcheck # シェルスクリプト linter
             shfmt # シェルスクリプト formatter
 
-            # Go (tools/claude-bash-guard)
+            # Go (tools/agent-guard)
             go # gofmt / go vet / go test
 
             # Web / TypeScript

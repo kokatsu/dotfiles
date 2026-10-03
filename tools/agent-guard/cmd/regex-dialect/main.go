@@ -17,7 +17,7 @@ import (
 	"os"
 	"regexp"
 
-	"claude-bash-guard/rules"
+	"agent-guard/rules"
 )
 
 func printSet(class string) {

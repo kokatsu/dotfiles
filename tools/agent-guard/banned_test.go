@@ -14,7 +14,7 @@ import (
 	"mvdan.cc/sh/v3/syntax"
 	"mvdan.cc/sh/v3/syntax/typedjson"
 
-	"claude-bash-guard/rules"
+	"agent-guard/rules"
 )
 
 type bannedCase struct {

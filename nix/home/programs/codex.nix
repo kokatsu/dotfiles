@@ -151,7 +151,7 @@ in {
                   type = "command";
                 }
                 {
-                  command = "${lib.getExe pkgs.claude-bash-guard} herdr-peer";
+                  command = "${lib.getExe pkgs.agent-guard} herdr-peer";
                   type = "command";
                 }
               ];

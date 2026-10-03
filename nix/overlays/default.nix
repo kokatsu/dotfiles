@@ -4,8 +4,8 @@
   buildFixes = import ./build-fixes.nix;
   sourceBuilds = import ./source-builds.nix;
   ccStatusline = import ./cc-statusline.nix {inherit inputs;};
-  claudeBashGuard = import ./claude-bash-guard.nix;
+  agentGuard = import ./agent-guard.nix;
   herdr = import ./herdr.nix {inherit inputs;};
   unocssLanguageServer = import ./unocss-language-server.nix {inherit inputs;};
 in
-  binaryReleases // npmPackages // buildFixes // sourceBuilds // ccStatusline // claudeBashGuard // herdr // unocssLanguageServer
+  binaryReleases // npmPackages // buildFixes // sourceBuilds // ccStatusline // agentGuard // herdr // unocssLanguageServer

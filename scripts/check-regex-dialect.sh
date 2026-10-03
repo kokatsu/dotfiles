@@ -2,7 +2,7 @@
 # check-regex-dialect.sh — banned-commands.json の POSIX ERE を Go の正規表現へ
 # 変換したときの差を、実行中の OS と locale で測る。
 #
-# banned-commands.json の正本方言は POSIX ERE で、フック (claude-bash-guard) は
+# banned-commands.json の正本方言は POSIX ERE で、フック (agent-guard) は
 # rules.Convert() を通してからコンパイルする。ここで確かめるのはその変換が取りこぼしを生まないこと
 # である。locale を変えると POSIX 側の文字クラスが変わるので、対象環境ごとに
 # 走らせる。macOS の BSD libc は LANG=en_US.UTF-8 で通ることを確かめてある。
@@ -30,10 +30,10 @@
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-rules="$repo_root/tools/claude-bash-guard/rules/banned-commands.json"
+rules="$repo_root/tools/agent-guard/rules/banned-commands.json"
 # go run はモジュールのディレクトリで走らせる。補助ツールは標準ライブラリだけを
 # 使うので、依存の取得は起きない。
-helper() { (cd "$repo_root/tools/claude-bash-guard" && go run ./cmd/regex-dialect "$@"); }
+helper() { (cd "$repo_root/tools/agent-guard" && go run ./cmd/regex-dialect "$@"); }
 corpus="$repo_root/scripts/regex-dialect-corpus.txt"
 
 work=$(mktemp -d)
@@ -101,7 +101,7 @@ if [[ -s $work/alnum-ascii-only.txt ]]; then
 fi
 
 # --- 3. jq (Oniguruma) の [[:space:]] を JQSpaceClass が包含するか ---
-# banned-commands.json と違い、claude-bash-guard の sSplit は
+# banned-commands.json と違い、agent-guard の sSplit は
 # jq のプログラムから書き写した。jq は Oniguruma なので集合が POSIX とも
 # Go とも違い、jq だけが U+0085 に一致する。
 # フック側の JQSpaceClass (SpaceClass と U+0085) がこの集合を包含することをここで確かめる。

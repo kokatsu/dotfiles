@@ -1,12 +1,12 @@
-# Claude Code / Codex の PreToolUse (Bash) フック。ソースは tools/claude-bash-guard
+# Claude Code / Codex の PreToolUse (Bash) フック。ソースは tools/agent-guard
 # checkPhase で go test が走るので、`nix flake check` の home ビルドが判定のテストを兼ねる
 {
-  claude-bash-guard = _final: prev: {
-    claude-bash-guard = prev.buildGoModule {
-      pname = "claude-bash-guard";
+  agent-guard = _final: prev: {
+    agent-guard = prev.buildGoModule {
+      pname = "agent-guard";
       version = "0.1.0";
 
-      src = ../../tools/claude-bash-guard;
+      src = ../../tools/agent-guard;
 
       # go.sum が変わったら (Renovate の gomod 更新を含む) 再計算する。
       # pr.yml の vendorHash 自動更新はこのパッケージを対象にしていない
@@ -17,7 +17,7 @@
 
       meta = {
         description = "PreToolUse hook that blocks banned Bash commands";
-        mainProgram = "claude-bash-guard";
+        mainProgram = "agent-guard";
       };
     };
   };

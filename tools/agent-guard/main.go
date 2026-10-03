@@ -1,10 +1,10 @@
-// claude-bash-guard は Claude Code と Codex の PreToolUse フック。
+// agent-guard は Claude Code と Codex の PreToolUse フック。
 // stdin で hook payload を受け取り、ブロックするなら理由を stderr に出して
 // exit 2 で終わる。
 //
-//	claude-bash-guard banned         Claude Code の Bash 用。Herdr 入力ガードと禁止コマンド
-//	claude-bash-guard herdr-peer     Codex の Bash 用。Herdr 入力ガードだけ
-//	claude-bash-guard managed-paths  Claude Code の Edit/Write 用。Home Manager の管理下を守る
+//	agent-guard banned         Claude Code の Bash 用。Herdr 入力ガードと禁止コマンド
+//	agent-guard herdr-peer     Codex の Bash 用。Herdr 入力ガードだけ
+//	agent-guard managed-paths  Claude Code の Edit/Write 用。Home Manager の管理下を守る
 //
 // どれもガードなので、判定に届かなかった失敗はすべて exit 2 にする。
 // Claude Code と Codex は exit 2 だけをブロックとして扱い、それ以外の失敗では
@@ -23,7 +23,7 @@ import (
 	"mvdan.cc/sh/v3/fileutil"
 	"mvdan.cc/sh/v3/syntax"
 
-	"claude-bash-guard/rules"
+	"agent-guard/rules"
 )
 
 const parseFailure = "banned-commands hook could not parse this command as bash (syntax error); refusing to run it unchecked. Fix the command and retry."
@@ -34,7 +34,7 @@ func block(message string) {
 }
 
 func refuse(format string, args ...any) {
-	block(fmt.Sprintf("bash guard "+format+"; refusing to run the command unchecked.", args...))
+	block(fmt.Sprintf("agent-guard "+format+"; refusing to run the command unchecked.", args...))
 }
 
 // readToolInput は payload 全体を読んでから解析する。json.Decoder は最初の値で
@@ -151,7 +151,7 @@ func run(mode string) {
 
 func main() {
 	if len(os.Args) != 2 || (os.Args[1] != "banned" && os.Args[1] != "herdr-peer" && os.Args[1] != "managed-paths") {
-		refuse("usage: claude-bash-guard {banned|herdr-peer|managed-paths}")
+		refuse("usage: agent-guard {banned|herdr-peer|managed-paths}")
 	}
 
 	// シグナルで終わると 128+n になり、ブロックと見なされない。読み取りの途中で

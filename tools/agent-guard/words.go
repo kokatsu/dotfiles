@@ -9,7 +9,7 @@ import (
 
 	"mvdan.cc/sh/v3/syntax"
 
-	"claude-bash-guard/rules"
+	"agent-guard/rules"
 )
 
 // 移植元の TypeScript の正規表現では `.` が改行類 (\n \r U+2028 U+2029) に一致

@@ -9,7 +9,7 @@
   # まとめて上限を掛け、超過時はカーネルが slice 内の最大プロセスだけを OOM kill する。
   # OOMPolicy の既定 (stop) だと scope ごと止まり claude 本体も巻き添えになる
   home.packages =
-    [pkgs.claude-bash-guard]
+    [pkgs.agent-guard]
     ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
         exec systemd-run --user --scope --quiet --collect --slice=claude.slice \

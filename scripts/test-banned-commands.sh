@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# test-banned-commands.sh — claude-bash-guard banned をプロセスとして検証する
+# test-banned-commands.sh — agent-guard banned をプロセスとして検証する
 #
-# 判定そのものは tools/claude-bash-guard の go test が見る。ここで見るのは
+# 判定そのものは tools/agent-guard の go test が見る。ここで見るのは
 # settings.json に書いたフックのコマンドとしての振る舞いである。
 #   1. payload が判定まで届き、判定が終了コードに戻ること
 #   2. 壊れた payload、閉じた stdin、シグナル、書き込みの失敗、バイナリの欠落でも
@@ -13,8 +13,8 @@ repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-(cd "$repo_root/tools/claude-bash-guard" && go build -o "$work/bin/claude-bash-guard" .)
-GUARD="$work/bin/claude-bash-guard"
+(cd "$repo_root/tools/agent-guard" && go build -o "$work/bin/agent-guard" .)
+GUARD="$work/bin/agent-guard"
 
 # Claude Code はフックのコマンドを /bin/sh に渡す。settings.json の文字列を
 # そのまま使い、`|| exit 2` まで含めて検証する。
