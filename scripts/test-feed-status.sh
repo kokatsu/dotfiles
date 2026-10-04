@@ -168,6 +168,7 @@ jq -e '.feeds == {}' "$STATUS_FILE" >/dev/null
 printf 'Feed state tests passed\n'
 
 # Exercise feed-summarize itself: a state update during Claude's response must survive.
+printf '<opml><body>\n' >"$FEED_WATCH_OPML_DIR/feeds.opml"
 export FEED_TEST_ROOT="$repo_root"
 export XDG_DATA_HOME="$test_dir/data"
 cat >"$STATUS_FILE" <<'JSON'

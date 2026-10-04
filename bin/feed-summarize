@@ -19,6 +19,8 @@ script_path="$(readlink -f "$0" 2>/dev/null || echo "$0")"
 HELPER="$(cd "$(dirname "$script_path")/.." && pwd)/scripts/feed-summarize-helper.ts"
 # shellcheck source=scripts/feed-status.sh
 source "$(dirname "$script_path")/../scripts/feed-status.sh"
+# shellcheck source=scripts/feed-opml.sh
+source "$(dirname "$script_path")/../scripts/feed-opml.sh"
 
 # agent-browser のデーモンを閉じずに終了すると、systemd (Type=oneshot) が
 # cgroup 残留プロセスの stop-sigterm タイムアウトで unit を failed にするため、
@@ -90,42 +92,13 @@ ARTICLE_PROMPT='以下の JSON は Web 記事の本文です（title, link, date
 
 マークダウンの h1 (# ) と h2 (## ) は使わないでください（h3 ### 以下のみ）。'
 
-# --- OPML から name → xml_url のマップを生成 ---
-build_opml_map() {
-  local files=()
-  local f
-  for f in "$OPML_DIR"/feeds*.opml; do
-    [[ -f "$f" ]] || continue
-    files+=("$f")
-  done
-  [[ ${#files[@]} -eq 0 ]] && return
-
-  awk '
-    function extract(attr, line,    pat, s, e) {
-      pat = attr "=\"[^\"]*\""
-      if (match(line, pat)) {
-        s = RSTART + length(attr) + 2
-        e = RLENGTH - length(attr) - 3
-        return substr(line, s, e)
-      }
-      return ""
-    }
-    /<outline/ && /xmlUrl=/ {
-      n = extract("text", $0)
-      x = extract("xmlUrl", $0)
-      if (n != "" && x != "") print n "\t" x
-    }
-  ' "${files[@]}"
-}
-
-OPML_MAP=$(build_opml_map)
+# GitHub フィードは OPML なしで要約できるので、OPML の不備で全体を止めない
+OPML_ENTRIES=$(feed_opml_entries) || OPML_ENTRIES='[]'
 
 get_xml_url_for() {
   local name="$1"
-  local line
-  line=$(echo "$OPML_MAP" | awk -F'\t' -v t="$name" '$1 == t { print $2; exit }')
-  [[ -z "$line" ]] && return 1
-  echo "$line"
+  printf '%s' "$OPML_ENTRIES" | jq -er --arg name "$name" \
+    'first(.[] | select(.name == $name) | .xmlUrl)'
 }
 
 # --- GitHub: html_url からリポジトリパス (owner/name) を抽出 ---

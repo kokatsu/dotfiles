@@ -117,9 +117,7 @@ put_http "$only" <<'XML'
 XML
 
 check
-# 名前は OPML の生のまま。実体参照を解いた名前を使うと configured_names が
-# status.json の鍵と一致せず、次の check で全エントリが prune される。
-assert '.feeds["Alpha &amp; Beta"] == {"last_seen_id":"a3","unread_count":0,"type":"feed","url":"https://example.com/alpha","category":"Cat A"}'
+assert '.feeds["Alpha & Beta"] == {"last_seen_id":"a3","unread_count":0,"type":"feed","url":"https://example.com/alpha","category":"Cat A"}'
 # htmlUrl の無い outline は xmlUrl を URL に使う。
 assert '.feeds.NoHtml.url == "'"$nohtml"'"'
 assert '.feeds.Gamma == {"last_seen_id":"g2","unread_count":0,"type":"feed","url":"https://example.com/gamma","category":"Cat B"}'
@@ -137,7 +135,7 @@ put_http "$alpha" <<'XML'
 </feed>
 XML
 check
-assert '.feeds["Alpha &amp; Beta"] | .last_seen_id == "a5" and .unread_count == 2'
+assert '.feeds["Alpha & Beta"] | .last_seen_id == "a5" and .unread_count == 2'
 
 # 先頭 ID が変わらなければ数え直さない。url と category は毎回最新化する。
 write_opml feeds.opml <<XML
@@ -152,7 +150,7 @@ write_opml feeds.opml <<XML
 </body></opml>
 XML
 check
-assert '.feeds["Alpha &amp; Beta"] | .unread_count == 2 and .category == "Cat A2" and .url == "https://example.com/alpha2"'
+assert '.feeds["Alpha & Beta"] | .unread_count == 2 and .category == "Cat A2" and .url == "https://example.com/alpha2"'
 
 # 前回の ID が一覧に無ければ全件を新着として数える。
 put_http "$alpha" <<'XML'
@@ -163,17 +161,17 @@ put_http "$alpha" <<'XML'
 </feed>
 XML
 check
-assert '.feeds["Alpha &amp; Beta"] | .last_seen_id == "b3" and .unread_count == 5'
+assert '.feeds["Alpha & Beta"] | .last_seen_id == "b3" and .unread_count == 5'
 
 # --- last_summarized_id ---
 # 更新のあったフィードでは引き継ぐ。
-jq '.feeds["Alpha &amp; Beta"].last_summarized_id = "b3"' "$status_file" >"$test_dir/tmp"
+jq '.feeds["Alpha & Beta"].last_summarized_id = "b3"' "$status_file" >"$test_dir/tmp"
 mv "$test_dir/tmp" "$status_file"
 put_http "$alpha" <<'XML'
 <feed><id>tag:self</id><entry><id>b4</id></entry><entry><id>b3</id></entry></feed>
 XML
 check
-assert '.feeds["Alpha &amp; Beta"] | .unread_count == 6 and .last_summarized_id == "b3"'
+assert '.feeds["Alpha & Beta"] | .unread_count == 6 and .last_summarized_id == "b3"'
 
 put_http "$alpha" <<'XML'
 <atom:feed xmlns:atom="http://www.w3.org/2005/Atom"><atom:id>self</atom:id>
@@ -181,19 +179,19 @@ put_http "$alpha" <<'XML'
 <atom:entry><atom:id>b4</atom:id></atom:entry></atom:feed>
 XML
 check
-assert '.feeds["Alpha &amp; Beta"] | .last_seen_id == "b5" and .unread_count == 7 and .last_summarized_id == "b3"'
+assert '.feeds["Alpha & Beta"] | .last_seen_id == "b5" and .unread_count == 7 and .last_summarized_id == "b3"'
 
 put_http "$alpha" <<'XML'
 <feed><entry><id>must-not-publish</id>
 XML
 check
-assert '.feeds["Alpha &amp; Beta"] | .last_seen_id == "b5" and .unread_count == 7 and .last_summarized_id == "b3"'
+assert '.feeds["Alpha & Beta"] | .last_seen_id == "b5" and .unread_count == 7 and .last_summarized_id == "b3"'
 
 put_http "$alpha" <<'XML'
 <feed/>
 XML
 check
-assert '.feeds["Alpha &amp; Beta"] | .last_seen_id == "b5" and .unread_count == 7'
+assert '.feeds["Alpha & Beta"] | .last_seen_id == "b5" and .unread_count == 7'
 
 # last_seen_id を持たないエントリは初回扱いになり、last_summarized_id は残らない。
 jq '.feeds.Gamma = {"last_summarized_id":"g1","unread_count":9,"category":"stale"}' "$status_file" >"$test_dir/tmp"
@@ -240,13 +238,74 @@ check
 assert '.feeds.Demo | .type == "github" and .last_seen_id == "sha2" and .unread_count == 0'
 
 # --- read ---
-bash "$repo_root/bin/feed-watch" read '&amp; Beta'
-assert '.feeds["Alpha &amp; Beta"].unread_count == 0'
+bash "$repo_root/bin/feed-watch" read '& Beta'
+assert '.feeds["Alpha & Beta"].unread_count == 0'
 jq '.feeds.Demo.unread_count = 3' "$status_file" >"$test_dir/tmp"
 mv "$test_dir/tmp" "$status_file"
 if bash "$repo_root/bin/feed-watch" read Missing 2>"$test_dir/no-match"; then exit 1; fi
 grep -Fq "No feed matching 'Missing'" "$test_dir/no-match"
 bash "$repo_root/bin/feed-watch" read --all
 assert '[.feeds[].unread_count] | all(. == 0)'
+
+# --- Structured OPML and migration of existing progress ---
+write_opml feeds.opml <<XML
+<opml><body><outline text="News | Updates &amp; More">
+<outline htmlUrl='https://example.com/alpha?a=1&amp;b=2|3'
+  xmlUrl='$alpha' text='Alpha &amp; Beta'/>
+<outline text='Pipes | Tabs&#9;Here' xmlUrl='$nohtml'/>
+</outline></body></opml>
+XML
+cat >"$status_file" <<'JSON'
+{"feeds":{"Alpha &amp; Beta":{"last_seen_id":"a1","unread_count":4,"last_summarized_id":"a0","category":"old"}}}
+JSON
+put_http "$alpha" <<'XML'
+<feed><entry><id>a2</id></entry><entry><id>a1</id></entry></feed>
+XML
+check
+assert '.feeds["Alpha & Beta"] | .last_seen_id == "a2" and .unread_count == 5 and .last_summarized_id == "a0" and .category == "News | Updates & More" and .url == "https://example.com/alpha?a=1&b=2|3"'
+assert '.feeds | has("Alpha &amp; Beta") | not'
+assert '.feeds["Pipes | Tabs\tHere"].last_seen_id == "n1"'
+bash "$repo_root/bin/feed-watch" read '& Beta'
+check
+assert '.feeds["Alpha & Beta"] | .unread_count == 0 and .last_summarized_id == "a0"'
+
+# A broken second document must not publish a partial list and prune its feeds.
+cp "$status_file" "$test_dir/before-opml-failure"
+cp "$FEED_WATCH_OPML_DIR/feeds-extra.opml" "$test_dir/extra.opml"
+printf '<opml><body><outline' >"$FEED_WATCH_OPML_DIR/feeds-extra.opml"
+if check; then exit 1; fi
+cmp "$status_file" "$test_dir/before-opml-failure"
+cp "$test_dir/extra.opml" "$FEED_WATCH_OPML_DIR/feeds-extra.opml"
+
+# Both callers must decode the same URL even when attributes span lines.
+write_opml feeds.opml <<'XML'
+<opml><body><outline text="Articles">
+<outline xmlUrl="https://example.com/articles?a=1&amp;b=2|3"
+  text="Facebook Developers"/>
+</outline></body></opml>
+XML
+put_http 'https://example.com/articles?a=1&b=2|3' <<'XML'
+<feed><entry><id>article2</id><title>New article</title><link href="https://example.com/article2"/></entry>
+<entry><id>article1</id></entry></feed>
+XML
+cat >"$status_file" <<'JSON'
+{"feeds":{"Facebook Developers":{"last_seen_id":"article1","unread_count":0,"last_summarized_id":"article1","type":"feed","category":"Articles"}}}
+JSON
+check
+assert '.feeds["Facebook Developers"] | .last_seen_id == "article2" and .unread_count == 1'
+cat >"$test_dir/bin/agent-browser" <<'MOCK'
+#!/usr/bin/env bash
+printf 'Article body\n'
+MOCK
+cat >"$test_dir/bin/claude" <<'MOCK'
+#!/usr/bin/env bash
+cat >/dev/null
+printf 'Article summary\n'
+MOCK
+chmod +x "$test_dir/bin/agent-browser" "$test_dir/bin/claude"
+export XDG_DATA_HOME="$test_dir/data"
+bash "$repo_root/bin/feed-summarize" Articles
+assert '.feeds["Facebook Developers"] | .last_summarized_id == "article2" and .unread_count == 1'
+grep -Fq 'Article summary' "$XDG_DATA_HOME"/feed-watch/summaries/Articles/*.md
 
 printf 'Feed watch transform tests passed\n'

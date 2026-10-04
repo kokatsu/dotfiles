@@ -15,6 +15,8 @@ script_path="$(readlink -f "$0")"
 HELPER="$(cd "$(dirname "$script_path")/.." && pwd)/scripts/feed-watch-helper.ts"
 # shellcheck source=scripts/feed-status.sh
 source "$(dirname "$script_path")/../scripts/feed-status.sh"
+# shellcheck source=scripts/feed-opml.sh
+source "$(dirname "$script_path")/../scripts/feed-opml.sh"
 
 STATUS_DIR=${FEED_WATCH_STATUS_DIR:-$("$(dirname "$script_path")/status-dir" feed-watch)} || {
   echo "Windows mount not available, skipping." >&2
@@ -37,24 +39,6 @@ fetch_feed_ids() {
     feed_run deno run --no-prompt "$HELPER" feed-ids
 }
 
-# --- OPML パース: "category|name|xmlUrl|htmlUrl" 行を出力 ---
-parse_opml() {
-  # feeds*.opml だけを対象にする。bulletty-only.opml は bulletty への import 元
-  # として残しつつ、未読カウントからは外すためのファイル
-  local files=()
-  local f
-  for f in "$OPML_DIR"/feeds*.opml; do
-    [[ -f "$f" ]] || continue
-    files+=("$f")
-  done
-
-  if [[ ${#files[@]} -eq 0 ]]; then
-    return
-  fi
-
-  cat "${files[@]}" | feed_run deno run --no-prompt "$HELPER" parse-opml
-}
-
 # --- check サブコマンド ---
 cmd_check() (
   # check 同士は通信も含め直列化し、古い取得結果による巻き戻しを防ぐ。
@@ -71,8 +55,8 @@ cmd_check() (
   # 空だったり壊れていれば 0 件になりうる。その名前一覧で prune すると全エントリを
   # 消してしまうため、0 件なら status.json を触らずに終わる
   local entries
-  entries=$(parse_opml | grep -v '^$') || true
-  if [[ -z "$entries" ]]; then
+  entries=$(feed_opml_entries) || exit 1
+  if [[ $(printf '%s' "$entries" | jq 'length') -eq 0 ]]; then
     echo "No feeds parsed from $OPML_DIR/feeds*.opml" >&2
     exit 1
   fi
@@ -84,7 +68,12 @@ cmd_check() (
 
   local fetched=0
 
-  while IFS='|' read -r category name xml_url html_url; do
+  local entry category name xml_url html_url
+  while IFS= read -r entry; do
+    category=$(printf '%s' "$entry" | jq -r '.category')
+    name=$(printf '%s' "$entry" | jq -r '.name')
+    xml_url=$(printf '%s' "$entry" | jq -r '.xmlUrl')
+    html_url=$(printf '%s' "$entry" | jq -r '.htmlUrl')
     local ids type
 
     # GitHub フィード: gh api でコミットSHA を取得
@@ -105,7 +94,7 @@ cmd_check() (
     printf '%s\0%s\0%s\0%s\0%s\0' \
       "$name" "$type" "$html_url" "$category" "$ids" >>"$updates"
     fetched=$((fetched + 1))
-  done <<<"$entries"
+  done < <(printf '%s' "$entries" | jq -c '.[]')
 
   if [[ $fetched -eq 0 ]]; then
     echo "All feed fetches failed; keeping the previous status" >&2

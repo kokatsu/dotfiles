@@ -1,11 +1,9 @@
 #!/usr/bin/env -S deno run --no-prompt
 // feed-watch-helper.ts — bin/feed-watch のデータ変換
 //
-//   parse-opml           stdin: feeds*.opml を連結したもの
-//                        stdout: "category|name|xmlUrl|htmlUrl" 1 行 1 件
 //   feed-ids             stdin: yq が出力したフィードの JSON
 //                        stdout: エントリの ID (新しい順、1 行 1 件)
-//   apply-check-results  stdin: NUL 区切りで status JSON、parse-opml の出力、
+//   apply-check-results  stdin: NUL 区切りで status JSON、OPML の JSON 配列、
 //                        続けて 1 フィードあたり name/type/url/category/ids
 //                        stdout: 更新後の status JSON
 //
@@ -14,6 +12,7 @@
 // 呼び出し側は一時ファイルへ書き足してから渡す。
 
 import { feedIds } from "./feed-entries.ts";
+import { migrateFeedNames, type OpmlFeed } from "./feed-opml.ts";
 
 interface Feed {
   last_seen_id?: string;
@@ -38,38 +37,6 @@ interface Update {
 }
 
 const UPDATE_FIELDS = 5;
-
-function attr(line: string, name: string): string {
-  return line.match(new RegExp(`${name}="([^"]*)"`))?.[1] ?? "";
-}
-
-function parseOpml(input: string): string[] {
-  const rows: string[] = [];
-  let category = "";
-
-  for (const line of input.split("\n")) {
-    if (!line.includes("<outline")) continue;
-
-    if (line.includes("xmlUrl=")) {
-      // 実体参照は解かない。名前は status.json の鍵であり prune の基準でもあるので、
-      // ここで解くと OPML 側の名前と一致しなくなり全エントリが消える。
-      const name = attr(line, "text");
-      const xmlUrl = attr(line, "xmlUrl");
-      const htmlUrl = attr(line, "htmlUrl") || xmlUrl;
-      rows.push(`${category}|${name}|${xmlUrl}|${htmlUrl}`);
-      continue;
-    }
-
-    // bulletty の OPML は 2 階層なので、閉じタグでカテゴリをリセットしなくても
-    // 次のカテゴリ outline が上書きする。
-    if (!line.includes("/>")) {
-      const text = attr(line, "text");
-      if (text !== "") category = text;
-    }
-  }
-
-  return rows;
-}
 
 // jq の `// ""` と `-r` に対応する。null と false は空文字になる。
 function str(value: unknown): string {
@@ -133,15 +100,6 @@ function updateFeed(status: Status, update: Update): void {
 
 // prune の基準は「OPML に書かれている名前」。取得に失敗したフィードも OPML には
 // 残っているので、一時的なネットワーク障害でエントリを失わない
-function configuredNames(entries: string): Set<string> {
-  const names = new Set<string>();
-  for (const line of entries.split("\n")) {
-    if (line === "") continue;
-    names.add(line.split("|")[1] ?? "");
-  }
-  return names;
-}
-
 function applyCheckResults(input: string): string {
   const fields = input.split("\0");
   if (
@@ -152,7 +110,9 @@ function applyCheckResults(input: string): string {
   }
 
   const status = JSON.parse(fields[0]) as Status;
-  const names = configuredNames(fields[1]);
+  const entries = JSON.parse(fields[1]) as OpmlFeed[];
+  const names = new Set(entries.map((entry) => entry.name));
+  status.feeds = migrateFeedNames(status.feeds, entries);
 
   for (let i = 2; i + UPDATE_FIELDS <= fields.length - 1; i += UPDATE_FIELDS) {
     const [name, type, url, category, ids] = fields.slice(i, i + UPDATE_FIELDS);
@@ -177,9 +137,6 @@ async function main(): Promise<number> {
     switch (action) {
       case "feed-ids":
         for (const id of feedIds(input)) console.log(id);
-        return 0;
-      case "parse-opml":
-        for (const line of parseOpml(input)) console.log(line);
         return 0;
       case "apply-check-results":
         console.log(applyCheckResults(input));

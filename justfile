@@ -296,6 +296,7 @@ herdr-macos-notify-test:
 # Verify check failures, concurrent feed updates, and activation retries
 reliability-test:
     deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-entries.ts -- "$(command -v yq)" "$(command -v deno)"
+    deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-opml.ts -- "$(command -v yq)" "$(command -v deno)"
     bash scripts/test-check-failures.sh
     bash scripts/test-codex-config-activation.sh
     bash scripts/test-feed-status.sh
