@@ -10,7 +10,7 @@
       src = ../../tools/agent-guard;
 
       # go.sum が変わったら (Renovate の gomod 更新を含む) 再計算する。
-      # pr.yml の vendorHash 自動更新はこのパッケージを対象にしていない
+      # scripts/update-hashes.ts が go.sum の差分を検出して更新する。
       vendorHash = "sha256-gD/21H1aujRzrvSq6RfrKrzujDHn0eG4ctDqYICSr0s=";
 
       # check-regex-dialect.sh が go run する補助ツールはプロファイルに入れない

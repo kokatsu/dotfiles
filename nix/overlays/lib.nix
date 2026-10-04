@@ -21,8 +21,8 @@
     extraAttrs ? {},
     # CI の hash 更新方法。"prefetch" = artifact を nix-prefetch-url して算出 (既定)。
     # publisher が checksum を別途公開していて大容量 artifact の DL を避けたい場合に
-    # 上書きする (例: claude-code は "manifest"、codex は "sha256sums")。pr.yml の
-    # 汎用 update ループは "prefetch" のものだけを対象にし、それ以外は個別ステップで扱う。
+    # 上書きする (例: claude-code は "manifest"、codex は "sha256sums")。
+    # scripts/update-hashes.ts がこの値で取得方法を選ぶ。
     hashSource ? "prefetch",
   }: _final: prev: let
     inherit (prev.stdenv.hostPlatform) system;

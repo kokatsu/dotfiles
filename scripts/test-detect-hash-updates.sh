@@ -117,6 +117,40 @@ else
 fi
 reset_tree
 
+if (cd "$tmp" && bash "$detect" no-such-base) >/dev/null 2>&1; then
+  fail "invalid base should make detect fail"
+else
+  pass "invalid base makes detect fail"
+fi
+
+sedi "${vite_section}{/version = /d;}" "$tmp/nix/overlays/npm-packages.nix"
+if run_detect >/dev/null 2>&1; then
+  fail "missing current version should make detect fail"
+else
+  pass "missing current version makes detect fail"
+fi
+reset_tree
+
+cat >>"$tmp/nix/overlays/npm-packages.nix" <<'DUPLICATE'
+  vite-plus = _final: prev: let
+    version = "9.9.9";
+  };
+DUPLICATE
+if run_detect >/dev/null 2>&1; then
+  fail "duplicate package should make detect fail"
+else
+  pass "duplicate package makes detect fail"
+fi
+reset_tree
+
+git -C "$tmp" rm -q nix/overlays/source-builds.nix
+git -C "$tmp" -c user.name=test -c user.email=test@example.com commit -q -m 'base without source packages'
+cp "$repo_root/nix/overlays/source-builds.nix" "$tmp/nix/overlays/source-builds.nix"
+out=$(run_detect)
+expect_line "new source file" "$out" 'has_cssmodules_language_server=true'
+expect_line "new source file" "$out" 'has_x_api_playground=true'
+expect_absent "new source file" "$out" '^has_(vite|textlint|codex|claude|agent_guard)'
+
 if [[ $failures -gt 0 ]]; then
   echo "detect-hash-updates tests: $failures failure(s)" >&2
   exit 1

@@ -87,7 +87,7 @@ in {
     pname = "claude-code";
     version = "2.1.289";
     # hash は Google の manifest.json (publisher 公開 checksum) から取得するため
-    # 汎用 prefetch ループの対象外。更新は pr.yml の個別ステップが担う。
+    # artifact 自体の prefetch を省き、scripts/update-hashes.ts が変換する。
     hashSource = "manifest";
     hashes = {
       "aarch64-darwin" = "sha256-A9ZnReO7aexyfWYCNpbzggvAoAqKW6cl62cG0MZ8vmk=";
@@ -114,7 +114,7 @@ in {
     pname = "codex";
     version = "0.160.0";
     # hash は release の codex-package_SHA256SUMS (publisher 公開 checksum) から取得する
-    # ため汎用 prefetch ループの対象外。更新は pr.yml の個別ステップが担う。
+    # ため artifact 自体の prefetch を省き、scripts/update-hashes.ts が変換する。
     hashSource = "sha256sums";
     hashes = {
       "aarch64-darwin" = "sha256-AH30G2B9u8jSBLl0bOf+0tTObIE/RMMs7uVBdcp5ZSU=";
