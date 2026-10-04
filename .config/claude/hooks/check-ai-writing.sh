@@ -38,34 +38,49 @@ done <<<"$paths"
 
 [ "${#files[@]}" -gt 0 ] || exit 0
 
+if ! diagnostics=$(mktemp); then
+  jq -n '{systemMessage: "AI 文体検査の一時ファイルを作成できませんでした。"}'
+  exit 0
+fi
+trap 'rm -f "$diagnostics"' EXIT
+
 # textlint takes about 2.5 seconds to start, so a multi-file patch is linted in
 # one process to stay within the hook timeout.
+lint_status=0
 if lint_output=$(
   textlint \
     --config "$textlint_config" \
-    --format compact \
+    --format json \
     --no-color \
-    -- "${files[@]}" 2>&1
+    -- "${files[@]}" 2>"$diagnostics"
 ); then
-  exit 0
+  lint_status=0
 else
   lint_status=$?
 fi
 
 # textlint returns 1 both for lint findings and for a config it cannot load, so
-# the exit code alone cannot tell them apart. Findings always carry the
-# compact formatter's ": line N, col N, " position, which no failure message
-# does; the path before it is normalized by textlint, so it cannot be matched
-# against the input. Anything else must not trap the agent in a rewrite loop,
-# but has to surface so the check is not silently skipped.
-if ! printf '%s\n' "$lint_output" | grep -Eq ': line [0-9]+, col [0-9]+, '; then
+# validate the report before requesting a rewrite.
+if [ "$lint_status" -gt 1 ] || ! printf '%s' "$lint_output" | jq -e '
+  type == "array" and length > 0 and all(.[];
+    (.filePath | type == "string") and
+    (.messages | type == "array" and all(.[];
+      (.message | type == "string") and
+      (.line | type == "number") and (.column | type == "number") and
+      (.ruleId == null or (.ruleId | type == "string")))))
+' >/dev/null 2>&1 || { [ "$lint_status" -eq 1 ] && ! printf '%s' "$lint_output" | jq -e 'any(.[]; .messages | length > 0)' >/dev/null; }; then
   message="AI 文体検査を実行できませんでした (textlint の終了コード: ${lint_status}、設定: ${textlint_config})
-$lint_output"
+$lint_output
+$(cat "$diagnostics")"
   jq -n --arg message "$message" '{systemMessage: $message}'
   exit 0
 fi
 
+[ "$lint_status" -eq 0 ] && exit 0
+
+findings=$(printf '%s' "$lint_output" | jq -r '.[] as $file | $file.messages[] |
+  "\($file.filePath): line \(.line), col \(.column), \(.message) (\(.ruleId // "textlint"))"')
 reason="書き込んだファイルに AI 文体のパターンが検出されました。書き込み自体は完了しています。指摘された行だけを自然で簡潔な文章に直してください。指摘箇所以外の内容は変更しないでください。
 
-$lint_output"
+$findings"
 jq -n --arg reason "$reason" '{decision: "block", reason: $reason}'

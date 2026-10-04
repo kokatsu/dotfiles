@@ -15,6 +15,7 @@ mkdir -p "$stub_dir"
 cat >"$stub_dir/textlint" <<'STUB'
 #!/usr/bin/env bash
 printf '%s\n' "$@" >>"$STUB_ARGS"
+[ -n "$STUB_ERR" ] && printf '%s\n' "$STUB_ERR" >&2
 [ -n "$STUB_OUT" ] && printf '%s\n' "$STUB_OUT"
 exit "$STUB_EXIT"
 STUB
@@ -31,6 +32,7 @@ run_hook() {
     STUB_ARGS="$args_file" \
     STUB_EXIT="$1" \
     STUB_OUT="$2" \
+    STUB_ERR="${4:-}" \
     bash "$hook"
 }
 
@@ -43,7 +45,8 @@ patch_payload() {
     '{tool_name: "apply_patch", cwd: $cwd, tool_input: {command: $c}}'
 }
 
-finding() { printf '%s: line 1, col 1, Error - 指摘 (rule-id)' "$1"; }
+finding() { jq -cn --arg p "$1" '[{filePath: $p, messages: [{line: 1, column: 1, message: "指摘", ruleId: "rule-id"}]}]'; }
+clean() { jq -cn --arg p "$1" '[{filePath: $p, messages: []}]'; }
 
 fail() {
   printf '%s\n' "$1" >&2
@@ -81,7 +84,7 @@ out=$(run_hook 1 "$(finding "$md_file")" "$(payload "$md_file")")
 printf '%s' "$out" | jq -e --arg p "$md_file" '.decision == "block" and (.reason | contains($p))' >/dev/null ||
   fail "expected a block naming the file: markdown finding"
 
-expect_silent 0 "" "$(payload "$md_file")" "clean markdown file"
+expect_silent 0 "$(clean "$md_file")" "$(payload "$md_file")" "clean markdown file"
 
 # textlint は設定を読めない場合も終了コード 1 を返す。指摘と取り違えて空の書き直しを
 # 要求しないことを確かめる。
@@ -93,7 +96,7 @@ expect_system_message 70 'textlint: command failed' "$(payload "$md_file")" "tex
 
 expect_system_message 0 "" 'not json at all' "malformed payload"
 
-run_hook 0 "" "$(payload "$md_file")" >/dev/null
+run_hook 0 "$(clean "$md_file")" "$(payload "$md_file")" >/dev/null
 grep -qx -- "--config" "$args_file" ||
   fail "expected textlint to be invoked with --config"
 grep -qx -- "$xdg/claude/hooks/textlint-response.json" "$args_file" ||
@@ -107,8 +110,7 @@ expect_silent 1 "$(finding "$workdir/script.sh")" "$(payload "$workdir/script.sh
 [ ! -s "$args_file" ] || fail "expected textlint not to run for an unsupported file"
 
 # Codex の apply_patch は相対パスを cwd 基準で渡し、1 回で複数ファイルを変更できる
-out=$(run_hook 1 "$(finding "$md_file")
-$(finding "$html_file")" "$(patch_payload '*** Begin Patch
+out=$(run_hook 1 "$(jq -cn --argjson md "$(finding "$md_file")" --argjson html "$(finding "$html_file")" '$md + $html')" "$(patch_payload '*** Begin Patch
 *** Update File: note.md
 @@
 -a
@@ -136,4 +138,17 @@ expect_silent 1 "$(finding "$md_file")" "$(patch_payload '*** Begin Patch
 *** Delete File: note.md
 *** End Patch')" "apply_patch delete"
 
-printf 'ai-writing hook: 11 cases passed\n'
+expect_system_message 0 'not json' "$(payload "$md_file")" "invalid report on success"
+expect_system_message 1 '[{"filePath":"note.md","messages":"bad"}]' "$(payload "$md_file")" "invalid messages"
+expect_system_message 1 "$(clean "$md_file")" "$(payload "$md_file")" "failure without findings"
+expect_system_message 70 "$(finding "$md_file")" "$(payload "$md_file")" "crash with a partial report"
+expect_system_message 0 '[]' "$(payload "$md_file")" "empty report"
+out=$(run_hook 1 "" "$(payload "$md_file")" 'config error: line 1, col 1, failed')
+printf '%s' "$out" | jq -e '.systemMessage | contains("config error")' >/dev/null ||
+  fail "expected stderr diagnostic, not a block"
+out=$(run_hook 1 "$(finding "$md_file")" "$(payload "$md_file")" 'warning on stderr')
+printf '%s' "$out" | jq -e '.decision == "block" and (.reason | contains("warning on stderr") | not)' >/dev/null ||
+  fail "expected only structured findings in the block"
+grep -qx -- json "$args_file" || fail "expected JSON formatter"
+
+printf 'ai-writing hook: 18 cases passed\n'
