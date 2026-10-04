@@ -102,7 +102,7 @@ XML
 put_http "$nohtml" <<'XML'
 <feed><id>tag:self</id><entry><id>n1</id></entry></feed>
 XML
-# <id> を持たないフィードは RSS とみなして <guid> を読む。
+# RSS の GUID は属性が付いていても取得できる。
 put_http "$gamma" <<'XML'
 <rss><channel>
 <item><guid isPermaLink="false">g2</guid></item>
@@ -174,6 +174,26 @@ put_http "$alpha" <<'XML'
 XML
 check
 assert '.feeds["Alpha &amp; Beta"] | .unread_count == 6 and .last_summarized_id == "b3"'
+
+put_http "$alpha" <<'XML'
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom"><atom:id>self</atom:id>
+<atom:entry><atom:id><![CDATA[b5]]></atom:id></atom:entry>
+<atom:entry><atom:id>b4</atom:id></atom:entry></atom:feed>
+XML
+check
+assert '.feeds["Alpha &amp; Beta"] | .last_seen_id == "b5" and .unread_count == 7 and .last_summarized_id == "b3"'
+
+put_http "$alpha" <<'XML'
+<feed><entry><id>must-not-publish</id>
+XML
+check
+assert '.feeds["Alpha &amp; Beta"] | .last_seen_id == "b5" and .unread_count == 7 and .last_summarized_id == "b3"'
+
+put_http "$alpha" <<'XML'
+<feed/>
+XML
+check
+assert '.feeds["Alpha &amp; Beta"] | .last_seen_id == "b5" and .unread_count == 7'
 
 # last_seen_id を持たないエントリは初回扱いになり、last_summarized_id は残らない。
 jq '.feeds.Gamma = {"last_summarized_id":"g1","unread_count":9,"category":"stale"}' "$status_file" >"$test_dir/tmp"

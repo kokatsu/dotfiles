@@ -30,16 +30,11 @@ fetch_feed_ids() {
   # 無いフィードが 1 つあるだけで次の起動と重なるのを防ぐ
   content=$(feed_run curl -sfL --max-time 10 "$url") || return 1
 
-  # Atom: <id> タグ (先頭のフィード自体の id はスキップ)
-  local atom_ids
-  atom_ids=$(echo "$content" | grep -o '<id>[^<]*</id>' | sed 's/<id>\(.*\)<\/id>/\1/' | tail -n +2)
-  if [[ -n "$atom_ids" ]]; then
-    echo "$atom_ids"
-    return
-  fi
-
-  # RSS: <guid> タグ
-  echo "$content" | grep -oP '<guid[^>]*>\K[^<]+' || true
+  # strict mode は &nbsp; のような未定義実体で失敗するので使わない。代わりに
+  # 終了タグの不一致も通るが、--xml-raw-token=false なら途中で切れた応答は失敗する
+  printf '%s' "$content" |
+    feed_run yq -p=xml -o=json --xml-raw-token=false '.' |
+    feed_run deno run --no-prompt "$HELPER" feed-ids
 }
 
 # --- OPML パース: "category|name|xmlUrl|htmlUrl" 行を出力 ---

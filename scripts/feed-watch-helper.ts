@@ -1,8 +1,10 @@
 #!/usr/bin/env -S deno run --no-prompt
-// feed-watch-helper.ts — bin/feed-watch が awk と jq で行っていた 2 処理
+// feed-watch-helper.ts — bin/feed-watch のデータ変換
 //
 //   parse-opml           stdin: feeds*.opml を連結したもの
 //                        stdout: "category|name|xmlUrl|htmlUrl" 1 行 1 件
+//   feed-ids             stdin: yq が出力したフィードの JSON
+//                        stdout: エントリの ID (新しい順、1 行 1 件)
 //   apply-check-results  stdin: NUL 区切りで status JSON、parse-opml の出力、
 //                        続けて 1 フィードあたり name/type/url/category/ids
 //                        stdout: 更新後の status JSON
@@ -10,6 +12,8 @@
 // 入出力は stdin/stdout/argv だけなので Deno の権限フラグを一つも必要としない。
 // ids は改行を含むので区切りは NUL になる。シェル変数は NUL を保持できないため、
 // 呼び出し側は一時ファイルへ書き足してから渡す。
+
+import { feedIds } from "./feed-entries.ts";
 
 interface Feed {
   last_seen_id?: string;
@@ -171,6 +175,9 @@ async function main(): Promise<number> {
 
   try {
     switch (action) {
+      case "feed-ids":
+        for (const id of feedIds(input)) console.log(id);
+        return 0;
       case "parse-opml":
         for (const line of parseOpml(input)) console.log(line);
         return 0;
