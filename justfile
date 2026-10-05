@@ -163,7 +163,7 @@ shellcheck:
 
 # Syntax-check Zsh startup files (shellcheck / shfmt は zsh を解釈しない)
 zsh-lint:
-    @git ls-files -z '*.zsh' .config/zsh/.zshrc .config/zsh/.zimrc | xargs -0 -n1 zsh -n
+    @git ls-files -z '*.zsh' .config/zsh/.zshrc | xargs -0 -n1 zsh -n
 
 # Format shell scripts
 shfmt:
@@ -305,7 +305,6 @@ reliability-test:
     bash scripts/test-codex-config-activation.sh
     bash scripts/test-feed-status.sh
     bash scripts/test-feed-watch.sh
-    bash scripts/test-zimfw-activation.sh
     bash scripts/test-daily.sh
     bash scripts/test-wallpaper.sh
     bash scripts/test-sync-flake-inputs.sh

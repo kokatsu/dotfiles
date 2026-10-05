@@ -151,8 +151,6 @@ in {
       unzip # ZIP アーカイブ展開
       # https://www.gnu.org/software/wget/
       wget # ファイルダウンローダー
-      # https://github.com/zimfw/zimfw
-      zimfw # Zsh framework
 
       #####################################
       # メディア/画像処理
@@ -363,6 +361,8 @@ in {
       deck-slides # Markdown → Google Slides
 
       #--- Rust 製パッケージ ---#
+      # https://github.com/paulirish/git-open
+      git-open # リポジトリをブラウザで開く
       # https://github.com/mlange-42/git-graph
       git-graph # Git コミットグラフ可視化 (fork: kokatsu/git-graph)
       # https://github.com/brevity1swos/rgx

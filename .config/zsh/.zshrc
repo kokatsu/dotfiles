@@ -5,33 +5,17 @@
 # zmodload zsh/zprof && zprof
 
 # ------------------------------------------------------------------------------
-# Zim (https://github.com/zimfw/zimfw)
+# Plugins
 # ------------------------------------------------------------------------------
 
-# zimfw.zsh 本体は Home Manager が nixpkgs 版を $ZIM_HOME に symlink する (programs/zsh.nix)
-ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim
-ZIM_CONFIG_FILE=${ZDOTDIR:-${HOME}}/.zimrc
-
-# zeno の互換性パッチと Deno cache は activation / zimfw更新後だけ適用する。
-_prepare_zeno() {
-  local preparer=$ZDOTDIR/scripts/prepare-zeno
-  [[ -x $preparer ]] && "$preparer" "$ZIM_HOME"
-}
-
-# zimfw() 関数の定義（zimfw コマンド用）
-if [[ -e ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]] zimfw() {
-  source ${ZIM_HOME}/zimfw.zsh "${@}"
-  # モジュール再インストール直後にも同セッションで準備する
-  case ${1:-} in
-    init|install|update|reinstall) _prepare_zeno ;;
-  esac
-}
+# 各プラグインは Home Manager が配置する (programs/zsh.nix)
+ZSH_PLUGIN_DIR=$ZDOTDIR/plugins
 
 # fpath 設定（autoload 用、コスト: ~0ms）
 fpath=(
-  ${ZIM_HOME}/modules/git/functions
-  ${ZIM_HOME}/modules/utility/functions
-  ${ZIM_HOME}/modules/zsh-completions/src
+  ${ZSH_PLUGIN_DIR}/git/functions
+  ${ZSH_PLUGIN_DIR}/utility/functions
+  ${ZSH_PLUGIN_DIR}/zsh-completions
   ${fpath}
 )
 autoload -Uz -- git-alias-lookup git-branch-current git-branch-delete-interactive \
@@ -40,35 +24,27 @@ autoload -Uz -- git-alias-lookup git-branch-current git-branch-delete-interactiv
   git-submodule-remove mkcd mkpw
 
 # 即座に読み込み（プロンプト表示に必須）
-source ${ZIM_HOME}/modules/zsh-defer/zsh-defer.plugin.zsh
-source ${ZIM_HOME}/modules/evalcache/evalcache.plugin.zsh
+source ${ZSH_PLUGIN_DIR}/zsh-defer/zsh-defer.plugin.zsh
+source ${ZSH_PLUGIN_DIR}/evalcache/evalcache.plugin.zsh
 # evalcache はキャッシュミス時にしかディレクトリを作らず、下の vivid / starship は
 # ディレクトリがある前提で書き込む
 [[ -d "${ZSH_EVALCACHE_DIR}" ]] || mkdir -p "${ZSH_EVALCACHE_DIR}"
-# 自前生成の補完 (delta など)。zimfw が管理する modules/ 配下に書くと update で消える
+# 自前生成の補完 (delta など)。プラグインディレクトリは Nix store を指し書き込めない
 fpath=(${ZSH_EVALCACHE_DIR}/completions ${fpath})
-source ${ZIM_HOME}/modules/environment/init.zsh
-source ${ZIM_HOME}/modules/input/init.zsh
-
-# zimfwの初期化（init.zshが古い場合は遅延で再生成）
-if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
-  zsh-defer -a +1 +2 -c 'source ${ZIM_HOME}/zimfw.zsh init -q && typeset -g _PREPARE_ZENO_AFTER_INIT=1'
-  # init と別タスクにし、Deno cache の開始前にもキー入力を確認できるようにする。
-  zsh-defer -a +1 +2 -c '(( ${_PREPARE_ZENO_AFTER_INIT:-0} )) && { unset _PREPARE_ZENO_AFTER_INIT; _prepare_zeno; }'
-fi
+source ${ZSH_PLUGIN_DIR}/environment/init.zsh
+source ${ZSH_PLUGIN_DIR}/input/init.zsh
 
 # 遅延読み込み（初回プロンプト後に読み込み）
 # -a +1 +2: 全フラグ無効 → stdout/stderr リダイレクトのみ有効
 # 個別タスクにすることで、タスク間で KEYS_QUEUED_COUNT チェックが入り
 # キー入力があれば即座に表示される（入力応答性優先）
-zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/utility/init.zsh
-zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/git/init.zsh
-zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/termtitle/init.zsh
-zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/git-open/git-open.plugin.zsh
-zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/completion/init.zsh
-zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-history-substring-search/zsh-history-substring-search.zsh
-zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zsh-autosuggestions/zsh-autosuggestions.zsh
+zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/utility/init.zsh
+zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/git/init.zsh
+zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/termtitle/init.zsh
+zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/completion/init.zsh
+zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zsh-history-substring-search/zsh-history-substring-search.zsh
+zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zsh-autosuggestions/zsh-autosuggestions.zsh
 
 # ↑↓ を substring 検索に割り当てる (プラグイン側は bindkey を一切設定しないため、
 # 未指定だと zim input モジュールの up/down-line-or-history のままロードだけされる)
@@ -91,7 +67,7 @@ zsh-defer -a +1 +2 -c 'source <(fzf --zsh)'
 # Ctrl+T は WezTerm の新規タブと衝突するため Alt+T にリマップ
 zsh-defer -a +1 +2 -c 'bindkey -r "^T"; bindkey "^[t" fzf-file-widget'
 
-zsh-defer -a +1 +2 source ${ZIM_HOME}/modules/zeno.zsh/zeno.zsh
+zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zeno.zsh/zeno.zsh
 zsh-defer -a +1 +2 -c '(( $+widgets[zeno-auto-snippet] )) && bindkey " " zeno-auto-snippet'
 zsh-defer -a +1 +2 -c '(( $+widgets[zeno-auto-snippet-and-accept-line] )) && bindkey "^m" zeno-auto-snippet-and-accept-line'
 zsh-defer -a +1 +2 -c '(( $+widgets[zeno-completion] )) && bindkey "^i" zeno-completion'

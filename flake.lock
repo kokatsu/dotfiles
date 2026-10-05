@@ -269,7 +269,15 @@
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
         "nixpkgs-stable": "nixpkgs-stable",
-        "unocss-language-server": "unocss-language-server"
+        "unocss-language-server": "unocss-language-server",
+        "zeno-zsh": "zeno-zsh",
+        "zim-completion": "zim-completion",
+        "zim-environment": "zim-environment",
+        "zim-git": "zim-git",
+        "zim-input": "zim-input",
+        "zim-termtitle": "zim-termtitle",
+        "zim-utility": "zim-utility",
+        "zsh-evalcache": "zsh-evalcache"
       }
     },
     "systems": {
@@ -341,6 +349,134 @@
         "owner": "xna00",
         "ref": "v0.1.9",
         "repo": "unocss-language-server",
+        "type": "github"
+      }
+    },
+    "zeno-zsh": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1772957729,
+        "narHash": "sha256-IPYj4hJ4N5guqgpdJbo2poA+W/KuxkoHInhId4GcGHs=",
+        "owner": "yuki-yano",
+        "repo": "zeno.zsh",
+        "rev": "37bebf0e1737de000abe0d58f70d41b8ef61f9b4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "yuki-yano",
+        "repo": "zeno.zsh",
+        "type": "github"
+      }
+    },
+    "zim-completion": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1753390211,
+        "narHash": "sha256-8V3c3lFEyfJZuWNifMY+6Lw4qCXtBsX4I6ClLlCivSE=",
+        "owner": "zimfw",
+        "repo": "completion",
+        "rev": "efc94ced311dd181835ccfd3f08ecb422c8465b2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "zimfw",
+        "repo": "completion",
+        "type": "github"
+      }
+    },
+    "zim-environment": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1638276188,
+        "narHash": "sha256-B8Cki4uCcSce0xewZ91P9wCpA5+x/AlT1IwC+HVs6OI=",
+        "owner": "zimfw",
+        "repo": "environment",
+        "rev": "d4bceaa3da89cd819843334dba1a5bf7dc137e14",
+        "type": "github"
+      },
+      "original": {
+        "owner": "zimfw",
+        "repo": "environment",
+        "type": "github"
+      }
+    },
+    "zim-git": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1749222381,
+        "narHash": "sha256-O47n7a+0yokTu9pd5BKTNsthUQ7DxqW5z3ChaL8FZ8k=",
+        "owner": "zimfw",
+        "repo": "git",
+        "rev": "226b1dd1f0c5363f175dca677b49f43d24be9c11",
+        "type": "github"
+      },
+      "original": {
+        "owner": "zimfw",
+        "repo": "git",
+        "type": "github"
+      }
+    },
+    "zim-input": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1765808506,
+        "narHash": "sha256-QWyQpOxU3+P2+EGTkzt9HdEwhVnBa3yPwv7JA2o5YIQ=",
+        "owner": "zimfw",
+        "repo": "input",
+        "rev": "da6b1cccac5e56104088acc2d66e181f3317192a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "zimfw",
+        "repo": "input",
+        "type": "github"
+      }
+    },
+    "zim-termtitle": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1765721251,
+        "narHash": "sha256-OQEIL12nqruTZzWGMv7p2Lx1EADOv2dr71xAE2aHww4=",
+        "owner": "zimfw",
+        "repo": "termtitle",
+        "rev": "96aff3e49bc0c8665b20226b06517a8ee7452914",
+        "type": "github"
+      },
+      "original": {
+        "owner": "zimfw",
+        "repo": "termtitle",
+        "type": "github"
+      }
+    },
+    "zim-utility": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1727793502,
+        "narHash": "sha256-XLuEEviudKNhAA9V0oqVlxvXdtXknoCXQlU2lF9mr1Q=",
+        "owner": "zimfw",
+        "repo": "utility",
+        "rev": "fec84342585d61dff448c786ad4eeb082c450c54",
+        "type": "github"
+      },
+      "original": {
+        "owner": "zimfw",
+        "repo": "utility",
+        "type": "github"
+      }
+    },
+    "zsh-evalcache": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1764003866,
+        "narHash": "sha256-CN9dnSt9kc5AEkWnbtjyv+DCQZ08Ifmac5wELqve17U=",
+        "owner": "mroth",
+        "repo": "evalcache",
+        "rev": "d6973f8c3ecde3eabd75c17b47e2222e24ab3e87",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mroth",
+        "repo": "evalcache",
         "type": "github"
       }
     }

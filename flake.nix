@@ -67,6 +67,41 @@
       url = "github:nix-community/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Zsh プラグインのうち nixpkgs 未収録のもの (nix/home/programs/zsh.nix が配置する)
+    # 更新: nix flake update <name>
+    zim-environment = {
+      url = "github:zimfw/environment";
+      flake = false;
+    };
+    zim-git = {
+      url = "github:zimfw/git";
+      flake = false;
+    };
+    zim-input = {
+      url = "github:zimfw/input";
+      flake = false;
+    };
+    zim-termtitle = {
+      url = "github:zimfw/termtitle";
+      flake = false;
+    };
+    zim-utility = {
+      url = "github:zimfw/utility";
+      flake = false;
+    };
+    zim-completion = {
+      url = "github:zimfw/completion";
+      flake = false;
+    };
+    zsh-evalcache = {
+      url = "github:mroth/evalcache";
+      flake = false;
+    };
+    zeno-zsh = {
+      url = "github:yuki-yano/zeno.zsh";
+      flake = false;
+    };
   };
 
   outputs = inputs @ {
