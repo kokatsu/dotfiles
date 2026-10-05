@@ -93,8 +93,9 @@ Git, Ghostty, ripgrep, Starship, Yazi, Biome, markdown-oxide, ov, Taplo,
 psql, Vim, Claude Code keybindings, and the Codex base configuration from Nix.
 Edit these modules, then run `home-manager switch --flake . --impure` to apply them.
 
-Yazi plugins and flavors are vendored under `.config/yazi/` and installed through
-`programs.yazi`; update those sources in Git instead of using `ya pkg`.
+Yazi plugins come from nixpkgs `yaziPlugins` where available; the remaining
+plugins and flavors are vendored under `.config/yazi/`. All are installed through
+`programs.yazi`; update them via `nix flake update` or in Git instead of using `ya pkg`.
 Yazi's `init.lua` and `git-changes.sh` also need
 `home-manager switch --flake . --impure` after editing to apply the changes.
 Lua, shell scripts, and repository tooling configurations remain under `.config/`.

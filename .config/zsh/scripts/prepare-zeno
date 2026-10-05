@@ -3,14 +3,14 @@
 set -eu
 
 if [ "$#" -lt 1 ] || [ "$#" -gt 2 ] || [ -z "$1" ]; then
-  echo "usage: prepare-zeno <zim-home> [deno-command]" >&2
+  echo "usage: prepare-zeno <zeno-dir> [deno-command]" >&2
   exit 2
 fi
 
-zim_home=$1
+zeno_dir=$1
 deno_command=${2:-deno}
-completion_file="$zim_home/modules/zeno.zsh/shells/zsh/widgets/zeno-completion"
-cli_file="$zim_home/modules/zeno.zsh/src/cli.ts"
+completion_file="$zeno_dir/shells/zsh/widgets/zeno-completion"
+cli_file="$zeno_dir/src/cli.ts"
 
 # zeno-completion の local 変数 options が zsh/parameter の $options を
 # シャドウする問題を修正する。パッチ済みなら何もしない。
@@ -42,7 +42,7 @@ for relative_path in \
   bin/zeno-server \
   shells/zsh/functions/zeno \
   shells/zsh/functions/zeno-server; do
-  run_file="$zim_home/modules/zeno.zsh/$relative_path"
+  run_file="$zeno_dir/$relative_path"
 
   [ -f "$run_file" ] || continue
   # Zsh parameter expressions below are grep literals.

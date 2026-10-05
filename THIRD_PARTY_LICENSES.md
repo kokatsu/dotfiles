@@ -9,7 +9,6 @@ and are not duplicated here:
 
 - `.config/yazi/flavors/*/LICENSE` — vendored yazi flavors installed by Home Manager
 - `.config/yazi/plugins/*/LICENSE` — same as above
-- `.config/zsh/.zim/modules/*/LICENSE` — zimfw modules are independent submodules
 
 ## Catppuccin
 

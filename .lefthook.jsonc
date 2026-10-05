@@ -66,7 +66,7 @@
         "run": "echo {staged_files} | xargs shfmt -f | grep -v '\\.zsh$' | xargs -r shfmt -w && git update-index --again"
       },
       "zsh-lint": {
-        "glob": ["*.zsh", ".config/zsh/.zshrc", ".config/zsh/.zimrc"],
+        "glob": ["*.zsh", ".config/zsh/.zshrc"],
         "run": "echo {staged_files} | xargs -n1 zsh -n"
       },
       "markdownlint": {
@@ -155,7 +155,7 @@
         "run": "echo {push_files} | xargs shfmt -f | grep -v '\\.zsh$' | xargs -r shfmt -d"
       },
       "zsh-lint": {
-        "glob": ["*.zsh", ".config/zsh/.zshrc", ".config/zsh/.zimrc"],
+        "glob": ["*.zsh", ".config/zsh/.zshrc"],
         "run": "echo {push_files} | xargs -n1 zsh -n"
       },
       "markdownlint": {

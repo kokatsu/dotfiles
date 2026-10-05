@@ -5,9 +5,6 @@
 # シェルの設定ファイル
 !.zshrc
 
-# Zimの設定ファイル
-!.zimrc
-
 # シェルの関数
 !functions.zsh
 
