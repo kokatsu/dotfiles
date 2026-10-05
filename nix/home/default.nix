@@ -76,6 +76,7 @@ in {
     ./programs/yazi.nix
     ./programs/zoxide.nix
     ./programs/zsh.nix
+    ./services/claude-otel.nix
     ./services/disk-watch.nix
     ./services/feed-watch.nix
     ./services/status-watch.nix
