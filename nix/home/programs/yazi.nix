@@ -23,7 +23,7 @@ in {
       message = "Yazi config files differ from the linkFarm file list. Update nix/home/programs/yazi.nix to include every yazi/ entry.";
     }
   ];
-  # vendored sources: yazi-rs/plugins 4dc7f1b, kokatsu/ansi-preview 865f404,
+  # vendored sources: kokatsu/ansi-preview 865f404,
   # llanosrocas/githead 317d09f (patched: load と bulk-rename を購読), yazi-rs/flavors 20b47bf。更新はリポジトリのソースを更新して switch する。
   # ya pkg は使用しない。シェルの yi 関数は既存の functions.zsh が管理する。
   programs.yazi = {
@@ -224,18 +224,18 @@ in {
     initLua = ../../../.config/yazi/init.lua;
     plugins = {
       ansi-preview = ../../../.config/yazi/plugins/ansi-preview.yazi;
-      chmod = ../../../.config/yazi/plugins/chmod.yazi;
-      diff = ../../../.config/yazi/plugins/diff.yazi;
-      full-border = ../../../.config/yazi/plugins/full-border.yazi;
-      git = ../../../.config/yazi/plugins/git.yazi;
+      chmod = pkgs.yaziPlugins.chmod;
+      diff = pkgs.yaziPlugins.diff;
+      full-border = pkgs.yaziPlugins.full-border;
+      git = pkgs.yaziPlugins.git;
       githead = ../../../.config/yazi/plugins/githead.yazi;
-      jump-to-char = ../../../.config/yazi/plugins/jump-to-char.yazi;
-      smart-enter = ../../../.config/yazi/plugins/smart-enter.yazi;
-      smart-filter = ../../../.config/yazi/plugins/smart-filter.yazi;
-      smart-paste = ../../../.config/yazi/plugins/smart-paste.yazi;
-      toggle-pane = ../../../.config/yazi/plugins/toggle-pane.yazi;
-      vcs-files = ../../../.config/yazi/plugins/vcs-files.yazi;
-      zoom = ../../../.config/yazi/plugins/zoom.yazi;
+      jump-to-char = pkgs.yaziPlugins.jump-to-char;
+      smart-enter = pkgs.yaziPlugins.smart-enter;
+      smart-filter = pkgs.yaziPlugins.smart-filter;
+      smart-paste = pkgs.yaziPlugins.smart-paste;
+      toggle-pane = pkgs.yaziPlugins.toggle-pane;
+      vcs-files = pkgs.yaziPlugins.vcs-files;
+      zoom = pkgs.yaziPlugins.zoom;
     };
     flavors = {
       catppuccin-latte = ../../../.config/yazi/flavors/catppuccin-latte.yazi;
