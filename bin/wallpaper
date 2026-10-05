@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -euo pipefail
+#
+# wallpaper: 壁紙フォルダの画像を fzf で選び、macOS の全画面の壁紙に設定する。
+#
+# Usage:
+#   wallpaper              画像を選んで壁紙に設定する
+#   wallpaper -h, --help   このヘルプを表示
+#
+# 画像は権利上 git 管理できないので、リポジトリの .config/assets/wallpapers/ に
+# 手で置く。Home Manager の setupAssets が ~/.config/assets/wallpapers/ へコピーする。
+# WALLPAPER_DIR で別のフォルダを指定できる。
+
+usage() {
+  cat <<'EOF'
+Usage: wallpaper [-h | --help]
+
+  壁紙フォルダ (既定: ~/.config/assets/wallpapers) の画像を fzf で選び、
+  desktoppr で全画面の壁紙に設定する。WALLPAPER_DIR でフォルダを変更できる。
+EOF
+}
+
+die() {
+  echo "wallpaper: $1" >&2
+  exit 1
+}
+
+case "${1-}" in
+-h | --help)
+  usage
+  exit 0
+  ;;
+'') ;;
+*)
+  usage >&2
+  exit 2
+  ;;
+esac
+
+command -v desktoppr >/dev/null || die "desktoppr が見つかりません (macOS 専用)"
+
+dir=${WALLPAPER_DIR:-$HOME/.config/assets/wallpapers}
+cd "$dir" 2>/dev/null || die "壁紙フォルダがありません: $dir"
+
+shopt -s nullglob nocaseglob
+images=(*.jpg *.jpeg *.png *.heic *.webp)
+((${#images[@]})) || die "画像がありません: $dir"
+
+# herdr は kitty graphics しか中継せず、chafa が自動で選ぶ sixel は描画されない。
+# herdr を挟まない WezTerm のタブで開き直し、それができなければ文字で描く。
+# 検証を済ませてから移るのは、移った先のタブは終了と同時に閉じてエラーが読めないため
+chafa_format=
+if [[ ${TERM_PROGRAM-} == herdr && -z ${WALLPAPER_SPAWNED-} ]]; then
+  # spawn したタブは herdr 側の環境変数を引き継がないので、フォルダを渡し直す
+  if command -v wezterm >/dev/null &&
+    wezterm cli spawn -- /usr/bin/env WALLPAPER_SPAWNED=1 WALLPAPER_DIR="$PWD" \
+      /bin/zsh -l -c wallpaper >/dev/null; then
+    exit 0
+  fi
+  chafa_format='--format=symbols '
+fi
+
+rc=0
+choice=$(
+  printf '%s\n' "${images[@]}" | sort |
+    fzf --prompt='wallpaper> ' \
+      --preview "chafa ${chafa_format}--size=\"\${FZF_PREVIEW_COLUMNS}x\${FZF_PREVIEW_LINES}\" -- {}"
+) || rc=$?
+case $rc in
+0) ;;
+# 1 は絞り込みが 0 件のまま確定、130 は Esc / Ctrl-C。どちらも選ばなかっただけ
+1 | 130) exit 0 ;;
+*) exit "$rc" ;;
+esac
+
+desktoppr "$PWD/$choice"
+echo "wallpaper: $choice に変更しました" >&2
