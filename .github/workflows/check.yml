@@ -124,5 +124,4 @@ jobs:
         run: nix flake check --fallback
       - name: Run tests
         # fmt / lint は OS に依存しないので lint job に任せ、ここではテストだけを実行する
-        # Nix の LD_DYLD_PATH を継承すると、Deno の限定付き --allow-run が子プロセス起動を拒否する
-        run: nix develop --command env -u LD_DYLD_PATH just test
+        run: nix develop --command just test

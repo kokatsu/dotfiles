@@ -236,10 +236,11 @@ wezterm-links-test:
     nvim --headless --clean -l scripts/test-wezterm-links.lua
 
 # Verify pr.yml hash-update sed patterns match overlay structure, and the detect script against fixtures
-# Home Manager は Linux で LD_LIBRARY_PATH を設定し、Deno は対象を限定した --allow-run での子プロセス起動を拒否する
+# Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
+# LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
 hash-patterns-test:
-    env -u LD_LIBRARY_PATH bash scripts/test-hash-patterns.sh
-    env -u LD_LIBRARY_PATH bash scripts/test-detect-hash-updates.sh
+    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH bash scripts/test-hash-patterns.sh
+    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH bash scripts/test-detect-hash-updates.sh
 
 # Verify the banned-commands hook (agent-guard) verdicts and its fail-closed behavior
 banned-commands-test:
@@ -295,10 +296,11 @@ herdr-macos-notify-test:
     bash scripts/test-herdr-macos-notify.sh
 
 # Verify check failures, concurrent feed updates, and activation retries
-# Home Manager は Linux で LD_LIBRARY_PATH を設定し、Deno は対象を限定した --allow-run での子プロセス起動を拒否する
+# Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
+# LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
 reliability-test:
-    env -u LD_LIBRARY_PATH deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-entries.ts -- "$(command -v yq)" "$(command -v deno)"
-    env -u LD_LIBRARY_PATH deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-opml.ts -- "$(command -v yq)" "$(command -v deno)"
+    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-entries.ts -- "$(command -v yq)" "$(command -v deno)"
+    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-opml.ts -- "$(command -v yq)" "$(command -v deno)"
     bash scripts/test-check-failures.sh
     bash scripts/test-codex-config-activation.sh
     bash scripts/test-feed-status.sh
