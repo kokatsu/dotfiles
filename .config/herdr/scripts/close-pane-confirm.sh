@@ -12,10 +12,14 @@
 
 set -euo pipefail
 
-herdr_bin=${HERDR_BIN_PATH:-herdr}
+# shellcheck source=.config/herdr/scripts/lib.sh
+source "$(dirname "$0")/lib.sh"
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
 
-pane_json=$("$herdr_bin" pane get "$active_pane_id")
+if ! pane_json=$("$herdr_bin" pane get "$active_pane_id"); then
+  notify "ペイン情報の取得に失敗しました"
+  exit 1
+fi
 status=$(jq -r '.result.pane.agent_status // "none"' <<<"$pane_json")
 
 # エージェントなしの素のシェルは unknown を返す。UI では unknown は idle (緑)

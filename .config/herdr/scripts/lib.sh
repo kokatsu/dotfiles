@@ -4,7 +4,7 @@
 herdr_bin=${HERDR_BIN_PATH:-herdr}
 
 notify() {
-  "$herdr_bin" notification show "$1" --sound none >/dev/null 2>&1 || true
+  "$herdr_bin" notification show "$1" ${2:+--body "$2"} --sound none >/dev/null 2>&1 || true
 }
 
 # bin/wsl-open は PowerShell の Constrained Language Mode を避けるため wslview を

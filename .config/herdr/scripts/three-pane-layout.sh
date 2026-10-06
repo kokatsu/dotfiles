@@ -4,7 +4,8 @@
 
 set -euo pipefail
 
-herdr_bin=${HERDR_BIN_PATH:-herdr}
+# shellcheck source=.config/herdr/scripts/lib.sh
+source "$(dirname "$0")/lib.sh"
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
 full_height_side=${1:?full-height side is required}
 cwd_args=()
@@ -65,20 +66,14 @@ move_pane() {
 }
 
 notify_unsupported_layout() {
-  local current=$1
-
-  "$herdr_bin" notification show \
-    "3ペインレイアウトを適用できません" \
-    --body "1ペイン、または上下2分割のタブで実行してください (現在: ${current})" \
-    --sound none >/dev/null
+  notify "3ペインレイアウトを適用できません" \
+    "1ペイン、または上下2分割のタブで実行してください (現在: $1)"
 }
 
 # shellcheck disable=SC2329  # EXIT trap から間接的に呼び出す。
 notify_restore_failure() {
-  "$herdr_bin" notification show \
-    "ペインを元のタブへ戻せませんでした" \
-    --body "一時タブに残ったペインを手動で戻してください" \
-    --sound none >/dev/null
+  notify "ペインを元のタブへ戻せませんでした" \
+    "一時タブに残ったペインを手動で戻してください"
 }
 
 layout=$("$herdr_bin" pane layout --pane "$active_pane_id")

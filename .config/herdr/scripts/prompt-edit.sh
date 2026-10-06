@@ -5,7 +5,8 @@
 
 set -euo pipefail
 
-herdr_bin=${HERDR_BIN_PATH:-herdr}
+# shellcheck source=.config/herdr/scripts/lib.sh
+source "$(dirname "$0")/lib.sh"
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
 
 # .claude 拡張子で専用設定を適用しつつ、mktemp -d で衝突・漏洩を回避
