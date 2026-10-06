@@ -221,7 +221,7 @@ vim.api.nvim_create_autocmd('FileChangedShellPost', {
 })
 
 -- WSLの場合はInsertモードから離れる時にzenhanを実行
-local group = vim.api.nvim_create_augroup('kyoh86-conf-ime', {})
+local group = vim.api.nvim_create_augroup('ime_off_on_insert_leave', {})
 -- `!zenhan 0` は同期実行でWindowsプロセスの起動を待つため、ESCの度に
 -- 実測212msブロックする。IMEを戻す動作は維持したまま非同期に投げる。
 if vim.fn.has('wsl') == 1 then

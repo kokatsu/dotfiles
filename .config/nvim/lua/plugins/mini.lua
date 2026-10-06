@@ -74,7 +74,7 @@ return {
 
     -- カレントディレクトリベースの自動セッション保存（VimLeavePre時）
     vim.api.nvim_create_autocmd('VimLeavePre', {
-      group = vim.api.nvim_create_augroup('AutoSaveSession', { clear = true }),
+      group = vim.api.nvim_create_augroup('auto_save_session', { clear = true }),
       callback = function()
         -- バッファが開かれている場合のみ保存
         local bufs = vim.fn.getbufinfo({ buflisted = 1 })

@@ -1,6 +1,6 @@
 -- Trailing whitespace highlight and auto-trim (replaces mini.trailspace)
 
-local group = vim.api.nvim_create_augroup('Trailspace', { clear = true })
+local group = vim.api.nvim_create_augroup('trailspace', { clear = true })
 
 local function set_hl(visible)
   vim.api.nvim_set_hl(0, 'Trailspace', { bg = visible and require('utils.palette').get().red or 'NONE' })

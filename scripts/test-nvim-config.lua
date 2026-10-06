@@ -57,7 +57,7 @@ vim.opt.rtp:prepend(vim.fn.getcwd() .. '/.config/nvim')
 print('=== Neovim Config Smoke Tests ===')
 print('')
 
-local catppuccin = require('utils.palette')
+local palette = require('utils.palette')
 
 local function with_catppuccin_env(flavor, accent, light_flavor, fn)
   local previous = {
@@ -79,17 +79,17 @@ end
 
 test('Catppuccin environment defaults when values are unset', function()
   with_catppuccin_env(nil, nil, nil, function()
-    assert_true(catppuccin.flavor() == 'mocha', 'unexpected default flavor')
-    assert_true(catppuccin.accent() == 'blue', 'unexpected default accent')
-    assert_true(catppuccin.light_flavor() == 'latte', 'unexpected default light flavor')
+    assert_true(palette.flavor() == 'mocha', 'unexpected default flavor')
+    assert_true(palette.accent() == 'blue', 'unexpected default accent')
+    assert_true(palette.light_flavor() == 'latte', 'unexpected default light flavor')
   end)
 end)
 
 test('Catppuccin environment rejects empty values', function()
   with_catppuccin_env('', '', '', function()
-    assert_true(catppuccin.flavor() == 'mocha', 'empty flavor did not use the default')
-    assert_true(catppuccin.accent() == 'blue', 'empty accent did not use the default')
-    assert_true(catppuccin.light_flavor() == 'latte', 'empty light flavor did not use the default')
+    assert_true(palette.flavor() == 'mocha', 'empty flavor did not use the default')
+    assert_true(palette.accent() == 'blue', 'empty accent did not use the default')
+    assert_true(palette.light_flavor() == 'latte', 'empty light flavor did not use the default')
   end)
 end)
 
@@ -103,8 +103,8 @@ test('Catppuccin accent follows the palette without mutating it', function()
   }
   local ok, err = pcall(function()
     with_catppuccin_env('frappe', 'mauve', 'latte', function()
-      local resolved = catppuccin.get()
-      assert_true(catppuccin.flavor() == 'frappe', 'custom flavor was not preserved')
+      local resolved = palette.get()
+      assert_true(palette.flavor() == 'frappe', 'custom flavor was not preserved')
       assert_true(resolved.accent == '#mauve', 'custom accent was not resolved')
       assert_true(source.accent == nil, 'source palette was mutated')
     end)
@@ -168,7 +168,7 @@ print('')
 
 -- trailspace.lua
 test('Trailspace augroup has autocmds', function()
-  local autocmds = vim.api.nvim_get_autocmds({ group = 'Trailspace' })
+  local autocmds = vim.api.nvim_get_autocmds({ group = 'trailspace' })
   assert_true(#autocmds > 0, 'no autocmds in Trailspace group')
 end)
 
@@ -194,7 +194,7 @@ test('Trailspace match is added in normal buffers', function()
 end)
 
 test('BufWritePre autocmd exists for trailing whitespace trim', function()
-  local autocmds = vim.api.nvim_get_autocmds({ group = 'Trailspace', event = 'BufWritePre' })
+  local autocmds = vim.api.nvim_get_autocmds({ group = 'trailspace', event = 'BufWritePre' })
   assert_true(#autocmds > 0, 'BufWritePre not found')
 end)
 
