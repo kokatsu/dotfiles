@@ -3,7 +3,7 @@
 // exit 2 で終わる。
 //
 //	agent-guard banned         Claude Code の Bash 用。Herdr 入力ガードと禁止コマンド
-//	agent-guard herdr-peer     Codex の Bash 用。Herdr 入力ガードだけ
+//	agent-guard codex          Codex の Bash 用。Herdr 入力ガードと禁止コマンド (GREP_R を除く)
 //	agent-guard managed-paths  Claude Code の Edit/Write 用。Home Manager の管理下を守る
 //
 // どれもガードなので、判定に届かなかった失敗はすべて exit 2 にする。
@@ -17,6 +17,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -37,28 +38,44 @@ func refuse(format string, args ...any) {
 	block(fmt.Sprintf("agent-guard "+format+"; refusing to run the command unchecked.", args...))
 }
 
+// codexSkipped は Codex では使わない判定。GREP_R は破壊を防ぐ判定ではなく
+// 検索ツールの好みなので、Codex には押し付けない。
+var codexSkipped = []verdict{"GREP_R"}
+
+type toolCall struct {
+	name    string // 文字列の tool_name がなければ空
+	value   string
+	present bool
+}
+
 // readToolInput は payload 全体を読んでから解析する。json.Decoder は最初の値で
 // 止まるので、`{...}` の後ろに NUL や別の値が続く payload を黙って受け入れて
 // しまう。
-func readToolInput(r io.Reader, field string) (value string, present bool, err error) {
+func readToolInput(r io.Reader, field string) (toolCall, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {
-		return "", false, fmt.Errorf("could not read the payload from stdin: %w", err)
+		return toolCall{}, fmt.Errorf("could not read the payload from stdin: %w", err)
 	}
 	var payload struct {
+		ToolName  json.RawMessage            `json:"tool_name"`
 		ToolInput map[string]json.RawMessage `json:"tool_input"`
 	}
 	if err := json.Unmarshal(data, &payload); err != nil {
-		return "", false, fmt.Errorf("received a malformed payload: %w", err)
+		return toolCall{}, fmt.Errorf("received a malformed payload: %w", err)
 	}
+	var call toolCall
+	// tool_name を見るのは codex モードだけなので、文字列でなくてもここでは
+	// 失敗にせず、空のまま返す。
+	_ = json.Unmarshal(payload.ToolName, &call.name)
 	raw, ok := payload.ToolInput[field]
 	if !ok || string(raw) == "null" {
-		return "", false, nil
+		return call, nil
 	}
-	if err := json.Unmarshal(raw, &value); err != nil {
-		return "", false, fmt.Errorf("received a non-string tool_input.%s", field)
+	if err := json.Unmarshal(raw, &call.value); err != nil {
+		return toolCall{}, fmt.Errorf("received a non-string tool_input.%s", field)
 	}
-	return value, true, nil
+	call.present = true
+	return call, nil
 }
 
 // parse は shfmt が stdin を読むときと同じ方言を選ぶ。先頭の shebang が分かる
@@ -84,8 +101,9 @@ func parseAs(command string, lang syntax.LangVariant) (*syntax.File, error) {
 	return parser.Parse(strings.NewReader(command+"\n"), "")
 }
 
-// checkBanned はブロックするならその理由を、通すなら "" を返す。
-func checkBanned(command string, ruleSet []rules.Rule) string {
+// checkBanned はブロックするならその理由を、通すなら "" を返す。skip に挙げた
+// 判定は飛ばし、残りの先頭を使う。
+func checkBanned(command string, ruleSet []rules.Rule, skip ...verdict) string {
 	verdicts, err := commandVerdicts(command)
 	if herdrInputCommand(command, verdicts) {
 		return herdrInputMessage
@@ -96,10 +114,25 @@ func checkBanned(command string, ruleSet []rules.Rule) string {
 	if err != nil {
 		return parseFailure
 	}
-	if len(verdicts) > 0 {
-		return verdictMessages[verdicts[0]]
+	for _, v := range verdicts {
+		if !slices.Contains(skip, v) {
+			return verdictMessages[v]
+		}
 	}
 	return ""
+}
+
+func checkCommand(command string, present bool, skip ...verdict) {
+	if !present {
+		refuse("received no tool_input.command string")
+	}
+	ruleSet, err := rules.Load()
+	if err != nil {
+		refuse("cannot load its rules (%v)", err)
+	}
+	if message := checkBanned(command, ruleSet, skip...); message != "" {
+		block(message)
+	}
 }
 
 func run(mode string) {
@@ -112,10 +145,11 @@ func run(mode string) {
 	if mode == "managed-paths" {
 		field = "file_path"
 	}
-	value, present, err := readToolInput(os.Stdin, field)
+	call, err := readToolInput(os.Stdin, field)
 	if err != nil {
 		refuse("%v", err)
 	}
+	value, present := call.value, call.present
 
 	switch mode {
 	case "managed-paths":
@@ -123,35 +157,24 @@ func run(mode string) {
 		if present && value != "" && isManaged(value) {
 			block(managedMessage)
 		}
-	case "herdr-peer":
-		// Codex は Bash 以外の入力もこのフックに渡しうる。コマンドが無ければ
-		// 見るものが無い。
-		if !present {
+	case "codex":
+		// matcher は ^Bash$ だが、広げたときに Bash 以外を誤って判定しないよう
+		// ここでも tool_name を見る。
+		if call.name == "" {
+			refuse("received no tool_name string")
+		}
+		if call.name != "Bash" {
 			return
 		}
-		// 解析できない入力は正規表現だけで見る。Codex 側では禁止コマンドの判定を
-		// しないので、解析の失敗そのものではブロックしない。
-		verdicts, _ := commandVerdicts(value)
-		if herdrInputCommand(value, verdicts) {
-			block(herdrInputMessage)
-		}
+		checkCommand(value, present, codexSkipped...)
 	case "banned":
-		if !present {
-			refuse("received no tool_input.command string")
-		}
-		ruleSet, err := rules.Load()
-		if err != nil {
-			refuse("cannot load its rules (%v)", err)
-		}
-		if message := checkBanned(value, ruleSet); message != "" {
-			block(message)
-		}
+		checkCommand(value, present)
 	}
 }
 
 func main() {
-	if len(os.Args) != 2 || (os.Args[1] != "banned" && os.Args[1] != "herdr-peer" && os.Args[1] != "managed-paths") {
-		refuse("usage: agent-guard {banned|herdr-peer|managed-paths}")
+	if len(os.Args) != 2 || (os.Args[1] != "banned" && os.Args[1] != "codex" && os.Args[1] != "managed-paths") {
+		refuse("usage: agent-guard {banned|codex|managed-paths}")
 	}
 
 	// シグナルで終わると 128+n になり、ブロックと見なされない。読み取りの途中で

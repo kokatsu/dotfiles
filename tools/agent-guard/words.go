@@ -337,6 +337,10 @@ var shortCluster = regexp.MustCompile(`^-[A-Za-z0-9]+$`)
 // /bin/rm も ./rm も rm として読む。同名の自作スクリプトまで止めるが、取りこぼす
 // より過剰に一致させる側へ倒す。
 func commandName(word string) string {
+	// zsh は `=rm` を rm の実行ファイルのパスへ展開する。
+	if len(word) > 1 && word[0] == '=' {
+		word = word[1:]
+	}
 	if strings.Contains(word, "/") {
 		return path.Base(word)
 	}
@@ -359,8 +363,17 @@ func stripWrappers(args []string) []string {
 			if len(args) > 0 && args[0] == "--" {
 				args = args[1:]
 			}
-		case "busybox":
+		case "busybox", "noglob", "nocorrect", "-":
 			args = args[1:]
+		case "repeat":
+			args = drop(args, 2)
+		case "foreach":
+			// zsh の `foreach NAME (LIST) CMD...; end`。LIST は 1 語として届く。
+			// 本体が次の行以降にあれば、それは別の CallExpr として判定される。
+			if len(args) < 3 || !strings.HasPrefix(args[2], "(") {
+				return args
+			}
+			args = args[3:]
 		case "nohup", "setsid":
 			args = stripOpts(args[1:], "", nil)
 		case "nice":

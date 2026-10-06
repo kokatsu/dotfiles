@@ -20,7 +20,7 @@ awk '/        if \[ -f "\$TARGET" \]; then/ {active=1} /        RULES_DIR=/ {act
 [[ -s "$test_dir/activate.sh" ]]
 
 export BASE="$test_dir/base.toml" TARGET="$test_dir/config.toml" DRY_RUN_CMD=''
-printf 'model = "managed-model"\n[tui]\nnotifications = true\n' >"$BASE"
+printf 'model = "managed-model"\n[sandbox_workspace_write]\nwritable_roots = ["/home/test/.local/share/Trash"]\n[tui]\nnotifications = true\n' >"$BASE"
 chmod 444 "$BASE"
 
 # A fresh installation must be writable even though the store source is not.
@@ -53,6 +53,7 @@ cmp "$TARGET" "$test_dir/before.toml"
 bash -eu "$test_dir/activate.sh"
 grep -Fq 'model = "managed-model"' "$TARGET"
 grep -Fq 'notifications = true' "$TARGET"
+grep -Fq 'writable_roots = ["/home/test/.local/share/Trash"]' "$TARGET"
 grep -Fq '[notice]' "$TARGET"
 grep -Fq 'hide_tip = true' "$TARGET"
 grep -Fq '[projects."/tmp/project with spaces"]' "$TARGET"

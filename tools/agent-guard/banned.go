@@ -36,6 +36,7 @@ var verdictMessages = map[verdict]string{
 	"HERDR_INPUT":      herdrInputMessage,
 	"FIND_DELETE":      "Refuse find -delete. Use find ... -exec gomi {} + instead, so the files stay recoverable.",
 	"SHELL_C_UNPARSED": "Refuse sh -c with a command string that does not parse as shell: it cannot be checked, and the shell runs the lines before the error. Run the commands directly instead.",
+	"GLOB_EXEC":        "Refuse zsh glob qualifiers that run code (e:...: or +cmd). List the files first, then run the command on them directly.",
 	"EXTDIFF":          "Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out).",
 }
 
@@ -600,7 +601,8 @@ var (
 // scripts は words と同じ並びの、bash が実際に渡す文字列 (scriptText)。
 //
 // 判定は出る順の並びで返す。入れ子 (sh -c、find -exec、fd -x) の中の判定を
-// 先頭 1 つに絞ると、後ろにある HERDR_INPUT が herdr-peer モードから見えなくなる。
+// 先頭 1 つに絞ると、後ろにある HERDR_INPUT や、codex モードが GREP_R を
+// 飛ばした後の判定が見えなくなる。
 func commandVerdict(words, scripts []string) []verdict {
 	args := stripWrappers(words)
 	if len(args) == 0 {
@@ -696,6 +698,46 @@ func singleVerdict(cmd string, rest []string) verdict {
 
 // --- AST 全体の走査 -------------------------------------------------------
 
+// zsh の glob 修飾子のうち、e と + は修飾子の中に書いたコードを実行する。e の
+// 区切り文字は英数字でもよく (`f(eXcodeX)`)、+ の後ろの関数名は数字で始まって
+// もよい (`f(+123)`)。他の修飾子の引数と見分けるには修飾子列を zsh と同じに
+// 読む必要があるので、括弧の中に e か + があれば実行とみなす。`u:joe:` や
+// `L+10` のような別の修飾子にも一致するが、取りこぼすより過剰に一致させる側へ
+// 倒す。
+//
+// 修飾子になるのは語の途中から始まる括弧と `(#q...)` で、語の先頭から始まる
+// 括弧 (foreach の一覧など) は glob のグループになる。bash として解析すると
+// `*(...)` は ExtGlob になり、zsh として解析すると括弧ごと Lit に入る。
+var globExecQualifier = regexp.MustCompile(`[^(\s]\([^()]*(e|\+)|\(#q[^()]*(e|\+)`)
+
+func runsGlobQualifier(word *syntax.Word) bool {
+	var b strings.Builder
+	for _, part := range word.Parts {
+		switch part := part.(type) {
+		case *syntax.Lit:
+			// エスケープした文字は修飾子の構文にならないので、括弧も e も消す。
+			escaped := false
+			for _, r := range part.Value {
+				switch {
+				case escaped:
+					b.WriteByte('_')
+					escaped = false
+				case r == '\\':
+					escaped = true
+				default:
+					b.WriteRune(r)
+				}
+			}
+		case *syntax.ExtGlob:
+			b.WriteString(part.Op.String() + part.Pattern.Value + ")")
+		default:
+			// 展開や引用の直後の括弧も修飾子になるので、括弧の前の文字として残す。
+			b.WriteString("_")
+		}
+	}
+	return globExecQualifier.MatchString(b.String())
+}
+
 var (
 	gitIdentityVar    = regexp.MustCompile(`^GIT_(AUTHOR|COMMITTER)_(NAME|EMAIL)$`)
 	gitIdentityAssign = regexp.MustCompile(`^GIT_(AUTHOR|COMMITTER)_(NAME|EMAIL)=`)
@@ -708,6 +750,9 @@ func analyze(file *syntax.File) []verdict {
 	var verdicts []verdict
 	type call struct{ words, scripts []string }
 	var calls []call
+	// heredoc の本文はファイル名展開を受けないので、glob 修飾子として読まない。
+	// Walk は Redirect を本文の Word より先に訪問する。
+	heredocs := map[*syntax.Word]bool{}
 
 	syntax.Walk(file, func(node syntax.Node) bool {
 		// GIT_AUTHOR_* / GIT_COMMITTER_* は config を触らずに identity を変える。
@@ -721,6 +766,14 @@ func analyze(file *syntax.File) []verdict {
 			name = node.Name
 		case *syntax.FuncDecl:
 			name = node.Name
+		case *syntax.Redirect:
+			if node.Hdoc != nil {
+				heredocs[node.Hdoc] = true
+			}
+		case *syntax.Word:
+			if !heredocs[node] && runsGlobQualifier(node) {
+				verdicts = append(verdicts, "GLOB_EXEC")
+			}
 		case *syntax.CallExpr:
 			c := call{make([]string, len(node.Args)), make([]string, len(node.Args))}
 			for i, word := range node.Args {

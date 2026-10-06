@@ -117,22 +117,52 @@ func TestWalkReachesEveryCallExpr(t *testing.T) {
 func TestReadCommand(t *testing.T) {
 	cases := []struct {
 		payload string
+		name    string
 		present bool
 		fails   bool
 	}{
-		{`{"tool_input":{"command":"ls"}}`, true, false},
-		{`{"tool_input":{}}`, false, false},
-		{`{"tool_input":null}`, false, false},
-		{`{"tool_input":{"command":null}}`, false, false},
-		{`{"tool_input":{"command":42}}`, false, true},
-		{`{`, false, true},
-		{``, false, true},
-		{"{\"tool_input\":{\"command\":\"echo ok\"}}\x00x", false, true},
+		{`{"tool_input":{"command":"ls"}}`, "", true, false},
+		{`{"tool_name":"Bash","tool_input":{"command":"ls"}}`, "Bash", true, false},
+		{`{"tool_name":42,"tool_input":{"command":"ls"}}`, "", true, false},
+		{`{"tool_name":"apply_patch","tool_input":{}}`, "apply_patch", false, false},
+		{`{"tool_input":{}}`, "", false, false},
+		{`{"tool_input":null}`, "", false, false},
+		{`{"tool_input":{"command":null}}`, "", false, false},
+		{`{"tool_input":{"command":42}}`, "", false, true},
+		{`{`, "", false, true},
+		{``, "", false, true},
+		{"{\"tool_input\":{\"command\":\"echo ok\"}}\x00x", "", false, true},
 	}
 	for _, c := range cases {
-		_, present, err := readToolInput(strings.NewReader(c.payload), "command")
-		if present != c.present || (err != nil) != c.fails {
-			t.Errorf("%q: present=%v err=%v", c.payload, present, err)
+		call, err := readToolInput(strings.NewReader(c.payload), "command")
+		if call.name != c.name || call.present != c.present || (err != nil) != c.fails {
+			t.Errorf("%q: name=%q present=%v err=%v", c.payload, call.name, call.present, err)
+		}
+	}
+}
+
+// codex モードは GREP_R を飛ばす以外、banned と同じ判定を返す。
+func TestCodexSkipsOnlyGrepR(t *testing.T) {
+	ruleSet := loadRules(t)
+	grepR := verdictMessages["GREP_R"]
+	for _, c := range loadCases(t) {
+		claude := checkBanned(c.Command, ruleSet)
+		codex := checkBanned(c.Command, ruleSet, codexSkipped...)
+		if codex == grepR {
+			t.Errorf("codex returned GREP_R for %q", c.Command)
+		}
+		if claude != grepR && codex != claude {
+			t.Errorf("%q: banned=%q codex=%q", c.Command, claude, codex)
+		}
+	}
+	cases := map[string]string{
+		"grep -r foo .":           "",
+		"grep -r foo . && rm x":   verdictMessages["RM"],
+		"sh -c 'grep -R x; rm y'": verdictMessages["RM"],
+	}
+	for command, want := range cases {
+		if got := checkBanned(command, ruleSet, codexSkipped...); got != want {
+			t.Errorf("%q: want %q, got %q", command, want, got)
 		}
 	}
 }

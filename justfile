@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-auto-title-test herdr-peer-guard-test gh-api-guard-test gh-api-method-test managed-paths-test herdr-peer-test herdr-macos-notify-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
+test_recipes := "banned-commands-test codex-auto-title-test codex-guard-test gh-api-guard-test gh-api-method-test managed-paths-test herdr-peer-test herdr-macos-notify-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -249,9 +249,9 @@ banned-commands-test:
     cd tools/agent-guard && go test ./...
     bash scripts/test-banned-commands.sh
 
-# Verify raw Herdr input commands cannot bypass the shared peer guard
-herdr-peer-guard-test:
-    bash scripts/test-herdr-peer-command-guard.sh
+# Verify the Codex Bash hook (agent-guard codex) blocks raw Herdr input and banned commands
+codex-guard-test:
+    bash scripts/test-codex-command-guard.sh
 
 # Verify the AI writing hook blocks, passes, and bails out on the right inputs
 ai-writing-hook-test:

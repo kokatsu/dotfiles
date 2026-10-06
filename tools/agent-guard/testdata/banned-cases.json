@@ -1694,5 +1694,200 @@
     "want": "block",
     "command": "fd -x rm -- x",
     "label": "埋め込みコマンドの中の --"
+  },
+  {
+    "want": "block",
+    "command": "noglob rm x",
+    "label": "zsh の修飾子 noglob"
+  },
+  {
+    "want": "block",
+    "command": "nocorrect noglob rm x",
+    "label": "修飾子の重ね掛け"
+  },
+  {
+    "want": "block",
+    "command": "=rm x",
+    "label": "zsh の = 展開"
+  },
+  {
+    "want": "block",
+    "command": "- rm x",
+    "label": "zsh の修飾子 -"
+  },
+  {
+    "want": "block",
+    "command": "repeat 2 rm x",
+    "label": "zsh の repeat"
+  },
+  {
+    "want": "block",
+    "command": "sudo noglob rm x",
+    "label": "ラッパーと修飾子の組み合わせ"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'foreach f (a b) rm $f; end'",
+    "label": "zsh -c の中の foreach"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'foreach f ( a b ) rm $f; end'",
+    "label": "括弧の内側に空白がある foreach"
+  },
+  {
+    "want": "block",
+    "command": "#!/bin/zsh\nforeach f (a b) rm $f; end",
+    "label": "zsh の shebang の後ろの foreach"
+  },
+  {
+    "want": "block",
+    "command": "echo *(e:'rm x':)",
+    "label": "実行する glob 修飾子 e"
+  },
+  {
+    "want": "block",
+    "command": "echo **/*(Ne:'rm x':)",
+    "label": "他の修飾子に続く e"
+  },
+  {
+    "want": "block",
+    "command": "echo ?(e:rm:)",
+    "label": "? に続く修飾子"
+  },
+  {
+    "want": "block",
+    "command": "ls *(+fn)",
+    "label": "関数を呼ぶ glob 修飾子 +"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'echo *(oe:rm x:)'",
+    "label": "並べ替えの oe も実行する"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'echo x(e{rm y})'",
+    "label": "区切りに波括弧を使う e"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'echo (#qe:rm:)'",
+    "label": "#q で始まる修飾子"
+  },
+  {
+    "want": "block",
+    "command": "for f in *(e:'rm x':); do :; done",
+    "label": "for の一覧の中の修飾子"
+  },
+  {
+    "want": "allow",
+    "command": "echo *(.N)",
+    "label": "実行しない glob 修飾子"
+  },
+  {
+    "want": "allow",
+    "command": "zsh -c 'print -r -- *.nix(N)'",
+    "label": "実行しない修飾子 (zsh)"
+  },
+  {
+    "want": "allow",
+    "command": "zsh -c 'foreach f (apple pie) echo $f; end'",
+    "label": "本体が無害な foreach"
+  },
+  {
+    "want": "allow",
+    "command": "repeat 2 echo x",
+    "label": "本体が無害な repeat"
+  },
+  {
+    "want": "allow",
+    "command": "noglob echo *",
+    "label": "本体が無害な noglob"
+  },
+  {
+    "want": "allow",
+    "command": "echo '*(e:rm:)'",
+    "label": "引用の中は修飾子にならない"
+  },
+  {
+    "want": "allow",
+    "command": "git log --format='%(e:x:)'",
+    "label": "引用の中の括弧"
+  },
+  {
+    "want": "allow",
+    "command": "python3 - <<'PY'\nprint(s.replace('(e:x:)', ''))\nPY",
+    "label": "引用した heredoc の本文は展開されない"
+  },
+  {
+    "want": "allow",
+    "command": "cat <<EOF\nf(e:x:) and g(+h)\nEOF",
+    "label": "引用しない heredoc の本文もファイル名展開されない"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c \"ls AGENTS.md(eX'rm x'X)\"",
+    "label": "英数字を区切りに使う e"
+  },
+  {
+    "want": "block",
+    "command": "#!/bin/zsh\nls AGENTS.md(eX'rm x'X)",
+    "label": "zsh の shebang の後ろの英数字区切り"
+  },
+  {
+    "want": "block",
+    "command": "echo *(eX'rm x'X)",
+    "label": "ExtGlob の中の英数字区切り"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'echo $x(eXrm yX)'",
+    "label": "展開の直後の修飾子"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'echo \"a\"(e:rm y:)'",
+    "label": "引用の直後の修飾子"
+  },
+  {
+    "want": "allow",
+    "command": "printf '%s\\n' \\(e:x:\\)",
+    "label": "エスケープした括弧は修飾子にならない"
+  },
+  {
+    "want": "allow",
+    "command": "zsh -c 'printf %s \\(e:x:\\)'",
+    "label": "エスケープした括弧 (zsh)"
+  },
+  {
+    "want": "allow",
+    "command": "echo \\(+fn\\)",
+    "label": "エスケープした括弧と +"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'ls *(L+10)'",
+    "label": "数値を比べる + も関数呼び出しと見分けずに止める"
+  },
+  {
+    "want": "allow",
+    "command": "find . \\( -name '*.go' -o -name '*.ts' \\) -print",
+    "label": "find のエスケープした括弧"
+  },
+  {
+    "want": "allow",
+    "command": "printf '%s\\n' \"${m:-topological|time (default)}\"",
+    "label": "引用の中の展開の既定値にある括弧"
+  },
+  {
+    "want": "block",
+    "command": "ls *(+123)",
+    "label": "数字で始まる関数名を呼ぶ +"
+  },
+  {
+    "want": "block",
+    "command": "zsh -c 'ls *(+123abc)'",
+    "label": "数字で始まる関数名を呼ぶ + (zsh)"
   }
 ]

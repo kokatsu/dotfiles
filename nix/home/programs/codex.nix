@@ -37,6 +37,7 @@
     };
     sandbox_workspace_write = {
       network_access = false;
+      writable_roots = ["${config.xdg.dataHome}/Trash"];
     };
     shell_environment_policy = {
       ignore_default_excludes = false;
@@ -151,7 +152,7 @@ in {
                   type = "command";
                 }
                 {
-                  command = "${lib.getExe pkgs.agent-guard} herdr-peer";
+                  command = "${lib.getExe pkgs.agent-guard} codex";
                   type = "command";
                 }
               ];
