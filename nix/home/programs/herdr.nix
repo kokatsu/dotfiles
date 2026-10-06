@@ -98,7 +98,7 @@ in {
           # 1 行しか出さない。herdr はコマンド出力の最終行だけを採用するため、
           # 行を選り分けるラッパースクリプトは要らない。
           tab_bar_right = [
-            { type = "command", command = "${config.home.homeDirectory}/.nix-profile/bin/cc-statusline", interval_seconds = 60, timeout_seconds = 1 },
+            { type = "command", command = "${config.home.profileDirectory}/bin/cc-statusline", interval_seconds = 60, timeout_seconds = 1 },
           ]
 
           [ui.sidebar.agents]
@@ -155,6 +155,11 @@ in {
           [ui.sound]
           enabled = ${lib.boolToString pkgs.stdenv.hostPlatform.isLinux}
 
+          [experimental]
+          switch_ascii_input_source_in_prefix = true
+          reveal_hidden_cursor_for_cjk_ime = true
+          cjk_ime_agents = ["claude", "codex"]
+
           [keys]
           prefix = "ctrl+space"
           # デタッチは押し間違えると作業中のセッションから抜けてしまうので shift 必須にする
@@ -185,11 +190,6 @@ in {
           type = "shell"
           command = "${scriptsDir}/focus-next-blocked-agent.sh"
           description = "次の blocked エージェントへ移動"
-
-          [experimental]
-          switch_ascii_input_source_in_prefix = true
-          reveal_hidden_cursor_for_cjk_ime = true
-          cjk_ime_agents = ["claude", "codex"]
 
           # close_pane の置き換え。エージェントが idle (緑) 以外なら close-confirm
           # プラグインの popup 確認画面を開く (prefix+z 押し間違いによる稼働中
