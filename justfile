@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-auto-title-test codex-guard-test gh-api-guard-test gh-api-method-test managed-paths-test herdr-peer-test herdr-macos-notify-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
+test_recipes := "banned-commands-test codex-auto-title-test codex-guard-test gh-api-guard-test gh-api-method-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -291,6 +291,10 @@ herdr-peer-test:
 # Verify notification clicks select their own pane and dismissals leave focus alone
 herdr-macos-notify-test:
     bash scripts/test-herdr-macos-notify.sh
+
+# Verify layout scripts restore panes on failure and pane scripts surface errors
+herdr-scripts-test:
+    bash scripts/test-herdr-scripts.sh
 
 # Verify check failures, concurrent feed updates, and activation retries
 # Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で

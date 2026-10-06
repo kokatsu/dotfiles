@@ -38,6 +38,8 @@ split_pane() {
   jq -er '.result.pane.pane_id' <<<"$response"
 }
 
+# 失敗しても `id=$(move_pane ...)` の代入は set -e より先に済み、ID が空になる。
+# EXIT trap が元の ID で戻せるよう、呼び出し側は別の変数で受けてから代入する
 move_pane() {
   local pane_id=$1
   local target_pane_id=$2
@@ -114,7 +116,8 @@ if ((pane_count == 1)); then
     }
     trap restore_active_on_exit EXIT
 
-    active_pane_id=$(move_pane "$active_pane_id" "$right_pane_id" right "$original_tab_id")
+    moved_pane_id=$(move_pane "$active_pane_id" "$right_pane_id" right "$original_tab_id")
+    active_pane_id=$moved_pane_id
     active_is_temporary=false
     trap - EXIT
     split_pane "$active_pane_id" down >/dev/null
@@ -265,13 +268,15 @@ if [[ "$full_height_side" == "full-left" ]]; then
     top_was_active=true
   fi
 
-  top_pane_id=$(move_pane "$top_pane_id" "$bottom_pane_id" right "$temporary_tab_id")
+  moved_pane_id=$(move_pane "$top_pane_id" "$bottom_pane_id" right "$temporary_tab_id")
+  top_pane_id=$moved_pane_id
   top_is_temporary=true
   if [[ "$top_was_active" == true ]]; then
     active_pane_id=$top_pane_id
   fi
 
-  top_pane_id=$(move_pane "$top_pane_id" "$right_pane_id" right "$original_tab_id")
+  moved_pane_id=$(move_pane "$top_pane_id" "$right_pane_id" right "$original_tab_id")
+  top_pane_id=$moved_pane_id
   top_is_temporary=false
   if [[ "$top_was_active" == true ]]; then
     active_pane_id=$top_pane_id
@@ -279,6 +284,7 @@ if [[ "$full_height_side" == "full-left" ]]; then
 fi
 
 # 右を全高にする場合は既存の上下ペインを左列でそのまま復元する。
-bottom_pane_id=$(move_pane "$bottom_pane_id" "$top_pane_id" down "$original_tab_id")
+moved_pane_id=$(move_pane "$bottom_pane_id" "$top_pane_id" down "$original_tab_id")
+bottom_pane_id=$moved_pane_id
 bottom_is_temporary=false
 trap - EXIT

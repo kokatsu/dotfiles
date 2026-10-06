@@ -71,8 +71,9 @@ start_agent_if_needed() {
     return 0
   fi
 
+  # 先頭の空白で履歴に残さない (hist_ignore_space)
   if [[ "$pane_state" == shell ]] &&
-    ! "$herdr_bin" pane run "$pane_id" "$agent" >/dev/null; then
+    ! "$herdr_bin" pane run "$pane_id" " $agent" >/dev/null; then
     notify "${agent} を起動できませんでした"
   fi
 }
