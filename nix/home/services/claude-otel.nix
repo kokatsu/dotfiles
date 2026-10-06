@@ -7,8 +7,9 @@
 }: let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
   stateDir = "${config.home.homeDirectory}/.local/state/claude-otel";
+  port = 4318;
 
-  # 127.0.0.1:4318 で OTLP/HTTP JSON を受け、api_request の 5 項目だけを追記する。
+  # 127.0.0.1:port で OTLP/HTTP JSON を受け、api_request の 5 項目だけを追記する。
   # user.email などほかの属性とイベントは保存しない
   receiver = pkgs.writeText "claude-otel-recv.py" ''
     import http.server, json, os, sys
@@ -49,11 +50,21 @@
         def log_request(self, *a):
             pass
 
-    http.server.HTTPServer(("127.0.0.1", 4318), H).serve_forever()
+    http.server.HTTPServer(("127.0.0.1", ${toString port}), H).serve_forever()
   '';
   cmd = ["${pkgs.python3}/bin/python3" "${receiver}" "${stateDir}/api_request.jsonl"];
 in
   lib.mkMerge [
+    {
+      # settings.json の env は claude -p --setting-sources project で読まれないので、
+      # シェルの環境変数で渡す
+      home.sessionVariables = {
+        CLAUDE_CODE_ENABLE_TELEMETRY = "1";
+        OTEL_LOGS_EXPORTER = "otlp";
+        OTEL_EXPORTER_OTLP_LOGS_PROTOCOL = "http/json";
+        OTEL_EXPORTER_OTLP_LOGS_ENDPOINT = "http://127.0.0.1:${toString port}/v1/logs";
+      };
+    }
     (lib.mkIf isDarwin {
       launchd.agents.claude-otel = {
         enable = true;
