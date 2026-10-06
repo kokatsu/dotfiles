@@ -1,0 +1,5 @@
+{
+  "name": "claim-verifier",
+  "version": "0.1.0",
+  "description": "Judge each final answer for factual claims no tool result supports"
+}

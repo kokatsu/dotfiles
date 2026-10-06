@@ -3,6 +3,9 @@
 !hooks/
 !hooks/**
 
+!mods/
+!mods/**
+
 !rules/
 !rules/**
 

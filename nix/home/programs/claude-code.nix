@@ -30,6 +30,8 @@
       source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/claude/settings.json";
       force = true;
     };
+    # Claude Code が型定義と tsconfig.json を mod フォルダへ書き込むため、store ではなく作業ツリーを指す
+    ".config/claude/mods".source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/claude/mods";
     ".config/claude/CLAUDE.md".source = ../../../.config/claude/.CLAUDE.md;
     ".config/claude/skills".source = ../../../.config/claude/skills;
     ".config/claude/rules".source = ../../../.config/claude/rules;
@@ -56,11 +58,6 @@
       source = ../../../.config/claude/hooks/notify.sh;
       executable = true;
     };
-    ".config/claude/hooks/transcript-grep-guard.sh" = {
-      source = ../../../.config/claude/hooks/transcript-grep-guard.sh;
-      executable = true;
-    };
-    ".config/claude/hooks/transcript-grep-guard.ts".source = ../../../.config/claude/hooks/transcript-grep-guard.ts;
     ".config/claude/hooks/textlint-response.json".source = ../../../.config/claude/hooks/textlint-response.json;
     ".config/claude/keybindings.json".text = builtins.toJSON {
       "$schema" = "https://platform.claude.com/docs/schemas/claude-code/keybindings.json";

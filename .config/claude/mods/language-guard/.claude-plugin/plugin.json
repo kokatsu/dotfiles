@@ -1,0 +1,5 @@
+{
+  "name": "language-guard",
+  "version": "0.1.0",
+  "description": "Send back a final answer whose prose is English instead of Japanese"
+}

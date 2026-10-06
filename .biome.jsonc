@@ -22,6 +22,7 @@
       "!.claude",
       "!.config/zeno",
       "!.config/claude/hooks",
+      "!.config/claude/mods/**/*.ts",
       "!.config/herdr/hooks",
       "!.config/nvim/lazy-lock.json"
     ]
