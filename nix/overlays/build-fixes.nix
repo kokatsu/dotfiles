@@ -25,7 +25,7 @@ in {
         cp ${packageLock} $out/package-lock.json
       '';
 
-      npmDepsHash = "sha256-HL5zSw7MP+sEv3ILDPJ53hPqXlMggRlLufaXqYgF4s8=";
+      npmDepsHash = "sha256-kYtpE97eFMRTvOGxKZMS4+epsTey0DFdL+qnHHPbAWE=";
       forceGitDeps = true;
       makeCacheWritable = true;
       dontNpmBuild = true;
