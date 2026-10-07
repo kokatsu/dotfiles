@@ -25,6 +25,9 @@
         extra-trusted-public-keys = [
           "kokatsu.cachix.org-1:womBGQiv46ieMIq9Lll7fa06bN0CMKMjIEDIjvp8+rI="
         ];
+        # ~/.nix-profile と ~/.nix-defexpr を $XDG_STATE_HOME/nix へ移す。
+        # Home Manager は home.profileDirectory と NIX_PATH をこれに合わせて切り替える。
+        use-xdg-base-directories = true;
       };
   };
 }

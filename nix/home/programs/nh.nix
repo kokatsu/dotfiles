@@ -18,7 +18,7 @@ in {
   # Linux (single-user Nix) は profile の nix、macOS (Determinate Nix) は
   # /nix/var/nix/profiles/default の nix を指す。
   systemd.user.services.nh-clean.Service.Environment = [
-    "PATH=${config.home.homeDirectory}/.nix-profile/bin"
+    "PATH=${config.home.profileDirectory}/bin"
   ];
   launchd.agents.nh-clean.config = {
     EnvironmentVariables.PATH = "/nix/var/nix/profiles/default/bin:/usr/bin:/bin";

@@ -172,6 +172,7 @@ in {
         CARGO_HOME = "${config.xdg.dataHome}/cargo";
         GOPATH = "${config.xdg.dataHome}/go";
         NPM_CONFIG_CACHE = "${config.xdg.cacheHome}/npm";
+        CDK_HOME = "${config.xdg.cacheHome}/cdk";
         # XDG_CONFIG_HOME は xdg.enable = true で Home Manager が設定する
         ZDOTDIR = "${config.xdg.configHome}/zsh";
         CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
@@ -218,6 +219,7 @@ in {
         LD_LIBRARY_PATH = lib.makeLibraryPath [pkgs.stdenv.cc.cc.lib];
         # macOS は OrbStack が Docker CLI の設定を管理するため Linux のみ
         DOCKER_CONFIG = "${config.xdg.configHome}/docker";
+        GNUPGHOME = "${config.xdg.dataHome}/gnupg";
       };
   };
 

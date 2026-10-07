@@ -129,16 +129,16 @@ in {
             fi
 
             # Nix profile PATH (シングルユーザーインストール用)
-            if [ -e "$HOME/.nix-profile/bin" ]; then
-              export PATH="$HOME/.nix-profile/bin:$PATH"
+            if [ -e "${config.home.profileDirectory}/bin" ]; then
+              export PATH="${config.home.profileDirectory}/bin:$PATH"
             fi
 
             # Home Manager session variables
             # 親シェルから継承された場合にスキップされるのを防ぐため、ガード変数をリセット
             # (standalone Home Manager のみ使うため /etc/profiles/per-user は見ない)
             unset __HM_SESS_VARS_SOURCED
-            if [ -e "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
-              . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+            if [ -e "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh" ]; then
+              . "${config.home.profileDirectory}/etc/profile.d/hm-session-vars.sh"
             fi
             # XDG_CONFIG_HOME / ZDOTDIR は hm-session-vars.sh と ~/.zshenv が設定する
           '';
