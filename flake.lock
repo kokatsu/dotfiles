@@ -27,11 +27,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791214772,
-        "narHash": "sha256-BsfP0m6W5tZHn3/KXT2EPNDKZRH6bVahENve3rmBH/U=",
+        "lastModified": 1791412406,
+        "narHash": "sha256-syLZujzZxbLz+rPrUAwarorXJbPxINgU59JYqRPfU+c=",
         "owner": "kokatsu",
         "repo": "cc-statusline",
-        "rev": "8d059116819f0e3418e1227473ccf70a041d56be",
+        "rev": "0f9bd2acefcf8a3260d4b22b1657969a77678e7a",
         "type": "github"
       },
       "original": {
