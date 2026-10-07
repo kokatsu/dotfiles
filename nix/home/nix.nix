@@ -17,6 +17,10 @@
         # max-jobs * cores が利用可能スレッド数を超えないようにする。
         max-jobs = 4;
         cores = 3;
+
+        # ~/.nix-profile と ~/.nix-defexpr を $XDG_STATE_HOME/nix へ移す。
+        # Home Manager は home.profileDirectory と NIX_PATH をこれに合わせて切り替える。
+        use-xdg-base-directories = true;
       }
       // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
         # CI が main ブランチで構築した custom package を再利用する。
@@ -25,9 +29,6 @@
         extra-trusted-public-keys = [
           "kokatsu.cachix.org-1:womBGQiv46ieMIq9Lll7fa06bN0CMKMjIEDIjvp8+rI="
         ];
-        # ~/.nix-profile と ~/.nix-defexpr を $XDG_STATE_HOME/nix へ移す。
-        # Home Manager は home.profileDirectory と NIX_PATH をこれに合わせて切り替える。
-        use-xdg-base-directories = true;
       };
   };
 }

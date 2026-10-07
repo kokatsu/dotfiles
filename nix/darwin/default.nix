@@ -1,4 +1,8 @@
-{username, ...}: {
+{
+  lib,
+  username,
+  ...
+}: {
   # Nix設定 (Determinate Nix使用のため無効化)
   nix.enable = false;
 
@@ -115,4 +119,13 @@
 
   # root ユーザーの home を明示的に設定 (nix-darwin の assertion を満たすため)
   users.users.root.home = "/var/root";
+
+  # nix-darwin の既定は $HOME/.nix-profile を固定で含むが、Home Manager 側で
+  # use-xdg-base-directories を有効にしているためユーザープロファイルはこちらにある。
+  # PATH・TERMINFO_DIRS・XDG_*_DIRS・NIX_PROFILES はこの一覧から生成される。
+  environment.profiles = lib.mkForce [
+    "$HOME/.local/state/nix/profile"
+    "/run/current-system/sw"
+    "/nix/var/nix/profiles/default"
+  ];
 }
