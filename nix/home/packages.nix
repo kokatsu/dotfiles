@@ -70,8 +70,6 @@ in {
       # psql 用。nixpkgs にクライアント単体の attr がないため postgresql を入れる。
       # $PSQLRC は default.nix が .config/pg/.psqlrc を指す
       postgresql # PostgreSQL クライアント (psql) + サーバーバイナリ
-      # https://github.com/github/copilot-cli
-      github-copilot-cli # GitHub Copilot CLI
       # https://github.com/vercel-labs/agent-browser
       agent-browser # ブラウザ自動化エージェント
       # https://github.com/crocidb/bulletty
