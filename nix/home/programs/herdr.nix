@@ -260,6 +260,14 @@ in {
           description = "直前のコマンドと出力をコピー"
 
           [[keys.command]]
+          key = "prefix+shift+y"
+          type = "popup"
+          command = "${scriptsDir}/copy-claude-response.sh"
+          description = "Claude Code: 応答を選んでコピー"
+          width = "90%"
+          height = "80%"
+
+          [[keys.command]]
           key = "alt+v"
           type = "popup"
           command = "${scriptsDir}/prompt-edit.sh"
