@@ -171,6 +171,7 @@ in {
         RUSTUP_HOME = "${config.xdg.dataHome}/rustup";
         CARGO_HOME = "${config.xdg.dataHome}/cargo";
         GOPATH = "${config.xdg.dataHome}/go";
+        DUB_HOME = "${config.xdg.dataHome}/dub";
         NPM_CONFIG_CACHE = "${config.xdg.cacheHome}/npm";
         CDK_HOME = "${config.xdg.cacheHome}/cdk";
         # XDG_CONFIG_HOME は xdg.enable = true で Home Manager が設定する
@@ -246,6 +247,7 @@ in {
       RUSTUP_HOME
       CARGO_HOME
       GOPATH
+      DUB_HOME
       NPM_CONFIG_CACHE
       DOCKER_CONFIG
       ;
