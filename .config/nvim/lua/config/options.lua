@@ -36,7 +36,6 @@ end
 
 -- WSL環境でgxコマンドでWindowsブラウザを開く
 if is_wsl then
-  vim.g.netrw_nogx = 1
   vim.keymap.set('n', 'gx', function()
     require('utils.windows').open_url(vim.fn.expand('<cfile>'))
   end, { desc = 'Open URL in Windows browser' })

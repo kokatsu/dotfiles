@@ -281,16 +281,32 @@ vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
 
 -- ターミナルバッファでは重い表示系を無効化して描画を軽くする
 vim.api.nvim_create_autocmd('TermOpen', {
-  callback = function(ev)
-    vim.wo.number = false
-    vim.wo.relativenumber = false
-    vim.wo.signcolumn = 'no'
-    vim.wo.foldcolumn = '0'
+  callback = function()
     vim.wo.scrolloff = 0
     vim.wo.sidescrolloff = 0
-    vim.b[ev.buf].snacks_scroll = false
-    vim.b[ev.buf].snacks_indent = false
-    vim.b[ev.buf].snacks_words = false
+  end,
+})
+
+-- 非アクティブな分割ウィンドウだけ背景を変える。グローバルの NormalNC に色を付けると、
+-- NormalNC を差し替えないプラグインの float (noice の cmdline, blink のメニューなど) にも乗る。
+-- 新しいウィンドウは開いた時点のウィンドウの winhighlight を受け継ぐため、カレントからは外しておく
+local dim_inactive = 'NormalNC:DimInactive'
+vim.api.nvim_create_autocmd({ 'VimEnter', 'WinEnter' }, {
+  callback = function()
+    local current = vim.api.nvim_get_current_win()
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+      local winhl = vim.wo[win].winhighlight
+      local parts = vim.tbl_filter(function(part)
+        return part ~= dim_inactive
+      end, vim.split(winhl, ',', { trimempty = true }))
+      if win ~= current and vim.api.nvim_win_get_config(win).relative == '' then
+        table.insert(parts, dim_inactive)
+      end
+      local want = table.concat(parts, ',')
+      if want ~= winhl then
+        vim.api.nvim_set_option_value('winhighlight', want, { win = win, scope = 'local' })
+      end
+    end
   end,
 })
 

@@ -8,6 +8,3 @@ vim.api.nvim_set_hl(0, 'SnacksPickerInputBorder', { bg = 'NONE' })
 
 -- コードブロック内テキストの前景色をクリア（injection ハイライトを優先）
 vim.api.nvim_set_hl(0, '@markup.raw.block', { fg = 'NONE' })
-
--- 非アクティブ Window の背景色を透明に
-vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'NONE' })

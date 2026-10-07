@@ -6,7 +6,6 @@ local common_exclude = explorer.common_exclude
 
 -- Picker opts
 M.opts = {
-  enabled = true,
   -- ESCキーで即座に閉じる設定
   win = {
     input = {
@@ -32,7 +31,6 @@ M.opts = {
   },
   matcher = {
     fuzzy = true,
-    smart_case = true,
     ignorecase = true,
     sort_empty = false,
     filename_bonus = true,

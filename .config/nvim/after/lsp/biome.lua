@@ -10,12 +10,6 @@ local biome_config = {
     'typescriptreact',
     'vue',
   },
-  root_markers = {
-    '.biome.json',
-    '.biome.jsonc',
-    'biome.json',
-    'biome.jsonc',
-  },
 }
 
 return biome_config

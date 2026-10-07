@@ -33,7 +33,6 @@ return {
       { 'sf', desc = 'Find right surrounding' },
       { 'sF', desc = 'Find left surrounding' },
       { 'sh', desc = 'Highlight surrounding' },
-      { 'sn', desc = 'Update n_lines' },
     },
   },
   keys = {

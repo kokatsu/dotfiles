@@ -145,9 +145,7 @@ M.config = {
 }
 
 -- Explorer opts
-M.opts = {
-  enabled = true,
-}
+M.opts = {}
 
 -- Explorer action
 function M.action()

@@ -1,6 +1,5 @@
 ---@type vim.lsp.Config
 return {
-  filetypes = { 'markdown' },
   -- markdown-oxide は vault root 配下の隠しディレクトリを走査しないため、`.kokatsu/`
   -- のノートは root がリポジトリのままだとインデックスされない。`.moxide.toml` を
   -- `.git` より高い優先度グループに置くことで、`.moxide.toml` を持つ `.kokatsu/` は
