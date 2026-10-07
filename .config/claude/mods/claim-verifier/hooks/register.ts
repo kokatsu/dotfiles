@@ -38,7 +38,7 @@ async function judge(
   prompt: string,
   evidenceChars: number,
   latestChars: number,
-): Promise<void> {
+): Promise<Verdict | undefined> {
   const started = Date.now();
   const judged = await $.model.complete({
     model: "sonnet",
@@ -63,6 +63,7 @@ async function judge(
     evidenceChars,
     latestChars,
     mineMs,
+    usage: judged.usage,
     mine: verdict ??
       {
         error: judged.isAnswered
@@ -79,6 +80,7 @@ async function judge(
     path,
     JSON.stringify(entry),
   );
+  return verdict;
 }
 
 export const register: Register = (on) => {
@@ -136,14 +138,28 @@ export const register: Register = (on) => {
     const { text: evidence, latestChars } = buildEvidence(messages);
     const prompt = [evidence, "## Response to judge", answer].join("\n\n");
 
-    // The turn stays open until every Stop hook returns, so the judging runs in
-    // a timer's own dispatch and the verdict is only shown, never a block.
-    $.clock.after(0, () => {
-      judge($, e.session_id, prompt, evidence.length, latestChars).catch(
-        (error: unknown) =>
-          $.ui.log(`claim-verifier: ${String(error)}`, { to: "debug" }),
+    let verdict: Verdict | undefined;
+    try {
+      verdict = await judge(
+        $,
+        e.session_id,
+        prompt,
+        evidence.length,
+        latestChars,
       );
-    });
-    return next(e);
+    } catch (error: unknown) {
+      $.ui.log(`claim-verifier: ${String(error)}`, { to: "debug" });
+    }
+    const result = await next(e);
+    // One send-back per turn: the rewrite is judged and logged, never blocked,
+    // so a judge that keeps flagging cannot hold the turn open.
+    if (verdict?.ok !== false || e.stop_hook_active) return result;
+    return {
+      ...result,
+      block:
+        `根拠を確認できなかった文があります。ツールで確認するか、未検証と明記してください。\n${
+          verdict.reason ?? ""
+        }`,
+    };
   }).catch((_$, e, next) => next(e));
 };
