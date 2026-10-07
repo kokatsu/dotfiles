@@ -1,7 +1,6 @@
 {
   pkgs,
   lib,
-  stablePkgs,
   isCI ? false,
   ...
 }: let
@@ -43,7 +42,7 @@ in {
           optuna # ハイパーパラメータ最適化フレームワーク
         ]))
       # https://github.com/ruby/ruby
-      stablePkgs.ruby_3_2 # nixpkgs-stable から取得 (理由は flake.nix 参照)
+      ruby
       # https://github.com/rust-lang/rustup
       rustup # Rust ツールチェーンマネージャ
       cargo-with-openssl # openssl-sys が必要な Cargo コマンド用 wrapper

@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05"; # Ruby 3.2用 (nixpkgs-unstable で ruby_3_2 が削除されたため)
 
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin";
@@ -107,7 +106,6 @@
   outputs = inputs @ {
     self,
     nixpkgs,
-    nixpkgs-stable,
     nix-darwin,
     home-manager,
     catppuccin,
@@ -153,7 +151,6 @@
     # システムごとにpkgsを取得するヘルパー
     inherit (nixpkgs) lib;
     forAllSystems = lib.genAttrs allSystems;
-    stablePkgsFor = system: nixpkgs-stable.legacyPackages.${system};
 
     # カスタムオーバーレイ
     customOverlays = import ./nix/overlays {inherit inputs;};
@@ -217,7 +214,6 @@
         ];
         extraSpecialArgs = {
           inherit inputs self username isCI dotfilesDir;
-          stablePkgs = stablePkgsFor system;
         };
       };
 
