@@ -30,7 +30,6 @@ in {
 
       commandTemplates = {
         dockerCompose = "docker compose";
-        restartPolicy = "unless-stopped";
       };
 
       customCommands.containers = [

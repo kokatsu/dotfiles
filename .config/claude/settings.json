@@ -55,7 +55,7 @@
         ]
       },
       {
-        "matcher": "Edit|Write|MultiEdit",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -107,7 +107,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
@@ -130,7 +130,6 @@
     ]
   },
   "bashOutputMaxChars": 128000,
-  "taskOutputMaxChars": 128000,
   "statusLine": {
     "type": "command",
     "command": "CC_STATUSLINE_SHOW_COST=0 cc-statusline",

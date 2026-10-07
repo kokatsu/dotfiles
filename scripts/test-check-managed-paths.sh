@@ -17,7 +17,7 @@ ln -s /nix/store "$test_dir/storedir"
 touch "$test_dir/plain"
 ln -s "$test_dir/plain" "$test_dir/repolink"
 
-hook_command=$(jq -r '.hooks.PreToolUse[] | select(.matcher == "Edit|Write|MultiEdit") | .hooks[0].command' \
+hook_command=$(jq -r '.hooks.PreToolUse[] | select(.matcher == "Edit|Write") | .hooks[0].command' \
   "$repo_root/.config/claude/settings.json")
 hook_path="$test_dir/bin:$PATH"
 

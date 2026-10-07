@@ -1,7 +1,4 @@
 [default]
-extend-ignore-identifiers-re = [
-  "iterm", # iTerm2 image protocol type in fastfetch config
-]
 extend-ignore-re = [
   "sha256-.+",           # Nix SRI hashes
   'U\+[0-9A-Fa-f]{4,6}', # Unicode コードポイント (U+E0BA)
@@ -11,3 +8,7 @@ extend-ignore-re = [
 [default.extend-words]
 noice = "noice"     # noice.nvim (Neovim プラグイン名)
 ratatui = "ratatui" # ratatui / ratatui-image (Rust TUI クレート名)
+
+[files]
+ignore-hidden = false
+extend-exclude = [".git/", "*.png", "*.webp"]

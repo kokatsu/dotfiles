@@ -162,9 +162,6 @@
         inherit system;
         config.allowUnfree = true;
         overlays = [
-          # statixの現行nixpkgs derivationはsnapshot testだけが壊れているため、
-          # Home Managerと同じ回避策を開発・静的解析環境にも適用する。
-          customOverlays.statix-no-check
           # `just check-static` の textlint テストが使う。ルール本体は overlay 側で
           # 供給されるため、textlint-with-rules だけでは解決できない。
           customOverlays.textlint-rule-preset-ai-writing
@@ -188,7 +185,6 @@
       customOverlays.kakehashi
       customOverlays.mise
       customOverlays.pkl
-      customOverlays.statix-no-check
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.textlint-with-rules
       customOverlays.unocss-language-server
@@ -258,7 +254,6 @@
 
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
-      customOverlays.cava-darwin-fix
       customOverlays.jp2a-darwin-fix
     ];
 

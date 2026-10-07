@@ -237,7 +237,7 @@ nvim-test:
 wezterm-links-test:
     nvim --headless --clean -l scripts/test-wezterm-links.lua
 
-# Verify pr.yml hash-update sed patterns match overlay structure, and the detect script against fixtures
+# Verify update-hashes.ts rewrites each overlay hash in place, and the detect script against fixtures
 # Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
 # LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
 hash-patterns-test:

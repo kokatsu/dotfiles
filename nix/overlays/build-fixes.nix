@@ -58,14 +58,6 @@ in {
     '';
   };
 
-  # Fix cava build on aarch64-darwin
-  # iniparser's dependency unity-test has C++ compilation issues with new clang
-  cava-darwin-fix = _final: prev: {
-    iniparser = guardedOverride "iniparser" "4.2.6" prev.iniparser (_old: {
-      doCheck = false;
-    });
-  };
-
   # Use forked git-graph with:
   # - --current option
   # - ANSI color wrapping fix
@@ -89,20 +81,10 @@ in {
         src = forkedSrc;
         hash = "sha256-a7Jo/kHuQH7OQrzAMY63jFEOPfnYKAb4AW65V5BEfWM=";
       };
-      meta = old.meta // {broken = false;};
       buildInputs = (old.buildInputs or []) ++ [prev.zlib];
       nativeBuildInputs = (old.nativeBuildInputs or []) ++ [prev.pkg-config];
       LIBZ_SYS_STATIC = "0";
       PKG_CONFIG_PATH = "${prev.zlib.dev}/lib/pkgconfig";
-    });
-  };
-
-  # statix 0.5.8-unstable-2026-07-17 fails its insta snapshot test
-  # (redundant_pattern_bind fix output drifted from the recorded snapshot;
-  # upstream issue oppiliappan/statix#64). Test-only drift; the linter works.
-  statix-no-check = _final: prev: {
-    statix = guardedOverride "statix" "0.5.8-unstable-2026-07-17" prev.statix (_old: {
-      doCheck = false;
     });
   };
 

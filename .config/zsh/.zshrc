@@ -147,7 +147,7 @@ setopt no_beep
 # GEM_HOME (hm-session-vars.sh の PATH 設定が WezTerm WSL ドメインで反映されない問題の回避)
 [[ -d "$XDG_DATA_HOME/gem/bin" ]] && [[ ":$PATH:" != *":$XDG_DATA_HOME/gem/bin:"* ]] && export PATH="$XDG_DATA_HOME/gem/bin:$PATH"
 
-# EDITOR, BAT_CONFIG_DIR は home.sessionVariables で管理
+# EDITOR は home.sessionVariables で管理
 
 # ------------------------------------------------------------------------------
 # Carapace (https://github.com/carapace-sh/carapace-bin)
@@ -202,7 +202,7 @@ zsh-defer -a +1 +2 -c '[ -e "$ZSH_EVALCACHE_DIR/completions/_delta" ] || { mkdir
 # fzf (https://github.com/junegunn/fzf)
 # ------------------------------------------------------------------------------
 
-# fzf colors は catppuccin/nix (programs.fzf.colors) で管理
+# fzf colors は FZF_DEFAULT_OPTS_FILE (themes/catppuccin-env.nix) で管理
 # FZF_DEFAULT_OPTS は home.sessionVariables 経由で設定される
 # fzf key bindings は zeno.zsh セクションで読み込み（Tab の優先順位制御のため）
 
@@ -267,10 +267,7 @@ zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-wezterm-*.sh(Nom[1]
 # zoxide (https://github.com/ajeetdsouza/zoxide)
 # ------------------------------------------------------------------------------
 
-# Catppuccin パレット由来の色は Nix 生成ファイル側で管理 ($ZDOTDIR/catppuccin-colors.zsh)
-[[ -f "$ZDOTDIR/catppuccin-colors.zsh" ]] && source "$ZDOTDIR/catppuccin-colors.zsh"
-
-export _ZO_FZF_OPTS="--no-sort --height 75% --reverse --margin=0,1 --exit-0 --select-1 --prompt=\"❯ \" ${FZF_CATPPUCCIN_COLORS} --preview \"([[ -e {2..}/README.md ]] && bat --color=always --style=numbers --line-range=:50 {2..}/README.md) || eza --color=always --group-directories-first --oneline {2..}\""
+export _ZO_FZF_OPTS="--no-sort --height 75% --reverse --margin=0,1 --exit-0 --select-1 --prompt=\"❯ \" --preview \"([[ -e {2..}/README.md ]] && bat --color=always --style=numbers --line-range=:50 {2..}/README.md) || eza --color=always --group-directories-first --oneline {2..}\""
 zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-zoxide-*.sh(Nom[1])); [[ -n $f ]] && source $f || _evalcache zoxide init zsh; }'
 
 # 全遅延タスク完了後に1回だけpromptを再描画

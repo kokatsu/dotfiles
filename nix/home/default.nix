@@ -174,7 +174,6 @@ in {
         NPM_CONFIG_CACHE = "${config.xdg.cacheHome}/npm";
         # XDG_CONFIG_HOME は xdg.enable = true で Home Manager が設定する
         ZDOTDIR = "${config.xdg.configHome}/zsh";
-        BAT_CONFIG_DIR = "${config.xdg.configHome}/bat";
         CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
         PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
         CODEX_HOME = "${config.xdg.configHome}/codex";

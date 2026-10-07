@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PostToolUse hook shared by Claude Code and Codex. It lints the Markdown and
-# HTML files a file tool wrote: Claude Code's Edit/Write/MultiEdit pass
+# HTML files a file tool wrote: Claude Code's Edit/Write pass
 # tool_input.file_path, Codex's apply_patch passes the patch in
 # tool_input.command.
 

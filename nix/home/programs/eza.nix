@@ -1,7 +1,3 @@
 _: {
-  programs.eza = {
-    enable = true;
-    icons = "auto";
-    git = true;
-  };
+  programs.eza.enable = true;
 }

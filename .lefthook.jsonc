@@ -26,11 +26,12 @@
         "run": "alejandra {staged_files} && git update-index --again"
       },
       "lua-lint-nvim": {
-        "glob": [".config/nvim/**/*.lua"],
+        "glob": [".config/nvim/*.lua"],
         "run": "selene --config .config/nvim/selene.toml {staged_files}"
       },
       "lua-lint-wezterm": {
-        "glob": [".config/wezterm/**/*.lua"],
+        "glob": [".config/wezterm/*.lua"],
+        "exclude": [".config/wezterm/background.static.lua"],
         "run": "selene --config .config/wezterm/selene.toml {staged_files}"
       },
       "lua-lint-scripts": {
@@ -75,7 +76,6 @@
         "run": "markdownlint {staged_files}"
       },
       "editorconfig": {
-        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "editorconfig-checker {staged_files}"
       },
       "gitleaks": {
@@ -120,11 +120,12 @@
         "run": "taplo format --check {push_files}"
       },
       "lua-lint-nvim": {
-        "glob": [".config/nvim/**/*.lua"],
+        "glob": [".config/nvim/*.lua"],
         "run": "selene --config .config/nvim/selene.toml {push_files}"
       },
       "lua-lint-wezterm": {
-        "glob": [".config/wezterm/**/*.lua"],
+        "glob": [".config/wezterm/*.lua"],
+        "exclude": [".config/wezterm/background.static.lua"],
         "run": "selene --config .config/wezterm/selene.toml {push_files}"
       },
       "lua-lint-scripts": {
@@ -164,7 +165,6 @@
         "run": "markdownlint {push_files}"
       },
       "editorconfig": {
-        "exclude": ["*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico"],
         "run": "editorconfig-checker {push_files}"
       },
       // 全履歴ではなく push 対象のコミットだけ走査する (履歴全体は CI と pre-commit が担う)
