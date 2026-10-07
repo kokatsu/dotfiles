@@ -28,6 +28,9 @@
       extraEnv = {
         HOMEBREW_NO_ENV_HINTS = "1";
         HOMEBREW_NO_UPDATE_REPORT_NEW = "1";
+        # XDG_CONFIG_HOME も届かないので、brew がシェルと同じ trust.json を使うよう
+        # 代わりに読む HOMEBREW_XDG_CONFIG_HOME を渡す (無いと ~/.homebrew に書く)
+        HOMEBREW_XDG_CONFIG_HOME = "/Users/${username}/.config";
       };
     };
     # Homebrew 6.0 以降、非公式 tap は信頼が必須 (HOMEBREW_REQUIRE_TAP_TRUST が
