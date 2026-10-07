@@ -32,6 +32,9 @@ source ${ZSH_PLUGIN_DIR}/evalcache/evalcache.plugin.zsh
 # 自前生成の補完 (delta など)。プラグインディレクトリは Nix store を指し書き込めない
 fpath=(${ZSH_EVALCACHE_DIR}/completions ${fpath})
 source ${ZSH_PLUGIN_DIR}/environment/init.zsh
+# Emacs キーバインドを使用（vi モードを無効化）
+# EDITOR=nvim だと main が viins になり、input の bindkey が emacs に届かないため先に切り替える
+bindkey -e
 source ${ZSH_PLUGIN_DIR}/input/init.zsh
 
 # 遅延読み込み（初回プロンプト後に読み込み）
@@ -74,9 +77,6 @@ zsh-defer -a +1 +2 -c '(( $+widgets[zeno-completion] )) && bindkey "^i" zeno-com
 zsh-defer -a +1 +2 -c '(( $+widgets[zeno-smart-history-selection] )) && bindkey "^r" zeno-smart-history-selection'
 zsh-defer -a +1 +2 -c '(( $+widgets[zeno-insert-space] )) && bindkey "^x " zeno-insert-space'
 zsh-defer -a +1 +2 -c 'bindkey "^x^m" accept-line'
-
-# Emacs キーバインドを使用（vi モードを無効化）
-bindkey -e
 
 # 単語区切りから / . = を外し、Ctrl+W / Alt+B などをパス構成要素単位で効かせる
 # (デフォルトの WORDCHARS は / を含むため Ctrl+W がパス全体を消してしまう)
@@ -222,7 +222,7 @@ zsh-defer -a +1 +2 -c '[ -e "$ZSH_EVALCACHE_DIR/completions/_delta" ] || { mkdir
 # https://github.com/catppuccin/catppuccin/discussions/2220
 # https://github.com/catppuccin/catppuccin/discussions/2220#discussioncomment-9476399
 if [[ ! -s "$ZSH_EVALCACHE_DIR/ls_colors_cache" ]]; then
-  vivid generate ${CATPPUCCIN_VIVID_THEME:-catppuccin-mocha} > "$ZSH_EVALCACHE_DIR/ls_colors_cache"
+  vivid generate ${CATPPUCCIN_VIVID_THEME:-catppuccin-mocha} >| "$ZSH_EVALCACHE_DIR/ls_colors_cache"
 fi
 export LS_COLORS="$(< $ZSH_EVALCACHE_DIR/ls_colors_cache)"
 
@@ -241,7 +241,7 @@ export LS_COLORS="$(< $ZSH_EVALCACHE_DIR/ls_colors_cache)"
   # 抽出して実在確認する (プロファイル構成の変更でパスが死ぬとプロンプトが壊れる)
   [[ -f "$cache" ]] && bin=${${${(M)${(f)"$(<"$cache")"}:#PROMPT=*}[1]#PROMPT=\'\$\(\'}%%\'*}
   if [[ ! -x "$bin" ]]; then
-    starship init zsh --print-full-init > "$cache"
+    starship init zsh --print-full-init >| "$cache"
     zcompile "$cache" 2>/dev/null
   fi
   source "$cache"
