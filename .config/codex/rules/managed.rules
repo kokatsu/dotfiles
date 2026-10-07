@@ -115,11 +115,12 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["gh", "api", "--method", "GET"],
+    pattern = ["gh", "api", ["--method", "-X"], "GET"],
     decision = "allow",
     justification = "Allow explicitly read-only GitHub API GET requests without prompting.",
     match = [
         "gh api --method GET repos/owner/repo/pulls/1",
+        "gh api -X GET repos/owner/repo/pulls/1",
         "gh api --method GET --paginate repos/owner/repo/pulls/1/comments",
     ],
     not_match = [

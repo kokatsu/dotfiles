@@ -121,10 +121,6 @@ in {
       ".config/codex/skills/browser-research".source = ../../../.config/codex/skills/browser-research;
       ".config/codex/skills/herdr-peer".source = ../../../.config/codex/skills/herdr-peer;
 
-      ".config/codex/gh-api-method-required.sh" = {
-        source = ../../../.config/codex/hooks/gh-api-method-required.sh;
-        executable = true;
-      };
       ".config/codex/check-ai-writing.sh" = {
         source = ../../../.config/claude/hooks/check-ai-writing.sh;
         executable = true;
@@ -147,10 +143,6 @@ in {
             {
               matcher = "^Bash$";
               hooks = [
-                {
-                  command = "bash '${config.xdg.configHome}/codex/gh-api-method-required.sh'";
-                  type = "command";
-                }
                 {
                   command = "${lib.getExe pkgs.agent-guard} codex";
                   type = "command";

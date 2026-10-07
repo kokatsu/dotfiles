@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-auto-title-test codex-guard-test gh-api-guard-test gh-api-method-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
+test_recipes := "banned-commands-test codex-auto-title-test codex-guard-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -39,10 +39,10 @@ codex-auto-title-test:
     bash scripts/test-codex-auto.sh
 
 # Run all formatters
-fmt: lua-fmt nix-fmt biome-fmt deno-fmt go-fmt shfmt toml-fmt yaml-fmt
+fmt: lua-fmt nix-fmt biome-fmt deno-fmt go-fmt shfmt toml-fmt yaml-fmt pkl-fmt
 
 # Check all formatting (no write)。biome は format と lint をまとめて `biome-ci` (lint 側) で見る
-fmt-check: lua-fmt-check nix-fmt-check deno-fmt-check go-fmt-check shfmt-check toml-fmt-check yaml-fmt-check
+fmt-check: lua-fmt-check nix-fmt-check deno-fmt-check go-fmt-check shfmt-check toml-fmt-check yaml-fmt-check pkl-fmt-check
 
 # Run all linters
 lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint deno-lint deno-check go-vet biome-ci markdownlint toml-check editorconfig gitleaks-smoke-test gitleaks-scan
@@ -187,6 +187,22 @@ toml-fmt:
 toml-fmt-check:
     @git ls-files -z '*.toml' | xargs -0 taplo format --check
 
+# Format Pkl files
+pkl-fmt:
+    @git ls-files -z '*.pkl' | xargs -0 pkl format -w
+
+# Check Pkl formatting (no write)
+pkl-fmt-check:
+    @git ls-files -z '*.pkl' | xargs -0 pkl format --diff-name-only
+
+# Regenerate agent-guard's Codex test cases from their Pkl source
+agent-guard-cases:
+    pkl eval tools/agent-guard/testdata/codex-cases.pkl > tools/agent-guard/testdata/codex-cases.json
+
+# Verify the committed Codex test cases match their Pkl source
+agent-guard-cases-test:
+    pkl eval tools/agent-guard/testdata/codex-cases.pkl | diff -u tools/agent-guard/testdata/codex-cases.json -
+
 # Validate TOML documents
 toml-check:
     @git ls-files -z '*.toml' | xargs -0 taplo check
@@ -265,10 +281,6 @@ textlint-response-config-test:
 gh-api-guard-test:
     deno test --no-prompt --allow-read=scripts/gh-api-guard-cases.tsv --allow-run="$(command -v shfmt)" scripts/test-gh-api-guard.ts -- "$(command -v shfmt)"
     bash scripts/test-gh-api-guard.sh
-
-# Verify the Codex `gh api` hook denies only real invocations without an explicit method
-gh-api-method-test:
-    bash scripts/test-gh-api-method-required.sh
 
 # Verify edits are refused only when the path resolves into /nix/store
 managed-paths-test:

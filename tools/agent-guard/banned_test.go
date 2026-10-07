@@ -25,7 +25,12 @@ type bannedCase struct {
 
 func loadCases(t *testing.T) []bannedCase {
 	t.Helper()
-	data, err := os.ReadFile("testdata/banned-cases.json")
+	return loadCaseFile(t, "testdata/banned-cases.json")
+}
+
+func loadCaseFile(t *testing.T, name string) []bannedCase {
+	t.Helper()
+	data, err := os.ReadFile(name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +58,7 @@ func TestBannedCases(t *testing.T) {
 			name = c.Command
 		}
 		t.Run(c.Want+": "+name, func(t *testing.T) {
-			message := checkBanned(c.Command, ruleSet)
+			message := checkBanned(c.Command, ruleSet, bannedSkipped...)
 			switch {
 			case c.Want == "block" && message == "":
 				t.Error("should be blocked, but was allowed")
@@ -61,6 +66,37 @@ func TestBannedCases(t *testing.T) {
 				t.Errorf("should be allowed, but was blocked: %s", message)
 			}
 		})
+	}
+}
+
+// codex モードの GH_API_METHOD を固定する。ケースは codex-cases.pkl に書き、
+// `just agent-guard-cases` で JSON を生成する。
+func TestCodexCases(t *testing.T) {
+	ruleSet := loadRules(t)
+	for _, c := range loadCaseFile(t, "testdata/codex-cases.json") {
+		name := c.Label
+		if name == "" {
+			name = c.Command
+		}
+		t.Run(c.Want+": "+name, func(t *testing.T) {
+			message := checkBanned(c.Command, ruleSet, codexSkipped...)
+			switch {
+			case c.Want == "block" && message == "":
+				t.Error("should be blocked, but was allowed")
+			case c.Want == "allow" && message != "":
+				t.Errorf("should be allowed, but was blocked: %s", message)
+			}
+		})
+	}
+	// 採用される判定は文書順で先頭のもの。
+	order := map[string]string{
+		"rm x && gh api r": verdictMessages["RM"],
+		"gh api r && rm x": verdictMessages["GH_API_METHOD"],
+	}
+	for command, want := range order {
+		if got := checkBanned(command, ruleSet, codexSkipped...); got != want {
+			t.Errorf("%q: want %q, got %q", command, want, got)
+		}
 	}
 }
 
@@ -81,7 +117,7 @@ func TestVerdictPrecedence(t *testing.T) {
 			if !ok {
 				t.Fatalf("unknown verdict %s", want)
 			}
-			if got := checkBanned(command, ruleSet); got != message {
+			if got := checkBanned(command, ruleSet, bannedSkipped...); got != message {
 				t.Errorf("expected verdict %s, got: %s", want, got)
 			}
 		})
@@ -141,17 +177,21 @@ func TestReadCommand(t *testing.T) {
 	}
 }
 
-// codex モードは GREP_R を飛ばす以外、banned と同じ判定を返す。
-func TestCodexSkipsOnlyGrepR(t *testing.T) {
+// codex モードは GREP_R を飛ばし GH_API_METHOD を足す以外、banned と同じ判定を返す。
+func TestCodexDiffersOnlyByGrepRAndGhAPI(t *testing.T) {
 	ruleSet := loadRules(t)
 	grepR := verdictMessages["GREP_R"]
-	for _, c := range loadCases(t) {
-		claude := checkBanned(c.Command, ruleSet)
+	ghAPI := verdictMessages["GH_API_METHOD"]
+	for _, c := range append(loadCases(t), loadCaseFile(t, "testdata/codex-cases.json")...) {
+		claude := checkBanned(c.Command, ruleSet, bannedSkipped...)
 		codex := checkBanned(c.Command, ruleSet, codexSkipped...)
 		if codex == grepR {
 			t.Errorf("codex returned GREP_R for %q", c.Command)
 		}
-		if claude != grepR && codex != claude {
+		if claude == ghAPI {
+			t.Errorf("banned returned GH_API_METHOD for %q", c.Command)
+		}
+		if claude != grepR && codex != ghAPI && codex != claude {
 			t.Errorf("%q: banned=%q codex=%q", c.Command, claude, codex)
 		}
 	}

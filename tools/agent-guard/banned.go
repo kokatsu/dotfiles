@@ -34,7 +34,9 @@ var verdictMessages = map[verdict]string{
 	"SHALLOW":          "Refuse shallow git fetch/pull (--depth/--shallow-*) because it makes the existing repository shallow. Use a temporary shallow clone (git clone --depth), or fetch normally. --deepen/--unshallow remain allowed.",
 	"GIT_IDENTITY":     "Don't set or override Git identity. ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes Git fail loudly where no entry matches. Ask the user instead of choosing a value.",
 	"HERDR_INPUT":      herdrInputMessage,
+	"GH_API_METHOD":    "gh api: give a literal HTTP method (-X GET for a read) and put expanded endpoints after `--` or behind a literal prefix; if this is not a gh call, quote the words.",
 	"FIND_DELETE":      "Refuse find -delete. Use find ... -exec gomi {} + instead, so the files stay recoverable.",
+	"NPM_BIOME":        "Refuse running the npm package named biome (npx, bunx, pnpm dlx, npm exec): it is an unrelated env-var manager, not the Biome formatter. Run biome from PATH (Nix) directly.",
 	"SHELL_C_UNPARSED": "Refuse sh -c with a command string that does not parse as shell: it cannot be checked, and the shell runs the lines before the error. Run the commands directly instead.",
 	"GLOB_EXEC":        "Refuse zsh glob qualifiers that run code (e:...: or +cmd). List the files first, then run the command on them directly.",
 	"EXTDIFF":          "Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out).",
@@ -484,17 +486,20 @@ func alignScripts(words, scripts, rest []string) []string {
 	return out
 }
 
-type embedded struct{ words, scripts []string }
+type embedded struct {
+	words, scripts []string
+	infos          []wordInfo
+}
 
 // 実行するコマンドの範囲を start から終端の手前まで取り出す。find は ";" か
 // "{} +" で、fd は ";" で終わり、終端が無ければ末尾まで。返す添字は終端の位置。
-func embeddedSpan(cmd string, rest, scripts []string, start int) (embedded, int) {
+func embeddedSpan(cmd string, rest, scripts []string, infos []wordInfo, start int) (embedded, int) {
 	end := start
 	for end < len(rest) && rest[end] != ";" &&
 		!(cmd == "find" && rest[end] == "+" && end > start && rest[end-1] == "{}") {
 		end++
 	}
-	return embedded{rest[start:end], scripts[start:end]}, end
+	return embedded{rest[start:end], scripts[start:end], infos[start:end]}, end
 }
 
 // 値を 1 つ取る find の条件とオプション。値が "-exec" や "-delete" でも
@@ -516,7 +521,7 @@ var findValueOpts = map[string]bool{
 // find の式を走査し、-exec/-execdir/-ok/-okdir が実行するコマンドと、
 // アクションとしての -delete があるかを返す。条件の値と、実行するコマンドの
 // 引数は式として読まない。
-func findActions(rest, scripts []string) ([]embedded, bool) {
+func findActions(rest, scripts []string, infos []wordInfo) ([]embedded, bool) {
 	var subs []embedded
 	deletes := false
 	for i := 0; i < len(rest); i++ {
@@ -524,7 +529,7 @@ func findActions(rest, scripts []string) ([]embedded, bool) {
 		switch {
 		case a == "-exec" || a == "-execdir" || a == "-ok" || a == "-okdir":
 			var sub embedded
-			sub, i = embeddedSpan("find", rest, scripts, i+1)
+			sub, i = embeddedSpan("find", rest, scripts, infos, i+1)
 			subs = append(subs, sub)
 		case a == "-delete":
 			deletes = true
@@ -543,10 +548,10 @@ const fdValueShort = "dEteSojcC"
 // fd の -x/--exec/-X/--exec-batch が実行するコマンドを返す。値が付属した形
 // (--exec=CMD、-xCMD) では付属した 1 語だけがコマンドで、後ろの語は fd の引数に
 // 戻る。"--" の後ろはパターンとパスなので、オプションとして読まない。
-func fdCommands(rest, scripts []string) []embedded {
+func fdCommands(rest, scripts []string, infos []wordInfo) []embedded {
 	var subs []embedded
 	oneWord := func(cmd string) {
-		subs = append(subs, embedded{[]string{cmd}, []string{cmd}})
+		subs = append(subs, embedded{[]string{cmd}, []string{cmd}, []wordInfo{{}}})
 	}
 	for i := 0; i < len(rest); i++ {
 		a := rest[i]
@@ -555,7 +560,7 @@ func fdCommands(rest, scripts []string) []embedded {
 			return subs
 		case a == "-x" || a == "--exec" || a == "-X" || a == "--exec-batch":
 			var sub embedded
-			sub, i = embeddedSpan("fd", rest, scripts, i+1)
+			sub, i = embeddedSpan("fd", rest, scripts, infos, i+1)
 			subs = append(subs, sub)
 		case strings.HasPrefix(a, "--exec=") || strings.HasPrefix(a, "--exec-batch="):
 			oneWord(a[strings.Index(a, "=")+1:])
@@ -569,7 +574,7 @@ func fdCommands(rest, scripts []string) []embedded {
 						oneWord(a[j+1:])
 					} else {
 						var sub embedded
-						sub, i = embeddedSpan("fd", rest, scripts, i+1)
+						sub, i = embeddedSpan("fd", rest, scripts, infos, i+1)
 						subs = append(subs, sub)
 					}
 					break
@@ -578,6 +583,66 @@ func fdCommands(rest, scripts []string) []embedded {
 		}
 	}
 	return subs
+}
+
+// npm の "biome" は Biome とは無関係なパッケージで、実行すると ~/.biome を作る。
+// Biome 本体は @biomejs/biome。ランナーの引数のどこかに biome の指定があれば止める。
+// npm の config はどれも "--key value" で渡せるので、値を取るオプションを数え上げて
+// オペランドを特定することはできない。-p/--package が biome 以外だけを入れるなら、
+// biome はその bin の名前である。--package を読むのは npm exec では "--" まで、
+// npx などでは最初のオペランドまでで、その後ろは実行するコマンドの引数になる。
+// オプションの値をオペランドと読むと範囲が狭まり、止める側に倒れる。
+// Deno は "npm:biome" の形でも受け取り、deno run ではそれがスクリプトになるので、
+// deno の語に指定子が現れたら位置を問わず止める。
+func isNpmBiome(spec string) bool {
+	spec = strings.TrimPrefix(spec, "npm:")
+	return spec == "biome" || strings.HasPrefix(spec, "biome@")
+}
+
+func runsNpmBiome(cmd string, rest []string) bool {
+	if (cmd == "deno" || cmd == "dx") && slices.ContainsFunc(rest, func(a string) bool {
+		return strings.HasPrefix(a, "npm:") && isNpmBiome(a)
+	}) {
+		return true
+	}
+	args, untilDdash, ok := npmRunnerArgs(cmd, rest)
+	if !ok {
+		return false
+	}
+	var packages []string
+scan:
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "--":
+			break scan
+		case (a == "-p" || a == "--package") && i+1 < len(args):
+			packages = append(packages, args[i+1])
+			i++
+		case strings.HasPrefix(a, "--package="):
+			packages = append(packages, a[len("--package="):])
+		case !untilDdash && !strings.HasPrefix(a, "-"):
+			break scan
+		}
+	}
+	if len(packages) > 0 {
+		return slices.ContainsFunc(packages, isNpmBiome)
+	}
+	return slices.ContainsFunc(args, isNpmBiome)
+}
+
+// npx は npm exec、pnpx は pnpm dlx、dx は deno x の別名。
+func npmRunnerArgs(cmd string, rest []string) (args []string, untilDdash, ok bool) {
+	switch {
+	case cmd == "npx" || cmd == "pnpx" || cmd == "bunx" || cmd == "dx":
+		return rest, false, true
+	case cmd == "npm" && len(rest) > 0 && (rest[0] == "exec" || rest[0] == "x"):
+		return rest[1:], true, true
+	case cmd == "pnpm" && len(rest) > 0 && rest[0] == "dlx",
+		cmd == "deno" && len(rest) > 0 && rest[0] == "x":
+		return rest[1:], false, true
+	}
+	return nil, false, false
 }
 
 func isHerdrInput(rest []string) bool {
@@ -603,7 +668,24 @@ var (
 // 判定は出る順の並びで返す。入れ子 (sh -c、find -exec、fd -x) の中の判定を
 // 先頭 1 つに絞ると、後ろにある HERDR_INPUT や、codex モードが GREP_R を
 // 飛ばした後の判定が見えなくなる。
-func commandVerdict(words, scripts []string) []verdict {
+//
+// GH_API_METHOD は、語の並びと wrapper を剥がした結果の両方で、他の判定の後に足す。
+// ここに置くと find -exec や fd -x が切り出した範囲にも、その中の env -S にも届く。
+// find と fd 自身の語の並びは見ない。範囲の外にある find の条件 (`-name "$X"`) を
+// gh api の引数として読んでしまうため。
+func commandVerdict(words, scripts []string, infos []wordInfo) []verdict {
+	out := callVerdicts(words, scripts, infos)
+	args := stripWrappers(words)
+	if len(args) > 0 && (args[0] == "find" || args[0] == "fd") {
+		return out
+	}
+	if ghAPIMissingMethod(words, infos) || ghAPIMissingMethod(args, alignInfos(words, infos, args)) {
+		out = append(out, "GH_API_METHOD")
+	}
+	return out
+}
+
+func callVerdicts(words, scripts []string, infos []wordInfo) []verdict {
 	args := stripWrappers(words)
 	if len(args) == 0 {
 		return nil
@@ -612,6 +694,7 @@ func commandVerdict(words, scripts []string) []verdict {
 	cmd := args[0]
 	rest := args[1:]
 	restScripts := alignScripts(words, scripts, rest)
+	restInfos := alignInfos(words, infos, rest)
 
 	// 文字列で受け取ったコマンドを解析し直して、同じ判定にかける。
 	if lang, ok := shellVariant(cmd); ok {
@@ -630,13 +713,13 @@ func commandVerdict(words, scripts []string) []verdict {
 		var subs []embedded
 		deletes := false
 		if cmd == "find" {
-			subs, deletes = findActions(rest, restScripts)
+			subs, deletes = findActions(rest, restScripts, restInfos)
 		} else {
-			subs = fdCommands(rest, restScripts)
+			subs = fdCommands(rest, restScripts, restInfos)
 		}
 		var out []verdict
 		for _, sub := range subs {
-			out = append(out, commandVerdict(sub.words, sub.scripts)...)
+			out = append(out, commandVerdict(sub.words, sub.scripts, sub.infos)...)
 		}
 		if deletes {
 			out = append(out, "FIND_DELETE")
@@ -692,6 +775,8 @@ func singleVerdict(cmd string, rest []string) verdict {
 		return "GREP_R"
 	case cmd == "git":
 		return gitVerdict(rest)
+	case runsNpmBiome(cmd, rest):
+		return "NPM_BIOME"
 	}
 	return ""
 }
@@ -748,7 +833,10 @@ var (
 // 打ち切らずに並びとして組み立てる。
 func analyze(file *syntax.File) []verdict {
 	var verdicts []verdict
-	type call struct{ words, scripts []string }
+	type call struct {
+		words, scripts []string
+		infos          []wordInfo
+	}
 	var calls []call
 	// heredoc の本文はファイル名展開を受けないので、glob 修飾子として読まない。
 	// Walk は Redirect を本文の Word より先に訪問する。
@@ -775,7 +863,7 @@ func analyze(file *syntax.File) []verdict {
 				verdicts = append(verdicts, "GLOB_EXEC")
 			}
 		case *syntax.CallExpr:
-			c := call{make([]string, len(node.Args)), make([]string, len(node.Args))}
+			c := call{make([]string, len(node.Args)), make([]string, len(node.Args)), readWordInfos(node.Args)}
 			for i, word := range node.Args {
 				c.words[i] = wordText(word)
 				c.scripts[i] = scriptText(word)
@@ -798,7 +886,7 @@ func analyze(file *syntax.File) []verdict {
 	}
 
 	for _, c := range calls {
-		verdicts = append(verdicts, commandVerdict(c.words, c.scripts)...)
+		verdicts = append(verdicts, commandVerdict(c.words, c.scripts, c.infos)...)
 	}
 
 	return verdicts

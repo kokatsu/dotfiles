@@ -1,0 +1,124 @@
+// codex-cases.json はこのファイルから生成する (`just agent-guard-cases`)。
+// banned_test.go は JSON を読み、`just agent-guard-cases-test` が両者の一致を確かめる。
+
+class Case {
+  want: "block" | "allow"
+  command: String
+  label: String?
+}
+
+local function block(c: String): Case = new { want = "block"; command = c }
+local function allow(c: String): Case = new { want = "allow"; command = c }
+
+local cases: Listing<Case> = new {
+  // method の無い呼び出し
+  block(#"gh api repos/o/r"#)
+  block(#"gh api -H "Accept: x" repos/o/r"#)
+  block(#"env GH_HOST=x gh api repos/o/r"#)
+  block(#"sudo -u me gh api repos/o/r"#)
+  block(#"timeout 5 gh api repos/o/r"#)
+  block(#"cd repo && gh api repos/o/r"#)
+  block(#"/opt/homebrew/bin/gh api repos/o/r"#)
+  block(#"gh api -X GET a && gh api b"#)
+  block(#"gh api $ARGS"#)
+  block(#"gh api -f a=b r"#)
+  block(#"gh api -X '' r"#)
+  block(#"gh api -X"#)
+
+  // method を明示した呼び出し。値は問わず、POST や DELETE は Codex の承認に任せる
+  allow(#"gh api -X GET repos/o/r"#)
+  allow(#"gh api -X GET a && gh api -X GET b"#)
+  allow(#"gh api --method POST repos/o/r/issues"#)
+  allow(#"GH_HOST=x gh api -X GET repos/o/r"#)
+  allow(#"gh api -X DELETE r"#)
+  allow(#"gh api -f a=b -X POST r"#)
+  allow(#"gh api -iX POST r"#)
+  allow(#"gh api --method=PATCH r"#)
+  allow(#"gh api -X GET a && gh api -X POST b"#)
+  allow(#"gh api -X GET -- -X"#)
+
+  // 1 語の中に gh api が現れるだけのもの
+  allow(#"echo "run gh api later""#)
+  allow(#"git commit -m "use gh api instead of curl""#)
+  allow(#"rg "gh api" docs/"#)
+  allow(#"echo done"#)
+
+  // wrapper や絶対パスの後ろの呼び出し。wrapper の一覧に頼らずに見つける
+  block(#"doas gh api r"#)
+  block(#"stdbuf -oL gh api r"#)
+  block(#"setsid gh api r"#)
+  block(#"echo r | xargs gh api"#)
+  block(#"nice -n 5 gh api r"#)
+  block(#"nohup gh api r"#)
+  block(#"time gh api r"#)
+  allow(#"xargs gh api -X GET"#)
+  allow(#"/opt/homebrew/bin/gh api -X GET "repos/$O/r""#)
+  allow(#"sudo /usr/bin/gh api -X GET -- "$URL""#)
+
+  // 引用、行継続、空白で崩した gh api。引用せずに gh と api を並べた引数も呼び出しとみなす
+  block(#"g"h" a"pi" r"#)
+  block(#"echo gh api r"#)
+  block(#"gh a${P}i r"#)
+  new { want = "block"; command = "gh ap\\\ni r"; label = "gh ap\\<NL>i r" }
+  new { want = "block"; command = "gh\tapi repos/o/r"; label = "gh<TAB>api repos/o/r" }
+  new {
+    want = "block"
+    command = "echo ok\ngh api repos/o/r"
+    label = "echo ok<NL>gh api repos/o/r"
+  }
+
+  // sh -c、find -exec、fd -x、env -S の中の呼び出し
+  block(#"sh -c 'gh api r'"#)
+  block(#"find . -exec gh api {} \;"#)
+  block(#"find . -exec gh api -X GET {} \; -exec gh api {} \;"#)
+  block(#"find . -exec gh api {} \; -exec gh api -X GET {} \;"#)
+  block(#"find . -exec gh api {} \; -name -X GET"#)
+  block(#"find . -exec gh api {} + -name x"#)
+  block(#"env -S 'gh api repos/o/r'"#)
+  block(#"env -S "gh api -X $M r""#)
+  block(#"env -S 'gh api -X ${M} r'"#)
+  block(#"find . -exec env -S 'gh api repos/o/r' \;"#)
+  block(#"fd -x env -S 'gh api r'"#)
+  allow(#"sh -c 'gh api -X GET r'"#)
+  allow(#"find . -exec gh api -X GET {} \;"#)
+  allow(#"env -S 'gh api -X GET r'"#)
+  allow(#"find . -exec env -S 'gh api -X GET r' \;"#)
+  allow(#"find . -exec gh api -X GET {} \; -name "$X""#)
+  allow(#"find . -name "*.json" -exec gh api -X GET {} +"#)
+
+  // method を持ち込める展開と glob。-- の後ろや字面の接頭辞の後ろなら通す
+  block(#"gh api -X "$M" r"#)
+  block(#"gh api --method="$M" -X GET r"#)
+  block(#"gh api -X"$M" -X GET r"#)
+  block(#"gh api -iX"$M" r"#)
+  block(#"gh api -i"$F" -X GET r"#)
+  block(#"gh api --meth"$X" -X GET r"#)
+  block(#"gh api "$OPT" -X GET r"#)
+  block(#"gh api -X GET $URL"#)
+  block(#"gh api -X GET repos/$O/r"#)
+  block(#"gh api -X GET "$URL""#)
+  block(#"gh api -H $H -X GET r"#)
+  block(#"gh api -X GET "$@""#)
+  block(#"gh api -X [A-Z]* repos/o/r"#)
+  block(#"gh api -X GET repos/o/r *"#)
+  block(#"gh api -X GET{,} r"#)
+  block(#"gh api -X GET repos/o/r?per_page=1"#)
+  allow(#"gh api -H "$H" -X GET r"#)
+  allow(#"gh api -H"$H" -X GET r"#)
+  allow(#"gh api --jq="$Q" -X GET r"#)
+  allow(#"gh api -X GET "repos/$O/r""#)
+  allow(#"gh api -X GET -- "$URL""#)
+  allow(#"gh api -X GET -- $URL"#)
+  allow(#"gh api -X GET repos/o/r\?per_page=1"#)
+  allow(#"gh api -X GET 'repos/o/r?per_page=1'"#)
+
+  // 値として現れる ; と + では検査を止めない
+  block(#"gh api -X GET --template ';' --method "$M" repos/o/r"#)
+  allow(#"gh api --template ';' -X GET repos/o/r"#)
+  allow(#"gh api -X GET --template + r"#)
+}
+
+output {
+  value = cases
+  renderer = new JsonRenderer {}
+}

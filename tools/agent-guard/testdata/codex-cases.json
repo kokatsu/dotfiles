@@ -1,0 +1,349 @@
+[
+  {
+    "want": "block",
+    "command": "gh api repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -H \"Accept: x\" repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "env GH_HOST=x gh api repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "sudo -u me gh api repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "timeout 5 gh api repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "cd repo && gh api repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "/opt/homebrew/bin/gh api repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET a && gh api b"
+  },
+  {
+    "want": "block",
+    "command": "gh api $ARGS"
+  },
+  {
+    "want": "block",
+    "command": "gh api -f a=b r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X '' r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET repos/o/r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET a && gh api -X GET b"
+  },
+  {
+    "want": "allow",
+    "command": "gh api --method POST repos/o/r/issues"
+  },
+  {
+    "want": "allow",
+    "command": "GH_HOST=x gh api -X GET repos/o/r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X DELETE r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -f a=b -X POST r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -iX POST r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api --method=PATCH r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET a && gh api -X POST b"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET -- -X"
+  },
+  {
+    "want": "allow",
+    "command": "echo \"run gh api later\""
+  },
+  {
+    "want": "allow",
+    "command": "git commit -m \"use gh api instead of curl\""
+  },
+  {
+    "want": "allow",
+    "command": "rg \"gh api\" docs/"
+  },
+  {
+    "want": "allow",
+    "command": "echo done"
+  },
+  {
+    "want": "block",
+    "command": "doas gh api r"
+  },
+  {
+    "want": "block",
+    "command": "stdbuf -oL gh api r"
+  },
+  {
+    "want": "block",
+    "command": "setsid gh api r"
+  },
+  {
+    "want": "block",
+    "command": "echo r | xargs gh api"
+  },
+  {
+    "want": "block",
+    "command": "nice -n 5 gh api r"
+  },
+  {
+    "want": "block",
+    "command": "nohup gh api r"
+  },
+  {
+    "want": "block",
+    "command": "time gh api r"
+  },
+  {
+    "want": "allow",
+    "command": "xargs gh api -X GET"
+  },
+  {
+    "want": "allow",
+    "command": "/opt/homebrew/bin/gh api -X GET \"repos/$O/r\""
+  },
+  {
+    "want": "allow",
+    "command": "sudo /usr/bin/gh api -X GET -- \"$URL\""
+  },
+  {
+    "want": "block",
+    "command": "g\"h\" a\"pi\" r"
+  },
+  {
+    "want": "block",
+    "command": "echo gh api r"
+  },
+  {
+    "want": "block",
+    "command": "gh a${P}i r"
+  },
+  {
+    "want": "block",
+    "command": "gh ap\\\ni r",
+    "label": "gh ap\\<NL>i r"
+  },
+  {
+    "want": "block",
+    "command": "gh\tapi repos/o/r",
+    "label": "gh<TAB>api repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "echo ok\ngh api repos/o/r",
+    "label": "echo ok<NL>gh api repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "sh -c 'gh api r'"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec gh api {} \\;"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec gh api -X GET {} \\; -exec gh api {} \\;"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec gh api {} \\; -exec gh api -X GET {} \\;"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec gh api {} \\; -name -X GET"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec gh api {} + -name x"
+  },
+  {
+    "want": "block",
+    "command": "env -S 'gh api repos/o/r'"
+  },
+  {
+    "want": "block",
+    "command": "env -S \"gh api -X $M r\""
+  },
+  {
+    "want": "block",
+    "command": "env -S 'gh api -X ${M} r'"
+  },
+  {
+    "want": "block",
+    "command": "find . -exec env -S 'gh api repos/o/r' \\;"
+  },
+  {
+    "want": "block",
+    "command": "fd -x env -S 'gh api r'"
+  },
+  {
+    "want": "allow",
+    "command": "sh -c 'gh api -X GET r'"
+  },
+  {
+    "want": "allow",
+    "command": "find . -exec gh api -X GET {} \\;"
+  },
+  {
+    "want": "allow",
+    "command": "env -S 'gh api -X GET r'"
+  },
+  {
+    "want": "allow",
+    "command": "find . -exec env -S 'gh api -X GET r' \\;"
+  },
+  {
+    "want": "allow",
+    "command": "find . -exec gh api -X GET {} \\; -name \"$X\""
+  },
+  {
+    "want": "allow",
+    "command": "find . -name \"*.json\" -exec gh api -X GET {} +"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X \"$M\" r"
+  },
+  {
+    "want": "block",
+    "command": "gh api --method=\"$M\" -X GET r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X\"$M\" -X GET r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -iX\"$M\" r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -i\"$F\" -X GET r"
+  },
+  {
+    "want": "block",
+    "command": "gh api --meth\"$X\" -X GET r"
+  },
+  {
+    "want": "block",
+    "command": "gh api \"$OPT\" -X GET r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET $URL"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET repos/$O/r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET \"$URL\""
+  },
+  {
+    "want": "block",
+    "command": "gh api -H $H -X GET r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET \"$@\""
+  },
+  {
+    "want": "block",
+    "command": "gh api -X [A-Z]* repos/o/r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET repos/o/r *"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET{,} r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET repos/o/r?per_page=1"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -H \"$H\" -X GET r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -H\"$H\" -X GET r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api --jq=\"$Q\" -X GET r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET \"repos/$O/r\""
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET -- \"$URL\""
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET -- $URL"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET repos/o/r\\?per_page=1"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET 'repos/o/r?per_page=1'"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET --template ';' --method \"$M\" repos/o/r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api --template ';' -X GET repos/o/r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET --template + r"
+  }
+]

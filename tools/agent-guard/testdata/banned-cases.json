@@ -1889,5 +1889,187 @@
     "want": "block",
     "command": "zsh -c 'ls *(+123abc)'",
     "label": "数字で始まる関数名を呼ぶ + (zsh)"
+  },
+  {
+    "want": "allow",
+    "command": "gh api repos/o/r",
+    "label": "gh api は banned モードでは見ない (Claude Code は gh-api-guard.ts)"
+  },
+  {
+    "want": "allow",
+    "command": "doas gh api r",
+    "label": "wrapper つきの gh api も banned モードでは見ない"
+  },
+  {
+    "want": "block",
+    "command": "npx --no-install biome format x.json",
+    "label": "npm の biome は Biome ではない"
+  },
+  {
+    "want": "block",
+    "command": "npx biome@0.3.3 check ."
+  },
+  {
+    "want": "block",
+    "command": "npx -y -- biome format x"
+  },
+  {
+    "want": "block",
+    "command": "npx --package=biome biome"
+  },
+  {
+    "want": "block",
+    "command": "env FOO=1 npx biome lint .",
+    "label": "ラッパー経由の npx"
+  },
+  {
+    "want": "allow",
+    "command": "npx @biomejs/biome format x.json"
+  },
+  {
+    "want": "allow",
+    "command": "npx -p @biomejs/biome biome format x",
+    "label": "-p があればコマンド名はパッケージ名ではない"
+  },
+  {
+    "want": "block",
+    "command": "npx prettier biome",
+    "label": "位置を問わず止める (値を取るオプションを数え上げられないため)"
+  },
+  {
+    "want": "allow",
+    "command": "biome format x.json"
+  },
+  {
+    "want": "block",
+    "command": "bunx biome format x"
+  },
+  {
+    "want": "block",
+    "command": "bunx --bun -p biome biome"
+  },
+  {
+    "want": "block",
+    "command": "pnpx biome check ."
+  },
+  {
+    "want": "block",
+    "command": "pnpm dlx -c biome format x",
+    "label": "pnpm dlx の -c は値を取らない"
+  },
+  {
+    "want": "block",
+    "command": "pnpm dlx --cpu x64 biome"
+  },
+  {
+    "want": "block",
+    "command": "npm exec -- biome format x"
+  },
+  {
+    "want": "block",
+    "command": "npm x -w app biome"
+  },
+  {
+    "want": "allow",
+    "command": "bunx @biomejs/biome format x"
+  },
+  {
+    "want": "allow",
+    "command": "pnpm dlx --package @biomejs/biome biome format x"
+  },
+  {
+    "want": "block",
+    "command": "npm exec -c biome",
+    "label": "-c の値も区別しない"
+  },
+  {
+    "want": "allow",
+    "command": "npm run biome"
+  },
+  {
+    "want": "allow",
+    "command": "pnpm biome format x"
+  },
+  {
+    "want": "block",
+    "command": "deno x biome format x"
+  },
+  {
+    "want": "block",
+    "command": "dx -y biome format x"
+  },
+  {
+    "want": "block",
+    "command": "deno x -c deno.json biome"
+  },
+  {
+    "want": "block",
+    "command": "deno x npm:biome@0.3.3"
+  },
+  {
+    "want": "block",
+    "command": "deno run -A npm:biome format x",
+    "label": "deno run は npm: 指定子をスクリプトとして実行する"
+  },
+  {
+    "want": "block",
+    "command": "npx npm:biome"
+  },
+  {
+    "want": "allow",
+    "command": "deno x npm:@biomejs/biome format x"
+  },
+  {
+    "want": "allow",
+    "command": "dx -p @biomejs/biome biome format x"
+  },
+  {
+    "want": "allow",
+    "command": "deno fmt biome.ts"
+  },
+  {
+    "want": "allow",
+    "command": "deno run -A main.ts biome"
+  },
+  {
+    "want": "block",
+    "command": "npm exec echo --package=biome -- hello",
+    "label": "npm exec はオペランドの後ろの --package も読む"
+  },
+  {
+    "want": "allow",
+    "command": "npm exec biome --package=@biomejs/biome -- --help"
+  },
+  {
+    "want": "block",
+    "command": "npx --registry https://registry.npmjs.org biome --help",
+    "label": "値を取るオプションの後ろ"
+  },
+  {
+    "want": "block",
+    "command": "pnpm dlx --dir /tmp biome --help"
+  },
+  {
+    "want": "block",
+    "command": "npx -p @biomejs/biome -p biome biome",
+    "label": "-p の 1 つでも biome なら止める"
+  },
+  {
+    "want": "block",
+    "command": "npx biome --package=@biomejs/biome",
+    "label": "npx はオペランドの後ろの --package を読まない"
+  },
+  {
+    "want": "block",
+    "command": "npm exec -- biome --package=@biomejs/biome",
+    "label": "npm exec は -- の後ろの --package を読まない"
+  },
+  {
+    "want": "block",
+    "command": "bunx biome -p @biomejs/biome"
+  },
+  {
+    "want": "allow",
+    "command": "npm exec --package=@biomejs/biome -- biome format x"
   }
 ]

@@ -46,6 +46,8 @@ blocked_commands=(
   'git push --force origin main'
   'grep -r foo . && rm x'
   'echo "unterminated'
+  'gh api repos/o/r'
+  'doas gh api repos/o/r'
 )
 
 allowed_commands=(
@@ -56,6 +58,8 @@ allowed_commands=(
   "printf '%s\\n' 'herdr pane send-text w1:p1 test'"
   'grep -r foo .'
   'gomi build'
+  'gh api -X GET repos/o/r'
+  'echo "run gh api later"'
 )
 
 for command_text in "${blocked_commands[@]}"; do

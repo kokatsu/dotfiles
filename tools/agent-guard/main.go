@@ -42,6 +42,10 @@ func refuse(format string, args ...any) {
 // 検索ツールの好みなので、Codex には押し付けない。
 var codexSkipped = []verdict{"GREP_R"}
 
+// bannedSkipped は Claude Code では使わない判定。Claude Code の gh api は
+// .config/claude/hooks/gh-api-guard.ts が見る。
+var bannedSkipped = []verdict{"GH_API_METHOD"}
+
 type toolCall struct {
 	name    string // 文字列の tool_name がなければ空
 	value   string
@@ -168,7 +172,7 @@ func run(mode string) {
 		}
 		checkCommand(value, present, codexSkipped...)
 	case "banned":
-		checkCommand(value, present)
+		checkCommand(value, present, bannedSkipped...)
 	}
 }
 

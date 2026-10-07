@@ -52,6 +52,10 @@
         "glob": ["*.toml"],
         "run": "taplo format {staged_files} && git update-index --again"
       },
+      "pkl-format": {
+        "glob": ["*.pkl"],
+        "run": "pkl format -w {staged_files} && git update-index --again"
+      },
       "yaml-format": {
         "glob": ["*.{yml,yaml}"],
         "run": "yamlfmt {staged_files} && git update-index --again"
@@ -118,6 +122,10 @@
       "toml-format": {
         "glob": ["*.toml"],
         "run": "taplo format --check {push_files}"
+      },
+      "pkl-format": {
+        "glob": ["*.pkl"],
+        "run": "pkl format --diff-name-only {push_files}"
       },
       "lua-lint-nvim": {
         "glob": [".config/nvim/*.lua"],

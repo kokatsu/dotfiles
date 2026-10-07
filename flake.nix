@@ -166,6 +166,8 @@
           # 供給されるため、textlint-with-rules だけでは解決できない。
           customOverlays.textlint-rule-preset-ai-writing
           customOverlays.textlint-with-rules
+          # Pkl の format と eval の結果を Home Manager の pkl と揃える
+          customOverlays.pkl
         ];
       });
 
@@ -356,6 +358,7 @@
             # Markup / config
             markdownlint-cli # Markdown linter
             taplo # TOML formatter + linter
+            pkl # Pkl formatter + test case generator
             textlint-with-rules # 日本語校正 (AI 文体 hook のテストが使う)
             yamlfmt # YAML formatter
 
