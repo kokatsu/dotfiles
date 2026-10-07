@@ -185,9 +185,11 @@ in {
         BUNDLE_USER_HOME = "${config.xdg.dataHome}/bundle";
         ZSH_EVALCACHE_DIR = "${config.xdg.cacheHome}/zsh-evalcache";
         MISE_ACTIVATE_SHIMS = "false";
-        # less と node は親ディレクトリを作らないので xdg.stateFile で用意する
+        # less と node と python と sqlite3 は親ディレクトリを作らないので xdg.stateFile で用意する
         LESSHISTFILE = "${config.xdg.stateHome}/less/history";
         NODE_REPL_HISTORY = "${config.xdg.stateHome}/node/repl_history";
+        PYTHON_HISTORY = "${config.xdg.stateHome}/python/history";
+        SQLITE_HISTORY = "${config.xdg.stateHome}/sqlite/history";
         # man-db は既定で SGR を出し、col -bx がそれを文字化けさせるので、
         # -c で backspace 重ね打ち形式に戻す。bat.nix の paging = "never" を上書きする
         MANROFFOPT = "-c";
@@ -237,6 +239,8 @@ in {
       ZSH_EVALCACHE_DIR
       LESSHISTFILE
       NODE_REPL_HISTORY
+      PYTHON_HISTORY
+      SQLITE_HISTORY
       GEM_HOME
       PSQLRC
       RUSTUP_HOME

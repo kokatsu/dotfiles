@@ -188,12 +188,14 @@ in {
     '';
   };
 
-  # less と node と wget は状態ファイルの親ディレクトリを作らず、
+  # less と node と wget と python と sqlite3 は状態ファイルの親ディレクトリを作らず、
   # 無ければ書き込みを黙って諦める。
   xdg.stateFile = {
     "less/.keep".text = "";
     "node/.keep".text = "";
     "wget/.keep".text = "";
     "vim/.keep".text = "";
+    "python/.keep".text = "";
+    "sqlite/.keep".text = "";
   };
 }
