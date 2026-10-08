@@ -139,7 +139,7 @@ in {
           ]
 
           [ui.sidebar.spaces]
-          # tab-numbers プラグインが報告する $number トークンで番号を表示する
+          # numbering プラグインが報告する $number トークンで番号を表示する
           # (デフォルト行構成に $number を挿し込んだもの)
           rows = [["state_icon", { token = "$number", fg = "${p.subtext0.hex}", bold = true, dim = false }, { token = "workspace", bold = true }], ["branch", "git_status"]]
           row_gap = 1
@@ -351,7 +351,7 @@ in {
   # ただし disable 済みのプラグインは再 link で enabled に戻るので、手で
   # 無効化して使う運用に変えるならその行を外すこと。
   #
-  # tab-numbers は kokatsu/herdr-tab-numbers に切り出したので flake input の
+  # numbering は kokatsu/herdr-numbering に切り出したので flake input の
   # store パスを登録する。pin を変えたときだけパスが変わるため陳腐化しない。
   # close-confirm は close-pane-confirm.sh と対でこのリポジトリに残しているため、
   # 従来どおりチェックアウトの実パスを登録する
@@ -360,10 +360,15 @@ in {
     (
       # bash
       ''
+        if [ -f "${config.xdg.configHome}/herdr/plugins.json" ] &&
+          ${pkgs.jq}/bin/jq -e 'any(.[]; .plugin_id == "kokatsu.tab-numbers")' \
+            "${config.xdg.configHome}/herdr/plugins.json" > /dev/null; then
+          $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin unlink kokatsu.tab-numbers > /dev/null
+        fi
         $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
           "${validDotfilesDir}/.config/herdr/plugins/close-confirm" > /dev/null
         $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
-          "${inputs.herdr-tab-numbers}" > /dev/null
+          "${inputs.herdr-numbering}" > /dev/null
       ''
       + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
         $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \

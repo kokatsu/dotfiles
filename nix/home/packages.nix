@@ -29,7 +29,7 @@ in {
       # https://github.com/nodejs/node
       nodejs_24
       # https://github.com/Perl/perl5
-      # herdr の tab-numbers プラグインが flock(2) を掛けるのに使う。
+      # herdr の numbering プラグインが flock(2) を掛けるのに使う。
       # flock(1) は util-linux 由来で macOS に無く、macOS 標準の /usr/bin/perl も
       # Apple が将来の削除を告知しているため Nix 管理のものを使う
       perl

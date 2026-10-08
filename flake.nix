@@ -33,13 +33,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # herdr の tab-numbers プラグイン。dotfiles から切り出した別リポジトリで、
+    # herdr の numbering プラグイン。dotfiles から切り出した別リポジトリで、
     # herdr plugin link に実パスを渡す必要があるため flake ではなくソースとして取り込む
     # (pin を変えない限り store パスが変わらないので登録が陳腐化しない)。
-    # 更新: nix flake update herdr-tab-numbers
-    # https://github.com/kokatsu/herdr-tab-numbers
-    herdr-tab-numbers = {
-      url = "github:kokatsu/herdr-tab-numbers";
+    # 更新: nix flake update herdr-numbering
+    # https://github.com/kokatsu/herdr-numbering
+    herdr-numbering = {
+      url = "github:kokatsu/herdr-numbering";
       flake = false;
     };
 

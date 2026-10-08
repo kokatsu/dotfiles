@@ -97,19 +97,19 @@
         "type": "github"
       }
     },
-    "herdr-tab-numbers": {
+    "herdr-numbering": {
       "flake": false,
       "locked": {
-        "lastModified": 1787755497,
-        "narHash": "sha256-FVxrYe03UxsDuaddKwnQxGXqkTN+aT4UCRTxxMNTBCo=",
+        "lastModified": 1791478923,
+        "narHash": "sha256-8Q6P34Knxgf0RBDVbK5BD6tfsaipFI3Sk/NFvqYh32A=",
         "owner": "kokatsu",
-        "repo": "herdr-tab-numbers",
-        "rev": "d352bede5af61addc5bea2d2fe5ae667b72bafab",
+        "repo": "herdr-numbering",
+        "rev": "f5064208e73ea8b7e3251a482f30eaea85e9e577",
         "type": "github"
       },
       "original": {
         "owner": "kokatsu",
-        "repo": "herdr-tab-numbers",
+        "repo": "herdr-numbering",
         "type": "github"
       }
     },
@@ -246,7 +246,7 @@
         "catppuccin": "catppuccin",
         "cc-statusline": "cc-statusline",
         "herdr-nix": "herdr-nix",
-        "herdr-tab-numbers": "herdr-tab-numbers",
+        "herdr-numbering": "herdr-numbering",
         "home-manager": "home-manager",
         "moonbit-overlay": "moonbit-overlay",
         "nix-darwin": "nix-darwin",
