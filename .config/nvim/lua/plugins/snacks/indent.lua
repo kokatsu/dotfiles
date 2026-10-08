@@ -2,6 +2,16 @@ local M = {}
 
 --- @type snacks.indent.Config
 M.opts = {
+  -- inccommand のプレビューは内容が変わっても changedtick を進めないため、
+  -- changedtick でキャッシュする空行判定が途中の空のプレビューから残り、
+  -- 置換後の文字にガイドが重なる。: の入力中だけ描画しない。
+  -- 後半は snacks の既定 filter と同じ条件
+  filter = function(buf)
+    return vim.fn.getcmdtype() ~= ':'
+      and vim.g.snacks_indent ~= false
+      and vim.b[buf].snacks_indent ~= false
+      and vim.bo[buf].buftype == ''
+  end,
   indent = {
     enabled = true,
     hl = {
