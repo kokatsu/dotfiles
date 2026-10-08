@@ -45,7 +45,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v agent-guard >/dev/null || { echo 'agent-guard not found; run home-manager switch' >&2; exit 2; }; exec agent-guard banned"
+            "command": "command -v agent-guard >/dev/null || { echo 'agent-guard not found; run home-manager switch' >&2; exit 2; }; exec agent-guard banned",
+            "onFailure": "block"
           },
           {
             "type": "command",
@@ -59,7 +60,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v agent-guard >/dev/null || { echo 'agent-guard not found; run home-manager switch' >&2; exit 2; }; exec agent-guard managed-paths"
+            "command": "command -v agent-guard >/dev/null || { echo 'agent-guard not found; run home-manager switch' >&2; exit 2; }; exec agent-guard managed-paths",
+            "onFailure": "block"
           }
         ]
       }
