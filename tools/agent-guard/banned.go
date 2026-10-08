@@ -39,6 +39,7 @@ var verdictMessages = map[verdict]string{
 	"NPM_BIOME":        "Refuse running the npm package named biome (npx, bunx, pnpm dlx, npm exec): it is an unrelated env-var manager, not the Biome formatter. Run biome from PATH (Nix) directly.",
 	"SHELL_C_UNPARSED": "Refuse sh -c with a command string that does not parse as shell: it cannot be checked, and the shell runs the lines before the error. Run the commands directly instead.",
 	"GLOB_EXEC":        "Refuse zsh glob qualifiers that run code (e:...: or +cmd). List the files first, then run the command on them directly.",
+	"RG_STDIN":         "rg without a path searches stdin when stdin is readable; in a non-interactive tool call stdin can be a socket that never closes, so rg hangs. Name the directories to search, or add `< /dev/null` to search the current directory.",
 	"EXTDIFF":          "Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out).",
 }
 
@@ -192,6 +193,79 @@ func grepRecursive(args []string) bool {
 		}
 	}
 	return false
+}
+
+// --- rg -------------------------------------------------------------------
+
+// 値を取るオプション。rg は長いオプションの省略形を受け付けない。
+const rgShortValue = "efEmjgdtTABCMr"
+
+var rgLongValue = map[string]bool{
+	"--regexp": true, "--file": true, "--encoding": true, "--max-count": true, "--threads": true,
+	"--glob": true, "--max-depth": true, "--type": true, "--type-not": true, "--after-context": true,
+	"--before-context": true, "--context": true, "--max-columns": true, "--replace": true,
+	"--pre": true, "--pre-glob": true, "--dfa-size-limit": true, "--engine": true,
+	"--regex-size-limit": true, "--iglob": true, "--ignore-file": true, "--max-filesize": true,
+	"--type-add": true, "--type-clear": true, "--color": true, "--colors": true,
+	"--context-separator": true, "--field-context-separator": true, "--field-match-separator": true,
+	"--hostname-bin": true, "--hyperlink-format": true, "--path-separator": true,
+	"--sort": true, "--sortr": true, "--generate": true,
+}
+
+// パターンを取らず、標準入力も読まないモード。
+var rgNoSearch = map[string]bool{
+	"--files": true, "--type-list": true, "--help": true, "--version": true,
+	"--pcre2-version": true, "--generate": true,
+}
+
+// rg はパスを渡されないと、標準入力が読める状態ならそれを検索する。展開を含む
+// 語があると語の数が決まらないので、読まないものとして通す。
+func rgReadsStdin(args []string, infos []wordInfo) bool {
+	if slices.ContainsFunc(infos, func(info wordInfo) bool { return !info.literal || info.unsure }) {
+		return false
+	}
+	patternGiven := false
+	var operands []string
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "--":
+			operands = append(operands, args[i+1:]...)
+			i = len(args)
+		case strings.HasPrefix(a, "--"):
+			name, _, attached := strings.Cut(a, "=")
+			if rgNoSearch[name] {
+				return false
+			}
+			if name == "--regexp" || name == "--file" {
+				patternGiven = true
+			}
+			if rgLongValue[name] && !attached {
+				i++
+			}
+		case len(a) > 1 && a[0] == '-':
+			for j := 1; j < len(a); j++ {
+				if a[j] == 'h' || a[j] == 'V' {
+					return false
+				}
+				if strings.IndexByte(rgShortValue, a[j]) >= 0 {
+					if a[j] == 'e' || a[j] == 'f' {
+						patternGiven = true
+					}
+					if j == len(a)-1 {
+						i++
+					}
+					break
+				}
+			}
+		default:
+			operands = append(operands, a)
+		}
+	}
+	if patternGiven {
+		return len(operands) == 0
+	}
+	return len(operands) == 1
 }
 
 // --- git identity ---------------------------------------------------------
@@ -673,8 +747,8 @@ var (
 // ここに置くと find -exec や fd -x が切り出した範囲にも、その中の env -S にも届く。
 // find と fd 自身の語の並びは見ない。範囲の外にある find の条件 (`-name "$X"`) を
 // gh api の引数として読んでしまうため。
-func commandVerdict(words, scripts []string, infos []wordInfo) []verdict {
-	out := callVerdicts(words, scripts, infos)
+func commandVerdict(words, scripts []string, infos []wordInfo, fed bool) []verdict {
+	out := callVerdicts(words, scripts, infos, fed)
 	args := stripWrappers(words)
 	if len(args) > 0 && (args[0] == "find" || args[0] == "fd") {
 		return out
@@ -685,11 +759,13 @@ func commandVerdict(words, scripts []string, infos []wordInfo) []verdict {
 	return out
 }
 
-func callVerdicts(words, scripts []string, infos []wordInfo) []verdict {
-	args := stripWrappers(words)
+func callVerdicts(words, scripts []string, infos []wordInfo, fed bool) []verdict {
+	args, viaXargs := unwrap(words)
 	if len(args) == 0 {
 		return nil
 	}
+	// xargs は -a が無ければ子の標準入力を /dev/null にする。
+	fed = fed || viaXargs
 
 	cmd := args[0]
 	rest := args[1:]
@@ -703,7 +779,7 @@ func callVerdicts(words, scripts []string, infos []wordInfo) []verdict {
 			if err != nil {
 				return []verdict{"SHELL_C_UNPARSED"}
 			}
-			return analyze(file)
+			return analyze(file, fed)
 		}
 		return nil
 	}
@@ -718,8 +794,9 @@ func callVerdicts(words, scripts []string, infos []wordInfo) []verdict {
 			subs = fdCommands(rest, restScripts, restInfos)
 		}
 		var out []verdict
+		// find -exec の子は find の標準入力を受け継ぎ、fd -x の子は /dev/null を読む。
 		for _, sub := range subs {
-			out = append(out, commandVerdict(sub.words, sub.scripts, sub.infos)...)
+			out = append(out, commandVerdict(sub.words, sub.scripts, sub.infos, fed || cmd == "fd")...)
 		}
 		if deletes {
 			out = append(out, "FIND_DELETE")
@@ -727,6 +804,9 @@ func callVerdicts(words, scripts []string, infos []wordInfo) []verdict {
 		return out
 	}
 
+	if cmd == "rg" && !fed && rgReadsStdin(rest, restInfos) {
+		return []verdict{"RG_STDIN"}
+	}
 	if v := singleVerdict(cmd, rest); v != "" {
 		return []verdict{v}
 	}
@@ -831,9 +911,12 @@ var (
 // 判定を出る順に返す。採用するのは先頭 1 つだけだが、順序は
 // testdata/verdict-precedence-cases.txt が固定している契約なので、途中で
 // 打ち切らずに並びとして組み立てる。
-func analyze(file *syntax.File) []verdict {
+//
+// fed は file 全体が標準入力を与えられているか (sh -c の外側の状態)。
+func analyze(file *syntax.File, fed bool) []verdict {
 	var verdicts []verdict
 	type call struct {
+		node           *syntax.CallExpr
 		words, scripts []string
 		infos          []wordInfo
 	}
@@ -841,6 +924,17 @@ func analyze(file *syntax.File) []verdict {
 	// heredoc の本文はファイル名展開を受けないので、glob 修飾子として読まない。
 	// Walk は Redirect を本文の Word より先に訪問する。
 	heredocs := map[*syntax.Word]bool{}
+	// 標準入力を与えられた部分木の中の呼び出し。$( ) の中も含めるので、文に
+	// 付いた `<` を受け継がない $( ) の中の rg は取りこぼす。
+	fedCalls := map[*syntax.CallExpr]bool{}
+	feed := func(node syntax.Node) {
+		syntax.Walk(node, func(node syntax.Node) bool {
+			if call, ok := node.(*syntax.CallExpr); ok {
+				fedCalls[call] = true
+			}
+			return true
+		})
+	}
 
 	syntax.Walk(file, func(node syntax.Node) bool {
 		// GIT_AUTHOR_* / GIT_COMMITTER_* は config を触らずに identity を変える。
@@ -854,6 +948,14 @@ func analyze(file *syntax.File) []verdict {
 			name = node.Name
 		case *syntax.FuncDecl:
 			name = node.Name
+		case *syntax.Stmt:
+			if feedsStdin(node) {
+				feed(node)
+			}
+		case *syntax.BinaryCmd:
+			if node.Op == syntax.Pipe || node.Op == syntax.PipeAll {
+				feed(node.Y)
+			}
 		case *syntax.Redirect:
 			if node.Hdoc != nil {
 				heredocs[node.Hdoc] = true
@@ -863,7 +965,7 @@ func analyze(file *syntax.File) []verdict {
 				verdicts = append(verdicts, "GLOB_EXEC")
 			}
 		case *syntax.CallExpr:
-			c := call{make([]string, len(node.Args)), make([]string, len(node.Args)), readWordInfos(node.Args)}
+			c := call{node, make([]string, len(node.Args)), make([]string, len(node.Args)), readWordInfos(node.Args)}
 			for i, word := range node.Args {
 				c.words[i] = wordText(word)
 				c.scripts[i] = scriptText(word)
@@ -886,8 +988,25 @@ func analyze(file *syntax.File) []verdict {
 	}
 
 	for _, c := range calls {
-		verdicts = append(verdicts, commandVerdict(c.words, c.scripts, c.infos)...)
+		verdicts = append(verdicts, commandVerdict(c.words, c.scripts, c.infos, fed || fedCalls[c.node])...)
 	}
 
 	return verdicts
+}
+
+// 非対話シェルは & で起動したコマンドの標準入力を /dev/null にする。
+func feedsStdin(stmt *syntax.Stmt) bool {
+	if stmt.Background {
+		return true
+	}
+	return slices.ContainsFunc(stmt.Redirs, func(r *syntax.Redirect) bool {
+		if r.N != nil && r.N.Value != "0" {
+			return false
+		}
+		switch r.Op {
+		case syntax.RdrIn, syntax.RdrInOut, syntax.DplIn, syntax.Hdoc, syntax.DashHdoc, syntax.WordHdoc:
+			return true
+		}
+		return false
+	})
 }

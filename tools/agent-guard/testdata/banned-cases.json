@@ -1095,7 +1095,7 @@
   },
   {
     "want": "allow",
-    "command": "rg -r replacement foo",
+    "command": "rg -r replacement foo src",
     "label": "rg -r (置換オプション)"
   },
   {
@@ -2071,5 +2071,236 @@
   {
     "want": "allow",
     "command": "npm exec --package=@biomejs/biome -- biome format x"
+  },
+  {
+    "want": "block",
+    "command": "rg pat"
+  },
+  {
+    "want": "block",
+    "command": "rg -c pat"
+  },
+  {
+    "want": "block",
+    "command": "rg -e pat"
+  },
+  {
+    "want": "block",
+    "command": "rg -n pat && echo done"
+  },
+  {
+    "want": "block",
+    "command": "rg pat 3</dev/null",
+    "label": "rg パスなし: fd 0 以外へのリダイレクトは標準入力を与えない"
+  },
+  {
+    "want": "block",
+    "command": "rg -r replacement foo",
+    "label": "rg パスなし: replacement は -r の値で、パスがない"
+  },
+  {
+    "want": "block",
+    "command": "rg -nC3 pat",
+    "label": "rg パスなし: 束の末尾の値つきフラグ"
+  },
+  {
+    "want": "block",
+    "command": "rg -nC 3 pat",
+    "label": "rg パスなし: 束の末尾の値つきフラグが次の語を食べる"
+  },
+  {
+    "want": "block",
+    "command": "rg --glob '*.go' pat"
+  },
+  {
+    "want": "block",
+    "command": "rg -- pat"
+  },
+  {
+    "want": "block",
+    "command": "rg pat | head"
+  },
+  {
+    "want": "block",
+    "command": "timeout 5 rg pat"
+  },
+  {
+    "want": "block",
+    "command": "bash -c 'rg pat'"
+  },
+  {
+    "want": "allow",
+    "command": "rg pat dir1 dir2"
+  },
+  {
+    "want": "allow",
+    "command": "rg -e pat src"
+  },
+  {
+    "want": "allow",
+    "command": "rg --glob=*.go pat src"
+  },
+  {
+    "want": "allow",
+    "command": "rg -- -pat src"
+  },
+  {
+    "want": "allow",
+    "command": "rg pat < /dev/null"
+  },
+  {
+    "want": "allow",
+    "command": "rg pat <> file"
+  },
+  {
+    "want": "allow",
+    "command": "rg pat <&3"
+  },
+  {
+    "want": "allow",
+    "command": "rg pat 0<&-"
+  },
+  {
+    "want": "allow",
+    "command": "rg pat 0</dev/null"
+  },
+  {
+    "want": "allow",
+    "command": "rg pat &",
+    "label": "rg パスなし: & で起動したコマンドの標準入力は /dev/null"
+  },
+  {
+    "want": "allow",
+    "command": "rg pat -",
+    "label": "rg パスなし: - で標準入力を明示"
+  },
+  {
+    "want": "allow",
+    "command": "cmd | rg pat"
+  },
+  {
+    "want": "allow",
+    "command": "cmd |& rg pat"
+  },
+  {
+    "want": "allow",
+    "command": "rg pat <<< \"$x\""
+  },
+  {
+    "want": "allow",
+    "command": "rg pat <<'EOF'\npat\nEOF"
+  },
+  {
+    "want": "allow",
+    "command": "printf 'pat\\n' | { rg pat; }"
+  },
+  {
+    "want": "allow",
+    "command": "{ rg pat; } <<< pat"
+  },
+  {
+    "want": "allow",
+    "command": "printf 'pat\\n' | bash -c 'rg pat'"
+  },
+  {
+    "want": "allow",
+    "command": "cmd | while read -r x; do rg \"$x\"; done"
+  },
+  {
+    "want": "allow",
+    "command": "rg --files"
+  },
+  {
+    "want": "allow",
+    "command": "rg --type-list"
+  },
+  {
+    "want": "allow",
+    "command": "rg --version"
+  },
+  {
+    "want": "allow",
+    "command": "rg $args",
+    "label": "rg パスなし: 展開を含む語は判定しない"
+  },
+  {
+    "want": "allow",
+    "command": "find . -name '*.go' -exec rg pat {} +"
+  },
+  {
+    "want": "allow",
+    "command": "fd -e go -x rg pat"
+  },
+  {
+    "want": "block",
+    "command": "find . -name '*.go' -exec rg pat \\;",
+    "label": "rg パスなし: find -exec の子は find の標準入力を受け継ぐ"
+  },
+  {
+    "want": "allow",
+    "command": "git ls-files | xargs rg pat"
+  },
+  {
+    "want": "block",
+    "command": "x=$(rg pat)",
+    "label": "rg パスなし: $( ) の中は外側と同じ標準入力を読む"
+  },
+  {
+    "want": "allow",
+    "command": "cmd | x=$(rg pat)",
+    "label": "rg パスなし: パイプの右側の $( ) はそのパイプを読む"
+  },
+  {
+    "want": "block",
+    "command": "xargs -a list sh -c 'rg pat'",
+    "label": "rg パスなし: xargs -a の子は xargs の標準入力を受け継ぐ"
+  },
+  {
+    "want": "block",
+    "command": "env -u xargs rg pat",
+    "label": "rg パスなし: env -u の値の xargs はラッパーではない"
+  },
+  {
+    "want": "allow",
+    "command": "xargs -0 sh -c 'rg pat'",
+    "label": "rg パスなし: xargs の子の sh -c は /dev/null を読む"
+  },
+  {
+    "want": "block",
+    "command": "xargs --arg-file=list sh -c 'rg pat'"
+  },
+  {
+    "want": "block",
+    "command": "xargs --arg=list sh -c 'rg pat'",
+    "label": "rg パスなし: xargs は長いオプションの省略形を受け付ける"
+  },
+  {
+    "want": "block",
+    "command": "xargs -0a list sh -c 'rg pat'"
+  },
+  {
+    "want": "allow",
+    "command": "xargs xargs -a list sh -c 'rg pat'",
+    "label": "rg パスなし: 外側の xargs が内側に /dev/null を渡す"
+  },
+  {
+    "want": "block",
+    "command": "xargs -a./list sh -c 'rg pat'",
+    "label": "rg パスなし: -a に付けた値が英数字以外を含む"
+  },
+  {
+    "want": "allow",
+    "command": "xargs -I -a sh -c 'rg pat'",
+    "label": "rg パスなし: -a は -I の値"
+  },
+  {
+    "want": "block",
+    "command": "xargs --arg list sh -c 'rg pat'",
+    "label": "rg パスなし: 省略した長いオプションも別の語の値を取る"
+  },
+  {
+    "want": "block",
+    "command": "xargs -a list --max-lines 1 sh -c 'rg pat'",
+    "label": "rg パスなし: --max-lines は別の語の値を取る"
   }
 ]

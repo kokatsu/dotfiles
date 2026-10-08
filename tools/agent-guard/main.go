@@ -97,7 +97,7 @@ func commandVerdicts(command string) ([]verdict, error) {
 	if err != nil {
 		return nil, err
 	}
-	return analyze(file), nil
+	return analyze(file, false), nil
 }
 
 func parseAs(command string, lang syntax.LangVariant) (*syntax.File, error) {

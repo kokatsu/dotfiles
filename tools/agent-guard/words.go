@@ -347,7 +347,72 @@ func commandName(word string) string {
 	return word
 }
 
+// GNU xargs の長いオプションと、別の語の値を取るか。
+var xargsLong = map[string]bool{
+	"--arg-file": true, "--delimiter": true, "--max-lines": true, "--max-args": true,
+	"--max-procs": true, "--max-chars": true, "--process-slot-var": true,
+	"--null": false, "--eof": false, "--replace": false, "--open-tty": false, "--interactive": false,
+	"--no-run-if-empty": false, "--show-limits": false, "--verbose": false, "--exit": false,
+	"--help": false, "--version": false,
+}
+
+// 省略形を一意に決まる長いオプションへ戻す。曖昧なら xargs が失敗するので "" を返す。
+func xargsLongOpt(word string) string {
+	name, _, _ := strings.Cut(word, "=")
+	if _, ok := xargsLong[name]; ok {
+		return name
+	}
+	match := ""
+	for full := range xargsLong {
+		if strings.HasPrefix(full, name) {
+			if match != "" {
+				return ""
+			}
+			match = full
+		}
+	}
+	return match
+}
+
+// xargs のオプションを剥がしながら、-a/--arg-file があるかを返す。引数を
+// ファイルから読むと、子は xargs の標準入力を受け継ぐ。値は英数字以外も
+// 含めて束に付くので (-a./list)、shortCluster では束を見分けない。
+func stripXargsOpts(args []string) (_ []string, argFile bool) {
+	for len(args) > 0 {
+		head := args[0]
+		switch {
+		case head == "--":
+			return args[1:], argFile
+		case strings.HasPrefix(head, "--"):
+			name := xargsLongOpt(head)
+			argFile = argFile || name == "--arg-file"
+			if !strings.Contains(head, "=") && xargsLong[name] {
+				args = drop(args, 2)
+			} else {
+				args = args[1:]
+			}
+		case strings.HasPrefix(head, "-"):
+			i := strings.IndexAny(head[1:], "adEILnPsRSJ")
+			argFile = argFile || i >= 0 && head[1+i] == 'a'
+			if i >= 0 && i == len(head)-2 {
+				args = drop(args, 2)
+			} else {
+				args = args[1:]
+			}
+		default:
+			return args, argFile
+		}
+	}
+	return args, argFile
+}
+
 func stripWrappers(args []string) []string {
+	args, _ = unwrap(args)
+	return args
+}
+
+// viaXargs は、子の標準入力を /dev/null にする xargs を剥がしたか。
+func unwrap(args []string) (_ []string, viaXargs bool) {
 	for len(args) > 0 {
 		switch commandName(args[0]) {
 		case "command":
@@ -371,7 +436,7 @@ func stripWrappers(args []string) []string {
 			// zsh の `foreach NAME (LIST) CMD...; end`。LIST は 1 語として届く。
 			// 本体が次の行以降にあれば、それは別の CallExpr として判定される。
 			if len(args) < 3 || !strings.HasPrefix(args[2], "(") {
-				return args
+				return args, viaXargs
 			}
 			args = args[3:]
 		case "nohup", "setsid":
@@ -384,16 +449,16 @@ func stripWrappers(args []string) []string {
 		case "time":
 			args = stripOpts(args[1:], "of", []string{"--output", "--format"})
 		case "xargs":
-			args = stripOpts(args[1:], "adEILnPsRSJ", []string{
-				"--arg-file", "--delimiter", "--max-args", "--max-procs", "--max-chars", "--process-slot-var",
-			})
+			var argFile bool
+			args, argFile = stripXargsOpts(args[1:])
+			viaXargs = viaXargs || !argFile
 		case "stdbuf":
 			args = stripOpts(args[1:], "ioe", []string{"--input", "--output", "--error"})
 		case "caffeinate":
 			args = stripOpts(args[1:], "tw", nil)
 		default:
-			return append([]string{commandName(args[0])}, args[1:]...)
+			return append([]string{commandName(args[0])}, args[1:]...), viaXargs
 		}
 	}
-	return args
+	return args, viaXargs
 }
