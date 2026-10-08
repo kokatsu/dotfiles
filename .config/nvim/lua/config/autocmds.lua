@@ -235,6 +235,23 @@ if vim.fn.has('wsl') == 1 then
   })
 end
 
+-- 置換のパターンが検索パターンとして残り、範囲外の一致までハイライトされるのを消す
+vim.api.nvim_create_autocmd('CmdlineLeave', {
+  group = vim.api.nvim_create_augroup('nohlsearch_after_substitute', { clear = true }),
+  callback = function()
+    if vim.fn.getcmdtype() ~= ':' or vim.v.event.abort then
+      return
+    end
+    local ok, parsed = pcall(vim.api.nvim_parse_cmd, vim.fn.getcmdline(), {})
+    if ok and parsed.cmd == 'substitute' then
+      -- autocmd 内の :nohlsearch は抜けるときに元へ戻される (:help autocmd-searchpat)
+      vim.schedule(function()
+        vim.cmd.nohlsearch()
+      end)
+    end
+  end,
+})
+
 -- フォーカスを失ったときにVisualモードを解除する
 -- 別ペーンから戻ったときにVisualモードに気づかず操作するミスを防ぐ
 vim.api.nvim_create_autocmd('FocusLost', {
