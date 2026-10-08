@@ -144,7 +144,7 @@ in {
               matcher = "^Bash$";
               hooks = [
                 {
-                  command = "${lib.getExe pkgs.agent-guard} codex";
+                  command = "'${config.home.profileDirectory}/bin/agent-guard' codex";
                   type = "command";
                 }
               ];
