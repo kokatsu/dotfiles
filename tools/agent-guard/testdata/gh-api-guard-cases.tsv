@@ -11,7 +11,11 @@
 # F: argv の境界
 # G: bash として解析できない入力
 # H: 語分割が旗やコマンドを増やす形
-# I: 改行を含む形。この表には書けないので test-gh-api-guard.ts が直接渡す
+# I: 改行を含む形。この表には書けないので ghapi_claude_test.go が直接渡す
+# J: 理由の選ばれる順が deny と ask を分ける形
+# K: banned モードの wrapper 剥がしだけが知る形。ここでは間接呼び出しとして読む
+# L: パスで呼んだ gh。判定を出さず通常の確認に任せる
+# M: env -S が語を増やし、元の語の並びとずれる形
 
 A1	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api repos/o/r -X DELETE
 A2	ask	gh api: HTTP method override to 'POST' (not GET) — confirm intent	gh api repos/o/r -iX POST
@@ -80,3 +84,32 @@ H5	ask	gh api: an expanded word hides what runs — confirm intent	$CMD api r -X
 H6	ask	gh api: an expanded word hides what runs — confirm intent	env -u $V gh a${P}i r -X DELETE
 H7	ask	gh api: an expanded word hides what runs — confirm intent	gh a${P}i r -X DELETE
 H8	ask	gh api: an expanded word hides what runs — confirm intent	gh $X r -X DELETE
+J1	deny	gh api: no explicit HTTP method — re-run with -X GET for a read	gh api r && gh api r -X DELETE
+J2	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api r -X DELETE && gh api r
+J3	deny	gh api: no explicit HTTP method — re-run with -X GET for a read	gh api r -X GET > >(gh api s)
+J4	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api r -X GET <<< "$(gh api s -X DELETE)"
+K1	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	timeout 5 gh api r -X GET
+K2	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	xargs gh api r -X GET
+K3	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	nohup gh api r -X GET
+K4	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	setsid gh api r -X GET
+K5	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	nice gh api r -X GET
+K6	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	busybox gh api r -X GET
+K7	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	noglob gh api r -X GET
+K8	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	nocorrect gh api r -X GET
+K9	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	repeat 2 gh api r -X GET
+K10	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	stdbuf -o0 gh api r -X GET
+K11	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	caffeinate gh api r -X GET
+K12	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	- gh api r -X GET
+K13	allow	gh api: explicit GET	time gh api r -X GET
+K14	allow	gh api: explicit GET	command -p gh api r -X GET
+K15	allow	gh api: explicit GET	builtin -- gh api r -X GET
+K16	allow	gh api: explicit GET	exec -a x gh api r -X GET
+K17	allow	gh api: explicit GET	doas -u root gh api r -X GET
+L1	none	-	/usr/bin/gh api r -X GET
+L2	none	-	/usr/bin/gh api r -X DELETE
+L3	none	-	./gh api r -X GET
+L4	none	-	bin/gh api r -X DELETE
+L5	none	-	=gh api r -X GET
+M1	ask	gh api: unknown flag '-S' — confirm intent	env -S 'gh api r -X GET'
+M2	allow	gh api: explicit GET	env -S'gh api a b c d' -X GET
+M3	allow	gh api: explicit GET	env -S 'gh api' r -X GET

@@ -50,7 +50,7 @@
           },
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/gh-api-guard.sh",
+            "command": "command -v agent-guard >/dev/null || exit 0; exec agent-guard gh-api",
             "if": "Bash(gh api *)"
           }
         ]

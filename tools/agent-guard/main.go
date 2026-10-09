@@ -1,14 +1,19 @@
 // agent-guard は Claude Code と Codex の PreToolUse フック。
-// stdin で hook payload を受け取り、ブロックするなら理由を stderr に出して
-// exit 2 で終わる。
+// stdin で hook payload を受け取る。gh-api 以外は、ブロックするなら理由を stderr に
+// 出して exit 2 で終わる。
 //
 //	agent-guard banned         Claude Code の Bash 用。Herdr 入力ガードと禁止コマンド
 //	agent-guard codex          Codex の Bash 用。Herdr 入力ガードと禁止コマンド (GREP_R を除く)
 //	agent-guard managed-paths  Claude Code の Edit/Write 用。Home Manager の管理下を守る
+//	agent-guard gh-api         Claude Code の `gh api` 用。読み取りだけを自動で許可する
 //
-// どれもガードなので、判定に届かなかった失敗はすべて exit 2 にする。
+// gh-api 以外はガードなので、判定に届かなかった失敗はすべて exit 2 にする。
 // Claude Code と Codex は exit 2 だけをブロックとして扱い、それ以外の失敗では
 // コマンドを通してしまう。
+//
+// gh-api は逆に、判定を出して exit 0 で終わる。`gh api *` は allowlist に無いので、
+// 判定を出さなければ通常の確認になる。失敗で ask より強くしてはならないので、
+// 判定に届かなかった失敗は判定を出さずに exit 0 にする。
 package main
 
 import (
@@ -43,7 +48,7 @@ func refuse(format string, args ...any) {
 var codexSkipped = []verdict{"GREP_R"}
 
 // bannedSkipped は Claude Code では使わない判定。Claude Code の gh api は
-// .config/claude/hooks/gh-api-guard.ts が見る。
+// gh-api モードが見る。
 var bannedSkipped = []verdict{"GH_API_METHOD"}
 
 type toolCall struct {
@@ -139,9 +144,45 @@ func checkCommand(command string, present bool, skip ...verdict) {
 	}
 }
 
+// 端末が stdin なら Claude Code からの呼び出しではない。読むとハングする。
+func stdinIsTerminal() bool {
+	info, err := os.Stdin.Stat()
+	return err == nil && info.Mode()&os.ModeCharDevice != 0
+}
+
+// runGhAPI は判定を 1 行の JSON で書く。判定しないなら何も書かない。
+func runGhAPI(stdin io.Reader, terminal bool, stdout io.Writer) {
+	if terminal {
+		return
+	}
+	call, err := readToolInput(stdin, "command")
+	decision, ok := ghAPIDecision{"ask", ghAPIUnparsedReason}, true
+	if err == nil && call.present {
+		decision, ok = checkGhAPI(call.value)
+	}
+	if !ok {
+		return
+	}
+	var out struct {
+		HookSpecificOutput struct {
+			HookEventName            string `json:"hookEventName"`
+			PermissionDecision       string `json:"permissionDecision"`
+			PermissionDecisionReason string `json:"permissionDecisionReason"`
+		} `json:"hookSpecificOutput"`
+	}
+	out.HookSpecificOutput.HookEventName = "PreToolUse"
+	out.HookSpecificOutput.PermissionDecision = decision.decision
+	out.HookSpecificOutput.PermissionDecisionReason = decision.reason
+	data, _ := json.Marshal(out)
+	_, _ = stdout.Write(append(data, '\n'))
+}
+
 func run(mode string) {
-	// 端末が stdin なら Claude Code からの呼び出しではない。読むとハングする。
-	if info, err := os.Stdin.Stat(); err == nil && info.Mode()&os.ModeCharDevice != 0 {
+	if mode == "gh-api" {
+		runGhAPI(os.Stdin, stdinIsTerminal(), os.Stdout)
+		return
+	}
+	if stdinIsTerminal() {
 		refuse("stdin is a terminal, not a piped payload")
 	}
 
@@ -176,26 +217,39 @@ func run(mode string) {
 	}
 }
 
-func main() {
-	if len(os.Args) != 2 || (os.Args[1] != "banned" && os.Args[1] != "codex" && os.Args[1] != "managed-paths") {
-		refuse("usage: agent-guard {banned|codex|managed-paths}")
+// fail は判定に届かなかった失敗で終わる。
+func fail(mode, format string, args ...any) {
+	if mode == "gh-api" {
+		os.Exit(0)
 	}
+	refuse(format, args...)
+}
+
+// guard は body の想定外の panic も、判定に届かなかった失敗として終える。
+func guard(mode string, body func()) {
+	defer func() {
+		if r := recover(); r != nil {
+			fail(mode, "failed before reaching a verdict (%v)", r)
+		}
+	}()
+	body()
+}
+
+func main() {
+	modes := []string{"banned", "codex", "managed-paths", "gh-api"}
+	if len(os.Args) != 2 || !slices.Contains(modes, os.Args[1]) {
+		refuse("usage: agent-guard {banned|codex|managed-paths|gh-api}")
+	}
+	mode := os.Args[1]
 
 	// シグナルで終わると 128+n になり、ブロックと見なされない。読み取りの途中で
-	// 止まっていても、受けた時点で exit 2 にする。
+	// 止まっていても、受けた時点で fail に渡す。
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGPIPE)
 	go func() {
 		sig := <-signals
-		refuse("received %v before reaching a verdict", sig)
+		fail(mode, "received %v before reaching a verdict", sig)
 	}()
 
-	// 想定外の panic も判定に届かなかった失敗なので、ブロックに倒す。
-	defer func() {
-		if r := recover(); r != nil {
-			refuse("failed before reaching a verdict (%v)", r)
-		}
-	}()
-
-	run(os.Args[1])
+	guard(mode, func() { run(mode) })
 }

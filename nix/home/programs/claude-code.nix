@@ -43,17 +43,11 @@
       source = ../../../.config/claude/hooks/check-ai-writing.sh;
       executable = true;
     };
-    ".config/claude/hooks/gh-api-guard.sh" = {
-      source = ../../../.config/claude/hooks/gh-api-guard.sh;
-      executable = true;
-    };
-    ".config/claude/hooks/gh-api-guard.ts".source = ../../../.config/claude/hooks/gh-api-guard.ts;
     ".config/claude/hooks/herdr-cache-token.sh" = {
       source = ../../../.config/claude/hooks/herdr-cache-token.sh;
       executable = true;
     };
     ".config/claude/hooks/herdr-cache-token.ts".source = ../../../.config/claude/hooks/herdr-cache-token.ts;
-    ".config/claude/hooks/shell-words.ts".source = ../../../.config/claude/hooks/shell-words.ts;
     ".config/claude/hooks/notify.sh" = {
       source = ../../../.config/claude/hooks/notify.sh;
       executable = true;

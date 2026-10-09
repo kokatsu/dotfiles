@@ -1893,7 +1893,7 @@
   {
     "want": "allow",
     "command": "gh api repos/o/r",
-    "label": "gh api は banned モードでは見ない (Claude Code は gh-api-guard.ts)"
+    "label": "gh api は banned モードでは見ない (Claude Code は gh-api モード)"
   },
   {
     "want": "allow",

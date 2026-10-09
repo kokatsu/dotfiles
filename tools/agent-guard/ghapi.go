@@ -1,15 +1,14 @@
 package main
 
 // GH_API_METHOD: gh api の呼び出しに、値の読める HTTP メソッドの明示を求める。
-// codex モードだけの判定で、Claude Code には .config/claude/hooks/gh-api-guard.ts
+// codex モードだけの判定で、Claude Code には gh-api モード (ghapi_claude.go)
 // があるので banned モードでは飛ばす。
 //
 // 呼び出しはコマンド位置や wrapper を読まず、字面の gh と api (または読めない
 // 語) が並んだ所とみなす。一覧にない wrapper が前に付いても見落とさない代わりに、
 // `echo gh api r` も拒否する。
 //
-// gh api のオプション表は gh-api-guard.ts の SHORT_VALUE / LONG_VALUE と同じ。
-// 片方を変えたら、もう片方も揃えること。
+// 値を取るオプションの表は gh-api モードと共有する。
 
 import (
 	"regexp"

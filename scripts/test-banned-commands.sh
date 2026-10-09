@@ -105,7 +105,7 @@ assert_blocked 'herdr agent prompt "hello"'
 assert_blocked 'herdr pane run ls'
 assert_allowed 'herdr pane list' '入力系でない herdr サブコマンド'
 assert_allowed 'herdr-peer ask codex "hello"' 'herdr-peer 経由'
-assert_allowed 'gh api repos/o/r' 'gh api は gh-api-guard.ts が見る'
+assert_allowed 'gh api repos/o/r' 'gh api は gh-api モードが見る'
 echo ""
 
 # 想定外の入力でも exit 2 でなければ Claude Code はコマンドを通す。
