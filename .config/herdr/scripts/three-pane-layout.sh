@@ -93,33 +93,10 @@ if ((pane_count == 1)); then
   right_pane_id=$(split_pane "$active_pane_id" right)
 
   if [[ "$full_height_side" == "full-left" ]]; then
-    # 同一タブ内の pane move は変更なしになるため、元ペインを一時タブへ
-    # 退避してから、新しいペインの右へ戻す。
-    move_response=$("$herdr_bin" pane move "$active_pane_id" --new-tab --no-focus)
-    active_pane_id=$(jq -er '
-      select(.result.move_result.changed == true)
-      | .result.move_result.pane.pane_id
-    ' <<<"$move_response")
-
-    active_is_temporary=true
-    # shellcheck disable=SC2329  # EXIT trap から間接的に呼び出す。
-    restore_active_on_exit() {
-      if [[ "$active_is_temporary" == true ]]; then
-        set +e
-        "$herdr_bin" pane move "$active_pane_id" \
-          --tab "$original_tab_id" \
-          --target-pane "$right_pane_id" \
-          --split right \
-          --ratio 0.5 \
-          --focus >/dev/null 2>&1
-      fi
-    }
-    trap restore_active_on_exit EXIT
-
-    moved_pane_id=$(move_pane "$active_pane_id" "$right_pane_id" right "$original_tab_id")
-    active_pane_id=$moved_pane_id
-    active_is_temporary=false
-    trap - EXIT
+    # swap は pane move と違いペイン ID を保ち、フォーカスも元ペインに残す。
+    "$herdr_bin" pane swap \
+      --source-pane "$active_pane_id" \
+      --target-pane "$right_pane_id" >/dev/null
     split_pane "$active_pane_id" down >/dev/null
   else
     # 元のペインを左上として左下を追加し、新しい右ペインを全高にする。

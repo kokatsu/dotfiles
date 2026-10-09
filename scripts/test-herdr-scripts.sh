@@ -102,15 +102,13 @@ pane split p1 --direction right --ratio 0.5 --no-focus
 pane split p1 --direction down --ratio 0.5 --no-focus
 EOF
 
-# 同一タブ内の移動はできないので、元ペインは一時タブ経由で新しいペインの右へ戻る
 start_case <<'EOF'
 respond() {
   case "$1" in
   "pane layout --pane p1") layout t1 false single ;;
   "pane split p1 --direction right "*) split p2 ;;
-  "pane move p1 --new-tab --no-focus") moved p3 t9 t9 ;;
-  "pane move p3 --tab t1 --target-pane p2 --split right --ratio 0.5 --focus") moved p4 t1 ;;
-  "pane split p4 --direction down "*) split p5 ;;
+  "pane swap --source-pane p1 --target-pane p2") printf '{"result":{"swap":{"changed":true}}}\n' ;;
+  "pane split p1 --direction down "*) split p3 ;;
   *) exit 9 ;;
   esac
 }
@@ -119,9 +117,8 @@ run_three full-left
 expect_calls "three: single full-left" <<'EOF'
 pane layout --pane p1
 pane split p1 --direction right --ratio 0.5 --no-focus
-pane move p1 --new-tab --no-focus
-pane move p3 --tab t1 --target-pane p2 --split right --ratio 0.5 --focus
-pane split p4 --direction down --ratio 0.5 --no-focus
+pane swap --source-pane p1 --target-pane p2
+pane split p1 --direction down --ratio 0.5 --no-focus
 EOF
 
 start_case <<'EOF'
