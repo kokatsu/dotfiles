@@ -53,10 +53,6 @@ in {
       # overlay は 0.10.0 未満の版を公開しない。
       moonbit-bin."v0.10.14+7d59c7ec9+914d7da"
 
-      #--- Playwright (ブラウザ自動化) ---#
-      # https://github.com/microsoft/playwright
-      playwright-driver # Nix 管理のブラウザバイナリ (agent-browser 用)
-
       #####################################
       # CLIツール
       #####################################
@@ -410,9 +406,6 @@ in {
       docker-compose # macOSではOrbStackを使用
       # https://www.google.com/chrome/
       google-chrome # Chromium ベースブラウザ
-      # https://github.com/mermaid-js/mermaid-cli
-      # Darwin では chromium (Linux専用) が無く PUPPETEER_EXECUTABLE_PATH が設定されないため未対応
-      mermaid-cli # Mermaid 図の SVG 事前レンダリング (md2html 用)
       # https://github.com/googlefonts/noto-cjk
       noto-fonts-cjk-sans # 日本語フォント
     ];
