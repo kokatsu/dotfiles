@@ -85,6 +85,8 @@ in {
       nativeBuildInputs = (old.nativeBuildInputs or []) ++ [prev.pkg-config];
       LIBZ_SYS_STATIC = "0";
       PKG_CONFIG_PATH = "${prev.zlib.dev}/lib/pkgconfig";
+      # fork の Cargo.toml は 0.7.0 のままで、versionCheckHook が 0.8.0 を探して落ちる
+      doInstallCheck = false;
     });
   };
 
