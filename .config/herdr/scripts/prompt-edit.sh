@@ -19,8 +19,6 @@ nvim -c "startinsert" "$TMPFILE"
 
 # 内容が存在する場合のみ送信
 if [[ -s "$TMPFILE" ]]; then
-  CONTENT=$(cat "$TMPFILE")
-
   # herdrのペインが閉じた後、起動元ペインに内容を送信
-  "$herdr_bin" pane send-text "$active_pane_id" "$CONTENT"
+  "$herdr_bin" pane send-text "$active_pane_id" "$(<"$TMPFILE")"
 fi

@@ -8,7 +8,6 @@ set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
 full_height_side=${1:?full-height side is required}
-cwd_args=()
 
 case "$full_height_side" in
 full-left | full-right) ;;
@@ -18,24 +17,14 @@ full-left | full-right) ;;
   ;;
 esac
 
-if [[ -n "${HERDR_ACTIVE_PANE_CWD:-}" ]]; then
-  cwd_args=(--cwd "$HERDR_ACTIVE_PANE_CWD")
-fi
-
-split_pane() {
-  local target_pane_id=$1
-  local direction=$2
-  local response
-
-  response=$(
-    "$herdr_bin" pane split "$target_pane_id" \
-      --direction "$direction" \
-      --ratio 0.5 \
-      --no-focus \
-      "${cwd_args[@]}"
-  )
-
-  jq -er '.result.pane.pane_id' <<<"$response"
+# 移動の拒否も exit 0 の changed:false で返るため、changed を見る。
+# 引数のタブ ID を渡すと、そのタブへ移動できたときだけ ID を出す
+pane_id_after_move() {
+  jq -er --arg tab "${1:-}" '
+    .result.move_result
+    | select(.changed == true and ($tab == "" or .target_layout.tab_id == $tab))
+    | .pane.pane_id // empty
+  '
 }
 
 # 失敗しても `id=$(move_pane ...)` の代入は set -e より先に済み、ID が空になる。
@@ -61,10 +50,7 @@ move_pane() {
       "$focus_arg"
   )
 
-  jq -er '
-    select(.result.move_result.changed == true)
-    | .result.move_result.pane.pane_id
-  ' <<<"$response"
+  pane_id_after_move <<<"$response"
 }
 
 notify_unsupported_layout() {
@@ -92,16 +78,14 @@ fi
 if ((pane_count == 1)); then
   right_pane_id=$(split_pane "$active_pane_id" right)
 
+  # swap は pane move と違いペイン ID を保ち、フォーカスも元ペインに残す。
   if [[ "$full_height_side" == "full-left" ]]; then
-    # swap は pane move と違いペイン ID を保ち、フォーカスも元ペインに残す。
     "$herdr_bin" pane swap \
       --source-pane "$active_pane_id" \
       --target-pane "$right_pane_id" >/dev/null
-    split_pane "$active_pane_id" down >/dev/null
-  else
-    # 元のペインを左上として左下を追加し、新しい右ペインを全高にする。
-    split_pane "$active_pane_id" down >/dev/null
   fi
+  # 元のペインの下に追加し、新しいペインを反対側の全高にする。
+  split_pane "$active_pane_id" down >/dev/null
   exit 0
 fi
 
@@ -141,10 +125,7 @@ if [[ "$bottom_pane_id" == "$active_pane_id" ]]; then
 fi
 
 move_response=$("$herdr_bin" pane move "$bottom_pane_id" --new-tab --no-focus)
-bottom_pane_id=$(jq -er '
-  select(.result.move_result.changed == true)
-  | .result.move_result.pane.pane_id
-' <<<"$move_response")
+bottom_pane_id=$(pane_id_after_move <<<"$move_response")
 temporary_tab_id=$(jq -er '.result.move_result.created_tab.tab_id' <<<"$move_response")
 if [[ "$bottom_was_active" == true ]]; then
   active_pane_id=$bottom_pane_id
@@ -175,11 +156,7 @@ restore_bottom_on_exit() {
         --no-focus 2>/dev/null
     )
     # 元タブへ移動できたときだけ、返却された ID を下ペインの復元先にする。
-    restored=$(jq -r --arg tab "$original_tab_id" '
-      select(.result.move_result.changed == true)
-      | select(.result.move_result.target_layout.tab_id == $tab)
-      | .result.move_result.pane.pane_id // empty
-    ' <<<"$move_response")
+    restored=$(pane_id_after_move "$original_tab_id" <<<"$move_response")
 
     if [[ -n "$restored" ]]; then
       top_pane_id=$restored
@@ -203,7 +180,6 @@ restore_bottom_on_exit() {
     return
   fi
 
-  # 下ペインも移動拒否は changed:false / exit 0 で返るため、終了コードだけでは判断しない。
   move_response=$(
     "$herdr_bin" pane move "$bottom_pane_id" \
       --tab "$original_tab_id" \
@@ -212,11 +188,7 @@ restore_bottom_on_exit() {
       --ratio 0.5 \
       --no-focus 2>/dev/null
   )
-  restored=$(jq -r --arg tab "$original_tab_id" '
-    select(.result.move_result.changed == true)
-    | select(.result.move_result.target_layout.tab_id == $tab)
-    | .result.move_result.pane.pane_id // empty
-  ' <<<"$move_response")
+  restored=$(pane_id_after_move "$original_tab_id" <<<"$move_response")
 
   if [[ -z "$restored" ]]; then
     # 応答を取得できなくても移動自体は適用されうるので、所属タブを見て判断する。

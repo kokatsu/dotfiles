@@ -15,28 +15,6 @@ set -euo pipefail
 # shellcheck source=.config/herdr/scripts/lib.sh
 source "$(dirname "$0")/lib.sh"
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
-cwd_args=()
-
-if [[ -n "${HERDR_ACTIVE_PANE_CWD:-}" ]]; then
-  cwd_args=(--cwd "$HERDR_ACTIVE_PANE_CWD")
-fi
-
-split_pane() {
-  local target_pane_id=$1
-  local direction=$2
-  local ratio=$3
-  local response
-
-  response=$(
-    "$herdr_bin" pane split "$target_pane_id" \
-      --direction "$direction" \
-      --ratio "$ratio" \
-      --no-focus \
-      "${cwd_args[@]}"
-  )
-
-  jq -er '.result.pane.pane_id' <<<"$response"
-}
 
 start_agent_if_needed() {
   local pane_id=$1

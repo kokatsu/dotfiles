@@ -23,6 +23,27 @@ open_url() {
   fi
 }
 
+copy_to_clipboard() {
+  if [[ $(uname -s) == Darwin ]]; then
+    pbcopy
+  else
+    xsel -ib
+  fi
+}
+
+# 新しいペインの ID を出力する。ratio の既定は 0.5
+split_pane() {
+  local response
+  response=$(
+    "$herdr_bin" pane split "$1" \
+      --direction "$2" \
+      --ratio "${3:-0.5}" \
+      --no-focus \
+      ${HERDR_ACTIVE_PANE_CWD:+--cwd "$HERDR_ACTIVE_PANE_CWD"}
+  )
+  jq -er '.result.pane.pane_id' <<<"$response"
+}
+
 # 標準入力の改行区切りのパスを、起動元ペインのエージェントに合わせた形で送る。
 # herdr は 1 キー = 1 コマンド固定で bind 時点の振り分けができないため、
 # 送信時に herdr pane get の .result.pane.agent (なしは null) で判定する。

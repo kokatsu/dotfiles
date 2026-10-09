@@ -51,9 +51,5 @@ done |
 
 [[ -z "$chosen" ]] && exit 0
 file="$dir/${chosen%%$'\t'*}.md"
-if [[ $(uname -s) == Darwin ]]; then
-  pbcopy <"$file"
-else
-  xsel -ib <"$file"
-fi
+copy_to_clipboard <"$file"
 notify "Claude の応答をコピーしました"

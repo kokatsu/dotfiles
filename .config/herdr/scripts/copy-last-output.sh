@@ -97,9 +97,5 @@ while [[ $out == *"$fence"* ]]; do
 done
 out="$fence$lang"$'\n'"$out"$'\n'"$fence"
 
-if [[ $(uname -s) == Darwin ]]; then
-  printf '%s' "$out" | pbcopy
-else
-  printf '%s' "$out" | xsel -ib
-fi
+printf '%s' "$out" | copy_to_clipboard
 notify "直前のコマンドと出力をコピーしました"

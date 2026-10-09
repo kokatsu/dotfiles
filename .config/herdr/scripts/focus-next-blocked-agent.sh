@@ -21,17 +21,14 @@ fi
 target_pane_id=$(
   jq -r --arg current "$active_pane_id" '
     . as $agents
-    | ($agents | map(.pane_id) | index($current)) as $current_index
-    | if $current_index == null then
-        [$agents[] | select(.agent_status == "blocked") | .pane_id][0] // empty
-      else
-        [
-          range(1; ($agents | length) + 1) as $offset
-          | $agents[(($current_index + $offset) % ($agents | length))]
-          | select(.agent_status == "blocked")
-          | .pane_id
-        ][0] // empty
-      end
+    # 現在位置が一覧にないときは -1 として先頭から探す
+    | ($agents | map(.pane_id) | index($current) // -1) as $current_index
+    | [
+        range(1; ($agents | length) + 1) as $offset
+        | $agents[(($current_index + $offset) % ($agents | length))]
+        | select(.agent_status == "blocked")
+        | .pane_id
+      ][0] // empty
   ' <<<"$agents"
 )
 
