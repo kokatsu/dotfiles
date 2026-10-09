@@ -117,9 +117,9 @@ in {
     # ため artifact 自体の prefetch を省き、scripts/update-hashes.ts が変換する。
     hashSource = "sha256sums";
     hashes = {
-      "aarch64-darwin" = "sha256-WAnukKnDtZ1Di7JmOu+gtD2G+CVDi2XUUEsx+CNDYos=";
-      "aarch64-linux" = "sha256-1Hpfoh4DehuFcpuIwjj/PaipVvyfta05dnFEKOf7K9o=";
-      "x86_64-linux" = "sha256-T1c5RMHSBZEJ11ovTQzJwDaXKIIkpeQHcXqd6Y/AEMU=";
+      "aarch64-darwin" = "sha256-iON8zd9aD06p3BvhPGaiqU+cLRoE86zpBT1xs5OeiF0=";
+      "aarch64-linux" = "sha256-U6nOC5S+snpj/esvdwTZUZnheziYqjO2BGGhqTrA2Is=";
+      "x86_64-linux" = "sha256-pnb1ciquDYbL43ZDMvCOqx/didwKMAs61P+/SGEfo+M=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
