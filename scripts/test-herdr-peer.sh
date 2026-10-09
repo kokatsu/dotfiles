@@ -44,12 +44,20 @@ sent_already() {
 
 session_id() {
   case $FAKE_SCENARIO in
-  stable | marker-ok | marker-missing | marker-late | blocked-peer | read-fail | settle-reset | budget-spent)
+  stable | marker-ok | marker-missing | marker-late | blocked-peer | read-fail | settle-reset | budget-spent | \
+    prompt-stalled | prompt-timeout | prompt-error-other | prompt-error-garbage | kind-changed-after-send)
     printf '%s\n' '"stable-session"'
     ;;
   replaced-after-send)
     if sent_already; then
       printf '%s\n' '"changed-session"'
+    else
+      printf '%s\n' '"stable-session"'
+    fi
+    ;;
+  cleared-after-send)
+    if sent_already; then
+      printf 'null\n'
     else
       printf '%s\n' '"stable-session"'
     fi
@@ -112,14 +120,15 @@ agent_status_value() {
 }
 
 agent_json() {
-  local id status
+  local id status kind=codex
   id=$(session_id)
   status=$(agent_status_value)
-  jq -cn --argjson session_id "$id" --arg status "$status" '{
+  [[ $FAKE_SCENARIO != kind-changed-after-send ]] || ! sent_already || kind=claude
+  jq -cn --argjson session_id "$id" --arg status "$status" --arg kind "$kind" '{
     pane_id: "peer-pane",
     tab_id: "tab-1",
     workspace_id: "workspace-1",
-    agent: "codex",
+    agent: $kind,
     agent_status: $status,
     cwd: "/repo",
     agent_session: {value: $session_id}
@@ -164,9 +173,24 @@ case "$1 $2" in
   if [[ $FAKE_SCENARIO == bootstrap || $FAKE_SCENARIO == delayed-bootstrap ]]; then
     touch "$FAKE_STATE/session-created"
   fi
+  # Real herdr writes server errors as JSON on stderr and exits 1.
+  case $FAKE_SCENARIO in
+  prompt-stalled | prompt-timeout | prompt-error-other)
+    code=${FAKE_SCENARIO#prompt-}
+    [[ $code != stalled ]] || code=agent_prompt_stalled
+    [[ $code != error-other ]] || code=internal_error
+    jq -cn --arg code "$code" '{error: {code: $code, message: "fake"}, id: "cli:agent:prompt"}' >&2
+    exit 1
+    ;;
+  prompt-error-garbage)
+    printf 'not json\n' >&2
+    exit 1
+    ;;
+  esac
   jq -cn '{result: {status: "done"}}'
   ;;
 "agent read")
+  printf '%s\n' "$@" >"$FAKE_STATE/read-argv"
   marker=''
   [[ ! -s $FAKE_STATE/marker ]] || read -r marker <"$FAKE_STATE/marker"
   # Counted for every scenario, including the failing one: the release clock keys off
@@ -177,7 +201,8 @@ case "$1 $2" in
     printf 'fake read failure\n' >&2
     exit 3
     ;;
-  marker-ok | settle-reset | budget-spent)
+  marker-ok | settle-reset | budget-spent | prompt-stalled | prompt-timeout | \
+    replaced-after-send | cleared-after-send | kind-changed-after-send | no-session)
     printf '%s\n' "$marker"
     ;;
   marker-late)
@@ -252,6 +277,7 @@ reset_state() {
     "$test_dir/prompt-count" \
     "$test_dir/prompt-text" \
     "$test_dir/prompt-argv" \
+    "$test_dir/read-argv" \
     "$test_dir/marker" \
     "$test_dir/screen" \
     "$test_dir/read-count" \
@@ -314,6 +340,22 @@ jq -e '
 
 read_output=$(run_wrapper uninitialized read)
 jq -e '.result.text == "peer output"' <<<"$read_output" >/dev/null
+grep -qxF -- 'recent-unwrapped' "$test_dir/read-argv"
+grep -qxF -- '120' "$test_dir/read-argv"
+
+# herdr's agent_not_idle error points at --source visible, so read passes a source
+# through in either option order.
+run_wrapper stable read --source visible --lines 40 >/dev/null
+grep -qxF -- 'visible' "$test_dir/read-argv"
+grep -qxF -- '40' "$test_dir/read-argv"
+
+for args in '--source bogus' '--source' '--lines 0' '--lines 10 extra'; do
+  # shellcheck disable=SC2086 # each case is a list of separate arguments
+  if run_wrapper stable read $args >/dev/null 2>&1; then
+    printf 'expected invalid read arguments to fail: %s\n' "$args" >&2
+    exit 1
+  fi
+done
 
 resolve_output=$(run_wrapper concurrent resolve)
 jq -e '.agent_session_id == "concurrent-session" and .session_state == "initialized"' <<<"$resolve_output" >/dev/null
@@ -333,14 +375,17 @@ run_wrapper delayed-bootstrap prompt --no-marker 'delayed first prompt' >/dev/nu
 [[ $(prompt_count) == 1 ]]
 [[ $(<"$test_dir/get-count") == 3 ]]
 
+# A session id that never arrives is reported, not fatal: herdr has attributed Codex
+# ids to the wrong pane, and the marker alone proves the reply.
 reset_state
-if run_wrapper no-session prompt --no-marker 'delivered without session' >"$test_dir/no-session.out" 2>"$test_dir/no-session.err"; then
-  printf 'expected missing post-prompt session id to fail\n' >&2
-  exit 1
-fi
-grep -F 'peer prompt was delivered' "$test_dir/no-session.err" >/dev/null
-grep -F 'do not retry automatically' "$test_dir/no-session.err" >/dev/null
+run_wrapper no-session prompt --no-marker 'delivered without session' >"$test_dir/no-session.out"
 [[ $(prompt_count) == 1 ]]
+tail -n 1 "$test_dir/no-session.out" | jq -e '.completion == "unconfirmed" and .session == "uninitialized"' >/dev/null
+
+reset_state
+run_wrapper no-session prompt --timeout 60000 'confirmed without session' >"$test_dir/no-session-marker.out"
+[[ $(prompt_count) == 1 ]]
+tail -n 1 "$test_dir/no-session-marker.out" | jq -e '.completion == "confirmed" and .session == "uninitialized"' >/dev/null
 
 reset_state
 run_wrapper stable prompt --no-marker 'existing session' >/dev/null
@@ -382,6 +427,7 @@ tail -n 1 "$test_dir/marker-ok.out" | jq -e '
   .completion == "confirmed" and
   .readiness == "confirmed" and
   .full_answer_capture == "unverified" and
+  .session == "initialized" and
   (.marker | startswith("HERDRPEEREND"))
 ' >/dev/null
 
@@ -432,17 +478,76 @@ grep -F 'do not retry automatically' "$test_dir/blocked.err" >/dev/null
 [[ $(prompt_count) == 1 ]]
 tail -n 1 "$test_dir/blocked.out" | jq -e '.completion == "unconfirmed"' >/dev/null
 
-# A peer replaced after delivery still owes the caller a verdict and the reminder
-# that the prompt is already out; the die is buried in the identity recheck.
+# A session id that changes mid-poll is recorded; the marker still confirms the reply.
 reset_state
-if run_wrapper replaced-after-send prompt --timeout 60000 'replaced mid-poll' >"$test_dir/replaced-after.out" 2>"$test_dir/replaced-after.err"; then
-  printf 'expected a peer replaced after delivery to fail\n' >&2
+run_wrapper replaced-after-send prompt --timeout 60000 'session changes mid-poll' >"$test_dir/replaced-after.out"
+[[ $(prompt_count) == 1 ]]
+tail -n 1 "$test_dir/replaced-after.out" | jq -e '.completion == "confirmed" and .session == "changed"' >/dev/null
+
+# A known id that disappears is a change too.
+reset_state
+run_wrapper cleared-after-send prompt --timeout 60000 'session cleared mid-poll' >"$test_dir/cleared-after.out"
+[[ $(prompt_count) == 1 ]]
+tail -n 1 "$test_dir/cleared-after.out" | jq -e '.completion == "confirmed" and .session == "changed"' >/dev/null
+
+# A different agent kind in the pane is still a replacement. It owes the caller a
+# verdict and the reminder that the prompt is already out; the die is buried in the
+# identity recheck.
+reset_state
+if run_wrapper kind-changed-after-send prompt --timeout 60000 'kind changes mid-poll' >"$test_dir/kind-changed.out" 2>"$test_dir/kind-changed.err"; then
+  printf 'expected a peer of another kind after delivery to fail\n' >&2
   exit 1
 fi
-grep -F 'peer agent session changed after the prompt was delivered' "$test_dir/replaced-after.err" >/dev/null
-grep -F 'already delivered or its delivery is unknown' "$test_dir/replaced-after.err" >/dev/null
+grep -F 'peer is no longer the expected codex agent' "$test_dir/kind-changed.err" >/dev/null
+grep -F 'already delivered or its delivery is unknown' "$test_dir/kind-changed.err" >/dev/null
 [[ $(prompt_count) == 1 ]]
-tail -n 1 "$test_dir/replaced-after.out" | jq -e '.type == "herdr_peer_prompt" and .completion == "unconfirmed"' >/dev/null
+tail -n 1 "$test_dir/kind-changed.out" | jq -e '.type == "herdr_peer_prompt" and .completion == "unconfirmed"' >/dev/null
+
+# agent_prompt_stalled only means herdr saw no working state within five seconds, so
+# the wrapper keeps looking for the marker.
+reset_state
+run_wrapper prompt-stalled prompt --timeout 60000 'stalled send' >"$test_dir/stalled.out" 2>"$test_dir/stalled.err"
+[[ $(prompt_count) == 1 ]]
+grep -F '"agent_prompt_stalled"' "$test_dir/stalled.err" >/dev/null
+tail -n 1 "$test_dir/stalled.out" | jq -e '.completion == "confirmed"' >/dev/null
+
+# herdr's own timeout spends the whole budget, so the marker search has to read the
+# screen once past the deadline instead of giving up unread.
+reset_state
+run_wrapper_release prompt-timeout prompt-count:1 prompt --timeout 1000 'herdr timeout' >"$test_dir/herdr-timeout.out" 2>/dev/null
+[[ $(prompt_count) == 1 ]]
+[[ $(<"$test_dir/read-count") == 1 ]]
+tail -n 1 "$test_dir/herdr-timeout.out" | jq -e '.completion == "confirmed" and .readiness == "unconfirmed"' >/dev/null
+
+# Any other failure, or stderr that is not herdr's JSON, leaves delivery unknown and
+# stops without polling.
+for scenario in prompt-error-other prompt-error-garbage; do
+  reset_state
+  if run_wrapper "$scenario" prompt --timeout 60000 'failed send' >"$test_dir/$scenario.out" 2>"$test_dir/$scenario.err"; then
+    printf 'expected a failed send to fail: %s\n' "$scenario" >&2
+    exit 1
+  fi
+  grep -F 'whether the prompt reached the peer is unknown' "$test_dir/$scenario.err" >/dev/null
+  grep -F 'already delivered or its delivery is unknown' "$test_dir/$scenario.err" >/dev/null
+  [[ $(prompt_count) == 1 ]]
+  [[ ! -f $test_dir/read-count ]]
+  tail -n 1 "$test_dir/$scenario.out" | jq -e '.completion == "unconfirmed"' >/dev/null
+done
+
+# --no-marker has nothing to settle a stalled send with, so it stays a failure.
+reset_state
+if run_wrapper prompt-stalled prompt --no-marker 'stalled verbatim' >/dev/null 2>"$test_dir/stalled-no-marker.err"; then
+  printf 'expected a stalled --no-marker send to fail\n' >&2
+  exit 1
+fi
+grep -F 'whether the prompt reached the peer is unknown' "$test_dir/stalled-no-marker.err" >/dev/null
+
+# Options placed before the subcommand get a hint, not just the usage text.
+if run_wrapper stable --timeout 1000 prompt 'misplaced option' >/dev/null 2>"$test_dir/misplaced.err"; then
+  printf 'expected an option before the subcommand to fail\n' >&2
+  exit 1
+fi
+grep -F 'options go after the subcommand' "$test_dir/misplaced.err" >/dev/null
 
 # The settle loop must survive a peer that goes back to working after it had already
 # started counting, not merely one that is slow to become idle.

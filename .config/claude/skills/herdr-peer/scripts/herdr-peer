@@ -9,6 +9,7 @@ PROMPT_DELIVERED=false
 VERDICT_PRINTED=false
 VERDICT_COMPLETION=unconfirmed
 VERDICT_READINESS=unconfirmed
+VERDICT_SESSION=uninitialized
 VERDICT_MARKER=''
 
 die() {
@@ -21,7 +22,7 @@ usage() {
 Usage:
   herdr-peer resolve
   herdr-peer prompt [--timeout MILLISECONDS] [--no-marker] [--] "PROMPT"
-  herdr-peer read [--lines COUNT]
+  herdr-peer read [--lines COUNT] [--source visible|recent|recent-unwrapped|detection]
 
 --no-marker sends the prompt unchanged and skips completion confirmation. The
 verdict then reports completion "unconfirmed"; nothing else is used to infer that
@@ -170,7 +171,7 @@ generate_marker() {
 # the window also holds whatever preceded the reply, so the rows a long reply gets
 # are that cap minus the earlier output, not a fixed budget.
 peer_screen() {
-  herdr agent read "$PEER_PANE_ID" --source recent-unwrapped --lines "${1:-1000}"
+  herdr agent read "$PEER_PANE_ID" --source "${2:-recent-unwrapped}" --lines "${1:-1000}"
 }
 
 # Anchored match only. The instruction carrying the marker is echoed into the pane,
@@ -190,26 +191,35 @@ marker_seen() {
 
 # Identity recheck for the polling that follows delivery. The prompt is already
 # sent by this point, so every failure here says so and forbids a retry.
+#
+# A session id change is recorded rather than fatal. Herdr has attributed Codex
+# session ids to the wrong pane, so the id is weaker evidence than the per-request
+# marker, which only a reply to this prompt can contain.
 validate_peer_after_delivery() {
   load_current_context
   load_target_context
   validate_peer_identity
 
-  if [[ -n $PEER_SESSION_ID ]]; then
-    [[ $TARGET_SESSION_ID == "$PEER_SESSION_ID" ]] ||
-      die 'peer agent session changed after the prompt was delivered; do not retry automatically'
+  if [[ -z $PEER_SESSION_ID ]]; then
+    [[ -n $TARGET_SESSION_ID ]] || return 0
+    PEER_SESSION_ID=$TARGET_SESSION_ID
+    [[ $VERDICT_SESSION == changed ]] || VERDICT_SESSION=initialized
+  elif [[ $TARGET_SESSION_ID != "$PEER_SESSION_ID" ]]; then
+    VERDICT_SESSION=changed
   fi
 }
 
 # A read failure is transient and keeps the loop going until the deadline; it is not
 # reported as an absent marker. `blocked` is a dead end instead: the peer is waiting
 # on a person, so burning the whole budget would only delay the report.
+#
+# The screen is read at least once even when the deadline has already passed: a send
+# that ends in herdr's own timeout has spent the whole budget, yet the reply may have
+# finished.
 wait_for_marker() {
   local marker=$1 deadline=$2 seen
 
-  # The deadline is checked before anything else so no read or status call starts
-  # once the budget is known to be gone.
-  while [[ $(date +%s) -lt $deadline ]]; do
+  while :; do
     validate_peer_after_delivery
     [[ $TARGET_STATUS != blocked ]] ||
       die 'peer is blocked and cannot finish the reply; the prompt was delivered, so inspect with herdr-peer read and do not retry automatically'
@@ -218,10 +228,9 @@ wait_for_marker() {
     marker_seen "$marker" || seen=$?
     [[ $seen -ne 0 ]] || return 0
 
+    [[ $(date +%s) -lt $deadline ]] || return 1
     sleep 2
   done
-
-  return 1
 }
 
 # The peer runs post-answer hooks, so it can still report `working` right after the
@@ -252,11 +261,13 @@ emit_verdict() {
   jq -nc \
     --arg completion "$VERDICT_COMPLETION" \
     --arg readiness "$VERDICT_READINESS" \
+    --arg session "$VERDICT_SESSION" \
     --arg marker "$VERDICT_MARKER" \
     '{
       type: "herdr_peer_prompt",
       completion: $completion,
       readiness: $readiness,
+      session: $session,
       marker: (if $marker == "" then null else $marker end),
       full_answer_capture: "unverified"
     }'
@@ -292,13 +303,14 @@ wait_for_initialized_session() {
     validate_peer_identity
     if [[ -n $TARGET_SESSION_ID ]]; then
       PEER_SESSION_ID=$TARGET_SESSION_ID
-      return
+      VERDICT_SESSION=initialized
+      return 0
     fi
     [[ $(date +%s) -lt $deadline ]] || break
     sleep 0.1
   done
 
-  die 'peer prompt was delivered, but no agent session id was reported; do not retry automatically'
+  return 1
 }
 
 print_peer() {
@@ -317,6 +329,10 @@ print_peer() {
 main() {
   local subcommand=${1:-}
   [[ -n $subcommand ]] || usage
+  [[ $subcommand != -* ]] || {
+    printf 'herdr-peer: options go after the subcommand, e.g. herdr-peer prompt --timeout 600000 -- "PROMPT"\n' >&2
+    usage
+  }
   shift
 
   require_runtime
@@ -329,7 +345,7 @@ main() {
     print_peer
     ;;
   prompt)
-    local prompt_output prompt_rc timeout_ms=300000 use_marker=true sent_text
+    local prompt_error prompt_error_code prompt_rc timeout_ms=300000 use_marker=true sent_text
     local deadline send_timeout_ms
     while [[ $# -gt 0 ]]; do
       case ${1:-} in
@@ -378,13 +394,25 @@ Finish your reply with a final line that contains only $VERDICT_MARKER and nothi
     # Set before the call: a failed send leaves delivery unknown, and unknown has to
     # be treated as delivered so nothing retries it.
     PROMPT_DELIVERED=true
+    [[ -z $PEER_SESSION_ID ]] || VERDICT_SESSION=initialized
     prompt_rc=0
-    prompt_output=$(herdr agent prompt "$PEER_PANE_ID" "$sent_text" --wait --timeout "$send_timeout_ms") || prompt_rc=$?
-    [[ -z $prompt_output ]] || printf '%s\n' "$prompt_output"
-    [[ $prompt_rc -eq 0 ]] || die "herdr agent prompt exited $prompt_rc; whether the prompt reached the peer is unknown"
+    # Herdr reports server errors as JSON on stderr, so stderr is the one captured
+    # while stdout passes straight through.
+    { prompt_error=$(herdr agent prompt "$PEER_PANE_ID" "$sent_text" --wait --timeout "$send_timeout_ms" 2>&1 >&3 3>&-) || prompt_rc=$?; } 3>&1
+    [[ -z $prompt_error ]] || printf '%s\n' "$prompt_error" >&2
+    if [[ $prompt_rc -ne 0 ]]; then
+      prompt_error_code=$(jq -r '.error.code // empty' <<<"$prompt_error" 2>/dev/null) || prompt_error_code=''
+      # Neither code means the prompt went unsent: stalled only says no `working`
+      # state was seen within five seconds, and timeout is the caller's budget. The
+      # marker is what settles whether the reply arrived.
+      case $use_marker:$prompt_rc:$prompt_error_code in
+      true:1:agent_prompt_stalled | true:1:timeout) ;;
+      *) die "herdr agent prompt exited $prompt_rc; whether the prompt reached the peer is unknown" ;;
+      esac
+    fi
 
     if [[ -z $PEER_SESSION_ID ]]; then
-      wait_for_initialized_session "$deadline"
+      wait_for_initialized_session "$deadline" || true
     fi
 
     if [[ $use_marker == true ]] && wait_for_marker "$VERDICT_MARKER" "$deadline"; then
@@ -400,17 +428,29 @@ Finish your reply with a final line that contains only $VERDICT_MARKER and nothi
     fi
     ;;
   read)
-    local line_count=120
-    if [[ ${1:-} == --lines ]]; then
-      [[ $# -eq 2 && ${2:-} =~ ^[1-9][0-9]*$ ]] || usage
-      line_count=$2
-      shift 2
-    fi
-    [[ $# -eq 0 ]] || usage
+    local line_count=120 source=recent-unwrapped
+    while [[ $# -gt 0 ]]; do
+      case $1 in
+      --lines)
+        [[ $# -ge 2 && ${2:-} =~ ^[1-9][0-9]*$ ]] || usage
+        line_count=$2
+        shift 2
+        ;;
+      --source)
+        [[ $# -ge 2 ]] || usage
+        case $2 in
+        visible | recent | recent-unwrapped | detection) source=$2 ;;
+        *) usage ;;
+        esac
+        shift 2
+        ;;
+      *) usage ;;
+      esac
+    done
 
     resolve_peer
     validate_peer false false
-    peer_screen "$line_count"
+    peer_screen "$line_count" "$source"
     ;;
   *) usage ;;
   esac

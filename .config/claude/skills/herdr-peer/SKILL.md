@@ -41,7 +41,7 @@ After receiving findings, verify each one against the local files before changin
 
 Read [transport and request templates](references/transport.md) before sending a request or interpreting a verdict. It covers completion markers, delivery uncertainty, readiness, response capture, and initial/delta request templates.
 
-Use `herdr-peer resolve` to select the peer, `herdr-peer prompt` to send, and `herdr-peer read` to retrieve the answer. Completion requires `completion: confirmed` and inspection of the full reply. Never automatically resend after delivery or uncertain delivery.
+Use `herdr-peer resolve` to select the peer, `herdr-peer prompt` to send, and `herdr-peer read` to retrieve the answer. Completion requires `completion: confirmed` and inspection of the full reply; a verdict `session` other than `initialized` does not void it but must be reported. Never automatically resend after delivery or uncertain delivery.
 
 ## Coordination rules
 
