@@ -19,6 +19,7 @@ fi
 status=0
 if "$herdr_bin" pane process-info --pane "$active_pane_id" 2>/dev/null |
   jq -e 'any(.result.process_info.foreground_processes[]; .name == "psql")' >/dev/null; then
+  lang="sql"
   # プロンプトの形は nix/home/programs/psql.nix の PROMPT1 / PROMPT2 に合わせている
   out=$(perl -CSD -0777 -ne '
     # pane read は行末の空白を削るので、入力待ちのプロンプトは末尾の空白を持たない
@@ -61,6 +62,7 @@ if "$herdr_bin" pane process-info --pane "$active_pane_id" 2>/dev/null |
     print join("\n", @block[ 0 .. $i - 1 ], map { $_ eq "" ? "--" : "-- $_" } @output), "\n";
   ' <<<"$screen") || status=$?
 else
+  lang="sh"
   # コマンド行の battery と character のグリフは貼り付け先で意味を持たないので $ に置き換える。
   # 改行で終わらない出力には zsh の PROMPT_SP が % を付け、starship の add_newline の空行も入らない
   out=$(perl -CSD -0777 -ne '
@@ -88,6 +90,12 @@ if [[ -z "$out" ]]; then
   notify "コピーできるコマンドの出力がありません"
   exit 0
 fi
+
+fence='```'
+while [[ $out == *"$fence"* ]]; do
+  fence+='`'
+done
+out="$fence$lang"$'\n'"$out"$'\n'"$fence"
 
 if [[ $(uname -s) == Darwin ]]; then
   printf '%s' "$out" | pbcopy
