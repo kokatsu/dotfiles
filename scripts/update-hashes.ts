@@ -3,6 +3,7 @@ import {
   binaryFile,
   checked,
   detect,
+  goModules,
   hexToSri,
   type Manifest,
   packages,
@@ -283,15 +284,11 @@ export async function update(
         }
       }
     }
-    if (outputs.has_agent_guard) {
-      const file = "nix/overlays/agent-guard.nix";
-      await change(file, "agent-guard", {
-        vendorHash: await vendorHash(
-          file,
-          "agent-guard",
-          await read(file),
-          runCommand,
-        ),
+    for (const name of goModules) {
+      if (!outputs[`has_${name.replaceAll("-", "_")}`]) continue;
+      const file = `nix/overlays/${name}.nix`;
+      await change(file, name, {
+        vendorHash: await vendorHash(file, name, await read(file), runCommand),
       });
     }
     // Validate every staged result before writing any permanent changes.

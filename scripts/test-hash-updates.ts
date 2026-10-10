@@ -1,6 +1,7 @@
 import {
   binaryFile,
   checked,
+  goModules,
   hexToSri,
   type Manifest,
   packages,
@@ -274,10 +275,9 @@ Deno.test("every real overlay target can be changed without touching its neighbo
 Deno.test("update stages npm locks and binary hashes, preserves unrelated files, and repeats cleanly", async () => {
   const directory = `${temporary}/repo`;
   await Deno.mkdir(`${directory}/nix/overlays`, { recursive: true });
-  await Deno.mkdir(`${directory}/tools/agent-guard`, { recursive: true });
   const files = new Set([
     ...packages.map((p) => p.file),
-    "nix/overlays/agent-guard.nix",
+    ...goModules.map((name) => `nix/overlays/${name}.nix`),
   ]);
   for (const file of files) await Deno.copyFile(file, `${directory}/${file}`);
   for (const pkg of packages.filter((p) => p.kind === "npm")) {
@@ -288,7 +288,10 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
       `${directory}/${lockDir}/package.json`,
     );
   }
-  await Deno.writeTextFile(`${directory}/tools/agent-guard/go.sum`, "base\n");
+  for (const name of goModules) {
+    await Deno.mkdir(`${directory}/tools/${name}`, { recursive: true });
+    await Deno.writeTextFile(`${directory}/tools/${name}/go.sum`, "base\n");
+  }
   try {
     Deno.chdir(directory);
     await checked(run, "git", ["init", "-q"]);
@@ -467,7 +470,9 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
         ),
       );
     }
-    await Deno.writeTextFile("tools/agent-guard/go.sum", "changed\n");
+    for (const name of goModules) {
+      await Deno.writeTextFile(`tools/${name}/go.sum`, "changed\n");
+    }
     equal(await update(base, mock, temporary), "mise 9.9.9");
     const source = await Deno.readTextFile("nix/overlays/source-builds.nix");
     equal(
@@ -480,12 +485,14 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
       section(source, "x-api-playground")!.match(/sha256-[A-Za-z0-9+/]{43}=/g),
       [newHash, newHash],
     );
-    equal(
-      (await Deno.readTextFile(vendorFile)).includes(
-        `vendorHash = "${newHash}"`,
-      ),
-      true,
-    );
+    for (const name of goModules) {
+      equal(
+        (await Deno.readTextFile(`nix/overlays/${name}.nix`)).includes(
+          `vendorHash = "${newHash}"`,
+        ),
+        true,
+      );
+    }
     equal(
       calls.some((c) =>
         c.command === "npm" &&

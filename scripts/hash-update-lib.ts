@@ -42,6 +42,9 @@ export const packages: Package[] = [
   { name: "claude-code", file: binaryFile, kind: "binary" },
 ];
 
+// Go modules under tools/ whose nix/overlays/<name>.nix vendorHash follows go.sum
+export const goModules = ["agent-guard", "codex-auto-title"];
+
 function escape(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -284,15 +287,16 @@ export async function detect(
     "--",
     "karabiner-config",
     "flake.nix",
-    "tools/agent-guard/go.sum",
+    ...goModules.map((name) => `tools/${name}/go.sum`),
   ])).split("\n");
   if (paths.some((p) => /^karabiner-config\/deno\.(json|lock)$/.test(p))) {
     output.has_karabinerts_deno_lock = "true";
   }
   if (paths.includes("flake.nix")) output.has_flake_nix = "true";
-  if (paths.includes("tools/agent-guard/go.sum")) {
-    output.has_agent_guard = "true";
-    changed.push("agent-guard");
+  for (const name of goModules) {
+    if (!paths.includes(`tools/${name}/go.sum`)) continue;
+    output[`has_${name.replaceAll("-", "_")}`] = "true";
+    changed.push(name);
   }
   output.packages = changed.join(", ");
   return output;

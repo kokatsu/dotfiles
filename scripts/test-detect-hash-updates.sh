@@ -28,9 +28,10 @@ sedi() {
 }
 
 # fixture リポジトリ: 実際の overlay / flake.nix / karabiner-config を base として commit
-mkdir -p "$tmp/nix/overlays" "$tmp/karabiner-config" "$tmp/tools/agent-guard"
+mkdir -p "$tmp/nix/overlays" "$tmp/karabiner-config" "$tmp/tools/agent-guard" "$tmp/tools/codex-auto-title"
 cp "$repo_root"/nix/overlays/*.nix "$tmp/nix/overlays/"
 cp "$repo_root/tools/agent-guard/go.sum" "$tmp/tools/agent-guard/go.sum"
+cp "$repo_root/tools/codex-auto-title/go.sum" "$tmp/tools/codex-auto-title/go.sum"
 cp "$repo_root/flake.nix" "$tmp/flake.nix"
 cp "$repo_root/karabiner-config/deno.json" "$tmp/karabiner-config/deno.json"
 : >"$tmp/karabiner-config/deno.lock"
@@ -98,7 +99,7 @@ printf '\n# touched\n' >>"$tmp/flake.nix"
 out=$(run_detect)
 expect_line "lock/flake" "$out" "has_karabinerts_deno_lock=true"
 expect_line "lock/flake" "$out" "has_flake_nix=true"
-expect_absent "lock/flake" "$out" '^has_(vite|textlint|codex|claude|cssmodules|x_api|agent_guard)'
+expect_absent "lock/flake" "$out" '^has_(vite|textlint|codex|claude|cssmodules|x_api|agent_guard|codex_auto_title)'
 reset_tree
 
 # 5. agent-guard の go.sum (vendorHash はこのファイルで決まる)
@@ -106,6 +107,15 @@ printf 'example.com/dep v1.0.0 h1:x=\n' >>"$tmp/tools/agent-guard/go.sum"
 out=$(run_detect)
 expect_line "agent-guard go.sum" "$out" "has_agent_guard=true"
 expect_line "agent-guard go.sum" "$out" "packages=agent-guard"
+expect_absent "agent-guard go.sum" "$out" '^has_codex_auto_title'
+reset_tree
+
+# 5b. codex-auto-title の go.sum
+printf 'example.com/dep v1.0.0 h1:x=\n' >>"$tmp/tools/codex-auto-title/go.sum"
+out=$(run_detect)
+expect_line "codex-auto-title go.sum" "$out" "has_codex_auto_title=true"
+expect_line "codex-auto-title go.sum" "$out" "packages=codex-auto-title"
+expect_absent "codex-auto-title go.sum" "$out" '^has_(agent_guard|codex=)'
 reset_tree
 
 # 6. 不正な version は fail closed

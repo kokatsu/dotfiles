@@ -35,7 +35,7 @@ _run-all recipes:
 
 # Test automatic Codex thread naming without starting a model turn
 codex-auto-title-test:
-    deno test scripts/test-codex-auto-title.ts
+    cd tools/codex-auto-title && go test ./...
     bash scripts/test-codex-auto.sh
 
 # Run all formatters
@@ -125,6 +125,7 @@ go-fmt-check:
 # Vet Go packages
 go-vet:
     cd tools/agent-guard && go vet ./...
+    cd tools/codex-auto-title && go vet ./...
     cd tools/herdr-cache-token && go vet ./...
     cd tools/report-agent-session && go vet ./...
 

@@ -176,6 +176,7 @@
       customOverlays.agent-guard
       customOverlays.claude-code
       customOverlays.codex
+      customOverlays.codex-auto-title
       customOverlays.cssmodules-language-server
       customOverlays.dcd
       customOverlays.deck-slides
@@ -347,7 +348,7 @@
             shellcheck # シェルスクリプト linter
             shfmt # シェルスクリプト formatter
 
-            # Go (tools/agent-guard, tools/herdr-cache-token, tools/report-agent-session)
+            # Go (tools/agent-guard, tools/codex-auto-title, tools/herdr-cache-token, tools/report-agent-session)
             go # gofmt / go vet / go test
 
             # Web / TypeScript

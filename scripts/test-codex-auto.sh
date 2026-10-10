@@ -10,6 +10,7 @@ trap 'report_failure "$LINENO"' ERR
 test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT
 mkdir -p "$test_dir/bin" "$test_dir/runtime"
+(cd tools/codex-auto-title && go build -o "$test_dir/test-listener" ./cmd/test-listener)
 
 cat >"$test_dir/bin/codex" <<'EOF'
 #!/usr/bin/env bash
@@ -24,11 +25,7 @@ if [[ ${1:-} == app-server ]]; then
     fi
   done
   [[ -n "$socket_path" ]]
-  exec deno eval '
-    const listener = Deno.listen({ transport: "unix", path: Deno.args[0] });
-    await new Promise((resolve) => Deno.addSignalListener("SIGTERM", resolve));
-    listener.close();
-  ' "$socket_path"
+  exec "$CODEX_AUTO_TEST_LISTENER" "$socket_path"
 fi
 
 printf '%s\n' "$@" >"$CODEX_AUTO_TEST_OUTPUT"
@@ -44,6 +41,7 @@ run_launcher() {
     PATH="$test_dir/bin:$PATH" \
       XDG_RUNTIME_DIR="$test_dir/runtime" \
       CODEX_AUTO_TEST_OUTPUT="$output" \
+      CODEX_AUTO_TEST_LISTENER="$test_dir/test-listener" \
       bash scripts/codex-auto.sh "$@"
   )
 }
