@@ -336,7 +336,6 @@ in {
         source = ../../../.config/herdr/hooks/report-agent-session.sh;
         executable = true;
       };
-      ".config/herdr/hooks/report-agent-session.ts".source = ../../../.config/herdr/hooks/report-agent-session.ts;
 
       # ローカルの .config/herdr/plugins は home.file で配置しない:
       # plugin link が symlink を解決して plugin_root が /nix/store になり、

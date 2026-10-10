@@ -184,6 +184,7 @@
       customOverlays.kakehashi
       customOverlays.mise
       customOverlays.pkl
+      customOverlays.report-agent-session
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.textlint-with-rules
       customOverlays.unocss-language-server
@@ -344,7 +345,7 @@
             shellcheck # シェルスクリプト linter
             shfmt # シェルスクリプト formatter
 
-            # Go (tools/agent-guard)
+            # Go (tools/agent-guard, tools/report-agent-session)
             go # gofmt / go vet / go test
 
             # Web / TypeScript

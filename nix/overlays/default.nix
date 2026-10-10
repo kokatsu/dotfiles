@@ -5,7 +5,8 @@
   sourceBuilds = import ./source-builds.nix;
   ccStatusline = import ./cc-statusline.nix {inherit inputs;};
   agentGuard = import ./agent-guard.nix;
+  reportAgentSession = import ./report-agent-session.nix;
   herdr = import ./herdr.nix {inherit inputs;};
   unocssLanguageServer = import ./unocss-language-server.nix {inherit inputs;};
 in
-  binaryReleases // npmPackages // buildFixes // sourceBuilds // ccStatusline // agentGuard // herdr // unocssLanguageServer
+  binaryReleases // npmPackages // buildFixes // sourceBuilds // ccStatusline // agentGuard // reportAgentSession // herdr // unocssLanguageServer

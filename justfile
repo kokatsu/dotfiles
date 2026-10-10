@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-auto-title-test codex-guard-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
+test_recipes := "banned-commands-test codex-auto-title-test codex-guard-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test report-agent-session-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -125,6 +125,7 @@ go-fmt-check:
 # Vet Go packages
 go-vet:
     cd tools/agent-guard && go vet ./...
+    cd tools/report-agent-session && go vet ./...
 
 # Format Deno TypeScript files
 deno-fmt:
@@ -307,6 +308,11 @@ herdr-macos-notify-test:
 # Verify layout scripts restore panes on failure and pane scripts surface errors
 herdr-scripts-test:
     bash scripts/test-herdr-scripts.sh
+
+# Verify the SessionStart report conditions and the hook entry point that launches them
+report-agent-session-test:
+    cd tools/report-agent-session && go test ./...
+    bash scripts/test-report-agent-session.sh
 
 # Verify check failures, concurrent feed updates, and activation retries
 # Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
