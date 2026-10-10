@@ -317,6 +317,8 @@ in {
 
       # https://github.com/jdx/mise
       mise # タスクランナー + プロジェクトごとのツールバージョン管理
+      # https://github.com/rezigned/upmd
+      upmd # Markdown に書いたタスク・ワークフローの実行
 
       # https://github.com/biomejs/biome
       biome # Web ツールチェーン (formatter + linter)

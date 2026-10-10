@@ -188,6 +188,7 @@
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.textlint-with-rules
       customOverlays.unocss-language-server
+      customOverlays.upmd
       customOverlays.vite-plus
       customOverlays.vue-language-server-pin
       customOverlays.x-api-playground

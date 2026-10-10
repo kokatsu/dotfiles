@@ -238,4 +238,23 @@ in {
       mainProgram = "deck-slides";
     };
   };
+
+  # upmd - Run tasks and workflows from Markdown
+  # Renovate: datasource=github-releases depName=rezigned/upmd
+  upmd = mkBinaryRelease rec {
+    pname = "upmd";
+    version = "0.2.7";
+    hashes = {
+      "aarch64-darwin" = "sha256-HpIBnGEUQudaLAHw06QNBpn8gDb4i+b8s1M+AIH8irc=";
+      "aarch64-linux" = "sha256-ITx3pgLTNihQj96pzEuy5iOAMOV1KLdIylE39wVC56A=";
+      "x86_64-linux" = "sha256-EBM216j0ZIo7+JTVY2h18d89IZcZ1HAJbFYuDPTWuao=";
+    };
+    platformMap = appleGnuPlatformMap;
+    url = platform: "https://github.com/rezigned/upmd/releases/download/v${version}/upmd-${platform}.tar.xz";
+    format = "tar";
+    meta = {
+      description = "Run tasks and workflows from Markdown";
+      homepage = "https://github.com/rezigned/upmd";
+    };
+  };
 }
