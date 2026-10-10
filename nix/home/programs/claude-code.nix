@@ -47,7 +47,6 @@
       source = ../../../.config/claude/hooks/herdr-cache-token.sh;
       executable = true;
     };
-    ".config/claude/hooks/herdr-cache-token.ts".source = ../../../.config/claude/hooks/herdr-cache-token.ts;
     ".config/claude/hooks/notify.sh" = {
       source = ../../../.config/claude/hooks/notify.sh;
       executable = true;

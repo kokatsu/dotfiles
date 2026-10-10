@@ -181,6 +181,7 @@
       customOverlays.deck-slides
       customOverlays.git-graph-fork
       customOverlays.herdr
+      customOverlays.herdr-cache-token
       customOverlays.kakehashi
       customOverlays.mise
       customOverlays.pkl
@@ -346,7 +347,7 @@
             shellcheck # シェルスクリプト linter
             shfmt # シェルスクリプト formatter
 
-            # Go (tools/agent-guard, tools/report-agent-session)
+            # Go (tools/agent-guard, tools/herdr-cache-token, tools/report-agent-session)
             go # gofmt / go vet / go test
 
             # Web / TypeScript

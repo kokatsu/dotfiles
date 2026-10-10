@@ -362,6 +362,7 @@ in {
       rgx # ターミナル正規表現テスター (regex101 の TUI 版)
       # https://github.com/herdrdev/herdr-nix (公式リリースバイナリ、overlay)
       herdr # tmux 的なエージェント対応ターミナルマルチプレクサ
+      herdr-cache-token # Claude Code の prompt cache の失効時刻を herdr に報告 (tools/herdr-cache-token)
       report-agent-session # SessionStart で Claude Code / Codex のセッションを herdr に報告 (tools/report-agent-session)
       #--- エディタ ---#
       # https://github.com/neovim/neovim
