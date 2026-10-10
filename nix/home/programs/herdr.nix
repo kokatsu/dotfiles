@@ -126,7 +126,7 @@ in {
           claude = [
             ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
             [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
-            # $cache は herdr-cache-token.ts が報告する prompt cache の失効時刻。
+            # $cache は herdr-cache-token (tools/herdr-cache-token) が報告する prompt cache の失効時刻。
             # --ttl-ms で失効と同時に消えるため、無表示 = キャッシュ切れを意味する
             [{ token = "agent", fg = "${p.peach.hex}", bold = false, dim = false }, { token = "$cache", fg = "${p.teal.hex}", bold = false, dim = false }],
             [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
