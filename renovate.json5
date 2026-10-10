@@ -81,7 +81,7 @@
       enabled: false,
     },
     {
-      description: 'Propose only versions that build with the go directive; agent-guard builds with the Go from nixpkgs',
+      description: 'Propose only versions that build with the go directive; the Go tools build with the Go from nixpkgs',
       matchManagers: [
         'gomod',
       ],

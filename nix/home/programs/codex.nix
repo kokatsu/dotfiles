@@ -68,29 +68,12 @@
       ];
     };
   };
-  codexAutoTitle = pkgs.writeShellApplication {
-    name = "codex-auto-title";
-    text = ''
-      if [[ -z "''${CODEX_AUTO_TITLE_SOCKET:-}" ]]; then
-        exit 0
-      fi
-      exec ${pkgs.deno}/bin/deno run \
-        --quiet \
-        --no-prompt \
-        --allow-env=CODEX_AUTO_TITLE_SOCKET,CODEX_AUTO_TITLE_DEBUG \
-        --allow-read="$CODEX_AUTO_TITLE_SOCKET" \
-        --allow-write="$CODEX_AUTO_TITLE_SOCKET" \
-        --allow-net="unix:$CODEX_AUTO_TITLE_SOCKET" \
-        ${../../../scripts/codex-auto-title.ts} \
-        "$@"
-    '';
-  };
   codexAuto = pkgs.writeShellApplication {
     name = "codex-auto";
     runtimeInputs = [
       pkgs.codex
       pkgs.coreutils
-      codexAutoTitle
+      pkgs.codex-auto-title
     ];
     text = builtins.readFile ../../../scripts/codex-auto.sh;
   };
@@ -98,7 +81,7 @@ in {
   home = {
     packages = [
       codexAuto
-      codexAutoTitle
+      pkgs.codex-auto-title
     ];
 
     file = {
