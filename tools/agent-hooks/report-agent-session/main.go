@@ -15,10 +15,12 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // 旧 Python フックのソケットのタイムアウト。ローカルの報告は 10ms ほどで返る。
+// pane の確認 (process-info と ps) と報告をまとめてこの期限に収める。
 // 期限を過ぎたら CommandContext の既定どおり SIGKILL する。SIGTERM を無視する
 // herdr を待ってセッション開始を遅らせないため。
 const timeout = 500 * time.Millisecond
@@ -30,6 +32,8 @@ type profile struct {
 	reportsPath bool
 	// 報告してはならない payload なら true。
 	skips func(p payload, event string) bool
+	// HERDR_PANE_ID の pane の中で動いているときだけ報告する。
+	checksPane bool
 }
 
 var profiles = map[string]profile{
@@ -57,6 +61,10 @@ var profiles = map[string]profile{
 				// 継承するので、どちらも pane の本来のセッションを置き換えてしまう。
 				p.str("transcript_path") == ""
 		},
+		// 素の codex と codex resume は共有の app-server daemon でフックを動かし、
+		// フックは daemon を起動した pane の HERDR_PANE_ID を継承する。その値を信じると
+		// 別の pane のセッションを上書きする。
+		checksPane: true,
 	},
 }
 
@@ -151,6 +159,9 @@ func run(args []string, stdin io.Reader) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
+	if profiles[agent].checksPane && !insidePane(ctx, herdr, socket, pane) {
+		return
+	}
 	cmd := exec.CommandContext(ctx, herdr, report...)
 	cmd.Env = []string{"HERDR_SOCKET_PATH=" + socket}
 	_ = cmd.Run()
@@ -158,4 +169,79 @@ func run(args []string, stdin io.Reader) {
 
 func main() {
 	run(os.Args[1:], os.Stdin)
+}
+
+// insidePane は pane のシェルがこのプロセスの祖先にいるかを返す。
+// 確かめられなければ false にして報告しない。
+func insidePane(ctx context.Context, herdr, socket, pane string) bool {
+	info := exec.CommandContext(ctx, herdr, "pane", "process-info", "--pane", pane)
+	info.Env = []string{"HERDR_SOCKET_PATH=" + socket}
+	out, err := info.Output()
+	if err != nil {
+		return false
+	}
+	var reply struct {
+		Result struct {
+			ProcessInfo struct {
+				ShellPID int `json:"shell_pid"`
+			} `json:"process_info"`
+		} `json:"result"`
+	}
+	if json.Unmarshal(out, &reply) != nil {
+		return false
+	}
+
+	ps, err := exec.LookPath("ps")
+	if err != nil {
+		return false
+	}
+	// 祖先ごとに ps を起動せず、1 回の一覧を辿る。macOS (BSD) と Linux (procps) の
+	// 両方が受け付ける POSIX の書き方にする。
+	out, err = exec.CommandContext(ctx, ps, "-A", "-o", "pid=", "-o", "ppid=").Output()
+	if err != nil {
+		return false
+	}
+	table, ok := parents(out)
+	return ok && descends(table, os.Getpid(), reply.Result.ProcessInfo.ShellPID)
+}
+
+// parents は `ps -o pid= -o ppid=` の出力を pid → ppid の表にする。
+// 形の崩れた行が 1 つでもあれば表全体を捨てる。
+func parents(out []byte) (map[int]int, bool) {
+	table := map[int]int{}
+	for _, line := range strings.Split(string(out), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) == 0 {
+			continue
+		}
+		if len(fields) != 2 {
+			return nil, false
+		}
+		pid, err1 := strconv.Atoi(fields[0])
+		ppid, err2 := strconv.Atoi(fields[1])
+		if err1 != nil || err2 != nil {
+			return nil, false
+		}
+		table[pid] = ppid
+	}
+	return table, len(table) > 0
+}
+
+// descends は self から親を辿って shell に着くかを返す。pid 1 はどのプロセスの
+// 祖先にもなるので pane のシェルとは認めない。表の大きさを超えて辿るなら循環している。
+func descends(table map[int]int, self, shell int) bool {
+	if shell <= 1 {
+		return false
+	}
+	for pid, steps := self, 0; steps <= len(table); steps++ {
+		if pid == shell {
+			return true
+		}
+		parent, ok := table[pid]
+		if !ok || parent == pid {
+			return false
+		}
+		pid = parent
+	}
+	return false
 }

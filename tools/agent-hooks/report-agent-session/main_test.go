@@ -45,6 +45,15 @@ func mockHerdr(socket string) {
 	if strings.TrimPrefix(filepath.Base(socket), mockSocketPrefix) == "hang" {
 		signal.Ignore(syscall.SIGTERM)
 	}
+	// process-info は報告ではないので記録せず、shellPIDFile の内容をそのまま返す。
+	if len(os.Args) > 2 && os.Args[1] == "pane" && os.Args[2] == "process-info" {
+		data, err := os.ReadFile(filepath.Join(filepath.Dir(socket), shellPIDFile))
+		if err != nil {
+			os.Exit(1)
+		}
+		os.Stdout.Write(data)
+		os.Exit(0)
+	}
 	data, _ := json.Marshal(record{os.Args[1:], os.Environ()})
 	_ = os.WriteFile(filepath.Join(filepath.Dir(socket), "record.json"), data, 0o600)
 	switch strings.TrimPrefix(filepath.Base(socket), mockSocketPrefix) {
@@ -160,6 +169,13 @@ func readRecord(t *testing.T, dir string) (record, bool) {
 		t.Fatal(err)
 	}
 	return r, true
+}
+
+// 模擬 herdr が process-info の応答として返す内容を置くファイル。
+const shellPIDFile = "process-info.json"
+
+func processInfo(pid int) string {
+	return `{"id":"cli:pane:process_info","result":{"process_info":{"pane_id":"p1","shell_pid":` + strconv.Itoa(pid) + `},"type":"pane_process_info"}}`
 }
 
 const claudePayload = `{"session_id":"s 1","hook_event_name":"SessionStart","transcript_path":"/t \"x\".jsonl","source":"startup"}`
@@ -303,5 +319,90 @@ func TestHookIsSilent(t *testing.T) {
 				t.Errorf("herdr called = %v", called)
 			}
 		})
+	}
+}
+
+const codexPayload = `{"session_id":"s1","hook_event_name":"SessionStart","transcript_path":"/r.jsonl","source":"startup"}`
+
+// Codex の共有 daemon が実行するフックは daemon を起動した pane の HERDR_PANE_ID を
+// 継承するので、pane のシェルが自分の祖先にいるときだけ報告する。
+func TestRunCodexRequiresPaneAncestry(t *testing.T) {
+	stranger := exec.Command("sleep", "10")
+	if err := stranger.Start(); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = stranger.Process.Kill(); _ = stranger.Wait() })
+
+	cases := []struct {
+		name   string
+		info   string
+		path   func(dir string) string
+		report bool
+	}{
+		{"pane shell is an ancestor", processInfo(os.Getppid()), nil, true},
+		{"the hook itself counts as inside", processInfo(os.Getpid()), nil, true},
+		{"pane shell is not an ancestor", processInfo(stranger.Process.Pid), nil, false},
+		{"pid 1 is never the pane shell", processInfo(1), nil, false},
+		{"missing shell_pid", `{"result":{"process_info":{"pane_id":"p1"}}}`, nil, false},
+		{"non-numeric shell_pid", `{"result":{"process_info":{"shell_pid":"1"}}}`, nil, false},
+		{"invalid process-info", `{`, nil, false},
+		{"process-info fails", "", nil, false},
+		{"ps missing", processInfo(os.Getppid()), func(dir string) string { return dir }, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			dir, _ := fixture(t, "ok")
+			if c.info != "" {
+				if err := os.WriteFile(filepath.Join(dir, shellPIDFile), []byte(c.info), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if c.path != nil {
+				t.Setenv("PATH", c.path(dir))
+			}
+			run([]string{"session", "codex"}, strings.NewReader(codexPayload))
+			r, called := readRecord(t, dir)
+			if called != c.report {
+				t.Fatalf("reported = %v, want %v (args %q)", called, c.report, r.Args)
+			}
+			if called && r.Args[1] != "report-agent-session" {
+				t.Errorf("unexpected args %q", r.Args)
+			}
+		})
+	}
+}
+
+func TestDescends(t *testing.T) {
+	parents := map[int]int{10: 5, 5: 2, 2: 1, 7: 7, 8: 9, 9: 8}
+	cases := []struct {
+		name        string
+		self, shell int
+		want        bool
+	}{
+		{"self", 10, 10, true},
+		{"parent", 10, 5, true},
+		{"grandparent", 10, 2, true},
+		{"not on the chain", 10, 3, false},
+		{"pid 1 is excluded", 10, 1, false},
+		{"unknown self", 11, 5, false},
+		{"self-loop", 7, 3, false},
+		{"cycle", 8, 3, false},
+	}
+	for _, c := range cases {
+		if got := descends(parents, c.self, c.shell); got != c.want {
+			t.Errorf("%s: got %v, want %v", c.name, got, c.want)
+		}
+	}
+}
+
+func TestParents(t *testing.T) {
+	got, ok := parents([]byte("    1     0\n  501     1\n\n 9001   501\n"))
+	if !ok || len(got) != 3 || got[9001] != 501 || got[501] != 1 || got[1] != 0 {
+		t.Errorf("got %v, %v", got, ok)
+	}
+	for _, bad := range []string{"", "1\n", "1 2 3\n", "a 1\n", "1 b\n"} {
+		if got, ok := parents([]byte(bad)); ok {
+			t.Errorf("%q: got %v, want rejection", bad, got)
+		}
 	}
 }

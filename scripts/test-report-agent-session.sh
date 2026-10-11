@@ -15,13 +15,21 @@ mkdir -p "$test_dir/bin" "$test_dir/empty" "$test_dir/failing"
 (cd "$repo_root/tools/agent-hooks/report-agent-session" && go build -o "$test_dir/bin/report-agent-session" .)
 
 # The binary hands herdr only HERDR_SOCKET_PATH, so the mock cannot find its
-# interpreter or record file through the environment; both are baked in.
+# interpreter or files through the environment; their paths are baked in.
+# process-info answers with the pid in $shell_pid and is not recorded.
 record="$test_dir/record"
+shell_pid="$test_dir/shell_pid"
 cat >"$test_dir/herdr" <<EOF
 #!$bash_bin
+if [[ \$1 == pane && \$2 == process-info ]]; then
+  printf '{"result":{"process_info":{"shell_pid":%s}}}' "\$(<"$shell_pid")"
+  exit
+fi
 printf '%s\0' "\$@" >"$record"
 EOF
 chmod +x "$test_dir/herdr"
+# The Codex pane check walks a ps snapshot, so the hook's PATH needs ps.
+ln -s "$(command -v ps)" "$test_dir/bin/ps"
 
 cat >"$test_dir/failing/report-agent-session" <<EOF
 #!$bash_bin
@@ -93,9 +101,20 @@ run_hook claude "$claude_payload" "${herdr_env[@]}" -- session claude
 expect_report claude pane report-agent-session p1 --source herdr:claude --agent claude \
   --seq SEQ --agent-session-id "s 1" --agent-session-path /t.jsonl --session-start-source startup
 
+# This script is an ancestor of every hook it runs, so it stands in for the pane shell.
+echo $$ >"$shell_pid"
 run_hook codex "$codex_payload" "${herdr_env[@]}" -- session codex
 expect_report codex pane report-agent-session p1 --source herdr:codex --agent codex \
   --seq SEQ --agent-session-id s2 --session-start-source resume
+
+# A Codex hook run by the shared app-server daemon is not under the pane shell.
+sleep 30 &
+stranger=$!
+echo "$stranger" >"$shell_pid"
+run_hook "codex outside the pane" "$codex_payload" "${herdr_env[@]}" -- session codex
+expect_no_report "codex outside the pane"
+kill "$stranger"
+wait "$stranger" 2>/dev/null || true
 
 run_hook "herdr from PATH" "$claude_payload" "${herdr_env[@]}" HERDR_BIN_PATH= PATH="$test_dir/bin:$test_dir" -- session claude
 expect_report "herdr from PATH" pane report-agent-session p1 --source herdr:claude --agent claude \

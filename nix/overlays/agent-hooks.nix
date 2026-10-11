@@ -21,6 +21,9 @@
       # 模擬 app-server はプロファイルに入れない
       excludedPackages = ["cmd/regex-dialect" "cmd/test-listener"];
 
+      # report-agent-session は Codex の pane 確認で ps を PATH から探し、そのテストも実際に ps を走らせる
+      nativeCheckInputs = [prev.ps];
+
       meta.description = "Claude Code and Codex hooks: command guard, Codex thread naming, and Herdr session and cache reports";
     };
   };
