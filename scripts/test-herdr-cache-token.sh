@@ -12,7 +12,7 @@ test_dir=$(mktemp -d)
 trap 'rm -rf -- "$test_dir"' EXIT
 mkdir -p "$test_dir/bin" "$test_dir/herdr-only" "$test_dir/failing" "$test_dir/home/.config/claude/projects"
 
-(cd "$repo_root/tools/herdr-cache-token" && go build -o "$test_dir/bin/herdr-cache-token" .)
+(cd "$repo_root/tools/agent-hooks/herdr-cache-token" && go build -o "$test_dir/bin/herdr-cache-token" .)
 
 # Both the binary and the fallback hand herdr only HERDR_SOCKET_PATH, so the mock
 # cannot find its interpreter or record files through the environment; both are

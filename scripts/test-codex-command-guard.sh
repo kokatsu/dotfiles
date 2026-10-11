@@ -2,13 +2,13 @@
 set -euo pipefail
 
 # Codex が登録する `agent-guard codex` の入口を検証する。判定そのものは
-# tools/agent-guard の go test が、Claude Code 側の `banned` の入口は
+# tools/agent-hooks/agent-guard の go test が、Claude Code 側の `banned` の入口は
 # scripts/test-banned-commands.sh が見る。
 repo_root=$(git rev-parse --show-toplevel)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 guard="$work/agent-guard"
-(cd "$repo_root/tools/agent-guard" && go build -o "$guard" .)
+(cd "$repo_root/tools/agent-hooks/agent-guard" && go build -o "$guard" .)
 
 guard_status() {
   local status

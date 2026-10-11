@@ -25,7 +25,7 @@ import (
 
 	"mvdan.cc/sh/v3/syntax"
 
-	"agent-guard/rules"
+	"agent-hooks/agent-guard/rules"
 )
 
 // gh api の短オプション。値を取る文字を取り違えると束の解釈が壊れる。真偽値を

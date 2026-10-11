@@ -173,21 +173,18 @@
       # upstream overlay (pkgs.moonbit-bin.* を生やす)
       inputs.moonbit-overlay.overlays.default
       customOverlays.cc-statusline
-      customOverlays.agent-guard
+      customOverlays.agent-hooks
       customOverlays.claude-code
       customOverlays.codex
-      customOverlays.codex-auto-title
       customOverlays.cssmodules-language-server
       customOverlays.dcd
       customOverlays.deck-slides
       customOverlays.git-graph-fork
       customOverlays.herdr
-      customOverlays.herdr-cache-token
       customOverlays.kakehashi
       customOverlays.mise
       customOverlays.pkl
       customOverlays.qo
-      customOverlays.report-agent-session
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.textlint-with-rules
       customOverlays.unocss-language-server
@@ -349,7 +346,7 @@
             shellcheck # シェルスクリプト linter
             shfmt # シェルスクリプト formatter
 
-            # Go (tools/agent-guard, tools/codex-auto-title, tools/herdr-cache-token, tools/report-agent-session)
+            # Go (tools/agent-hooks)
             go # gofmt / go vet / go test
 
             # Web / TypeScript

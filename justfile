@@ -35,7 +35,7 @@ _run-all recipes:
 
 # Test automatic Codex thread naming without starting a model turn
 codex-auto-title-test:
-    cd tools/codex-auto-title && go test ./...
+    cd tools/agent-hooks/codex-auto-title && go test ./...
     bash scripts/test-codex-auto.sh
 
 # Run all formatters
@@ -124,10 +124,7 @@ go-fmt-check:
 
 # Vet Go packages
 go-vet:
-    cd tools/agent-guard && go vet ./...
-    cd tools/codex-auto-title && go vet ./...
-    cd tools/herdr-cache-token && go vet ./...
-    cd tools/report-agent-session && go vet ./...
+    cd tools/agent-hooks && go vet ./...
 
 # Format Deno TypeScript files
 deno-fmt:
@@ -200,11 +197,11 @@ pkl-fmt-check:
 
 # Regenerate agent-guard's Codex test cases from their Pkl source
 agent-guard-cases:
-    pkl eval tools/agent-guard/testdata/codex-cases.pkl > tools/agent-guard/testdata/codex-cases.json
+    pkl eval tools/agent-hooks/agent-guard/testdata/codex-cases.pkl > tools/agent-hooks/agent-guard/testdata/codex-cases.json
 
 # Verify the committed Codex test cases match their Pkl source
 agent-guard-cases-test:
-    pkl eval tools/agent-guard/testdata/codex-cases.pkl | diff -u tools/agent-guard/testdata/codex-cases.json -
+    pkl eval tools/agent-hooks/agent-guard/testdata/codex-cases.pkl | diff -u tools/agent-hooks/agent-guard/testdata/codex-cases.json -
 
 # Validate TOML documents
 toml-check:
@@ -265,7 +262,7 @@ hash-patterns-test:
 
 # Verify the banned-commands hook (agent-guard) verdicts and its fail-closed behavior
 banned-commands-test:
-    cd tools/agent-guard && go test ./...
+    cd tools/agent-hooks/agent-guard && go test ./...
     bash scripts/test-banned-commands.sh
 
 # Verify the Codex Bash hook (agent-guard codex) blocks raw Herdr input and banned commands
@@ -282,7 +279,7 @@ textlint-response-config-test:
 
 # Verify `gh api` is auto-allowed only when it is provably read-only
 gh-api-guard-test:
-    cd tools/agent-guard && go test -run 'GhAPI|GuardPanic' .
+    cd tools/agent-hooks/agent-guard && go test -run 'GhAPI|GuardPanic' .
     bash scripts/test-gh-api-guard.sh
 
 # Verify edits are refused only when the path resolves into /nix/store
@@ -313,12 +310,12 @@ herdr-scripts-test:
 
 # Verify the cache token selection and state transitions and the hook entry point that launches them
 herdr-cache-token-test:
-    cd tools/herdr-cache-token && go test ./...
+    cd tools/agent-hooks/herdr-cache-token && go test ./...
     bash scripts/test-herdr-cache-token.sh
 
 # Verify the SessionStart report conditions and the hook entry point that launches them
 report-agent-session-test:
-    cd tools/report-agent-session && go test ./...
+    cd tools/agent-hooks/report-agent-session && go test ./...
     bash scripts/test-report-agent-session.sh
 
 # Verify check failures, concurrent feed updates, and activation retries

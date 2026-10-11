@@ -11,7 +11,7 @@ fail=0
 
 test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT
-(cd "$repo_root/tools/agent-guard" && go build -o "$test_dir/bin/agent-guard" .)
+(cd "$repo_root/tools/agent-hooks/agent-guard" && go build -o "$test_dir/bin/agent-guard" .)
 ln -s /nix/store/zzzz-nonexistent "$test_dir/storelink"
 ln -s /nix/store "$test_dir/storedir"
 touch "$test_dir/plain"

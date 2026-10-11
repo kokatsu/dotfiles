@@ -10,7 +10,7 @@ trap 'report_failure "$LINENO"' ERR
 test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT
 mkdir -p "$test_dir/bin" "$test_dir/runtime"
-(cd tools/codex-auto-title && go build -o "$test_dir/test-listener" ./cmd/test-listener)
+(cd tools/agent-hooks/codex-auto-title && go build -o "$test_dir/test-listener" ./cmd/test-listener)
 
 cat >"$test_dir/bin/codex" <<'EOF'
 #!/usr/bin/env bash

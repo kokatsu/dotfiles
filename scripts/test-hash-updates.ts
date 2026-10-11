@@ -435,12 +435,12 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
       (await Deno.readTextFile(binaryFile)).match(/^ {6}"[\w-]+" = "sha256-/gm)!
         .length,
     );
-    const vendorFile = "nix/overlays/agent-guard.nix";
+    const vendorFile = "nix/overlays/agent-hooks.nix";
     const vendorSource = await Deno.readTextFile(vendorFile);
     equal(
       await vendorHash(
         vendorFile,
-        "agent-guard",
+        "agent-hooks",
         vendorSource,
         () =>
           Promise.resolve({
@@ -526,7 +526,7 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
       () =>
         vendorHash(
           vendorFile,
-          "agent-guard",
+          "agent-hooks",
           updatedVendor,
           () =>
             Promise.resolve({ code: 1, stdout: "", stderr: "network failed" }),

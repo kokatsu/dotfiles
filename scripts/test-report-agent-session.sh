@@ -12,7 +12,7 @@ test_dir=$(mktemp -d)
 trap 'rm -rf -- "$test_dir"' EXIT
 mkdir -p "$test_dir/bin" "$test_dir/empty" "$test_dir/failing"
 
-(cd "$repo_root/tools/report-agent-session" && go build -o "$test_dir/bin/report-agent-session" .)
+(cd "$repo_root/tools/agent-hooks/report-agent-session" && go build -o "$test_dir/bin/report-agent-session" .)
 
 # The binary hands herdr only HERDR_SOCKET_PATH, so the mock cannot find its
 # interpreter or record file through the environment; both are baked in.

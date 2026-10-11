@@ -4,7 +4,7 @@ set -eEuo pipefail
 # settings.json の gh-api フックのコマンドを、ビルドした agent-guard で
 # PreToolUse の入力ごと叩く。コマンドが gh-api モードを起動し、判定が JSON と
 # exit 0 で返ること、判定に届かなかった失敗でも exit 0 で判定を出さないことを
-# 確かめる。判定そのものは tools/agent-guard の go test が
+# 確かめる。判定そのものは tools/agent-hooks/agent-guard の go test が
 # testdata/gh-api-guard-cases.tsv で固定する。
 
 report_failure() {
@@ -17,7 +17,7 @@ repo_root=$(git rev-parse --show-toplevel)
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
-(cd "$repo_root/tools/agent-guard" && go build -o "$work/bin/agent-guard" .)
+(cd "$repo_root/tools/agent-hooks/agent-guard" && go build -o "$work/bin/agent-guard" .)
 
 hook_entry=$(jq -c '[.hooks.PreToolUse[] | select(.matcher == "Bash") | .hooks[]
   | select(.command | test("agent-guard gh-api"))]' "$repo_root/.config/claude/settings.json")

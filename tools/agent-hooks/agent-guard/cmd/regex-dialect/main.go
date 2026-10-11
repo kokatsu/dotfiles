@@ -17,7 +17,7 @@ import (
 	"os"
 	"regexp"
 
-	"agent-guard/rules"
+	"agent-hooks/agent-guard/rules"
 )
 
 func printSet(class string) {

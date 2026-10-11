@@ -43,7 +43,7 @@ export const packages: Package[] = [
 ];
 
 // Go modules under tools/ whose nix/overlays/<name>.nix vendorHash follows go.sum
-export const goModules = ["agent-guard", "codex-auto-title"];
+export const goModules = ["agent-hooks"];
 
 function escape(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

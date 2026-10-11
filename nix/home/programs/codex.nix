@@ -73,7 +73,7 @@
     runtimeInputs = [
       pkgs.codex
       pkgs.coreutils
-      pkgs.codex-auto-title
+      pkgs.agent-hooks
     ];
     text = builtins.readFile ../../../scripts/codex-auto.sh;
   };
@@ -81,7 +81,6 @@ in {
   home = {
     packages = [
       codexAuto
-      pkgs.codex-auto-title
     ];
 
     file = {

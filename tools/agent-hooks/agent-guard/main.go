@@ -29,7 +29,7 @@ import (
 	"mvdan.cc/sh/v3/fileutil"
 	"mvdan.cc/sh/v3/syntax"
 
-	"agent-guard/rules"
+	"agent-hooks/agent-guard/rules"
 )
 
 const parseFailure = "banned-commands hook could not parse this command as bash (syntax error); refusing to run it unchecked. Fix the command and retry."

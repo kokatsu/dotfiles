@@ -30,10 +30,10 @@
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-rules="$repo_root/tools/agent-guard/rules/banned-commands.json"
-# go run はモジュールのディレクトリで走らせる。補助ツールは標準ライブラリだけを
-# 使うので、依存の取得は起きない。
-helper() { (cd "$repo_root/tools/agent-guard" && go run ./cmd/regex-dialect "$@"); }
+rules="$repo_root/tools/agent-hooks/agent-guard/rules/banned-commands.json"
+# go run はモジュールの中で走らせる。補助ツールは標準ライブラリとモジュール内の rules
+# だけを使うので、依存の取得は起きない。
+helper() { (cd "$repo_root/tools/agent-hooks/agent-guard" && go run ./cmd/regex-dialect "$@"); }
 corpus="$repo_root/scripts/regex-dialect-corpus.txt"
 
 work=$(mktemp -d)
