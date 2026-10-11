@@ -186,6 +186,7 @@
       customOverlays.kakehashi
       customOverlays.mise
       customOverlays.pkl
+      customOverlays.qo
       customOverlays.report-agent-session
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.textlint-with-rules

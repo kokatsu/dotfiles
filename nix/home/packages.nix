@@ -106,6 +106,8 @@ in {
       jq # JSON プロセッサ
       # https://github.com/johnkerl/miller
       miller # CSV/TSV/JSON 処理
+      # https://github.com/kiki-ki/go-qo
+      qo # JSON/CSV を SQL で問い合わせる TUI
       # https://github.com/mikefarah/yq
       yq-go # YAML/JSON/XML プロセッサ (yq コマンド)
       # https://github.com/rofl0r/ncdu
