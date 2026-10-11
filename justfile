@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-auto-title-test codex-guard-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test herdr-cache-token-test report-agent-session-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
+test_recipes := "banned-commands-test codex-guard-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test herdr-cache-token-test report-agent-session-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -32,11 +32,6 @@ _run-all recipes:
       printf '\nfailed: %s\n' "${failed[*]}" >&2
       exit 1
     fi
-
-# Test automatic Codex thread naming without starting a model turn
-codex-auto-title-test:
-    cd tools/agent-hooks/codex-auto-title && go test ./...
-    bash scripts/test-codex-auto.sh
 
 # Run all formatters
 fmt: lua-fmt nix-fmt biome-fmt deno-fmt go-fmt shfmt toml-fmt yaml-fmt pkl-fmt

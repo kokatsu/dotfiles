@@ -325,7 +325,7 @@ in {
       # https://github.com/biomejs/biome
       biome # Web ツールチェーン (formatter + linter)
 
-      agent-hooks # Claude Code / Codex のフック: agent-guard, codex-auto-title, herdr-cache-token, report-agent-session (tools/agent-hooks)
+      agent-hooks # Claude Code / Codex のフック: agent-guard, herdr-cache-token, report-agent-session (tools/agent-hooks)
     ]
     ++ lib.optionals (!isCI) [
       # CI ではスキップ (ビルド時間短縮)

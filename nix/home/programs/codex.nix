@@ -68,21 +68,8 @@
       ];
     };
   };
-  codexAuto = pkgs.writeShellApplication {
-    name = "codex-auto";
-    runtimeInputs = [
-      pkgs.codex
-      pkgs.coreutils
-      pkgs.agent-hooks
-    ];
-    text = builtins.readFile ../../../scripts/codex-auto.sh;
-  };
 in {
   home = {
-    packages = [
-      codexAuto
-    ];
-
     file = {
       ".config/codex/AGENTS.md".source = ../../../.config/codex/.AGENTS.md;
 
