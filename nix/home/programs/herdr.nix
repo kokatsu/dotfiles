@@ -167,6 +167,12 @@ in {
           new_tab = "prefix+t"
           move_tab_previous = "alt+shift+left"
           move_tab_next = "alt+shift+right"
+          # macOS では Karabiner が物理 Ctrl を Cmd に入れ替えているため、
+          # karabiner.ts のターミナル向けルールで Cmd+Option+Shift+矢印 を Ctrl に戻している
+          resize_pane_left = "ctrl+shift+alt+left"
+          resize_pane_down = "ctrl+shift+alt+down"
+          resize_pane_up = "ctrl+shift+alt+up"
+          resize_pane_right = "ctrl+shift+alt+right"
           # prefix+x は close-pane-confirm.sh (custom command) に譲る。
           # 無効化しないとデフォルトの close_pane が勝ち custom command 側が捨てられる
           close_pane = ""

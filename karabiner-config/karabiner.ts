@@ -102,6 +102,15 @@ writeToProfile(
         ...keyList.map((key) =>
           map(key, ["command", "shift"]).to(key, ["control", "shift"])
         ),
+        // herdr resize_pane_* (ctrl+shift+alt+arrow)
+        ...(["up_arrow", "down_arrow", "left_arrow", "right_arrow"] as const)
+          .map((key) =>
+            map(key, ["command", "option", "shift"]).to(key, [
+              "control",
+              "option",
+              "shift",
+            ])
+          ),
       ]),
 
     // Chrome: Command+Tab to Control+Tab (tab switching)
