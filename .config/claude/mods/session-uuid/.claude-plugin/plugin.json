@@ -1,0 +1,5 @@
+{
+  "name": "session-uuid",
+  "version": "0.1.0",
+  "description": "Show the previous session's UUID in the transcript after clear"
+}

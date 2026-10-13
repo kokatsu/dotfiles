@@ -12,7 +12,7 @@
     "CC_STATUSLINE_BAR_WIDTH": "0",
     "CC_STATUSLINE_SHOW_CACHE": "0",
     "CC_STATUSLINE_SHOW_SESSION": "0",
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/.config/claude/mods/verify-reminder:~/.config/claude/mods/claim-verifier:~/.config/claude/mods/language-guard",
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/.config/claude/mods/verify-reminder:~/.config/claude/mods/claim-verifier:~/.config/claude/mods/language-guard:~/.config/claude/mods/session-uuid",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "DISABLE_INSTALLATION_CHECKS": "1",
     "DISABLE_UPDATES": "1"

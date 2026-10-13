@@ -165,6 +165,7 @@
           customOverlays.textlint-with-rules
           # Pkl の format と eval の結果を Home Manager の pkl と揃える
           customOverlays.pkl
+          customOverlays.claude-code
         ];
       });
 
@@ -352,6 +353,7 @@
             # Web / TypeScript
             biome # formatter + linter
             deno # fmt / lint / check
+            claude-code
 
             # Markup / config
             markdownlint-cli # Markdown linter
