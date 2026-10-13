@@ -324,4 +324,227 @@ fi
 expect_calls "close: pane get failure" <<<"pane get p1"
 expect_notified "close: pane get failure" "ペイン情報の取得に失敗しました"
 
+# --- pick-agent-path.sh ---
+
+repo="$test_dir/repo"
+mkdir -p "$repo/src" "$test_dir/other" "$test_dir/claude/projects/x" "$test_dir/codex/sessions/2026/10/13"
+touch "$repo/app.py" "$repo/justfile" "$repo/src/a.ts" "$repo/src/thinking.ts" "$repo/src/tool.ts" \
+  "$test_dir/other/app.py"
+
+claude_log="$test_dir/claude/projects/x/s1.jsonl"
+jq -cn --arg cwd "$repo" --arg other "$test_dir/other" '
+  {type: "assistant", cwd: $cwd, message: {content: [{type: "text", text: "old `app.py` and src/a.ts:12"}]}},
+  {type: "user", cwd: $cwd, message: {content: [{type: "text", text: "src/thinking.ts"}]}},
+  {type: "assistant", cwd: $cwd, isSidechain: true, message: {content: [{type: "text", text: "src/tool.ts"}]}},
+  {type: "assistant", cwd: $cwd, message: {content: [
+    {type: "thinking", thinking: "src/thinking.ts"},
+    {type: "tool_use", input: {file_path: "src/tool.ts"}},
+    {type: "text", text: "見て: `src/a.ts:12`、[app.py:7](\($other)/app.py:7:3)。`justfile` と src と missing.ts"}]}}
+' >"$claude_log"
+printf '{"type":"assistant","cwd":' >>"$claude_log"
+
+actual=$(bash "$scripts/pick-agent-path.sh" --list claude "$claude_log")
+expected=$(printf '%s\t%s\t%s\n' \
+  "$test_dir/other/app.py" 7 "${test_dir/#"$HOME"/"~"}/other/app.py:7" \
+  "$repo/src/a.ts" 12 "src/a.ts:12" \
+  "$repo/justfile" "" "justfile" \
+  "$repo/app.py" "" "app.py")
+if [[ "$actual" != "$expected" ]]; then
+  printf 'pick: claude list\n--- expected\n%s\n--- actual\n%s\n' "$expected" "$actual" >&2
+  exit 1
+fi
+
+codex_log="$test_dir/codex/sessions/2026/10/13/rollout-2026-10-13T00-00-00-c1.jsonl"
+jq -cn --arg cwd "$repo" '
+  {type: "session_meta", payload: {id: "c1", cwd: $cwd}},
+  {type: "response_item", payload: {type: "message", role: "user", content: [{type: "input_text", text: "app.py"}]}},
+  {type: "response_item", payload: {type: "message", role: "assistant", content: [
+    {type: "output_text", text: "[a.ts:3](\($cwd)/src/a.ts:3)"}]}}
+' >"$codex_log"
+actual=$(bash "$scripts/pick-agent-path.sh" --list codex "$codex_log")
+expected=$(printf '%s\t%s\t%s' "$repo/src/a.ts" 3 "src/a.ts:3")
+if [[ "$actual" != "$expected" ]]; then
+  printf 'pick: codex list\n--- expected\n%s\n--- actual\n%s\n' "$expected" "$actual" >&2
+  exit 1
+fi
+
+# 日本語を含むパスは断片 (src/) にならず、山括弧のリンク先は空白ごと取る。行範囲は先頭の行で開く
+touch "$repo/src/日本語.ts" "$repo/src/My File.ts"
+jq -cn --arg cwd "$repo" --arg text "\`src/日本語.ts:7\` [a.ts](<$repo/src/a.ts:5>) [My File.ts](<$repo/src/My File.ts:9>) \`app.py:3-4\`" \
+  '{type: "assistant", cwd: $cwd, message: {content: [{type: "text", text: $text}]}}' >"$test_dir/jp.jsonl"
+actual=$(bash "$scripts/pick-agent-path.sh" --list claude "$test_dir/jp.jsonl")
+expected=$(printf '%s\t%s\t%s\n' \
+  "$repo/src/a.ts" 5 "src/a.ts:5" \
+  "$repo/src/My File.ts" 9 "src/My File.ts:9" \
+  "$repo/src/日本語.ts" 7 "src/日本語.ts:7" \
+  "$repo/app.py" 3 "app.py:3")
+if [[ "$actual" != "$expected" ]]; then
+  printf 'pick: non-ASCII and angle links\n--- expected\n%s\n--- actual\n%s\n' "$expected" "$actual" >&2
+  exit 1
+fi
+
+# 強調の * は前後だけ外し、グロブ (src/*.ts) は src/ の断片にしない
+jq -cn --arg cwd "$repo" '{type: "assistant", cwd: $cwd, message: {content: [{type: "text",
+  text: "**src/a.ts:7** と *app.py* と **src/日本語.ts**を、src/*.ts"}]}}' >"$test_dir/emphasis.jsonl"
+actual=$(bash "$scripts/pick-agent-path.sh" --list claude "$test_dir/emphasis.jsonl")
+expected=$(printf '%s\t%s\t%s\n' \
+  "$repo/src/a.ts" 7 "src/a.ts:7" \
+  "$repo/app.py" "" "app.py" \
+  "$repo/src/日本語.ts" "" "src/日本語.ts")
+if [[ "$actual" != "$expected" ]]; then
+  printf 'pick: emphasis\n--- expected\n%s\n--- actual\n%s\n' "$expected" "$actual" >&2
+  exit 1
+fi
+
+# fzf は FZF_PICK に一致する最初の行を選び、--expect があれば FZF_KEY を押したキーとして返す。
+# open-in-nvim.sh は HERDR_BIN_PATH を使わず herdr を直接呼ぶので、偽 herdr を PATH の先頭に置く
+cat >"$test_dir/bin/fzf" <<'EOF'
+#!/usr/bin/env bash
+for a; do [[ $a == --expect* ]] && printf '%s\n' "${FZF_KEY:-}"; done
+grep -m1 -E -- "${FZF_PICK:-}" || true
+EOF
+cat >"$test_dir/bin/xsel" <<'EOF'
+#!/usr/bin/env bash
+cat >"$TEST_DIR/clipboard"
+EOF
+cp "$test_dir/bin/xsel" "$test_dir/bin/pbcopy"
+chmod +x "$test_dir/bin/fzf" "$test_dir/bin/xsel" "$test_dir/bin/pbcopy"
+
+run_pick() {
+  PATH="$test_dir/bin:$PATH" HERDR_ACTIVE_PANE_ID=p1 \
+    CLAUDE_CONFIG_DIR="$test_dir/claude" CODEX_HOME="$test_dir/codex" \
+    bash "$scripts/pick-agent-path.sh"
+}
+
+# 閉じる理由は通知ではなく popup に出す。stdin を閉じてキー待ちを抜ける
+expect_explained() {
+  local out
+  out=$(run_pick </dev/null)
+  if [[ "$out" != *"$2"* ]]; then
+    printf '%s: missing %s\n--- actual\n%s\n' "$1" "$2" "$out" >&2
+    exit 1
+  fi
+  expect_no_notification "$1"
+}
+
+start_case <<'EOF'
+respond() {
+  case "$1" in
+  "pane get p1") printf '{"result":{"pane":{"agent":null}}}\n' ;;
+  *) exit 9 ;;
+  esac
+}
+EOF
+expect_explained "pick: no agent" "Claude Code / Codex のペインではありません"
+expect_calls "pick: no agent" <<<"pane get p1"
+
+start_case <<'EOF'
+respond() {
+  case "$1" in
+  "pane get p1") printf '{"result":{"pane":{"agent":"claude","agent_session":{"value":"gone"}}}}\n' ;;
+  *) exit 9 ;;
+  esac
+}
+EOF
+expect_explained "pick: no log" "セッションの会話ログが見つかりません"
+expect_calls "pick: no log" <<<"pane get p1"
+
+jq -cn '{type: "assistant", cwd: "/", message: {content: [{type: "text", text: "パスなし"}]}}' \
+  >"$test_dir/claude/projects/x/s2.jsonl"
+start_case <<'EOF2'
+respond() {
+  case "$1" in
+  "pane get p1") printf '{"result":{"pane":{"agent":"claude","agent_session":{"value":"s2"}}}}\n' ;;
+  *) exit 9 ;;
+  esac
+}
+EOF2
+expect_explained "pick: no paths" "応答に実在するパスがありません"
+
+# Codex のログは herdr の agent_session ではなく、タイトルと同じ名前のスレッドから探す。
+# 名前が同じでも cwd が違うセッション (c3, c5) は候補にしない。最後に調べる c5 が
+# 一致しなくても、それまでに見つけた候補で続ける
+codex_sessions="$test_dir/codex/sessions/2026/10/13"
+for id in c2 c3 c4 c5; do
+  cwd=$repo text="\`app.py\`"
+  [[ $id == c3 || $id == c5 ]] && cwd=$test_dir/other
+  [[ $id == c4 ]] && text="\`justfile\`"
+  jq -cn --arg id "$id" --arg cwd "$cwd" --arg text "$text" '
+    {type: "session_meta", payload: {id: $id, cwd: $cwd}},
+    {type: "response_item", payload: {type: "message", role: "assistant", content: [{type: "output_text", text: $text}]}}
+  ' >"$codex_sessions/rollout-2026-10-13T00-00-00-$id.jsonl"
+done
+jq -cn '
+  {id: "c1", thread_name: "old name", updated_at: "2026-10-13T00:00:00Z"},
+  {id: "c1", thread_name: "Open target thread", updated_at: "2026-10-13T00:01:00Z"},
+  {id: "c2", thread_name: "Dup", updated_at: "2026-10-13T00:02:00Z"},
+  {id: "c3", thread_name: "Dup", updated_at: "2026-10-13T00:03:00Z"},
+  {id: "c4", thread_name: "Dup", updated_at: "2026-10-13T00:04:00Z"},
+  {id: "c5", thread_name: "Dup", updated_at: "2026-10-13T00:05:00Z"}
+' >"$test_dir/codex/session_index.jsonl"
+codex_pane() {
+  jq -cn --arg title "$1" --arg cwd "$TEST_DIR/repo" \
+    '{result: {pane: {agent: "codex", agent_session: {value: "stale"}, terminal_title_stripped: $title, cwd: $cwd}}}'
+}
+export -f codex_pane
+
+start_case <<'EOF'
+respond() {
+  case "$1" in
+  "pane get p1") codex_pane "old name" ;;
+  *) exit 9 ;;
+  esac
+}
+EOF
+expect_explained "pick: codex title from an old name" "タイトルと同じ名前の Codex のセッションが見つかりません"
+
+# 同じ名前が 2 件残れば選ばせる。選んだ c4 のログから justfile をコピーする
+start_case <<'EOF'
+respond() {
+  case "$1" in
+  "pane get p1") codex_pane "Dup" ;;
+  *) exit 9 ;;
+  esac
+}
+EOF
+FZF_PICK='c4\.jsonl|justfile' FZF_KEY=ctrl-y run_pick </dev/null
+[[ $(<"$test_dir/clipboard") == "$repo/justfile" ]]
+
+# 省略されたタイトルは前方一致で探す。同じタブに nvim がないので、
+# open-in-nvim.sh の 1 行目の cwd と workspace で新規タブを作る
+start_case <<'EOF'
+respond() {
+  case "$1" in
+  "pane get p1") codex_pane "Open tar..." ;;
+  "pane list") printf '{"result":{"panes":[{"pane_id":"p1","focused":true,"cwd":"/work","workspace_id":"w1","tab_id":"t1"}]}}\n' ;;
+  "pane process-info --pane p1") printf '{"result":{"process_info":{"foreground_processes":[]}}}\n' ;;
+  "tab create "*) printf '{"result":{"root_pane":{"pane_id":"p9"}}}\n' ;;
+  "pane run "*) ;;
+  *) exit 9 ;;
+  esac
+}
+EOF
+FZF_PICK=a.ts run_pick </dev/null
+expect_calls "pick: open in new tab" <<'EOF'
+pane get p1
+pane list
+pane process-info --pane p1
+tab create --workspace w1 --cwd /work --focus
+EOF
+jq -se --arg file "$repo/src/a.ts" \
+  'last | .[0:3] == ["pane", "run", "p9"] and (.[3] | contains("+3 ") and contains($file))' \
+  "$test_dir/calls.jsonl" >/dev/null
+
+start_case <<'EOF'
+respond() {
+  case "$1" in
+  "pane get p1") printf '{"result":{"pane":{"agent":"claude","agent_session":{"value":"s1"}}}}\n' ;;
+  *) exit 9 ;;
+  esac
+}
+EOF
+FZF_PICK=justfile FZF_KEY=ctrl-y run_pick </dev/null
+expect_calls "pick: copy" <<<"pane get p1"
+[[ $(<"$test_dir/clipboard") == "$repo/justfile" ]]
+
 printf 'herdr script tests passed\n'

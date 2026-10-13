@@ -305,6 +305,14 @@ in {
           width = "90%"
           height = "90%"
 
+          [[keys.command]]
+          key = "alt+o"
+          type = "popup"
+          command = "${scriptsDir}/pick-agent-path.sh"
+          description = "応答のパスを開く"
+          width = "90%"
+          height = "80%"
+
           # alt+l は nvim の plugin/move.lua (<M-l>) を奪うため prefix 側に置く。
           # prefix+l の既定 (focus_pane_right) は上で alt+矢印 に移してあるので空いている
           [[keys.command]]
