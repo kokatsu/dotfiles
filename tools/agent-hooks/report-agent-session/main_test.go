@@ -373,7 +373,11 @@ func TestRunCodexRequiresPaneAncestry(t *testing.T) {
 }
 
 func TestDescends(t *testing.T) {
-	parents := map[int]int{10: 5, 5: 2, 2: 1, 7: 7, 8: 9, 9: 8}
+	parents := map[int]process{
+		10: {5, "hook"}, 5: {2, "codex"}, 2: {1, "zsh"}, 7: {7, ""}, 8: {9, ""}, 9: {8, ""},
+		// 共有 daemon の下で動くフック: 20 → 21 (app-server) → 22 (TUI) → 2 (シェル)
+		20: {21, "bash hook.sh"}, 21: {22, "/opt/bin/codex app-server --listen unix://"}, 22: {2, "codex"},
+	}
 	cases := []struct {
 		name        string
 		self, shell int
@@ -387,6 +391,8 @@ func TestDescends(t *testing.T) {
 		{"unknown self", 11, 5, false},
 		{"self-loop", 7, 3, false},
 		{"cycle", 8, 3, false},
+		{"through the shared app-server", 20, 2, false},
+		{"app-server below the shell still blocks", 20, 22, false},
 	}
 	for _, c := range cases {
 		if got := descends(parents, c.self, c.shell); got != c.want {
@@ -396,13 +402,36 @@ func TestDescends(t *testing.T) {
 }
 
 func TestParents(t *testing.T) {
-	got, ok := parents([]byte("    1     0\n  501     1\n\n 9001   501\n"))
-	if !ok || len(got) != 3 || got[9001] != 501 || got[501] != 1 || got[1] != 0 {
-		t.Errorf("got %v, %v", got, ok)
+	got, ok := parents([]byte("    1     0 /sbin/init\n  501     1\n\n 9001   501 codex  app-server --listen unix://\n"))
+	want := map[int]process{1: {0, "/sbin/init"}, 501: {1, ""}, 9001: {501, "codex app-server --listen unix://"}}
+	if !ok || len(got) != len(want) {
+		t.Fatalf("got %v, %v", got, ok)
 	}
-	for _, bad := range []string{"", "1\n", "1 2 3\n", "a 1\n", "1 b\n"} {
+	for pid, w := range want {
+		if got[pid] != w {
+			t.Errorf("pid %d: got %+v, want %+v", pid, got[pid], w)
+		}
+	}
+	for _, bad := range []string{"", "1\n", "a 1\n", "1 b\n"} {
 		if got, ok := parents([]byte(bad)); ok {
 			t.Errorf("%q: got %v, want rejection", bad, got)
+		}
+	}
+}
+
+func TestAppServer(t *testing.T) {
+	cases := map[string]bool{
+		"/home/u/.config/codex/packages/app-server-daemon/releases/0.162.1/bin/codex app-server --listen unix://": true,
+		"codex app-server daemon pid-update-loop": true,
+		"codex":                     false,
+		"codex resume abc":          false,
+		"/usr/bin/app-server codex": false,
+		"notcodex app-server":       false,
+		"":                          false,
+	}
+	for args, want := range cases {
+		if got := appServer(args); got != want {
+			t.Errorf("%q: got %v, want %v", args, got, want)
 		}
 	}
 }

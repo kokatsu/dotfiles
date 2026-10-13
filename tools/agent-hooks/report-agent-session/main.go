@@ -14,6 +14,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -196,8 +197,8 @@ func insidePane(ctx context.Context, herdr, socket, pane string) bool {
 		return false
 	}
 	// 祖先ごとに ps を起動せず、1 回の一覧を辿る。macOS (BSD) と Linux (procps) の
-	// 両方が受け付ける POSIX の書き方にする。
-	out, err = exec.CommandContext(ctx, ps, "-A", "-o", "pid=", "-o", "ppid=").Output()
+	// 両方が受け付ける POSIX の書き方にする。args は空白を含むので最後に置く
+	out, err = exec.CommandContext(ctx, ps, "-A", "-o", "pid=", "-o", "ppid=", "-o", "args=").Output()
 	if err != nil {
 		return false
 	}
@@ -205,16 +206,21 @@ func insidePane(ctx context.Context, herdr, socket, pane string) bool {
 	return ok && descends(table, os.Getpid(), reply.Result.ProcessInfo.ShellPID)
 }
 
-// parents は `ps -o pid= -o ppid=` の出力を pid → ppid の表にする。
+type process struct {
+	ppid int
+	args string
+}
+
+// parents は `ps -o pid= -o ppid= -o args=` の出力を pid → 親と引数の表にする。
 // 形の崩れた行が 1 つでもあれば表全体を捨てる。
-func parents(out []byte) (map[int]int, bool) {
-	table := map[int]int{}
+func parents(out []byte) (map[int]process, bool) {
+	table := map[int]process{}
 	for _, line := range strings.Split(string(out), "\n") {
 		fields := strings.Fields(line)
 		if len(fields) == 0 {
 			continue
 		}
-		if len(fields) != 2 {
+		if len(fields) < 2 {
 			return nil, false
 		}
 		pid, err1 := strconv.Atoi(fields[0])
@@ -222,14 +228,23 @@ func parents(out []byte) (map[int]int, bool) {
 		if err1 != nil || err2 != nil {
 			return nil, false
 		}
-		table[pid] = ppid
+		table[pid] = process{ppid, strings.Join(fields[2:], " ")}
 	}
 	return table, len(table) > 0
 }
 
+// appServer は共有の Codex app-server か (`codex app-server ...`) を返す。
+// 名前が codex のプロセスには TUI 本体もあるので、引数まで見る。
+func appServer(args string) bool {
+	fields := strings.Fields(args)
+	return len(fields) >= 2 && filepath.Base(fields[0]) == "codex" && fields[1] == "app-server"
+}
+
 // descends は self から親を辿って shell に着くかを返す。pid 1 はどのプロセスの
 // 祖先にもなるので pane のシェルとは認めない。表の大きさを超えて辿るなら循環している。
-func descends(table map[int]int, self, shell int) bool {
+// 途中に app-server があれば着いても認めない。共有 daemon は最初に起動した pane の
+// シェルの子孫に残り、どの pane のセッションのフックもその下で動くため。
+func descends(table map[int]process, self, shell int) bool {
 	if shell <= 1 {
 		return false
 	}
@@ -237,11 +252,11 @@ func descends(table map[int]int, self, shell int) bool {
 		if pid == shell {
 			return true
 		}
-		parent, ok := table[pid]
-		if !ok || parent == pid {
+		proc, ok := table[pid]
+		if !ok || proc.ppid == pid || appServer(proc.args) {
 			return false
 		}
-		pid = parent
+		pid = proc.ppid
 	}
 	return false
 }
