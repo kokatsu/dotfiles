@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-guard-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test herdr-cache-token-test report-agent-session-test session-uuid-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
+test_recipes := "banned-commands-test codex-guard-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test herdr-cache-token-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -313,9 +313,12 @@ report-agent-session-test:
     cd tools/agent-hooks/report-agent-session && go test ./...
     bash scripts/test-report-agent-session.sh
 
-# Verify the previous session's UUID is logged after /clear
-session-uuid-test:
-    claude plugin test .config/claude/mods/session-uuid
+# Run every Claude Code mod's tests
+mods-test:
+    @for dir in .config/claude/mods/*/; do \
+      echo "claude plugin test: $dir"; \
+      claude plugin test "$dir" || exit $?; \
+    done
 
 # Verify check failures, concurrent feed updates, and activation retries
 # Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
