@@ -341,6 +341,22 @@ in {
           type = "shell"
           command = "${scriptsDir}/status-open.sh"
           description = "異常のあるサービスの Statuspage を開く"
+
+          # Claude Code / Codex のキー設定はスラッシュコマンドを割り当てられないため、
+          # herdr 側から入力として送る。/clear と /exit は両エージェント共通。
+          # ペインの種類は見ないので、シェルのペインで押すとそのまま実行される。
+          # prefix+c / prefix+q の既定 (new_tab / detach) は上で別キーへ移してあるので空いている
+          [[keys.command]]
+          key = "prefix+c"
+          type = "shell"
+          command = "herdr pane run \"$HERDR_ACTIVE_PANE_ID\" /clear"
+          description = "エージェントに /clear を送る"
+
+          [[keys.command]]
+          key = "prefix+q"
+          type = "shell"
+          command = "herdr pane run \"$HERDR_ACTIVE_PANE_ID\" /exit"
+          description = "エージェントに /exit を送る"
         '';
       # Claude Code / Codex の SessionStart から呼ぶ agent session 報告フック。
       # `herdr integration install` の生成物は上流の更新で上書きされるため使わない。
