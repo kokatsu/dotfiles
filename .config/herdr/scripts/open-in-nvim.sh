@@ -39,11 +39,13 @@ done
 file=$1
 line=${2:-}
 
-# 失敗時に E492 などを出しても exit 0 になるため、stdout が ok かで判定する
+# 失敗時に E492 などを出しても exit 0 になるため、stdout が ok かで判定する。
+# stdin が端末 (herdr の popup から呼ばれたとき) だと、nvim は結果の前に端末の
+# 初期化シーケンスを stdout へ書くので、stdin を /dev/null にする
 open_in() {
   local quote="''"
   [[ $(nvim --server "$1" --remote-expr \
-    "[execute('edit ${line:++$line }' .. fnameescape('${file//\'/$quote}')), 'ok'][1]" 2>/dev/null) == ok ]]
+    "[execute('edit ${line:++$line }' .. fnameescape('${file//\'/$quote}')), 'ok'][1]" 2>/dev/null </dev/null) == ok ]]
 }
 
 new_tab() {
@@ -95,7 +97,7 @@ printf '%s\t%s\t%s\n' "$file" "$cwd" "$workspace"
 if ((${#sockets[@]} > 1)); then
   for s in "${sockets[@]}"; do
     label=$(nvim --server "$s" --remote-expr \
-      "(empty(bufname()) ? '[No Name]' : expand('%:~:.')) .. '  ' .. fnamemodify(getcwd(), ':~')" 2>/dev/null) || continue
+      "(empty(bufname()) ? '[No Name]' : expand('%:~:.')) .. '  ' .. fnamemodify(getcwd(), ':~')" 2>/dev/null </dev/null) || continue
     printf '%s\t%s\n' "$s" "$label"
   done
 fi
