@@ -85,14 +85,21 @@ test("array tool results are rendered and paired with their call", () => {
   expect(text).toContain("LINE-ONE\n[image]");
 });
 
-test("assistant prose and thinking are never evidence", () => {
+test("earlier answers are tagged, the latest answer and thinking are left out", () => {
   const { text } = buildEvidence([
-    prompt("q"),
+    prompt("first"),
     ...bash("a"),
+    say("EARLIER-ANSWER"),
+    prompt("second"),
+    ...bash("b"),
     say("THE-ANSWER-SAYS-SO"),
   ]);
+  const [earlier] = text.split("## Latest turn");
+  expect(earlier).toContain("[assistant]\nEARLIER-ANSWER");
   expect(text).not.toContain("THE-ANSWER-SAYS-SO");
   expect(text).not.toContain("SECRET-THOUGHT");
+  expect(text).not.toContain("[thinking]");
+  expect(text).not.toContain("[tool_use]");
 });
 
 test("Stop hook feedback is context, not the start of a turn", () => {

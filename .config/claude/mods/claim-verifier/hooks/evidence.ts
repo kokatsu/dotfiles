@@ -52,6 +52,15 @@ function resultText(content: unknown): string {
 
 type ToolUse = { name: string; input: unknown };
 
+function renderAnswer(m: Message): string[] {
+  return m.content.flatMap((b) => {
+    const text = textOf(b);
+    return b.type === "text" && text.trim() !== ""
+      ? [`[assistant]\n${text}`]
+      : [];
+  });
+}
+
 function render(
   m: Message,
   uses: ReadonlyMap<string, ToolUse>,
@@ -92,13 +101,13 @@ export function buildEvidence(
   }
   const start = latestTurnStart(messages);
   const earlier = messages.slice(0, start).flatMap((m) =>
-    render(m, uses, EARLIER_CHARS)
+    m.role === "assistant" ? renderAnswer(m) : render(m, uses, EARLIER_CHARS)
   );
   const latest = messages.slice(start).flatMap((m) =>
     render(m, uses, undefined)
   ).join("\n\n");
   const text = [
-    `## Earlier turns (tool inputs and outputs truncated to ${EARLIER_CHARS} chars each; [user] and [context] are whole)`,
+    `## Earlier turns (tool inputs and outputs truncated to ${EARLIER_CHARS} chars each; [user], [assistant] and [context] are whole)`,
     ...earlier,
     "## Latest turn (complete)",
     latest,
