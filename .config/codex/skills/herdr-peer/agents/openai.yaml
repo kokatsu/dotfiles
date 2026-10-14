@@ -1,4 +1,4 @@
 interface:
   display_name: "Herdr Peer"
-  short_description: "Review edits and recheck authorized fixes with a peer"
-  default_prompt: "Use $herdr-peer to request a read-only review of current-task edits, including known non-sensitive gitignored edits, and re-review authorized blocker/major fixes within one initial review plus at most two follow-ups; report minor/nit and unresolved findings."
+  short_description: "Delegate research, implementation, or review; save results"
+  default_prompt: "Use $herdr-peer for the requested research, implementation, or review and save the full result; when unspecified, review current-task edits read-only with at most two follow-ups for authorized blocker/major fixes."

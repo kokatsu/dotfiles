@@ -1,6 +1,6 @@
 ---
 name: herdr-peer
-description: Consult the opposite Claude or Codex agent in the same Herdr tab when the user explicitly requests cross-agent collaboration or invokes herdr-peer.
+description: Request research, implementation, or review from the opposite Claude or Codex agent in the same Herdr tab, with results saved to files, when the user explicitly requests cross-agent collaboration or invokes herdr-peer.
 ---
 
 # Herdr Peer
@@ -8,6 +8,15 @@ description: Consult the opposite Claude or Codex agent in the same Herdr tab wh
 Use `herdr-peer`; never call raw Herdr input commands directly. The wrapper resolves exactly one opposite agent in the current tab and rechecks self-targeting, ambiguity, readiness, and agent-session replacement immediately before sending. A newly opened agent may not have a native session ID until its first prompt; the wrapper permits only that null-to-initialized transition while keeping the pane, tab, workspace, agent-kind, and readiness checks in place. Empty or non-string session IDs are invalid rather than uninitialized.
 
 Explicit user instructions take precedence over workflow defaults. Existing authorization to fix the current task remains valid; do not ask again for each confirmed in-scope fix.
+
+## Task selection and results
+
+- Choose research, implementation, or review from the user's request. With no task or scope, review the current task's edits as described below.
+- Read [task templates](references/tasks.md) and [transport and saved results](references/transport.md) before sending. Build a self-contained request from the common fields, the selected task template, and the receiver's result contract; fill them from the conversation and files rather than asking the user to complete a form.
+- Research and review permit only the specified result artifacts to be written. Implementation permits only the user's authorized changes within the declared edit paths; choosing a template never grants permission to edit.
+- Use the same local Git worktree, with the peer's canonical `cwd` equal to its Git root. Prepare a fresh ignored result directory there, record the request and peer identity, and require the peer to save the full result before replying. Stop if these conditions cannot be established; do not change directories, permissions, or ignore rules for the peer.
+- While implementation is pending, do not edit the peer's assigned paths. Wait on all local editing when the peer's work depends on other files that would change. The peer must report a blocked or partial result rather than expand its scope.
+- Read and verify the saved result, including its task ID and terminal record. A saved file, an idle pane, or an exit code alone does not establish reply completion or task success.
 
 ## Default review scope
 
@@ -39,9 +48,9 @@ After receiving findings, verify each one against the local files before changin
 
 ## Commands
 
-Read [transport and request templates](references/transport.md) before sending a request or interpreting a verdict. It covers completion markers, delivery uncertainty, readiness, response capture, and initial/delta request templates.
+Read [transport and saved results](references/transport.md) before sending a request or interpreting a verdict. It covers execution handles, completion markers, delivery uncertainty, readiness, result files, and observation after a timeout. Request templates are maintained in [tasks.md](references/tasks.md).
 
-Use `herdr-peer resolve` to select the peer, `herdr-peer prompt` to send, and `herdr-peer read` to retrieve the answer. Completion requires `completion: confirmed` and inspection of the full reply; a verdict `session` other than `initialized` does not void it but must be reported. Never automatically resend after delivery or uncertain delivery.
+Use `herdr-peer resolve` to select the peer, `herdr-peer prompt` to send, and `herdr-peer read` to observe the reply. Confirm reply completion through the wrapper's `completion: confirmed` or the saved-marker observation procedure in the transport reference, and read the full result file separately. A verdict `session` other than `initialized` does not void a confirmed reply but must be reported; `changed` stops further requests and timeout recovery. Never automatically resend after delivery or uncertain delivery.
 
 ## Coordination rules
 
