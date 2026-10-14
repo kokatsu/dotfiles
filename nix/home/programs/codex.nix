@@ -96,12 +96,12 @@ in {
       };
       ".config/codex/hooks.json".text = let
         # herdr.nix が配置する共有フック (Claude Code 側と同じ実装)。
-        reportAgent = action: timeout: [
+        reportSession = [
           {
             hooks = [
               {
-                command = "bash '${config.xdg.configHome}/herdr/hooks/report-agent-session.sh' ${action} codex";
-                inherit timeout;
+                command = "bash '${config.xdg.configHome}/herdr/hooks/report-agent-session.sh' session codex";
+                timeout = 10;
                 type = "command";
               }
             ];
@@ -133,11 +133,7 @@ in {
                 ];
               }
             ];
-            SessionStart = reportAgent "session" 10;
-            UserPromptSubmit = reportAgent "working" 10;
-            Stop = reportAgent "idle" 10;
-            # Codex は Interrupt フックのタイムアウトを 3 秒に切り詰め、超える値には警告を出す
-            Interrupt = reportAgent "idle" 3;
+            SessionStart = reportSession;
           };
         };
     };

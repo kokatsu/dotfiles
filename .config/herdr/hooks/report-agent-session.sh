@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Entry point for report-agent-session, shared by the Claude Code and Codex
-# SessionStart hooks and the Codex turn hooks.
+# SessionStart hooks.
 #
 # Usage: report-agent-session.sh session <claude|codex>
 #        report-agent-session.sh <working|idle> codex
