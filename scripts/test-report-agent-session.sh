@@ -107,6 +107,14 @@ run_hook codex "$codex_payload" "${herdr_env[@]}" -- session codex
 expect_report codex pane report-agent-session p1 --source herdr:codex --agent codex \
   --seq SEQ --agent-session-id s2 --session-start-source resume
 
+run_hook "codex working" '{"session_id":"s2","hook_event_name":"UserPromptSubmit"}' "${herdr_env[@]}" -- working codex
+expect_report "codex working" pane report-agent p1 --source herdr:codex --agent codex \
+  --seq SEQ --agent-session-id s2 --state working
+
+run_hook "codex idle" '{"session_id":"s2","hook_event_name":"Stop"}' "${herdr_env[@]}" -- idle codex
+expect_report "codex idle" pane report-agent p1 --source herdr:codex --agent codex \
+  --seq SEQ --agent-session-id s2 --state idle
+
 # A Codex hook run by the shared app-server daemon is not under the pane shell.
 sleep 30 &
 stranger=$!

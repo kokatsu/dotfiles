@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Entry point for report-agent-session, shared by the Claude Code and Codex
-# SessionStart hooks.
+# SessionStart hooks and the Codex turn hooks.
 #
 # Usage: report-agent-session.sh session <claude|codex>
+#        report-agent-session.sh <working|idle> codex
 #
 # Every check lives in the binary. This only keeps the hook from failing when
 # the binary is missing: unlike the cache token, an agent session has no

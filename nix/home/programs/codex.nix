@@ -94,45 +94,52 @@ in {
         source = ../../../.config/claude/hooks/check-ai-writing.sh;
         executable = true;
       };
-      ".config/codex/hooks.json".text = builtins.toJSON {
-        hooks = {
-          PostToolUse = [
-            {
-              matcher = "^apply_patch$";
-              hooks = [
-                {
-                  command = "bash '${config.xdg.configHome}/codex/check-ai-writing.sh'";
-                  timeout = 15;
-                  type = "command";
-                }
-              ];
-            }
-          ];
-          PreToolUse = [
-            {
-              matcher = "^Bash$";
-              hooks = [
-                {
-                  command = "'${config.home.profileDirectory}/bin/agent-guard' codex";
-                  type = "command";
-                }
-              ];
-            }
-          ];
-          SessionStart = [
-            {
-              hooks = [
-                {
-                  # herdr.nix が配置する共有フック (Claude Code 側と同じ実装)。
-                  command = "bash '${config.xdg.configHome}/herdr/hooks/report-agent-session.sh' session codex";
-                  timeout = 10;
-                  type = "command";
-                }
-              ];
-            }
-          ];
+      ".config/codex/hooks.json".text = let
+        # herdr.nix が配置する共有フック (Claude Code 側と同じ実装)。
+        reportAgent = action: timeout: [
+          {
+            hooks = [
+              {
+                command = "bash '${config.xdg.configHome}/herdr/hooks/report-agent-session.sh' ${action} codex";
+                inherit timeout;
+                type = "command";
+              }
+            ];
+          }
+        ];
+      in
+        builtins.toJSON {
+          hooks = {
+            PostToolUse = [
+              {
+                matcher = "^apply_patch$";
+                hooks = [
+                  {
+                    command = "bash '${config.xdg.configHome}/codex/check-ai-writing.sh'";
+                    timeout = 15;
+                    type = "command";
+                  }
+                ];
+              }
+            ];
+            PreToolUse = [
+              {
+                matcher = "^Bash$";
+                hooks = [
+                  {
+                    command = "'${config.home.profileDirectory}/bin/agent-guard' codex";
+                    type = "command";
+                  }
+                ];
+              }
+            ];
+            SessionStart = reportAgent "session" 10;
+            UserPromptSubmit = reportAgent "working" 10;
+            Stop = reportAgent "idle" 10;
+            # Codex は Interrupt フックのタイムアウトを 3 秒に切り詰め、超える値には警告を出す
+            Interrupt = reportAgent "idle" 3;
+          };
         };
-      };
     };
 
     # git管理の設定とCodex自身が書き戻すローカル状態をマージする。
