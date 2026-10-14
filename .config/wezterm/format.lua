@@ -568,22 +568,22 @@ M.apply = function()
   end)
 
   -- タブのタイトルを変更
-  wezterm.on('format-tab-title', function(tab, _, _, _, _, _)
+  wezterm.on('format-tab-title', function(tab, _, _, _, hover, max_width)
     local pane = tab.active_pane
 
     local title = tab.active_pane.title
 
-    -- タブ幅 (wezterm.lua の tab_max_width = 32) に収まるよう省略記号込み
-    -- 26 セルへ丸める。装飾は ' ' + アイコン + ' ' + 末尾 ' ' の 4 セル分
-    -- (アイコンが 2 セル幅で描画される環境では 5 セル分) なので 26 + 5 = 31。
-    -- バイト数 (#title) ではなく表示幅で測るのは、日本語タイトルが UTF-8 の
-    -- 途中で切れて壊れるのを防ぐため
-    if wezterm.column_width(title) > 26 then
-      title = wezterm.truncate_right(title, 25) .. '…'
-    end
-
     -- プロセスに応じたアイコンと色を取得
     local icon_info = get_process_icon(pane)
+    local left_edge = nf.ple_left_half_circle_thick
+    local right_edge = nf.ple_right_half_circle_thick
+    local prefix = ' ' .. icon_info.icon .. ' '
+    local suffix = ' '
+    -- UTF-8 のバイト数ではなくセル幅で数え、日本語と Nerd Font の装飾も幅に含める。
+    local title_width = math.max(0, max_width - wezterm.column_width(left_edge .. prefix .. suffix .. right_edge))
+    if wezterm.column_width(title) > title_width then
+      title = title_width > 0 and (wezterm.truncate_right(title, title_width - 1) .. '…') or ''
+    end
 
     -- アクティブ/非アクティブとズーム状態に応じて背景色を変更
     local bg_color
@@ -600,17 +600,25 @@ M.apply = function()
       icon_color = colors.palette.crust -- アクティブ時はアイコンも同じ色
     else
       -- 非アクティブタブ（薄い色）
-      bg_color = colors.palette.base
-      fg_color = colors.palette.text
+      bg_color = hover and colors.palette.surface1 or colors.palette.mantle
+      fg_color = hover and colors.palette.text or colors.palette.subtext0
       icon_color = icon_info.color -- 非アクティブ時はプロセスの色
     end
 
     return {
+      { Background = { Color = colors.palette.crust } },
+      { Foreground = { Color = bg_color } },
+      { Text = left_edge },
       { Background = { Color = bg_color } },
       { Foreground = { Color = icon_color } },
-      { Text = ' ' .. icon_info.icon .. ' ' },
+      { Text = prefix },
+      { Attribute = { Intensity = tab.is_active and 'Bold' or 'Normal' } },
       { Foreground = { Color = fg_color } },
-      { Text = title .. ' ' },
+      { Text = title .. suffix },
+      { Attribute = { Intensity = 'Normal' } },
+      { Background = { Color = colors.palette.crust } },
+      { Foreground = { Color = bg_color } },
+      { Text = right_edge },
     }
   end)
 

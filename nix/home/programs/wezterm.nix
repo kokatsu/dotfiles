@@ -77,6 +77,11 @@ in {
               cursor_border = palette.sapphire,
               compose_cursor = palette.peach,
               split = palette.accent,
+              tab_bar = {
+                background = palette.crust,
+                new_tab = { bg_color = palette.crust, fg_color = palette.accent },
+                new_tab_hover = { bg_color = palette.surface1, fg_color = palette.accent },
+              },
             }
             config.command_palette_bg_color = palette.surface0
             config.command_palette_fg_color = palette.text
