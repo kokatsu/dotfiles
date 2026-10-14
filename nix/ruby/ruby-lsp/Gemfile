@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
 
-gem 'ruby-lsp', '= 0.26.9'
+gem 'ruby-lsp', '= 0.26.11'
 gem 'ruby-lsp-rails', '= 0.4.8'
 gem 'rubocop', '= 1.63.3'

@@ -3,7 +3,7 @@ GEM
   specs:
     ast (2.4.2)
     json (2.9.1)
-    language_server-protocol (3.17.0.3)
+    language_server-protocol (3.17.0.6)
     logger (1.7.0)
     parallel (1.23.0)
     parser (3.3.0.5)
@@ -12,7 +12,7 @@ GEM
     prism (1.5.2)
     racc (1.8.1)
     rainbow (3.1.1)
-    rbs (3.8.0)
+    rbs (3.8.1)
       logger
     regexp_parser (2.8.2)
     rexml (3.4.4)
@@ -29,7 +29,7 @@ GEM
       unicode-display_width (>= 2.4.0, < 3.0)
     rubocop-ast (1.31.2)
       parser (>= 3.3.0.4)
-    ruby-lsp (0.26.9)
+    ruby-lsp (0.26.11)
       language_server-protocol (~> 3.17.0)
       prism (>= 1.2, < 2.0)
       rbs (>= 3, < 5)
@@ -43,7 +43,7 @@ PLATFORMS
 
 DEPENDENCIES
   rubocop (= 1.63.3)
-  ruby-lsp (= 0.26.9)
+  ruby-lsp (= 0.26.11)
   ruby-lsp-rails (= 0.4.8)
 
 BUNDLED WITH
