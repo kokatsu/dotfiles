@@ -63,10 +63,10 @@ in {
         # `|` で循環切り替えできる。staging view は常に plain diff (--no-ext-diff)
         # で取得されるため、difftastic を選んでも行/ハンク単位のステージは壊れない
         diffRenderers = [
-          # git config の diff.external = difft を流用 (.gitattributes でファイル型別設定も可)
           {
             name = "difftastic";
             type = "extDiff";
+            command = "difft --color=always";
           }
           {
             name = "delta";

@@ -15,12 +15,12 @@
         cm = "commit -m";
         co = "checkout";
         cp = "cherry-pick";
-        d = "diff";
+        d = "-c diff.external=difft diff";
         # difftastic 使用時は delta 連携 alias を無効化 (戻す場合はコメント解除)。
         # dd = ''!f() { git diff "$@" | delta --side-by-side --paging=never; }; f'';
-        ds = "diff --staged";
+        ds = "-c diff.external=difft diff --staged";
         # dsd = ''!f() { git diff --staged "$@" | delta --side-by-side --paging=never; }; f'';
-        d1 = "diff HEAD^";
+        d1 = "-c diff.external=difft diff HEAD^";
         # d1d = ''!f() { git diff HEAD^ "$@" | delta --side-by-side --paging=never; }; f'';
         f = "fetch origin";
         fd = "!git branch | fzf --preview 'git log -1 --color=always --stat {-1}' --preview-window=right,60% | xargs git checkout";
@@ -112,8 +112,6 @@
       #   pager = "less --quiet";
       # };
       diff = {
-        # 外部 diff ツールに difftastic を使用 (構文ベースの構造的 diff)。
-        external = "difft";
         # 差分を表示する際、差分アルゴリズムを histogram に設定する。
         algorithm = "histogram";
         # コードの移動を検出し、色付けして表示する。
