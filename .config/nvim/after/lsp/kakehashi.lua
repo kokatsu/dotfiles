@@ -5,18 +5,28 @@
 return {
   filetypes = { 'markdown' },
   on_attach = function(_, bufnr)
+    local function use_semantic_highlighting()
+      vim.treesitter.stop(bufnr)
+      -- Tree-sitter の停止は syntax を再設定するため、その後で無効にする。
+      vim.bo[bufnr].syntax = 'OFF'
+      -- Tree-sitter の稼働中に有効にすると、highlights.scm の conceal でフェンス行や ``` まで隠れる
+      for _, win in ipairs(vim.fn.win_findbuf(bufnr)) do
+        vim.wo[win][0].conceallevel = 2
+      end
+    end
+
     -- kakehashi の semantic tokens を Markdown のハイライト元にして、
     -- nvim-treesitter との二重ハイライトを避ける。
     vim.api.nvim_create_autocmd('LspTokenUpdate', {
       buffer = bufnr,
       once = true,
       callback = function()
-        vim.bo[bufnr].syntax = 'OFF'
-        vim.treesitter.stop(bufnr)
-        -- Tree-sitter の稼働中に有効にすると、highlights.scm の conceal でフェンス行や ``` まで隠れる
-        for _, win in ipairs(vim.fn.win_findbuf(bufnr)) do
-          vim.wo[win][0].conceallevel = 2
-        end
+        use_semantic_highlighting()
+        -- 外部編集後の再読み込みで FileType が Tree-sitter ハイライトを再開するため、再度停止する。
+        vim.api.nvim_create_autocmd('FileChangedShellPost', {
+          buffer = bufnr,
+          callback = use_semantic_highlighting,
+        })
       end,
     })
   end,
