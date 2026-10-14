@@ -40,7 +40,6 @@ var verdictMessages = map[verdict]string{
 	"SHELL_C_UNPARSED": "Refuse sh -c with a command string that does not parse as shell: it cannot be checked, and the shell runs the lines before the error. Run the commands directly instead.",
 	"GLOB_EXEC":        "Refuse zsh glob qualifiers that run code (e:...: or +cmd). List the files first, then run the command on them directly.",
 	"RG_STDIN":         "rg without a path searches stdin when stdin is readable; in a non-interactive tool call stdin can be a socket that never closes, so rg hangs. Name the directories to search, or add `< /dev/null` to search the current directory.",
-	"EXTDIFF":          "Add --no-ext-diff to git diff/show/log -p. The global git config sets diff.external=difft, which mangles diff output when captured as tool output; --no-ext-diff is the only reliable bypass (an empty diff.external= override errors out).",
 }
 
 var shortOpt = regexp.MustCompile(`^-[A-Za-z0-9]`)
@@ -359,10 +358,6 @@ func gitGlobalIdentity(args []string) bool {
 
 // --- git サブコマンド -----------------------------------------------------
 
-// diff/show/log の一覧は実際の git で確認した、値を「別語で」取るものだけ。
-// 単独で有効なもの (-U、--unified、--pretty、--format) や = 必須のもの
-// (--date、--max-count、--skip、-l) を入れてはいけない。入れると本物の "--" を
-// 食べてしまう。
 func valueOptsFor(sub string) ([]string, string) {
 	switch sub {
 	case "clean":
@@ -382,34 +377,12 @@ func valueOptsFor(sub string) ([]string, string) {
 		}, "jo"
 	case "push":
 		return []string{"--receive-pack", "--exec", "--repo", "-o", "--push-option"}, "o"
-	case "diff", "show", "log":
-		return []string{
-			"-G",
-			"-S",
-			"-O",
-			"-n",
-			"-L",
-			"--since",
-			"--until",
-			"--author",
-			"--committer",
-			"--grep",
-			"--output",
-			"--rotate-to",
-			"--skip-to",
-			"--find-object",
-			"--decorate-refs",
-			"--decorate-refs-exclude",
-		}, "GSOnL"
 	default:
 		return nil, ""
 	}
 }
 
-var (
-	identityFragment = regexp.MustCompile(`user\.(email|name)`)
-	patchFlag        = regexp.MustCompile(`[pu]`)
-)
+var identityFragment = regexp.MustCompile(`user\.(email|name)`)
 
 func gitVerdict(args []string) verdict {
 	if gitGlobalIdentity(args) {
@@ -424,8 +397,7 @@ func gitVerdict(args []string) verdict {
 	sub := rest[0]
 	valOpts, valChars := valueOptsFor(sub)
 	// "--" の後ろは全て pathspec/refspec なので、フラグの走査は区切りの手前だけを
-	// 見る。"--force" という名前のパスをフラグと読まないためと、"--no-ext-diff" と
-	// いう名前のパスで外部 diff のガードを外させないためである。
+	// 見る。"--force" という名前のパスをフラグと読まないためである。
 	opts := gitOpts(rest[1:], valOpts, valChars)
 
 	if sub == "push" && slices.ContainsFunc(opts, func(a string) bool {
@@ -485,15 +457,6 @@ func gitVerdict(args []string) verdict {
 			return strings.Contains(a, "--author") || identityFragment.MatchString(strings.ToLower(a))
 		}) {
 		return "GIT_IDENTITY"
-	}
-
-	if (sub == "diff" || sub == "show" ||
-		(sub == "log" && slices.ContainsFunc(opts, func(a string) bool {
-			return a == "--patch" ||
-				(shortOpt.MatchString(a) && patchFlag.MatchString(clusterFlags(a[1:], "GSOnL")))
-		}))) &&
-		!slices.Contains(opts, "--no-ext-diff") {
-		return "EXTDIFF"
 	}
 
 	return ""

@@ -650,11 +650,6 @@
   },
   {
     "want": "block",
-    "command": "git diff -- --no-ext-diff",
-    "label": "git diff -- --no-ext-diff (pathspec はガードを解除しない)"
-  },
-  {
-    "want": "block",
     "command": "git clean -e -- -fd",
     "label": "git clean -e -- -fd (-- は -e の値)"
   },
@@ -700,56 +695,6 @@
   },
   {
     "want": "block",
-    "command": "git diff --output --no-ext-diff",
-    "label": "git diff --output --no-ext-diff (値はガードを解除しない)"
-  },
-  {
-    "want": "block",
-    "command": "git log -p -G --no-ext-diff",
-    "label": "git log -p -G --no-ext-diff (-G の値はガードを解除しない)"
-  },
-  {
-    "want": "block",
-    "command": "git log -p --decorate-refs --no-ext-diff",
-    "label": "git log -p --decorate-refs --no-ext-diff (値はガードを解除しない)"
-  },
-  {
-    "want": "block",
-    "command": "git log -p --decorate-refs-exclude --no-ext-diff",
-    "label": "git log -p --decorate-refs-exclude --no-ext-diff (値はガードを解除しない)"
-  },
-  {
-    "want": "block",
-    "command": "git diff -U -- --no-ext-diff",
-    "label": "git diff -U -- --no-ext-diff (裸 -U は -- を消費しない)"
-  },
-  {
-    "want": "block",
-    "command": "git diff --unified -- --no-ext-diff",
-    "label": "git diff --unified -- (裸で有効)"
-  },
-  {
-    "want": "block",
-    "command": "git log -p --pretty -- --no-ext-diff",
-    "label": "git log -p --pretty -- (裸で有効)"
-  },
-  {
-    "want": "block",
-    "command": "git log -pu -1",
-    "label": "git log -pu (クラスタ内 -p)"
-  },
-  {
-    "want": "block",
-    "command": "git log -qp -1",
-    "label": "git log -qp (クラスタ内 -p)"
-  },
-  {
-    "want": "block",
-    "command": "git log -pU3 -1",
-    "label": "git log -pU3 (クラスタ内 -p + attached -U)"
-  },
-  {
-    "want": "block",
     "command": "git push -fofoo-bar origin main",
     "label": "git push -fofoo-bar (記号入り attached 値の前の -f)"
   },
@@ -757,11 +702,6 @@
     "want": "block",
     "command": "git clean -fdefoo-bar",
     "label": "git clean -fdefoo-bar (記号入り attached 値の前の -fd)"
-  },
-  {
-    "want": "block",
-    "command": "git log -pSfoo-bar -1",
-    "label": "git log -pSfoo-bar (記号入り attached 値の前の -p)"
   },
   {
     "want": "block",
@@ -2302,5 +2242,20 @@
     "want": "block",
     "command": "xargs -a list --max-lines 1 sh -c 'rg pat'",
     "label": "rg パスなし: --max-lines は別の語の値を取る"
+  },
+  {
+    "want": "allow",
+    "command": "git diff",
+    "label": "git diff (外部 diff のガードはない)"
+  },
+  {
+    "want": "allow",
+    "command": "git show HEAD",
+    "label": "git show (外部 diff のガードはない)"
+  },
+  {
+    "want": "allow",
+    "command": "git log -p -1",
+    "label": "git log -p (外部 diff のガードはない)"
   }
 ]

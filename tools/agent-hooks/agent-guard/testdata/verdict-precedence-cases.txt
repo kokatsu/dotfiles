@@ -22,7 +22,6 @@ FORCE_PUSH	git push --force && rm x
 RM	rm x && git push --force
 KILLALL	killall foo && eval bar
 GIT_CLEAN	git clean -fd; git fetch --depth 1
-EXTDIFF	git diff | grep -r pattern
 # git config 由来の GIT_IDENTITY は 3 段目なので、先行する rm に負ける
 RM	sudo rm -rf / && git config user.email a@b
 # コマンド置換とバッククォートの中身は、その語が現れた位置で訪問される
