@@ -64,6 +64,8 @@ return {
       },
     },
     languages = {
+      -- after/queries/markdown/injections.scm の console → bash は kakehashi には効かない
+      console = { base = 'bash' },
       -- 不足パーサー/クエリの自動インストール (ワイルドカード既定)
       _ = { autoInstall = true },
       -- Markdown内で有効にするブリッジ言語
