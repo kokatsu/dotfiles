@@ -62,7 +62,7 @@ zsh-defer -a +1 +2 -c 'bindkey "^[[B" history-substring-search-down; bindkey "^[
 export ZENO_HOME="${XDG_CONFIG_HOME}/zeno"
 export ZENO_GIT_CAT="bat --color=always"
 export ZENO_GIT_TREE="eza --tree"
-# Deno cache は _prepare_zeno でモジュール導入・更新時に生成する。
+# 依存は Nix パッケージに同梱されているため、起動時の取得を止める。
 export ZENO_DISABLE_EXECUTE_CACHE_COMMAND=1
 
 # fzf key bindings (Ctrl+T, Alt+C) — zeno より先に読み込み、Tab/Ctrl+R は zeno が上書き

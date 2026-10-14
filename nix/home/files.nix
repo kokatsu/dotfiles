@@ -19,8 +19,6 @@ in {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/nvim";
         force = true;
       };
-      # fff.nvim: Nix ビルド版 (Rust バックエンド同梱) を lazy.nvim の dir 参照用に配置
-      ".local/share/nvim/nix-plugins/fff.nvim".source = pkgs.vimPlugins.fff-nvim;
       # fastfetch is managed by nix/home/programs/fastfetch.nix
       ".config/git-graph/models/catppuccin-${flavor}.toml".text =
         # toml

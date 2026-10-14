@@ -7,8 +7,6 @@
   ...
 }: let
   pluginDir = "${config.xdg.configHome}/zsh/plugins";
-  # zeno.zsh は prepare-zeno のパッチと Deno の node_modules を自身のディレクトリへ
-  # 書き込むため、ここには含めず activation で書き込み可能なコピーを置く。
   plugins = {
     completion = inputs.zim-completion;
     environment = inputs.zim-environment;
@@ -63,31 +61,6 @@ in {
               ! -name 'init-brew-*' -delete
           fi
         '';
-
-      installZeno =
-        lib.hm.dag.entryAfter ["linkGeneration"]
-        # bash
-        ''
-          ZENO_SRC="${inputs.zeno-zsh}"
-          ZENO_DIR="${pluginDir}/zeno.zsh"
-
-          # コピー元の store path を symlink で記録し、変わったときだけ入れ替える。
-          if [ "$(readlink "$ZENO_DIR/.nix-source" 2>/dev/null)" != "$ZENO_SRC" ]; then
-            # store からのコピーは読み取り専用で、そのままだと rm -rf できない
-            [ -d "$ZENO_DIR" ] && $DRY_RUN_CMD chmod -R u+w "$ZENO_DIR"
-            $DRY_RUN_CMD rm -rf "$ZENO_DIR"
-            $DRY_RUN_CMD mkdir -p "${pluginDir}"
-            $DRY_RUN_CMD cp -R "$ZENO_SRC" "$ZENO_DIR"
-            $DRY_RUN_CMD chmod -R u+w "$ZENO_DIR"
-            $DRY_RUN_CMD ln -s "$ZENO_SRC" "$ZENO_DIR/.nix-source"
-          fi
-
-          # zeno の互換性パッチと Deno cache を冪等に準備する。
-          # cache の取得失敗だけで Home Manager 全体を中断せず、次回に再試行する。
-          if ! $DRY_RUN_CMD "${config.xdg.configHome}/zsh/scripts/prepare-zeno" "$ZENO_DIR" "${pkgs.deno}/bin/deno"; then
-            echo "warning: failed to prepare zeno; retry on next activation" >&2
-          fi
-        '';
     };
 
     # 既存のzsh設定をシンボリックリンク
@@ -95,9 +68,9 @@ in {
       lib.mapAttrs' (name: source: lib.nameValuePair "${pluginDir}/${name}" {inherit source;}) plugins
       // {
         "${config.xdg.configHome}/zsh/.zshrc".source = ../../../.config/zsh/.zshrc;
-        "${config.xdg.configHome}/zsh/scripts/prepare-zeno" = {
-          source = ../../../.config/zsh/scripts/prepare-zeno;
-          executable = true;
+        "${pluginDir}/zeno.zsh" = {
+          source = pkgs.zeno-zsh;
+          force = true;
         };
 
         "${config.xdg.configHome}/zsh/functions.zsh".source = ../../../.config/zsh/functions.zsh;

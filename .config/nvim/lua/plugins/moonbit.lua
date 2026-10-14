@@ -9,14 +9,9 @@ return {
     'nvim-treesitter/nvim-treesitter',
   },
   opts = {
-    -- Tree-sitter: パーサーとクエリを自動インストール。
-    -- moonbit は nvim-treesitter(main) レジストリ未収録だが、プラグインが
-    -- install 時の `User TSUpdate` で moonbitlang/tree-sitter-moonbit を登録し、
-    -- install が branch=main を ref にビルド + grammar repo の queries/*.scm も
-    -- 取り込むため、main ブランチでもハイライト/折りたたみ/インデントが効く。
     treesitter = {
       enabled = true,
-      auto_install = true,
+      auto_install = false,
     },
     -- LSP: Nix 導入済みの moon-lsp(native) --stdio を PATH 経由で起動 (vim.lsp.config + enable)。
     -- 注意: lsp は必ずテーブルで渡す。lsp = true はプラグイン内部で boolean を

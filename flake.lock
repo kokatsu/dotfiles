@@ -133,6 +133,40 @@
         "type": "github"
       }
     },
+    "lazy-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1765971162,
+        "narHash": "sha256-5A4kducPwKb5fKX4oSUFvo898P0dqfsqqLxFaXBsbQY=",
+        "owner": "folke",
+        "repo": "lazy.nvim",
+        "rev": "306a05526ada86a7b30af95c5cc81ffba93fef97",
+        "type": "github"
+      },
+      "original": {
+        "owner": "folke",
+        "ref": "main",
+        "repo": "lazy.nvim",
+        "type": "github"
+      }
+    },
+    "moonbit-grammar": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784707647,
+        "narHash": "sha256-UUEjrF6uGwTtFGRjmjw75ky8eDwVwAHOHro48TAI+WM=",
+        "owner": "moonbitlang",
+        "repo": "tree-sitter-moonbit",
+        "rev": "5435c307c6cf2ef0d508a99047b06f35a4308444",
+        "type": "github"
+      },
+      "original": {
+        "owner": "moonbitlang",
+        "ref": "main",
+        "repo": "tree-sitter-moonbit",
+        "type": "github"
+      }
+    },
     "moonbit-overlay": {
       "inputs": {
         "nixpkgs": [
@@ -241,6 +275,57 @@
         "type": "github"
       }
     },
+    "nvim-treesitter": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789816976,
+        "narHash": "sha256-fXBJhWvjzBGivIiAys9oy2JB9h99CNIk+AdGkGgHgPg=",
+        "owner": "nvim-treesitter",
+        "repo": "nvim-treesitter",
+        "rev": "f603a2f4da48728f80257fb5fbb90145fd1dc173",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nvim-treesitter",
+        "ref": "main",
+        "repo": "nvim-treesitter",
+        "type": "github"
+      }
+    },
+    "peek-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1772544052,
+        "narHash": "sha256-m57rd+xtDT76MIFDGq1xViYWRU7auh79qxbymr+P5+8=",
+        "owner": "kokatsu",
+        "repo": "peek.nvim",
+        "rev": "d3b586b85efc6e0051a012405cc65b51cb25c0a5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kokatsu",
+        "ref": "fix/deprecated-nvim-api",
+        "repo": "peek.nvim",
+        "type": "github"
+      }
+    },
+    "pkl-neovim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783632022,
+        "narHash": "sha256-RwBeVi3MK9svEIP4nYechHg9AZ1zygK2xlvjjGEE5EQ=",
+        "owner": "apple",
+        "repo": "pkl-neovim",
+        "rev": "7907b89958d06fa5a5dc72eeb26d8289605595c3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "apple",
+        "ref": "main",
+        "repo": "pkl-neovim",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "catppuccin": "catppuccin",
@@ -248,10 +333,15 @@
         "herdr-nix": "herdr-nix",
         "herdr-numbering": "herdr-numbering",
         "home-manager": "home-manager",
+        "lazy-nvim": "lazy-nvim",
+        "moonbit-grammar": "moonbit-grammar",
         "moonbit-overlay": "moonbit-overlay",
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
+        "nvim-treesitter": "nvim-treesitter",
+        "peek-nvim": "peek-nvim",
+        "pkl-neovim": "pkl-neovim",
         "unocss-language-server": "unocss-language-server",
         "zeno-zsh": "zeno-zsh",
         "zim-completion": "zim-completion",

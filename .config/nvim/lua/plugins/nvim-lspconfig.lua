@@ -81,7 +81,7 @@ return {
     }
 
     -- Conditionally enable ruby_lsp if executable
-    if vim.fn.executable('ruby-lsp') == 1 then
+    if vim.fn.executable(vim.env.RUBY_LSP_COMMAND or 'ruby-lsp') == 1 then
       table.insert(servers, 'ruby_lsp')
     end
 

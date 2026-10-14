@@ -101,6 +101,26 @@
       url = "github:yuki-yano/zeno.zsh";
       flake = false;
     };
+    peek-nvim = {
+      url = "github:kokatsu/peek.nvim/fix/deprecated-nvim-api";
+      flake = false;
+    };
+    lazy-nvim = {
+      url = "github:folke/lazy.nvim/main";
+      flake = false;
+    };
+    nvim-treesitter = {
+      url = "github:nvim-treesitter/nvim-treesitter/main";
+      flake = false;
+    };
+    moonbit-grammar = {
+      url = "github:moonbitlang/tree-sitter-moonbit/main";
+      flake = false;
+    };
+    pkl-neovim = {
+      url = "github:apple/pkl-neovim/main";
+      flake = false;
+    };
   };
 
   outputs = inputs @ {
@@ -183,16 +203,23 @@
       customOverlays.git-graph-fork
       customOverlays.herdr
       customOverlays.kakehashi
+      customOverlays.karabiner-config
+      customOverlays.lazy-nvim
       customOverlays.mise
+      customOverlays.peek-nvim
       customOverlays.pkl
+      customOverlays.pkl-neovim
       customOverlays.qo
+      customOverlays.ruby-lsp
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.textlint-with-rules
+      customOverlays.treesitter-nvim
       customOverlays.unocss-language-server
       customOverlays.upmd
       customOverlays.vite-plus
       customOverlays.vue-language-server-pin
       customOverlays.x-api-playground
+      customOverlays.zeno-zsh
     ];
 
     # Home Manager 構成の共通ビルダー (CI と実ユーザーの両方が使う)。
@@ -228,6 +255,33 @@
         isCI = true;
         dotfilesDir = "/tmp/dotfiles";
       };
+
+    mkNeovimCheck = system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [customOverlays.lazy-nvim customOverlays.peek-nvim customOverlays.pkl-neovim customOverlays.treesitter-nvim];
+      };
+    in
+      pkgs.runCommand "nix-neovim-check" {nativeBuildInputs = [pkgs.neovim];} ''
+        export XDG_DATA_HOME=$TMPDIR/data
+        export XDG_CACHE_HOME=$TMPDIR/cache
+        export XDG_STATE_HOME=$TMPDIR/state
+        mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_STATE_HOME"
+        nvim --headless --clean -l ${./scripts/test-nix-neovim.lua} \
+          ${pkgs.lazy-nvim} ${pkgs.vimPlugins.blink-cmp} ${pkgs.peek-nvim} ${pkgs.treesitter-nvim} ${pkgs.pkl-neovim} ${./.config/nvim/after}
+        touch "$out"
+      '';
+
+    mkMigrationChecks = system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [customOverlays.zeno-zsh customOverlays.karabiner-config customOverlays.ruby-lsp];
+      };
+    in {
+      zeno = pkgs.zeno-zsh;
+      karabiner = pkgs.karabiner-config;
+      inherit (pkgs) ruby-lsp;
+    };
 
     mkDarwinConfig = username:
       nix-darwin.lib.darwinSystem {
@@ -302,14 +356,18 @@
     # `nix flake check`をHome Manager / nix-darwin / Nix静的解析の入口にする。
     checks = {
       x86_64-linux = {
+        inherit (mkMigrationChecks "x86_64-linux") zeno karabiner ruby-lsp;
         home = (mkCIConfig "x86_64-linux").activationPackage;
+        neovim = mkNeovimCheck "x86_64-linux";
         nix-static = mkNixStaticCheck "x86_64-linux";
         # flake checkはdevShellを通常は評価するだけなので、checksからも参照して
         # CIで開発環境そのものをビルドする。
         dev-shell = self.devShells.x86_64-linux.default;
       };
       aarch64-darwin = {
+        inherit (mkMigrationChecks "aarch64-darwin") zeno karabiner ruby-lsp;
         home = (mkCIConfig "aarch64-darwin").activationPackage;
+        neovim = mkNeovimCheck "aarch64-darwin";
         darwin = (mkDarwinConfig "ci").system;
         dev-shell = self.devShells.aarch64-darwin.default;
       };
@@ -365,6 +423,7 @@
             # Cross-cutting
             editorconfig-checker # EditorConfig 準拠チェッカー
             gitleaks # Secret detection and configuration smoke test
+            bundix # Ruby LSP Gemfile.lock / gemset.nix regeneration
             typos # タイポ検出
           ]
           ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [pkgs.util-linux]; # feed state tests (flock)

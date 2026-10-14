@@ -108,12 +108,33 @@ jobs:
           deno cache karabiner.ts
           test -f deno.lock || { echo "::error::deno cache did not produce deno.lock"; exit 1; }
 
+      - name: Update Deno dependency locks and hashes
+        id: update-deno
+        run: |
+          deno run --no-prompt --allow-read --allow-write --allow-env \
+            --allow-run \
+            scripts/update-deno-deps.ts origin/main | tee -a "$GITHUB_OUTPUT"
+          nix fmt -- .
+
+      - name: Regenerate Ruby LSP gemset
+        id: update-ruby
+        run: |
+          if ! git diff --quiet origin/main -- nix/ruby/ruby-lsp/Gemfile nix/ruby/ruby-lsp/Gemfile.lock; then
+            nix shell --impure --expr 'let f = builtins.getFlake ("path:" + toString ./.); in (builtins.getAttr builtins.currentSystem f.inputs.nixpkgs.legacyPackages).bundix' \
+              --command env -u GEM_HOME -u GEM_PATH bundix \
+              --gemfile nix/ruby/ruby-lsp/Gemfile --lockfile nix/ruby/ruby-lsp/Gemfile.lock --gemset nix/ruby/ruby-lsp/gemset.nix
+            nix fmt -- .
+            echo 'changed=ruby-lsp' >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Commit and push changes
         id: push
         env:
           PACKAGES: ${{ steps.detect.outputs.packages }}
           PREFETCH_PACKAGES: ${{ steps.update_prefetch.outputs.changed }}
           EXTRA_PACKAGES: ${{ steps.sync-flake.outputs.extra_packages }}
+          DENO_PACKAGES: ${{ steps.update-deno.outputs.changed }}
+          RUBY_PACKAGES: ${{ steps.update-ruby.outputs.changed }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -126,7 +147,7 @@ jobs:
             git add -A -- ':!karabiner-config/deno.lock'
             # 各 detect/update ステップが出す "name X, name Y" 断片を ", " で連結する
             MSG=""
-            for part in "$PACKAGES" "$PREFETCH_PACKAGES" "$EXTRA_PACKAGES"; do
+            for part in "$PACKAGES" "$PREFETCH_PACKAGES" "$EXTRA_PACKAGES" "$DENO_PACKAGES" "$RUBY_PACKAGES"; do
               [ -n "$part" ] && MSG="${MSG:+$MSG, }$part"
             done
             git commit -m "fix: update nix hashes for $MSG"

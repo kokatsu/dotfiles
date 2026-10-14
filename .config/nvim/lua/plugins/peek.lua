@@ -1,36 +1,10 @@
 -- https://github.com/kokatsu/peek.nvim
 
-local function inject_favicon(plugin_dir)
-  local index_path = plugin_dir .. '/public/index.html'
-  local lines = vim.fn.readfile(index_path)
-  for _, line in ipairs(lines) do
-    if line:match('rel="icon"') then
-      return
-    end
-  end
-  local favicon =
-    [[  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">]]
-  for i, line in ipairs(lines) do
-    if line:match('<title>') then
-      table.insert(lines, i + 1, favicon)
-      break
-    end
-  end
-  vim.fn.writefile(lines, index_path)
-end
-
 return {
-  'kokatsu/peek.nvim',
-  branch = 'fix/deprecated-nvim-api',
+  name = 'peek.nvim',
+  dir = vim.fn.stdpath('data') .. '/nix-plugins/peek.nvim',
   -- コマンド経由でしか使わないので、lazy.nvim のスタブコマンドで初回呼び出し時に読み込む
   cmd = { 'PeekOpen', 'PeekClose' },
-  build = function(plugin)
-    vim.system({ 'git', 'update-index', '--no-skip-worktree', 'public/index.html' }, { cwd = plugin.dir }):wait()
-    vim.system({ 'git', 'checkout', '--', 'public/index.html' }, { cwd = plugin.dir }):wait()
-    vim.system({ 'deno', 'task', '--quiet', 'build:fast' }, { cwd = plugin.dir }):wait()
-    inject_favicon(plugin.dir)
-    vim.system({ 'git', 'update-index', '--skip-worktree', 'public/index.html' }, { cwd = plugin.dir }):wait()
-  end,
   config = function()
     local app = 'browser'
     if vim.fn.has('wsl') == 1 and vim.fn.executable('wslview') == 1 then

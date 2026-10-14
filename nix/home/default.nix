@@ -63,6 +63,7 @@ in {
     ./programs/mergiraf.nix
     ./programs/moxide.nix
     ./programs/nh.nix
+    ./programs/neovim.nix
     ./programs/nix-index.nix
     ./programs/ov.nix
     ./programs/psql.nix
@@ -157,7 +158,7 @@ in {
     sessionPath = [
       "${config.home.homeDirectory}/.local/bin/scripts"
       "${config.home.homeDirectory}/.local/share/pnpm/bin" # pnpm グローバルバイナリ (v11+ は bin/ サブディレクトリ)
-      "${config.xdg.dataHome}/gem/bin" # ruby-lsp 等の gem 実行ファイル
+      "${config.xdg.dataHome}/gem/bin" # 手動導入する gem 実行ファイル
       "${config.xdg.dataHome}/cargo/bin" # rustup が入れる cargo/rustc 等
     ];
 

@@ -52,6 +52,7 @@ sudo HOSTNAME=$(hostname -s) DOTFILES_DIR="$HOME/dotfiles" darwin-rebuild switch
 
 ```bash
 nix flake update
+deno run --allow-all scripts/update-deno-deps.ts --all
 DOTFILES_DIR="$HOME/dotfiles" home-manager switch --flake "$HOME/dotfiles" --impure
 ```
 
@@ -99,6 +100,18 @@ plugins and flavors are vendored under `.config/yazi/`. All are installed throug
 Yazi's `init.lua` and `git-changes.sh` also need
 `home-manager switch --flake . --impure` after editing to apply the changes.
 Lua, shell scripts, and repository tooling configurations remain under `.config/`.
+
+Neovim's lazy.nvim, peek.nvim, blink.cmp, Pkl plugin, and Tree-sitter parsers
+are built by Nix and linked under `~/.local/share/nvim/nix-plugins/`.
+Other Lua plugins still use `lazy-lock.json` and `:Lazy`.
+zeno.zsh uses fixed Deno/npm dependencies from the Nix store.
+Ruby LSP and its Rails/RuboCop gems are fixed in `nix/ruby/ruby-lsp/`;
+Neovim uses `RUBY_LSP_COMMAND` to avoid a user-installed gem taking precedence.
+Karabiner's managed Default profile is built by Nix, then merged into the
+writable JSON while retaining other profiles and GUI settings.
+
+Renovate PRs regenerate Deno locks/hashes and Ruby gemsets in `pr.yml`.
+
 Claude Code's `settings.json` keeps its writable repository link. Codex receives
 a writable copy of its generated configuration and preserves the existing local
 state sections during activation.

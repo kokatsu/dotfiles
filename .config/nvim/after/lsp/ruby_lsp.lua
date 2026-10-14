@@ -7,7 +7,7 @@ local ruby_lsp_config = {
   -- root_dir を cwd に渡し、モノレポ内の各サブプロジェクトを正しく認識させる。
   cmd = function(dispatchers, config)
     return vim.lsp.rpc.start(
-      { 'env', 'BUNDLE_GEMFILE=.', 'ruby-lsp' },
+      { 'env', 'BUNDLE_GEMFILE=.', vim.env.RUBY_LSP_COMMAND or 'ruby-lsp' },
       dispatchers,
       config and config.root_dir and { cwd = config.cmd_cwd or config.root_dir }
     )

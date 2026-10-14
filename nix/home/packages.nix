@@ -16,7 +16,7 @@
 in {
   # 以下のパッケージは programs.* モジュールで管理:
   # bat, broot, btop, delta, eza, fastfetch, fzf, gh, git, lazydocker, lazygit, mergiraf,
-  # nh, readline, starship, zoxide
+  # neovim, nh, readline, starship, zoxide
   # bin/ のユーザースクリプト (feed-watch, memo, daily 等) は files.nix が
   # ~/.local/bin/scripts に symlink し、sessionPath で PATH に入る
   home.packages = with pkgs;
@@ -43,6 +43,7 @@ in {
         ]))
       # https://github.com/ruby/ruby
       ruby
+      ruby-lsp
       # https://github.com/rust-lang/rustup
       rustup # Rust ツールチェーンマネージャ
       cargo-with-openssl # openssl-sys が必要な Cargo コマンド用 wrapper
@@ -367,8 +368,6 @@ in {
       # https://github.com/herdrdev/herdr-nix (公式リリースバイナリ、overlay)
       herdr # tmux 的なエージェント対応ターミナルマルチプレクサ
       #--- エディタ ---#
-      # https://github.com/neovim/neovim
-      neovim
       # https://github.com/vim/vim
       vim
 
