@@ -11,6 +11,15 @@ await Deno.writeTextFile(
   }\nprintf '%s' "$1" > '${addressFile}'\n`,
 );
 await Deno.chmod(browser, 0o700);
+const launcher = Deno.build.os === "darwin" ? `${temporary}/open` : browser;
+if (Deno.build.os === "darwin") {
+  // open@v0.0.6 uses `open -a <app> <url>` even for an explicit executable.
+  await Deno.writeTextFile(
+    launcher,
+    `#!${Deno.env.get("PEEK_TEST_SHELL") ?? "/bin/sh"}\nexec "$2" "$3"\n`,
+  );
+  await Deno.chmod(launcher, 0o700);
+}
 const process = new Deno.Command(Deno.execPath(), {
   cwd: plugin,
   args: [
@@ -24,14 +33,17 @@ const process = new Deno.Command(Deno.execPath(), {
     "--allow-write",
     "--allow-env",
     "--allow-net=127.0.0.1,localhost,0.0.0.0",
-    `--allow-run=${browser}`,
+    `--allow-run=${launcher}`,
     "public/main.bundle.js",
     `--app=${JSON.stringify([browser])}`,
     `--logfile=${logfile}`,
     "--theme=dark",
     "--syntax",
   ],
-  env: { DENO_DIR: `${temporary}/deno-cache` },
+  env: {
+    DENO_DIR: `${temporary}/deno-cache`,
+    PATH: `${temporary}:${Deno.env.get("PATH") ?? ""}`,
+  },
   stdin: "piped",
   stdout: "inherit",
   stderr: "inherit",
