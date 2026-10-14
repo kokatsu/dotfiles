@@ -212,11 +212,11 @@ in {
   # Renovate: datasource=github-releases depName=k1LoW/deck
   deck-slides = mkBinaryRelease rec {
     pname = "deck-slides";
-    version = "1.24.1";
+    version = "1.24.2";
     hashes = {
-      "aarch64-darwin" = "sha256-0+CgaPZe1LUYQ41aAZivRXrX/G4N8A4tIBIRoZviAa4=";
-      "aarch64-linux" = "sha256-o++kGQaOtuHknDzzGMxgNb/fjzkwXgnUPIpfzaMzWSg=";
-      "x86_64-linux" = "sha256-1+ORW0ZHy8qZSULt92mecgctotUaIZSUzakNYfOJaVY=";
+      "aarch64-darwin" = "sha256-Gs3Dq8h7w0z9WTnnYLesYybe6xng9lplnh92qbxPr5M=";
+      "aarch64-linux" = "sha256-4XBJLWrMNl8UxhrT3IpKKDE2sGzpF0JyXt9zPMjoaDg=";
+      "x86_64-linux" = "sha256-JgsNLPmKJ8lQAIu/phHiFABjO4GC4aD+cFMEZbqfsDQ=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin_arm64.zip";
