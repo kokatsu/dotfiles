@@ -18,7 +18,7 @@
       '';
     };
   };
-  treesitter-nvim = _final: prev: let
+  treesitter-nvim = final: prev: let
     plugins = prev.vimPlugins.extend (_self: super: {
       nvim-treesitter = super.nvim-treesitter.overrideAttrs {
         name = "vimplugin-nvim-treesitter-${builtins.substring 0 12 inputs.nvim-treesitter.rev}";
@@ -28,6 +28,44 @@
     treesitter =
       plugins.nvim-treesitter.withPlugins (grammars:
         with grammars; [bash css html javascript json lua markdown markdown_inline mermaid nix regex ruby rust scss sql svelte toml tsx typescript vim vue yaml pkl]);
+    kakehashiExtra =
+      plugins.nvim-treesitter.withPlugins (grammars:
+        with grammars; [c d diff gitignore go ini json5 latex make pascal perl po powershell python r typst xml zig]);
+    kakehashiQueries = prev.runCommand "kakehashi-queries" {nativeBuildInputs = [prev.python3];} ''
+      mkdir -p "$out"
+      cp -R ${inputs.nvim-treesitter}/runtime/queries "$out/queries"
+      chmod -R u+w "$out/queries"
+      # kakehashi 1.0.0 rejects capture-valued URL metadata in Neovim queries.
+      python3 - "$out/queries" <<'PY'
+      import pathlib
+      import re
+      import sys
+
+      queries = pathlib.Path(sys.argv[1])
+      pattern = re.compile(r'\(#set! @[\w.]+ url @[\w.]+\)')
+      changes = []
+      for path in queries.glob('*/highlights.scm'):
+          original = path.read_text()
+          updated, count = pattern.subn("", original)
+          if count:
+              changes.append((path, updated, count))
+      assert sum(count for _, _, count in changes) == 8, 'URL metadata changed upstream'
+      for path, updated, _ in changes:
+          path.write_text(updated)
+          assert not pattern.search(path.read_text()), path
+      PY
+    '';
+    tmuxGrammar = prev.tree-sitter.buildGrammar {
+      language = "tmux";
+      version = "${(builtins.fromJSON (builtins.readFile "${inputs.tmux-grammar}/tree-sitter.json")).metadata.version}+rev=${builtins.substring 0 12 inputs.tmux-grammar.rev}";
+      src = inputs.tmux-grammar;
+      generate = true;
+    };
+    tmux = prev.runCommand "tmux-kakehashi-grammar" {} ''
+      mkdir -p "$out/parser" "$out/queries"
+      ln -s ${tmuxGrammar}/parser "$out/parser/tmux.so"
+      ln -s ${inputs.tmux-grammar}/queries "$out/queries/tmux"
+    '';
     moonbitGrammar = prev.tree-sitter.buildGrammar {
       language = "moonbit";
       version = "0.1.0";
@@ -42,6 +80,14 @@
     treesitter-nvim = prev.symlinkJoin {
       name = "nvim-treesitter-with-grammars";
       paths = [treesitter moonbit] ++ treesitter.dependencies;
+    };
+    kakehashi-grammars = prev.symlinkJoin {
+      name = "kakehashi-grammars";
+      paths = [kakehashiQueries final.treesitter-nvim tmux] ++ kakehashiExtra.dependencies;
+    };
+    kakehashi-config = (prev.formats.toml {}).generate "kakehashi.toml" {
+      searchPaths = ["${final.kakehashi-grammars}"];
+      languages._.autoInstall = false;
     };
   };
   lazy-nvim = _final: prev: {

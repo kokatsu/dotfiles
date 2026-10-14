@@ -117,6 +117,10 @@
       url = "github:moonbitlang/tree-sitter-moonbit/main";
       flake = false;
     };
+    tmux-grammar = {
+      url = "github:Freed-Wu/tree-sitter-tmux";
+      flake = false;
+    };
     pkl-neovim = {
       url = "github:apple/pkl-neovim/main";
       flake = false;
@@ -259,7 +263,7 @@
     mkNeovimCheck = system: let
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [customOverlays.lazy-nvim customOverlays.peek-nvim customOverlays.pkl-neovim customOverlays.treesitter-nvim];
+        overlays = [customOverlays.kakehashi customOverlays.lazy-nvim customOverlays.peek-nvim customOverlays.pkl-neovim customOverlays.treesitter-nvim];
       };
     in
       pkgs.runCommand "nix-neovim-check" {nativeBuildInputs = [pkgs.neovim];} ''
@@ -269,6 +273,8 @@
         mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME" "$XDG_STATE_HOME"
         nvim --headless --clean -l ${./scripts/test-nix-neovim.lua} \
           ${pkgs.lazy-nvim} ${pkgs.vimPlugins.blink-cmp} ${pkgs.peek-nvim} ${pkgs.treesitter-nvim} ${pkgs.pkl-neovim} ${./.config/nvim/after}
+        nvim --headless --clean -l ${./scripts/test-kakehashi.lua} \
+          ${pkgs.kakehashi}/bin/kakehashi ${pkgs.kakehashi-config} ${pkgs.kakehashi-grammars} ${./.config/nvim/after/lsp/kakehashi.lua}
         touch "$out"
       '';
 

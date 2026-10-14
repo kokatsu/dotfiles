@@ -162,7 +162,11 @@ in {
     platformMap = appleGnuPlatformMap;
     url = platform: "https://github.com/atusy/kakehashi/releases/download/v${version}/kakehashi-v${version}-${platform}.tar.gz";
     format = "tar";
-    extraAttrs = {sourceRoot = ".";};
+    extraAttrs = prev: {
+      sourceRoot = ".";
+      nativeBuildInputs = prev.lib.optionals prev.stdenv.hostPlatform.isLinux [prev.autoPatchelfHook];
+      buildInputs = prev.lib.optionals prev.stdenv.hostPlatform.isLinux [prev.stdenv.cc.cc.lib];
+    };
     meta = {
       description = "Tree-sitter Language Server for embedded languages";
       homepage = "https://github.com/atusy/kakehashi";

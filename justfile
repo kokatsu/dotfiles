@@ -64,7 +64,7 @@ lua-lint:
       (cd "$dir" && selene .) || exit $?; \
     done
     @echo "selene: Neovim test scripts"
-    @selene --config .config/nvim/selene.toml scripts/test-nvim-config.lua scripts/test-nix-neovim.lua
+    @selene --config .config/nvim/selene.toml scripts/test-nvim-config.lua scripts/test-nix-neovim.lua scripts/test-kakehashi.lua
     @echo "selene: scripts/test-wezterm-links.lua"
     @selene --config .config/nvim/selene.toml scripts/test-wezterm-links.lua
     @echo "selene: .config/yazi/init.lua"

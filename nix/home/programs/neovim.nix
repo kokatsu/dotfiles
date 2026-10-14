@@ -1,4 +1,5 @@
 {pkgs, ...}: {
+  xdg.configFile."kakehashi/kakehashi.toml".source = pkgs.kakehashi-config;
   home = {
     packages = [pkgs.neovim];
     sessionVariables.RUBY_LSP_COMMAND = "${pkgs.ruby-lsp}/bin/ruby-lsp";

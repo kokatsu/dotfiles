@@ -342,6 +342,7 @@
         "nvim-treesitter": "nvim-treesitter",
         "peek-nvim": "peek-nvim",
         "pkl-neovim": "pkl-neovim",
+        "tmux-grammar": "tmux-grammar",
         "unocss-language-server": "unocss-language-server",
         "zeno-zsh": "zeno-zsh",
         "zim-completion": "zim-completion",
@@ -380,6 +381,22 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "tmux-grammar": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791968497,
+        "narHash": "sha256-zrtzLpFk+k0ESMI4d+vOeTSl2hIxBk/FwIh3oobVf5A=",
+        "owner": "Freed-Wu",
+        "repo": "tree-sitter-tmux",
+        "rev": "d6b29586b91ba267b9704d0325114f2e4c980799",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Freed-Wu",
+        "repo": "tree-sitter-tmux",
         "type": "github"
       }
     },
