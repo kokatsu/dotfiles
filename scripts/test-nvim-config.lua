@@ -570,6 +570,19 @@ test('ESC skips readonly, unmodifiable and special buffers', function()
   end)
 end)
 
+test('kakehashi keeps Tree-sitter as the Markdown highlighter', function()
+  local kakehashi = dofile(vim.fn.getcwd() .. '/.config/nvim/after/lsp/kakehashi.lua')
+  with_buffer('markdown', { '# Heading', '', '- `code`' }, 1, function()
+    local buf = vim.api.nvim_get_current_buf()
+    vim.treesitter.start(buf)
+    local client = { server_capabilities = { semanticTokensProvider = { full = true } } }
+    kakehashi.on_attach(client, buf)
+    vim.api.nvim_exec_autocmds('LspTokenUpdate', { buffer = buf, data = { client_id = 0, token = {} } })
+    assert_true(vim.treesitter.highlighter.active[buf] ~= nil, 'Tree-sitter highlighting stopped')
+    assert_true(client.server_capabilities.semanticTokensProvider == nil, 'kakehashi semantic tokens still enabled')
+  end)
+end)
+
 -- Results
 print('')
 local total = pass_count + #errors

@@ -35,8 +35,7 @@ return {
         -- Window 分割の境界線 / 行番号 (flavor に追従)
         WinSeparator = { fg = colors.overlay0, bg = 'NONE' },
         LineNr = { fg = colors.overlay0, bg = 'NONE' },
-        -- Markdown のインラインコード (after/lsp/kakehashi.lua の captureMappings)
-        ['@lsp.typemod.string.documentation.markdown'] = { fg = colors.subtext0, bg = colors.surface0 },
+        ['@markup.raw.markdown_inline'] = { fg = colors.subtext0, bg = colors.surface0 },
       }
     end,
     auto_integrations = true,
