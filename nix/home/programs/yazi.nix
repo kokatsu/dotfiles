@@ -45,6 +45,7 @@ in {
         sort_dir_first = true;
       };
       preview = {
+        wrap = "yes";
         max_width = 2400;
         max_height = 3600;
       };
