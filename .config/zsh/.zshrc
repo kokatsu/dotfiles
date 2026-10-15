@@ -48,6 +48,7 @@ zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/completion/init.zsh
 zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zsh-history-substring-search/zsh-history-substring-search.zsh
 zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zsh-autosuggestions/zsh-autosuggestions.zsh
+zsh-defer -a +1 +2 -c 'bindkey "^G" autosuggest-clear'
 
 # ↑↓ を substring 検索に割り当てる (プラグイン側は bindkey を一切設定しないため、
 # 未指定だと zim input モジュールの up/down-line-or-history のままロードだけされる)
