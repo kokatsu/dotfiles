@@ -167,7 +167,7 @@ check_pid=
 jq -e '.feeds == {}' "$STATUS_FILE" >/dev/null
 printf 'Feed state tests passed\n'
 
-# Exercise feed-summarize itself: a state update during Claude's response must survive.
+# A state update during the Codex response must survive.
 printf '<opml><body>\n' >"$FEED_WATCH_OPML_DIR/feeds.opml"
 export FEED_TEST_ROOT="$repo_root"
 export XDG_DATA_HOME="$test_dir/data"
@@ -177,16 +177,21 @@ JSON
 cat >"$test_dir/bin/gh" <<'MOCK'
 #!/usr/bin/env bash
 case "$*" in
-  *per_page*) printf 'new\nold\n' ;;
   */pulls*) printf '[]\n' ;;
-  *) printf '{"sha":"new","date":"2026-09-07","message":"fixture"}\n' ;;
+  *'/commits?'*) printf '[{"sha":"new"},{"sha":"old"}]\n' ;;
+  *) printf '{"sha":"new","commit":{"message":"fixture","author":{"date":"2026-09-07"}},"files":[]}\n' ;;
 esac
 MOCK
-cat >"$test_dir/bin/claude" <<'MOCK'
+cat >"$test_dir/bin/codex" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail
 [[ ! -e /proc/$$/fd/8 && ! -e /proc/$$/fd/9 ]] || exit 99
-cat >/dev/null
+input=$(cat)
+output=
+while (($#)); do
+  if [[ "$1" == --output-last-message ]]; then output=$2; shift; fi
+  shift
+done
 touch "$FEED_TEST_DIR/summary-ready"
 wait_file "$FEED_TEST_DIR/summary-release"
 export STATUS_FILE="$FEED_WATCH_STATUS_DIR/status.json"
@@ -197,14 +202,14 @@ advance() {
 }
 feed_status_update advance
 bash "$FEED_TEST_ROOT/bin/feed-watch" read --all
-printf 'Fixture summary\n'
+printf '%s' "$input" | jq '{items: [.items[] | {id, decision:"include", reason:"fixture", confidence:"official", group_id:"g"}], groups:[{group_id:"g",item_ids:[.items[].id],title:"Fixture summary",change:"fixture",impact:"fixture",action:"fixture",confidence_note:"fixture"}]}' >"$output"
 MOCK
 cat >"$test_dir/bin/agent-browser" <<'MOCK'
 #!/usr/bin/env bash
 printf '%s\n' "$*" >>"$FEED_TEST_DIR/browser-calls"
 exit 0
 MOCK
-chmod +x "$test_dir/bin/claude" "$test_dir/bin/agent-browser"
+chmod +x "$test_dir/bin/codex" "$test_dir/bin/agent-browser"
 start_bg bash "$repo_root/bin/feed-summarize" test
 summary_pid=$worker_pid
 wait_file "$test_dir/summary-ready"
@@ -216,7 +221,7 @@ grep -Fq 'Failed to acquire feed lock' "$test_dir/summary-timeout"
 touch "$test_dir/summary-release"
 wait "$summary_pid"
 # The owner still runs its cleanup exactly once on normal completion.
-[[ $(cat "$test_dir/browser-calls") == close ]]
+[[ $(cat "$test_dir/browser-calls") == '--session feed-summarize close' ]]
 # The outer lock was released and the next run can finish normally.
 # Keep last_seen_id equal to the already summarized ID to avoid another summary.
 reset_seen() { jq '.feeds["Recent Commits to docs:main"].last_seen_id = "new"' <<<"$1"; }

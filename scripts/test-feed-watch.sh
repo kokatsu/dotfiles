@@ -295,14 +295,20 @@ check
 assert '.feeds["Facebook Developers"] | .last_seen_id == "article2" and .unread_count == 1'
 cat >"$test_dir/bin/agent-browser" <<'MOCK'
 #!/usr/bin/env bash
-printf 'Article body\n'
+case "$*" in *close*) exit 0 ;; esac
+jq -n '{success:true,data:{content:"Article body with a concrete API change and sufficient content to distinguish it from an empty page or a short error message.",status:200}}'
 MOCK
-cat >"$test_dir/bin/claude" <<'MOCK'
+cat >"$test_dir/bin/codex" <<'MOCK'
 #!/usr/bin/env bash
-cat >/dev/null
-printf 'Article summary\n'
+input=$(cat)
+output=
+while (($#)); do
+  if [[ "$1" == --output-last-message ]]; then output=$2; shift; fi
+  shift
+done
+printf '%s' "$input" | jq '{items: [.items[] | {id, decision:"include", reason:"fixture", confidence:"reported", group_id:"g"}], groups:[{group_id:"g",item_ids:[.items[].id],title:"Article summary",change:"fixture",impact:"fixture",action:"fixture",confidence_note:"fixture"}]}' >"$output"
 MOCK
-chmod +x "$test_dir/bin/agent-browser" "$test_dir/bin/claude"
+chmod +x "$test_dir/bin/agent-browser" "$test_dir/bin/codex"
 export XDG_DATA_HOME="$test_dir/data"
 bash "$repo_root/bin/feed-summarize" Articles
 assert '.feeds["Facebook Developers"] | .last_summarized_id == "article2" and .unread_count == 1'

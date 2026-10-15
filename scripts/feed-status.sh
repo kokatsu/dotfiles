@@ -82,3 +82,13 @@ feed_status_mark_summarized() {
     if .feeds[$name] != null then .feeds[$name].last_summarized_id = $id else . end
   '
 }
+
+feed_status_advance() {
+  local current="$1" name="$2" expected="$3" id="$4"
+  printf '%s\n' "$current" | jq -e --arg name "$name" --arg expected "$expected" --arg id "$id" '
+    if .feeds[$name] == null then error("feed removed during summary")
+    elif (.feeds[$name].last_summarized_id // "") == $id then .
+    elif (.feeds[$name].last_summarized_id // "") != $expected then error("summary progress changed")
+    else .feeds[$name].last_summarized_id = $id end
+  '
+}

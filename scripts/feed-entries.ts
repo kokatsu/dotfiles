@@ -110,7 +110,7 @@ export function normalizeFeed(input: string, useLinkAsId = true): Entry[] {
   return found.map((value) => buildEntry(value, useLinkAsId));
 }
 
-export function feedIds(input: string): string[] {
+export function validateFeed(input: string): void {
   const root = rec(JSON.parse(input));
   const elements = Object.keys(root ?? {}).filter(isElement);
   if (
@@ -118,5 +118,9 @@ export function feedIds(input: string): string[] {
   ) {
     throw new Error("expected an Atom feed or RSS document");
   }
+}
+
+export function feedIds(input: string): string[] {
+  validateFeed(input);
   return normalizeFeed(input, false).map((entry) => entry.id).filter(Boolean);
 }
