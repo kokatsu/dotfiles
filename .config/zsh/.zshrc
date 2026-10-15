@@ -26,7 +26,7 @@ autoload -Uz -- git-alias-lookup git-branch-current git-branch-delete-interactiv
 # 即座に読み込み（プロンプト表示に必須）
 source ${ZSH_PLUGIN_DIR}/zsh-defer/zsh-defer.plugin.zsh
 source ${ZSH_PLUGIN_DIR}/evalcache/evalcache.plugin.zsh
-# evalcache はキャッシュミス時にしかディレクトリを作らず、下の vivid / starship は
+# evalcache はキャッシュミス時にしかディレクトリを作らず、下の vivid は
 # ディレクトリがある前提で書き込む
 [[ -d "${ZSH_EVALCACHE_DIR}" ]] || mkdir -p "${ZSH_EVALCACHE_DIR}"
 # 自前生成の補完 (delta など)。プラグインディレクトリは Nix store を指し書き込めない
@@ -232,20 +232,7 @@ export LS_COLORS="$(< $ZSH_EVALCACHE_DIR/ls_colors_cache)"
 # Starship (https://github.com/starship/starship)
 # ------------------------------------------------------------------------------
 
-# _evalcache を経由すると command -v が $commands ハッシュテーブル構築をトリガーし
-# WSL の /mnt/c/ PATH スキャンで ~200ms かかるため、キャッシュファイルを直接 source する
-# キャッシュ再生成: rm "$ZSH_EVALCACHE_DIR/starship-init.zsh"
-() {
-  local cache="$ZSH_EVALCACHE_DIR/starship-init.zsh" bin=
-  # キャッシュには生成時の starship の絶対パスが焼き込まれるため、PROMPT 行から
-  # 抽出して実在確認する (プロファイル構成の変更でパスが死ぬとプロンプトが壊れる)
-  [[ -f "$cache" ]] && bin=${${${(M)${(f)"$(<"$cache")"}:#PROMPT=*}[1]#PROMPT=\'\$\(\'}%%\'*}
-  if [[ ! -x "$bin" ]]; then
-    starship init zsh --print-full-init >| "$cache"
-    zcompile "$cache" 2>/dev/null
-  fi
-  source "$cache"
-}
+source "$ZDOTDIR/starship-init.zsh"
 
 # ------------------------------------------------------------------------------
 # tdf (https://github.com/itsjunetime/tdf)

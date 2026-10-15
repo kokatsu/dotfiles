@@ -1,4 +1,8 @@
-{config, ...}: let
+{
+  config,
+  pkgs,
+  ...
+}: let
   flavor = config.catppuccin.flavor;
   paletteName = "catppuccin_${flavor}";
   palette = builtins.mapAttrs (_: color: color.hex) config.catppuccinLib.palettes.${flavor};
@@ -6,6 +10,12 @@ in {
   # catppuccin/nix は生成済み TOML を評価時に読み込むため IFD が発生する。
   # 同じ palette を既存の純粋な Nix palette 定義から組み立てる。
   catppuccin.starship.enable = false;
+
+  # init は Starship の実行パスを埋め込むため、パッケージと同じ世代で生成する。
+  xdg.configFile."zsh/starship-init.zsh".source = pkgs.runCommand "starship-init.zsh" {} ''
+    ${config.programs.starship.package}/bin/starship init zsh --print-full-init > "$out"
+    ${pkgs.zsh}/bin/zsh -n "$out"
+  '';
 
   programs.starship = {
     enable = true;
