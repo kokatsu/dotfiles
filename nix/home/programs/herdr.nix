@@ -182,8 +182,8 @@ in {
           focus_pane_right = "alt+right"
           last_pane = "prefix+space"
           focus_agent = "alt+1..9"
-          previous_workspace = "prefix+comma"
-          next_workspace = "prefix+period"
+          previous_workspace = ["alt+comma", "prefix+comma"]
+          next_workspace = ["alt+period", "prefix+period"]
           switch_workspace = "prefix+alt+1..9"
           # デフォルトの prefix+b を下の custom command に譲り、使用頻度の低い
           # サイドバー切替を別キーへ移す
@@ -343,7 +343,7 @@ in {
           description = "異常のあるサービスの Statuspage を開く"
 
           # Claude Code / Codex のキー設定はスラッシュコマンドを割り当てられないため、
-          # herdr 側から入力として送る。/clear と /exit は両エージェント共通。
+          # herdr 側から入力として送る。/clear・/copy・/exit は両エージェント共通。
           # ペインの種類は見ないので、シェルのペインで押すとそのまま実行される。
           # prefix+c / prefix+q の既定 (new_tab / detach) は上で別キーへ移してあるので空いている
           [[keys.command]]
@@ -351,6 +351,12 @@ in {
           type = "shell"
           command = "herdr pane run \"$HERDR_ACTIVE_PANE_ID\" /clear"
           description = "エージェントに /clear を送る"
+
+          [[keys.command]]
+          key = "prefix+d"
+          type = "shell"
+          command = "herdr pane run \"$HERDR_ACTIVE_PANE_ID\" /copy"
+          description = "エージェントに /copy を送る"
 
           [[keys.command]]
           key = "prefix+q"
