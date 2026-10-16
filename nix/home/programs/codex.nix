@@ -53,6 +53,7 @@
       };
     };
     tui = {
+      copy_on_select_clear_selection = true;
       notifications = true;
       notification_condition = "always";
       resume_cwd = "session";
