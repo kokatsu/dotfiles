@@ -37,6 +37,12 @@ source ${ZSH_PLUGIN_DIR}/environment/init.zsh
 bindkey -e
 source ${ZSH_PLUGIN_DIR}/input/init.zsh
 
+# edit-command-line は input モジュールが autoload と zle -N 済み
+bindkey '^G' edit-command-line
+bindkey '^[q' push-line-or-edit
+autoload -Uz copy-earlier-word && zle -N copy-earlier-word
+bindkey '^[,' copy-earlier-word
+
 # 遅延読み込み（初回プロンプト後に読み込み）
 # -a +1 +2: 全フラグ無効 → stdout/stderr リダイレクトのみ有効
 # 個別タスクにすることで、タスク間で KEYS_QUEUED_COUNT チェックが入り
@@ -48,7 +54,7 @@ zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/completion/init.zsh
 zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zsh-history-substring-search/zsh-history-substring-search.zsh
 zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zsh-autosuggestions/zsh-autosuggestions.zsh
-zsh-defer -a +1 +2 -c 'bindkey "^G" autosuggest-clear'
+zsh-defer -a +1 +2 -c 'bindkey "^[g" autosuggest-clear'
 
 # ↑↓ を substring 検索に割り当てる (プラグイン側は bindkey を一切設定しないため、
 # 未指定だと zim input モジュールの up/down-line-or-history のままロードだけされる)
@@ -68,8 +74,6 @@ export ZENO_DISABLE_EXECUTE_CACHE_COMMAND=1
 
 # fzf key bindings (Ctrl+T, Alt+C) — zeno より先に読み込み、Tab/Ctrl+R は zeno が上書き
 zsh-defer -a +1 +2 -c 'source <(fzf --zsh)'
-# Ctrl+T は WezTerm の新規タブと衝突するため Alt+T にリマップ
-zsh-defer -a +1 +2 -c 'bindkey -r "^T"; bindkey "^[t" fzf-file-widget'
 
 zsh-defer -a +1 +2 source ${ZSH_PLUGIN_DIR}/zeno.zsh/zeno.zsh
 zsh-defer -a +1 +2 -c '(( $+widgets[zeno-auto-snippet] )) && bindkey " " zeno-auto-snippet'

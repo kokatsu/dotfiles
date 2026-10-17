@@ -68,6 +68,11 @@
         "weekly-limit"
         "codex-version"
       ];
+      keymap.global = {
+        open_transcript = "ctrl-o";
+        copy = [];
+        toggle_fast_mode = "alt-o";
+      };
     };
   };
 in {

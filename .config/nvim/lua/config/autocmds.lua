@@ -263,39 +263,6 @@ vim.api.nvim_create_autocmd('FocusLost', {
   end,
 })
 
--- Claude Code用プロンプト編集設定
--- herdr の alt+v → .config/herdr/scripts/prompt-edit.sh → 一時ファイル *.claude を nvim で開く
--- ftdetect/claude.lua で markdown filetype に割り当てているため
--- after/ftplugin/claude.lua は発火しない。本 autocmd で @ キーマップを登録する。
--- Claude Code では @ファイルパス でファイルを参照できる
--- https://zenn.dev/shisashi/articles/0ba22e272d6f2f
-vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
-  pattern = '*.claude',
-  callback = function()
-    vim.keymap.set('i', '@', function()
-      local ok, snacks = pcall(require, 'snacks')
-      if not ok then
-        vim.api.nvim_feedkeys('@', 'n', true)
-        return
-      end
-
-      snacks.picker.files({
-        confirm = function(picker, item)
-          picker:close()
-          if item then
-            vim.api.nvim_put({ '@' .. item.file .. ' ' }, 'c', true, true)
-          else
-            vim.api.nvim_put({ '@' }, 'c', false, true)
-          end
-          vim.schedule(function()
-            vim.cmd('startinsert!')
-          end)
-        end,
-      })
-    end, { buffer = true, noremap = true, desc = 'Claude Code: Insert @filepath reference' })
-  end,
-})
-
 -- ターミナルバッファでは重い表示系を無効化して描画を軽くする
 vim.api.nvim_create_autocmd('TermOpen', {
   callback = function()

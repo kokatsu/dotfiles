@@ -55,17 +55,10 @@
       "$docs" = "https://code.claude.com/docs/en/keybindings";
       bindings = [
         {
-          context = "Global";
-          bindings = {
-            "ctrl+t" = null;
-            "alt+t" = "app:toggleTodos";
-          };
-        }
-        {
           context = "Chat";
           bindings = {
             "ctrl+s" = null;
-            "alt+shift+h" = "chat:stash";
+            "alt+q" = "chat:stash";
           };
         }
       ];

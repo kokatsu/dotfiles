@@ -36,9 +36,8 @@ in {
   # Ghostty と同じく catppuccin.flavor から導出する。accent はアクティブペイン枠色を
   # 担うキー (ui.accent)。他ツールと同じ catppuccin.accent へ揃える
   #
-  # [[keys.command]] は tmux の Alt+v/c/g/h ポップアップの herdr 移植版
-  # (.config/herdr/scripts/*.sh)。tmux 版と違い bind 時点での条件分岐が
-  # できないため claude/codex 判定はスクリプト内で実行時に行う。
+  # [[keys.command]] のポップアップ (.config/herdr/scripts/*.sh) は bind 時点での
+  # 条件分岐ができないため claude/codex 判定はスクリプト内で実行時に行う。
   #
   # Claude Code Stop/Notification hook は herdr 配下では通知しない。
   # 組み込みトーストに加え、macOS は macos-notify がデスクトップ通知を出す。
@@ -188,8 +187,8 @@ in {
           focus_pane_right = "alt+right"
           last_pane = "prefix+space"
           focus_agent = "alt+1..9"
-          previous_workspace = ["alt+comma", "prefix+comma"]
-          next_workspace = ["alt+period", "prefix+period"]
+          previous_workspace = ["alt+shift+up", "prefix+comma"]
+          next_workspace = ["alt+shift+down", "prefix+period"]
           switch_workspace = "prefix+alt+1..9"
           # デフォルトの prefix+b を下の custom command に譲り、使用頻度の低い
           # サイドバー切替を別キーへ移す
@@ -280,15 +279,7 @@ in {
           height = "80%"
 
           [[keys.command]]
-          key = "alt+v"
-          type = "popup"
-          command = "${scriptsDir}/prompt-edit.sh"
-          description = "Claude Code: プロンプト編集"
-          width = "90%"
-          height = "80%"
-
-          [[keys.command]]
-          key = "alt+c"
+          key = "prefix+alt+c"
           type = "popup"
           command = "${scriptsDir}/path-pick-fzf.sh"
           description = "パス選択 (fzf)"
@@ -296,7 +287,7 @@ in {
           height = "80%"
 
           [[keys.command]]
-          key = "alt+g"
+          key = "prefix+alt+g"
           type = "popup"
           command = "${scriptsDir}/path-pick-broot.sh"
           description = "パス選択 (broot)"
@@ -304,7 +295,7 @@ in {
           height = "80%"
 
           [[keys.command]]
-          key = "alt+y"
+          key = "prefix+alt+y"
           type = "popup"
           command = "${scriptsDir}/yazi-pane.sh"
           description = "Yazi"
@@ -312,7 +303,7 @@ in {
           height = "90%"
 
           [[keys.command]]
-          key = "alt+o"
+          key = "prefix+alt+o"
           type = "popup"
           command = "${scriptsDir}/pick-agent-path.sh"
           description = "応答のパスを開く"

@@ -133,12 +133,12 @@ local unified_keys = {
   { key = 'Backspace', mods = 'CTRL', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
   -- `Ctrl + Shift + X` でコピーモードをアクティブにする
   { key = 'X', mods = 'CTRL', action = act.ActivateCopyMode },
-  -- QuickSelect モード
-  { key = 'q', mods = 'ALT', action = act.QuickSelect },
-  -- `Alt + r` で claude / codex の再開コマンドを選んでコピー
+  -- `Ctrl + Shift + q` で QuickSelect モード
+  { key = 'Q', mods = 'CTRL', action = act.QuickSelect },
+  -- `Ctrl + Shift + r` で claude / codex の再開コマンドを選んでコピー
   {
-    key = 'r',
-    mods = 'ALT',
+    key = 'R',
+    mods = 'CTRL',
     action = act.QuickSelectArgs({
       label = 'copy resume',
       patterns = {
@@ -147,12 +147,12 @@ local unified_keys = {
       },
     }),
   },
-  -- 選択中の文字列を検索モードに渡し、画面内の同じ文字列をすべて強調する。
+  -- `Ctrl + Shift + f` で選択中の文字列を検索モードに渡し、画面内の同じ文字列をすべて強調する。
   -- alternate screen のスクロールバックは ConPTY のリサイズが残した過去の
   -- フレームでしかなく、消しても失うものがない
   {
-    key = '/',
-    mods = 'ALT',
+    key = 'F',
+    mods = 'CTRL',
     action = wezterm.action_callback(function(window, pane)
       if pane:is_alt_screen_active() then
         window:perform_action(act.ClearScrollback('ScrollbackOnly'), pane)
@@ -205,12 +205,12 @@ end
 
 -- Windows 固有キーバインド
 local windows_specific_keys = {
-  -- `Alt + s` で Slack の未読バッジをクリアする。
+  -- `Ctrl + Shift + u` で Slack の未読バッジをクリアする。
   -- 常駐リスナー (windows/slack-watch) がこのマーカーを見つけて通知センターから
   -- Slack のトーストを消すので、Windows の通知センター側も同時に空になる
   {
-    key = 's',
-    mods = 'ALT',
+    key = 'U',
+    mods = 'CTRL',
     action = wezterm.action_callback(function(_window, _pane)
       local userprofile = os.getenv('USERPROFILE')
       if not userprofile then
@@ -251,17 +251,17 @@ local windows_specific_keys = {
       window:perform_action(act.SendKey({ key = 'Space', mods = 'CTRL' }), pane)
     end),
   },
-  -- `Alt + e` で新しいタブで PowerShell を起動
+  -- `Ctrl + Shift + e` で新しいタブで PowerShell を起動
   {
-    key = 'e',
-    mods = 'ALT',
+    key = 'E',
+    mods = 'CTRL',
     action = act.SpawnCommandInNewTab({ args = { 'powershell.exe' }, domain = { DomainName = 'local' } }),
   },
-  -- `Alt + p` で最新のスクリーンショットのWSLパスを入力（WSLドメインのみ）
+  -- `Ctrl + Shift + s` で最新のスクリーンショットのWSLパスを入力（WSLドメインのみ）
   -- 外部プロセス不要: wezterm.glob() でファイル一覧を取得
   {
-    key = 'p',
-    mods = 'ALT',
+    key = 'S',
+    mods = 'CTRL',
     action = wezterm.action_callback(function(window, pane)
       if not is_wsl_domain(pane) then
         return

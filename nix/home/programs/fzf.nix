@@ -17,8 +17,7 @@ _: {
       "--bind=ctrl-/:toggle-preview"
     ];
 
-    # Alt+T: ファイル選択 (FZF_CTRL_T_COMMAND / FZF_CTRL_T_OPTS)
-    # ※ env var 名は CTRL_T のまま (fzf 仕様)。bindkey は .zshrc で Alt+T にリマップ
+    # Ctrl+T: ファイル選択 (FZF_CTRL_T_COMMAND / FZF_CTRL_T_OPTS)
     fileWidget = {
       command = "fd --type f --hidden --strip-cwd-prefix --exclude .git";
       options = [
