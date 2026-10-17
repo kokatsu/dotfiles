@@ -112,7 +112,11 @@
   };
 
   # セキュリティ設定 (Touch ID for sudo)
-  security.pam.services.sudo_local.touchIdAuth = true;
+  # reattach は herdr / tmux などの端末マルチプレクサ内でも Touch ID を使うため
+  security.pam.services.sudo_local = {
+    touchIdAuth = true;
+    reattach = true;
+  };
 
   # ユーザー設定
   users.users.${username} = {
