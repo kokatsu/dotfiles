@@ -107,6 +107,13 @@ Deno.test("Codex recognizes the shortcuts hint but refuses other footer panels",
   const help = "\n  ? for shortcuts";
   assert(readPrompt(codexHint() + help, undefined, "codex").kind === "empty");
   assert(
+    readPrompt(
+      codexHint() + "\n  ← for agents · ? for shortcuts",
+      undefined,
+      "codex",
+    ).kind === "empty",
+  );
+  assert(
     readPrompt(codexDisplay("draft") + help, undefined, "codex").kind ===
       "draft",
   );
@@ -391,10 +398,24 @@ for (const status of ["working", "blocked", "unknown"]) {
   Deno.test(`refuse ${status} without input`, async () => {
     await using f = await fixture();
     f.status = status;
-    await rejects(() => f.controller().send("/copy"));
+    await rejects(() => f.controller(60).send("/copy"));
     assert(f.inputCalls().length === 0);
   });
 }
+Deno.test("startup waits for unknown to become idle", async () => {
+  await using f = await fixture();
+  f.status = "unknown";
+  f.session = null;
+  let gets = 0;
+  f.hook = (args) => {
+    if (args[1] === "get" && ++gets === 3) {
+      f.status = "idle";
+      f.session = "s1";
+    }
+  };
+  await f.controller().send("/copy");
+  assert(f.entered() === 1);
+});
 Deno.test("Codex works without session metadata and permits foreground helpers", async () => {
   await using f = await fixture();
   f.agent = "codex";
@@ -650,6 +671,17 @@ Deno.test("exit waits for the original shell instead of trusting the old screen"
   };
   await f.controller().send("/exit");
   assert(processReads === 3 && f.entered() === 1);
+});
+Deno.test("exit accepts the shell alongside its background helpers", async () => {
+  await using f = await fixture();
+  f.hook = (args) => {
+    if (args.at(-1) === "enter") {
+      f.process = "zsh";
+      f.helper = true;
+    }
+  };
+  await f.controller().send("/exit");
+  assert(f.entered() === 1);
 });
 Deno.test("session replacement after copy Enter is not followed", async () => {
   await using f = await fixture();

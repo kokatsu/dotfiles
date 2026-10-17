@@ -66,7 +66,9 @@ function codexPrompt(lines: Cell[][], submittedCommand?: string): Prompt {
     top < 1 || footer - top < 2 || text[top - 1].trim() ||
     text[footer - 1].trim() ||
     below.length > 1 ||
-    below.some((line) => line.trimEnd() !== "  ? for shortcuts")
+    below.some((line) =>
+      !/^ {2}(?:← for agents · )?\? for shortcuts$/.test(line.trimEnd())
+    )
   ) return unknown;
   const region = text.slice(Math.max(0, top - 2)).join("\n");
   if (
@@ -274,7 +276,19 @@ export class AgentCommands {
         ready,
       };
     };
-    const { agent, session } = await state();
+    // Herdr reports a freshly started agent as unknown for a few seconds.
+    const startup = async () => {
+      while (true) {
+        const current = JSON.parse(await run(["pane", "get", pane])).result
+          .pane;
+        if (
+          !["claude", "codex"].includes(current.agent) ||
+          current.agent_status !== "unknown"
+        ) return state();
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    };
+    const { agent, session } = await startup();
     let shellPid: number | undefined;
     let codexPid: number | undefined;
     const processInfo = async () =>
@@ -403,10 +417,13 @@ export class AgentCommands {
       while (true) {
         if (command === "/exit") {
           const info = await processInfo();
-          const foreground: { pid: number }[] = info.foreground_processes || [];
+          const foreground: { name: string; pid: number }[] =
+            info.foreground_processes || [];
+          // zeno.zsh's deno server stays in the shell's foreground group.
           if (
-            info.shell_pid === shellPid && foreground.length &&
-            foreground.every((p) => p.pid === shellPid)
+            info.shell_pid === shellPid &&
+            foreground.some((p) => p.pid === shellPid) &&
+            !foreground.some((p) => p.name === agent)
           ) return;
         } else if (command === "/clear") {
           // Claude's /clear runs SessionEnd hooks before the next idle session.
