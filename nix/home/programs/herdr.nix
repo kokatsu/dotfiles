@@ -10,12 +10,6 @@
   p = config.catppuccinLib.palettes.${flavor};
   accent = p.${config.catppuccin.accent};
   names = config.catppuccinLib.flavorNames flavor;
-  agentSender = pkgs.writeShellScriptBin "herdr-agent-send" ''
-    export HERDR_BIN_PATH="${pkgs.herdr}/bin/herdr"
-    exec ${pkgs.deno}/bin/deno run --no-config --no-lock \
-      --allow-env --allow-read --allow-write --allow-run --allow-sys=uid \
-      ${../../../scripts/herdr-agent-command.ts} "$@"
-  '';
 
   # .config/herdr/scripts/*.sh を列挙して home.file エントリを生成する。
   # スクリプトを足すたびにこのファイルへ 1 件ずつ書き足す手間をなくすため。
@@ -341,25 +335,23 @@ in {
 
           # Claude Code / Codex のキー設定はスラッシュコマンドを割り当てられないため、
           # herdr 側から入力として送る。/clear・/copy・/exit は両エージェント共通。
-          # 通常入力欄を確認し、下書きを消去してから送る。
-          # Codex は前景 PID、Claude Code はセッション ID で対象を確認する。
           # prefix+c / prefix+q の既定 (new_tab / detach) は上で別キーへ移してあるので空いている
           [[keys.command]]
           key = "prefix+c"
           type = "shell"
-          command = "${agentSender}/bin/herdr-agent-send /clear"
+          command = "${pkgs.herdr}/bin/herdr agent prompt $HERDR_ACTIVE_PANE_ID /clear"
           description = "エージェントに /clear を送る"
 
           [[keys.command]]
           key = "prefix+d"
           type = "shell"
-          command = "${agentSender}/bin/herdr-agent-send /copy"
+          command = "${pkgs.herdr}/bin/herdr agent prompt $HERDR_ACTIVE_PANE_ID /copy"
           description = "エージェントに /copy を送る"
 
           [[keys.command]]
           key = "prefix+q"
           type = "shell"
-          command = "${agentSender}/bin/herdr-agent-send /exit"
+          command = "${pkgs.herdr}/bin/herdr agent prompt $HERDR_ACTIVE_PANE_ID /exit"
           description = "エージェントに /exit を送る"
         '';
       # Claude Code / Codex の SessionStart から呼ぶ agent session 報告フック。

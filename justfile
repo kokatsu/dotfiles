@@ -302,7 +302,6 @@ herdr-macos-notify-test:
 # Verify layout scripts restore panes on failure and pane scripts surface errors
 herdr-scripts-test:
     bash scripts/test-herdr-scripts.sh
-    deno test --no-config --no-lock --allow-env --allow-read --allow-write --allow-run --allow-sys=uid scripts/herdr-agent-command.test.ts
 
 # Verify the cache token selection and state transitions and the hook entry point that launches them
 herdr-cache-token-test:
