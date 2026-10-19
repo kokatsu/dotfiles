@@ -40,6 +40,7 @@ async function judge(
   prompt: string,
   evidenceChars: number,
   latestChars: number,
+  rewrite: boolean,
 ): Promise<Verdict | undefined> {
   const started = Date.now();
   const judged = await $.model.complete({
@@ -65,6 +66,7 @@ async function judge(
     at: new Date().toISOString(),
     evidenceChars,
     latestChars,
+    rewrite,
     mineMs,
     usage: judged.usage,
     mine: verdict ??
@@ -149,6 +151,7 @@ export const register: Register = (on) => {
         prompt,
         evidence.length,
         latestChars,
+        e.stop_hook_active,
       );
     } catch (error: unknown) {
       $.ui.log(`claim-verifier: ${String(error)}`, { to: "debug" });
