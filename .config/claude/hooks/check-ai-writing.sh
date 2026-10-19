@@ -7,8 +7,6 @@
 set -uo pipefail
 
 payload=$(cat || true)
-# codex.nix symlinks this script into ~/.config/codex/ as well, so resolving the
-# config relative to $0 would miss it. Point at where it is deployed.
 textlint_config="${XDG_CONFIG_HOME:-$HOME/.config}/claude/hooks/textlint-response.json"
 
 if ! paths=$(printf '%s' "$payload" | jq -r '

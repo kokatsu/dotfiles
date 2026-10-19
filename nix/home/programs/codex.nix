@@ -97,10 +97,6 @@ in {
       ".config/codex/skills/browser-research".source = ../../../.config/codex/skills/browser-research;
       ".config/codex/skills/herdr-peer".source = ../../../.config/codex/skills/herdr-peer;
 
-      ".config/codex/check-ai-writing.sh" = {
-        source = ../../../.config/claude/hooks/check-ai-writing.sh;
-        executable = true;
-      };
       ".config/codex/hooks.json".text = let
         # herdr.nix が配置する共有フック (Claude Code 側と同じ実装)。
         reportSession = [
@@ -122,7 +118,7 @@ in {
                 matcher = "^apply_patch$";
                 hooks = [
                   {
-                    command = "bash '${config.xdg.configHome}/codex/check-ai-writing.sh'";
+                    command = "bash '${config.xdg.configHome}/claude/hooks/check-ai-writing.sh'";
                     timeout = 15;
                     type = "command";
                   }
