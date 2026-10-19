@@ -88,9 +88,12 @@ function render(
   });
 }
 
+// The prompt cache matches only a prefix that ends where a block ended in an
+// earlier request, so each earlier turn is its own block: the next judgment
+// appends one block and finds the previous breakpoint one block back.
 export function buildEvidence(
   messages: readonly Message[],
-): { text: string; latestChars: number } {
+): { earlier: string[]; latest: string; text: string; latestChars: number } {
   const uses = new Map<string, ToolUse>();
   for (const m of messages) {
     for (const b of m.content) {
@@ -100,17 +103,27 @@ export function buildEvidence(
     }
   }
   const start = latestTurnStart(messages);
-  const earlier = messages.slice(0, start).flatMap((m) =>
-    m.role === "assistant" ? renderAnswer(m) : render(m, uses, EARLIER_CHARS)
-  );
-  const latest = messages.slice(start).flatMap((m) =>
+  const turns: string[][] = [];
+  for (const m of messages.slice(0, start)) {
+    if (turns.length === 0 || isPrompt(m)) turns.push([]);
+    turns.at(-1)?.push(
+      ...(m.role === "assistant"
+        ? renderAnswer(m)
+        : render(m, uses, EARLIER_CHARS)),
+    );
+  }
+  const earlier = [
+    `## Earlier turns (tool inputs and outputs truncated to ${EARLIER_CHARS} chars each; [user], [assistant] and [context] are whole)`,
+    ...turns.filter((t) => t.length > 0).map((t) => t.join("\n\n")),
+  ];
+  const latestText = messages.slice(start).flatMap((m) =>
     render(m, uses, undefined)
   ).join("\n\n");
-  const text = [
-    `## Earlier turns (tool inputs and outputs truncated to ${EARLIER_CHARS} chars each; [user], [assistant] and [context] are whole)`,
-    ...earlier,
-    "## Latest turn (complete)",
+  const latest = ["## Latest turn (complete)", latestText].join("\n\n");
+  return {
+    earlier,
     latest,
-  ].join("\n\n");
-  return { text, latestChars: latest.length };
+    text: [...earlier, latest].join("\n\n"),
+    latestChars: latestText.length,
+  };
 }

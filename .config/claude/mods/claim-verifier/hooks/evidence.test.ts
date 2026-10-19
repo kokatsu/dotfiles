@@ -102,6 +102,17 @@ test("earlier answers are tagged, the latest answer and thinking are left out", 
   expect(text).not.toContain("[tool_use]");
 });
 
+test("the next turn's earlier blocks open with this turn's earlier blocks", () => {
+  const long = "x".repeat(EARLIER_CHARS + 500);
+  const turn1 = [prompt("first"), ...bash(long), say("ok")];
+  const turn2 = [prompt("second"), ...bash(long), say("done"), stopFeedback];
+  const now = buildEvidence([...turn1, ...turn2]);
+  const next = buildEvidence([...turn1, ...turn2, prompt("third")]);
+  expect(now.earlier.length).toBe(2);
+  expect(next.earlier.slice(0, now.earlier.length)).toEqual(now.earlier);
+  expect(next.earlier.length).toBe(now.earlier.length + 1);
+});
+
 test("Stop hook feedback is context, not the start of a turn", () => {
   const msgs = [prompt("q"), ...bash("a"), say("done"), stopFeedback];
   expect(latestTurnStart(msgs)).toBe(0);

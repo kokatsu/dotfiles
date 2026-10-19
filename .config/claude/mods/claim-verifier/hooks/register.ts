@@ -1,4 +1,4 @@
-import type { EngineInterface, Register } from "claude-code";
+import type { EngineInterface, ModelTextBlock, Register } from "claude-code";
 import { lineAppender } from "./append.ts";
 import { buildEvidence } from "./evidence.ts";
 
@@ -37,7 +37,7 @@ async function logPath($: EngineInterface, sessionId: string): Promise<string> {
 async function judge(
   $: EngineInterface,
   sessionId: string,
-  prompt: string,
+  prompt: ModelTextBlock[],
   evidenceChars: number,
   latestChars: number,
   rewrite: boolean,
@@ -45,7 +45,7 @@ async function judge(
   const started = Date.now();
   const judged = await $.model.complete({
     model: "sonnet",
-    system: SYSTEM,
+    system: [{ text: SYSTEM, cache: true }],
     prompt,
     maxTokens: 4096,
     effort: "high",
@@ -140,8 +140,16 @@ export const register: Register = (on) => {
       messages.findLast((m) => m.role === "assistant")?.content
         .flatMap((b) => b.type === "text" ? [String(b.text)] : []).join("\n") ??
       "";
-    const { text: evidence, latestChars } = buildEvidence(messages);
-    const prompt = [evidence, "## Response to judge", answer].join("\n\n");
+    const { earlier, latest, text: evidence, latestChars } = buildEvidence(
+      messages,
+    );
+    const prompt: ModelTextBlock[] = [
+      ...earlier.map((text, i) =>
+        i === earlier.length - 1 ? { text, cache: true as const } : { text }
+      ),
+      { text: latest },
+      { text: ["## Response to judge", answer].join("\n\n") },
+    ];
 
     let verdict: Verdict | undefined;
     try {
