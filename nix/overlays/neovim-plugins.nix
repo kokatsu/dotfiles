@@ -19,21 +19,16 @@
     };
   };
   treesitter-nvim = final: prev: let
-    plugins = prev.vimPlugins.extend (_self: super: {
-      nvim-treesitter = super.nvim-treesitter.overrideAttrs {
-        name = "vimplugin-nvim-treesitter-${builtins.substring 0 12 inputs.nvim-treesitter.rev}";
-        src = inputs.nvim-treesitter;
-      };
-    });
+    inherit (prev.vimPlugins) nvim-treesitter;
     treesitter =
-      plugins.nvim-treesitter.withPlugins (grammars:
+      nvim-treesitter.withPlugins (grammars:
         with grammars; [bash css html javascript json lua markdown markdown_inline mermaid nix regex ruby rust scss sql svelte toml tsx typescript vim vue yaml pkl]);
     kakehashiExtra =
-      plugins.nvim-treesitter.withPlugins (grammars:
+      nvim-treesitter.withPlugins (grammars:
         with grammars; [c d diff gitignore go ini json5 latex make pascal perl po powershell python r typst xml zig]);
     kakehashiQueries = prev.runCommand "kakehashi-queries" {nativeBuildInputs = [prev.python3];} ''
       mkdir -p "$out"
-      cp -R ${inputs.nvim-treesitter}/runtime/queries "$out/queries"
+      cp -R ${nvim-treesitter.src}/runtime/queries "$out/queries"
       chmod -R u+w "$out/queries"
       # kakehashi 1.0.0 rejects capture-valued URL metadata in Neovim queries.
       python3 - "$out/queries" <<'PY'

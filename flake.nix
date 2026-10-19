@@ -109,10 +109,6 @@
       url = "github:folke/lazy.nvim/main";
       flake = false;
     };
-    nvim-treesitter = {
-      url = "github:nvim-treesitter/nvim-treesitter/main";
-      flake = false;
-    };
     moonbit-grammar = {
       url = "github:moonbitlang/tree-sitter-moonbit/main";
       flake = false;

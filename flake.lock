@@ -275,23 +275,6 @@
         "type": "github"
       }
     },
-    "nvim-treesitter": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1789816976,
-        "narHash": "sha256-fXBJhWvjzBGivIiAys9oy2JB9h99CNIk+AdGkGgHgPg=",
-        "owner": "nvim-treesitter",
-        "repo": "nvim-treesitter",
-        "rev": "f603a2f4da48728f80257fb5fbb90145fd1dc173",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nvim-treesitter",
-        "ref": "main",
-        "repo": "nvim-treesitter",
-        "type": "github"
-      }
-    },
     "peek-nvim": {
       "flake": false,
       "locked": {
@@ -339,7 +322,6 @@
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs",
-        "nvim-treesitter": "nvim-treesitter",
         "peek-nvim": "peek-nvim",
         "pkl-neovim": "pkl-neovim",
         "tmux-grammar": "tmux-grammar",
