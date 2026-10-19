@@ -278,16 +278,11 @@
         touch "$out"
       '';
 
-    mkMigrationChecks = system: let
-      pkgs = import nixpkgs {
+    mkKarabinerCheck = system:
+      (import nixpkgs {
         inherit system;
-        overlays = [customOverlays.zeno-zsh customOverlays.karabiner-config customOverlays.ruby-lsp];
-      };
-    in {
-      zeno = pkgs.zeno-zsh;
-      karabiner = pkgs.karabiner-config;
-      inherit (pkgs) ruby-lsp;
-    };
+        overlays = [customOverlays.karabiner-config];
+      }).karabiner-config;
 
     mkDarwinConfig = username:
       nix-darwin.lib.darwinSystem {
@@ -347,7 +342,7 @@
     # `nix flake check`をHome Manager / nix-darwinの入口にする。
     checks = {
       x86_64-linux = {
-        inherit (mkMigrationChecks "x86_64-linux") zeno karabiner ruby-lsp;
+        karabiner = mkKarabinerCheck "x86_64-linux";
         home = (mkCIConfig "x86_64-linux").activationPackage;
         neovim = mkNeovimCheck "x86_64-linux";
         # flake checkはdevShellを通常は評価するだけなので、checksからも参照して
@@ -355,7 +350,7 @@
         dev-shell = self.devShells.x86_64-linux.default;
       };
       aarch64-darwin = {
-        inherit (mkMigrationChecks "aarch64-darwin") zeno karabiner ruby-lsp;
+        karabiner = mkKarabinerCheck "aarch64-darwin";
         home = (mkCIConfig "aarch64-darwin").activationPackage;
         neovim = mkNeovimCheck "aarch64-darwin";
         darwin = (mkDarwinConfig "ci").system;
