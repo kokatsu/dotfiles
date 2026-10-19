@@ -23,7 +23,6 @@ in {
     settings = {
       # アイコン名: https://www.nerdfonts.com/cheat-sheet
       "$schema" = "https://starship.rs/config-schema.json";
-      add_newline = true;
       command_timeout = 1000;
       scan_timeout = 50;
       format = "$directory$git_branch$git_metrics$git_status$fill$nix_shell$status$cmd_duration$time$line_break$battery$jobs$character";
