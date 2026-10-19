@@ -31,12 +31,7 @@ in {
       message = "Shared Biome settings differ between .biome.jsonc and nix/home/programs/biome.nix. Keep them in sync; only files and vcs are repository-specific.";
     }
   ];
-  xdg.configFile."biome".source = pkgs.linkFarm "biome-config-directory" [
-    {
-      name = ".biome.jsonc";
-      path = configFile;
-    }
-  ];
+  xdg.configFile."biome".source = pkgs.linkFarm "biome-config-directory" {".biome.jsonc" = configFile;};
   # macOS の Biome グローバル設定は ~/Library/Application Support/biome/ に置く。
   home.file = lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
     "Library/Application Support/biome/.biome.jsonc".source = configFile;

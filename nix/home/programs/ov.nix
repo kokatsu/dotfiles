@@ -27,10 +27,5 @@
   };
 in {
   # 既存のディレクトリ単位のリンクを維持する。
-  xdg.configFile."ov".source = pkgs.linkFarm "ov-config-directory" [
-    {
-      name = "config.yaml";
-      path = configFile;
-    }
-  ];
+  xdg.configFile."ov".source = pkgs.linkFarm "ov-config-directory" {"config.yaml" = configFile;};
 }
