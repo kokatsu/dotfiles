@@ -6,6 +6,14 @@
   # Nix設定 (Determinate Nix使用のため無効化)
   nix.enable = false;
 
+  # Determinate Nix は追加設定を nix.custom.conf から読む。daemon は trusted-users
+  # 以外がユーザー設定で足した substituter を無視するため、システム側で宣言する
+  # (nix/home/nix.nix の Linux 向け設定と同じキャッシュ)。
+  environment.etc."nix/nix.custom.conf".text = ''
+    extra-substituters = https://kokatsu.cachix.org https://helix.cachix.org
+    extra-trusted-public-keys = kokatsu.cachix.org-1:womBGQiv46ieMIq9Lll7fa06bN0CMKMjIEDIjvp8+rI= helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs=
+  '';
+
   # nixpkgsの設定
   nixpkgs.config = {
     allowUnfree = true;
