@@ -22,7 +22,6 @@
       daemon_auto_start = false;
       hooks = true;
       memories = true;
-      shell_snapshot = true;
     };
     history = {
       max_bytes = 104857600;
@@ -34,7 +33,6 @@
     };
     memories = {
       disable_on_external_context = true;
-      min_rate_limit_remaining_percent = 25;
     };
     sandbox_workspace_write = {
       network_access = false;
