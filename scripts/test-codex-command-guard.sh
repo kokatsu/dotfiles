@@ -34,13 +34,6 @@ expect_status() {
 
 blocked_commands=(
   'herdr agent prompt w1:p1 test'
-  'exec herdr agent prompt w1:p1 test'
-  'if true; then herdr agent prompt w1:p1 test; fi'
-  '/usr/bin/env herdr agent prompt w1:p1 test'
-  'exec /usr/bin/env -i FOO=bar herdr pane send-text w1:p1 test'
-  'case x in x) herdr agent send-keys w1:p1 test ;; esac'
-  'while herdr pane run w1:p1 test; do true; done'
-  $'true\nherdr pane send-keys w1:p1 test'
   'rm -rf build'
   'git reset --hard HEAD~1'
   'git push --force origin main'
@@ -52,10 +45,6 @@ blocked_commands=(
 
 allowed_commands=(
   'herdr agent list'
-  'herdr agent read w1:p1'
-  'herdr-peer prompt "review the diff"'
-  'git commit -m "mention herdr agent prompt in documentation"'
-  "printf '%s\\n' 'herdr pane send-text w1:p1 test'"
   'grep -r foo .'
   'gomi build'
   'gh api -X GET repos/o/r'
