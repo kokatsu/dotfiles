@@ -1,28 +1,8 @@
 import { feedIds, normalizeFeed } from "./feed-entries.ts";
+import { equal, run } from "./test-feed-lib.ts";
 
 const [yq, deno] = Deno.args;
 if (!yq || !deno) throw new Error("usage: test-feed-entries.ts -- <yq> <deno>");
-const decoder = new TextDecoder();
-
-async function run(command: string, args: string[], input: string) {
-  const child = new Deno.Command(command, {
-    args,
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "piped",
-  }).spawn();
-  const writer = child.stdin.getWriter();
-  await writer.write(new TextEncoder().encode(input));
-  await writer.close();
-  const output = await child.output();
-  return { code: output.code, stdout: decoder.decode(output.stdout) };
-}
-
-function equal(actual: unknown, expected: unknown) {
-  if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-    throw new Error(`${JSON.stringify(actual)} != ${JSON.stringify(expected)}`);
-  }
-}
 
 const fixtures: [string, string, string[]][] = [
   [
