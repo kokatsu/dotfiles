@@ -5,7 +5,7 @@ export type Message = {
   content: readonly Block[];
 };
 
-export const EARLIER_CHARS = 2000;
+export const EARLIER_CHARS = 30000;
 
 const REMINDER = "<system-reminder>";
 const STOP_FEEDBACK = "Stop hook feedback:";
