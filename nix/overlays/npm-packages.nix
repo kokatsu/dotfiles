@@ -7,18 +7,12 @@
   # Renovate: datasource=npm depName=vite-plus
   vite-plus = _final: prev: let
     version = "1.1.0";
-    packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/vite-plus/package.json);
-    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/vite-plus/package-lock.json);
   in {
     vite-plus = prev.buildNpmPackage {
       pname = "vite-plus";
       inherit version;
 
-      src = prev.runCommand "vite-plus-src" {} ''
-        mkdir -p $out
-        cp ${packageJson} $out/package.json
-        cp ${packageLock} $out/package-lock.json
-      '';
+      src = ../npm-locks/vite-plus;
 
       npmDepsHash = "sha256-B+biD0L7pKb8wVG5HlnEdjIJYPG3YRViHR70xwDPN1w=";
       npmFlags = ["--legacy-peer-deps"];
@@ -85,18 +79,12 @@
   # Renovate: datasource=npm depName=@textlint-ja/textlint-rule-preset-ai-writing
   textlint-rule-preset-ai-writing = _final: prev: let
     version = "1.7.0";
-    packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/textlint-rule-preset-ai-writing/package.json);
-    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/textlint-rule-preset-ai-writing/package-lock.json);
   in {
     textlint-rule-preset-ai-writing = prev.buildNpmPackage {
       pname = "textlint-rule-preset-ai-writing";
       inherit version;
 
-      src = prev.runCommand "textlint-rule-preset-ai-writing-src" {} ''
-        mkdir -p $out
-        cp ${packageJson} $out/package.json
-        cp ${packageLock} $out/package-lock.json
-      '';
+      src = ../npm-locks/textlint-rule-preset-ai-writing;
 
       npmDepsHash = "sha256-HzDmFFkTrb8O1JQ7RkhZ8Y44zZDcB2p1PxeniJlDU/w=";
       dontNpmBuild = true;

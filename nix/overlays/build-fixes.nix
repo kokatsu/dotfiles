@@ -12,18 +12,12 @@ in {
   # package instead of the upstream monorepo build.
   vue-language-server-pin = _final: prev: let
     version = "3.0.10";
-    packageJson = prev.writeText "package.json" (builtins.readFile ../npm-locks/vue-language-server/package.json);
-    packageLock = prev.writeText "package-lock.json" (builtins.readFile ../npm-locks/vue-language-server/package-lock.json);
   in {
     vue-language-server = prev.buildNpmPackage {
       pname = "vue-language-server";
       inherit version;
 
-      src = prev.runCommand "vue-language-server-src" {} ''
-        mkdir -p $out
-        cp ${packageJson} $out/package.json
-        cp ${packageLock} $out/package-lock.json
-      '';
+      src = ../npm-locks/vue-language-server;
 
       npmDepsHash = "sha256-kYtpE97eFMRTvOGxKZMS4+epsTey0DFdL+qnHHPbAWE=";
       forceGitDeps = true;
