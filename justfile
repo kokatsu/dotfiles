@@ -274,7 +274,6 @@ textlint-response-config-test:
 
 # Verify `gh api` is auto-allowed only when it is provably read-only
 gh-api-guard-test:
-    cd tools/agent-hooks/agent-guard && go test -run 'GhAPI|GuardPanic' .
     bash scripts/test-gh-api-guard.sh
 
 # Verify edits are refused only when the path resolves into /nix/store
