@@ -11,7 +11,6 @@ return {
       { '<leader>c', group = 'code/lsp' },
       { '<leader>g', group = 'git' },
       { '<leader>l', group = 'language' },
-      { '<leader>o', group = 'octo (github)' },
       { '<leader>p', group = 'profiler' },
       { '<leader>s', group = 'picker resume' },
       { '<leader>t', group = 'toggle' },
