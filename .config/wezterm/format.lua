@@ -15,7 +15,6 @@ M.show_status_badge = function(window, message)
 end
 
 local default_color = colors.palette.accent
-local zoomed_color = colors.palette.peach
 
 -- プロセス名に応じたアイコンと色の定義
 -- https://zenn.dev/gsy0911/articles/a7347e1a2d8d31
@@ -585,17 +584,13 @@ M.apply = function()
       title = title_width > 0 and (wezterm.truncate_right(title, title_width - 1) .. '…') or ''
     end
 
-    -- アクティブ/非アクティブとズーム状態に応じて背景色を変更
+    -- アクティブ/非アクティブに応じて背景色を変更
     local bg_color
     local fg_color
     local icon_color
     if tab.is_active then
       -- アクティブタブ
-      if tab.active_pane.is_zoomed then
-        bg_color = zoomed_color -- ズームしているとき
-      else
-        bg_color = default_color -- ズームしていないとき
-      end
+      bg_color = default_color
       fg_color = colors.palette.crust
       icon_color = colors.palette.crust -- アクティブ時はアイコンも同じ色
     else
