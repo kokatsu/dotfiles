@@ -7,10 +7,8 @@ set -eEuo pipefail
 # 確かめる。判定そのものは tools/agent-hooks/agent-guard の go test が
 # testdata/gh-api-guard-cases.tsv で固定する。
 
-report_failure() {
-  local rc=$? line=$1
-  printf '%s:%s: exit %s: %s\n' "${BASH_SOURCE[0]##*/}" "$line" "$rc" "$BASH_COMMAND" >&2
-}
+# shellcheck source=scripts/test-lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/test-lib.sh"
 trap 'report_failure "$LINENO"' ERR
 
 repo_root=$(git rev-parse --show-toplevel)

@@ -8,10 +8,8 @@ set -eEuo pipefail
 # ロック、取得失敗時の保持、prune、不正 JSON の扱いは
 # scripts/test-feed-status.sh が持つ。ここでは重複させない。
 
-report_failure() {
-  local rc=$? line=$1
-  printf '%s:%s: exit %s: %s\n' "${BASH_SOURCE[0]##*/}" "$line" "$rc" "$BASH_COMMAND" >&2
-}
+# shellcheck source=scripts/test-lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/test-lib.sh"
 trap 'report_failure "$LINENO"' ERR
 
 # feed_lock が util-linux の flock を使う。

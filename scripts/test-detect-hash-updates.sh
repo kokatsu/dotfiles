@@ -12,11 +12,8 @@ tmp=$(cd "$(mktemp -d)" && pwd -P)
 trap 'rm -rf "$tmp"' EXIT
 
 failures=0
-pass() { echo "  PASS $1"; }
-fail() {
-  echo "  FAIL $1" >&2
-  failures=$((failures + 1))
-}
+# shellcheck source=scripts/test-lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/test-lib.sh"
 
 # GNU (Linux/CI) と BSD (macOS) の sed -i 互換ヘルパー
 sedi() {

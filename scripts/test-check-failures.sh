@@ -1,14 +1,8 @@
 #!/usr/bin/env bash
 set -eEuo pipefail
-report_failure() {
-  local rc=$? line=$1
-  printf '%s:%s: exit %s: %s\n' "${BASH_SOURCE[0]##*/}" "$line" "$rc" "$BASH_COMMAND" >&2
-}
+# shellcheck source=scripts/test-lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/test-lib.sh"
 trap 'report_failure "$LINENO"' ERR
-unexpected_success() {
-  printf '%s:%s: expected a failure, but the command succeeded\n' "${BASH_SOURCE[0]##*/}" "$1" >&2
-  exit 1
-}
 repo_root=$(git rev-parse --show-toplevel)
 test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT

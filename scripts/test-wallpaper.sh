@@ -34,11 +34,8 @@ STUB
 chmod +x "$stub_dir/fzf" "$stub_dir/desktoppr" "$stub_dir/wezterm"
 
 failures=0
-pass() { echo "  PASS $1"; }
-fail() {
-  echo "  FAIL $1" >&2
-  failures=$((failures + 1))
-}
+# shellcheck source=scripts/test-lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/test-lib.sh"
 
 walls="$tmp/walls"
 mkdir -p "$walls"

@@ -14,11 +14,8 @@ trap 'rm -rf "$tmp"' EXIT
 git -C "$tmp" init -q
 
 failures=0
-pass() { echo "  PASS $1"; }
-fail() {
-  echo "  FAIL $1" >&2
-  failures=$((failures + 1))
-}
+# shellcheck source=scripts/test-lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/test-lib.sh"
 
 run_daily() {
   (cd "$tmp" && "$daily" --no-edit "$@" 2>/dev/null)
