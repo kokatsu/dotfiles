@@ -3,7 +3,6 @@
 # SessionStart hooks.
 #
 # Usage: report-agent-session.sh session <claude|codex>
-#        report-agent-session.sh <working|idle> codex
 #
 # Every check lives in the binary. This only keeps the hook from failing when
 # the binary is missing: unlike the cache token, an agent session has no

@@ -1,13 +1,10 @@
 // report-agent-session は Claude Code と Codex の SessionStart フック。
 // stdin の hook payload からセッション ID を取り出し、
 // `herdr pane report-agent-session` で Herdr に報告する。
-// Codex では UserPromptSubmit / Stop / Interrupt フックも兼ね、ターンの状態を
-// `herdr pane report-agent` で報告する。
 //
 //	report-agent-session session <claude|codex>
-//	report-agent-session <working|idle> codex
 //
-// セッションもターンも Herdr に届いたかどうかに関係なく進まなければならないので、
+// セッションは Herdr に届いたかどうかに関係なく進まなければならないので、
 // 報告できない場合も何も出力せず exit 0 で終わる。
 package main
 
@@ -18,7 +15,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -37,8 +33,6 @@ type profile struct {
 	reportsPath bool
 	// セッションを報告してはならない payload なら true。
 	skips func(p payload, event string) bool
-	// working / idle も報告する。
-	reportsState bool
 	// HERDR_PANE_ID の pane の中で動いているときだけ報告する。
 	checksPane bool
 }
@@ -68,19 +62,11 @@ var profiles = map[string]profile{
 				// 継承するので、どちらも pane の本来のセッションを置き換えてしまう。
 				p.str("transcript_path") == ""
 		},
-		reportsState: true,
 		// 素の codex と codex resume は共有の app-server daemon でフックを動かし、
 		// フックは daemon を起動した pane の HERDR_PANE_ID を継承する。その値を信じると
 		// 別の pane のセッションを上書きする。
 		checksPane: true,
 	},
-}
-
-// stateEvents は状態ごとに、それを報告してよいイベント。名前のないイベントは
-// SessionStart と同じく受け付ける。
-var stateEvents = map[string][]string{
-	"working": {"UserPromptSubmit"},
-	"idle":    {"Stop", "Interrupt"},
 }
 
 // payload はキーを大文字・小文字の区別付きで引くため、struct ではなく map に読む。
@@ -99,11 +85,7 @@ func (p payload) str(key string) string {
 // reportArgs は herdr に渡す引数を返す。報告しないなら nil。
 func reportArgs(action, agent, pane string, input []byte, seq int64) []string {
 	prof, ok := profiles[agent]
-	if !ok {
-		return nil
-	}
-	events, isState := stateEvents[action]
-	if isState && !prof.reportsState || !isState && action != "session" {
+	if !ok || action != "session" {
 		return nil
 	}
 	// json.Decoder は最初の値で止まって後続を無視するので、全体を Unmarshal する。
@@ -113,33 +95,23 @@ func reportArgs(action, agent, pane string, input []byte, seq int64) []string {
 	}
 
 	event := p.str("hook_event_name")
-	// 状態の報告は transcript_path を見ない。pane のものでないスレッドの報告は、
-	// Herdr が pane の現在のセッションと ID が違うものとして捨てる。
-	if isState && event != "" && !slices.Contains(events, event) || !isState && prof.skips(p, event) {
+	if prof.skips(p, event) {
 		return nil
 	}
-	// セッションの報告ではセッション ID が唯一の情報で、状態の報告では上の判別に
-	// 使われるので、なければ何も送らない。
+	// セッション ID が唯一の情報なので、なければ何も送らない。
 	sessionID := p.str("session_id")
 	if sessionID == "" {
 		return nil
 	}
 
-	command := "report-agent-session"
-	if isState {
-		command = "report-agent"
-	}
 	args := []string{
-		"pane", command, pane,
+		"pane", "report-agent-session", pane,
 		"--source", prof.source,
 		"--agent", agent,
 		// 旧フックの time.time_ns() と同じ epoch nanoseconds。再起動をまたいでも
 		// 両者の順序が正しく並ぶ。
 		"--seq", strconv.FormatInt(seq, 10),
 		"--agent-session-id", sessionID,
-	}
-	if isState {
-		return append(args, "--state", action)
 	}
 	if path := p.str("transcript_path"); prof.reportsPath && path != "" {
 		args = append(args, "--agent-session-path", path)

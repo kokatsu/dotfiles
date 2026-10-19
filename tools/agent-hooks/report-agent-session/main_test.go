@@ -139,46 +139,6 @@ func TestReportArgs(t *testing.T) {
 	}
 }
 
-func TestReportArgsState(t *testing.T) {
-	state := func(sessionID, s string) []string {
-		return []string{
-			"pane", "report-agent", "p1",
-			"--source", "herdr:codex",
-			"--agent", "codex",
-			"--seq", "42",
-			"--agent-session-id", sessionID,
-			"--state", s,
-		}
-	}
-	cases := []struct {
-		name   string
-		action string
-		agent  string
-		input  string
-		want   []string
-	}{
-		{"UserPromptSubmit", "working", "codex", `{"session_id":"s1","hook_event_name":"UserPromptSubmit","transcript_path":"/r.jsonl","prompt":"hi"}`, state("s1", "working")},
-		{"Stop", "idle", "codex", `{"session_id":"s1","hook_event_name":"Stop","transcript_path":"/r.jsonl"}`, state("s1", "idle")},
-		{"Interrupt", "idle", "codex", `{"session_id":"s1","hook_event_name":"Interrupt"}`, state("s1", "idle")},
-		{"no event", "working", "codex", `{"session_id":"s1"}`, state("s1", "working")},
-		{"null transcript is not checked", "idle", "codex", `{"session_id":"s1","hook_event_name":"Stop","transcript_path":null}`, state("s1", "idle")},
-		{"working on Stop", "working", "codex", `{"session_id":"s1","hook_event_name":"Stop"}`, nil},
-		{"idle on UserPromptSubmit", "idle", "codex", `{"session_id":"s1","hook_event_name":"UserPromptSubmit"}`, nil},
-		{"idle on SubagentStop", "idle", "codex", `{"session_id":"s1","hook_event_name":"SubagentStop"}`, nil},
-		{"idle on SessionStart", "idle", "codex", `{"session_id":"s1","hook_event_name":"SessionStart","transcript_path":"/r.jsonl"}`, nil},
-		{"missing session_id", "idle", "codex", `{"hook_event_name":"Stop"}`, nil},
-		{"invalid JSON", "idle", "codex", `{"session_id":`, nil},
-		{"claude does not report state", "idle", "claude", `{"session_id":"s1","hook_event_name":"Stop"}`, nil},
-		{"unknown state", "blocked", "codex", `{"session_id":"s1","hook_event_name":"PermissionRequest"}`, nil},
-	}
-	for _, c := range cases {
-		got := reportArgs(c.action, c.agent, "p1", []byte(c.input), 42)
-		if !slices.Equal(got, c.want) {
-			t.Errorf("%s:\n got %q\nwant %q", c.name, got, c.want)
-		}
-	}
-}
-
 // fixture は模擬 herdr を呼ぶための環境を整え、記録の置き場を返す。
 func fixture(t *testing.T, behavior string) (dir, socket string) {
 	t.Helper()
@@ -254,7 +214,6 @@ func TestRunSkips(t *testing.T) {
 		setup func(t *testing.T, dir string)
 	}{
 		{"wrong action", []string{"start", "claude"}, nil},
-		{"claude state", []string{"idle", "claude"}, nil},
 		{"missing agent", []string{"session"}, nil},
 		{"unknown agent", []string{"session", "gemini"}, nil},
 		{"outside Herdr", []string{"session", "claude"}, func(t *testing.T, _ string) { t.Setenv("HERDR_ENV", "0") }},
@@ -363,10 +322,7 @@ func TestHookIsSilent(t *testing.T) {
 	}
 }
 
-const (
-	codexPayload     = `{"session_id":"s1","hook_event_name":"SessionStart","transcript_path":"/r.jsonl","source":"startup"}`
-	codexStopPayload = `{"session_id":"s1","hook_event_name":"Stop","transcript_path":"/r.jsonl"}`
-)
+const codexPayload = `{"session_id":"s1","hook_event_name":"SessionStart","transcript_path":"/r.jsonl","source":"startup"}`
 
 // Codex の共有 daemon が実行するフックは daemon を起動した pane の HERDR_PANE_ID を
 // 継承するので、pane のシェルが自分の祖先にいるときだけ報告する。
@@ -404,19 +360,13 @@ func TestRunCodexRequiresPaneAncestry(t *testing.T) {
 			if c.path != nil {
 				t.Setenv("PATH", c.path(dir))
 			}
-			for _, hook := range []struct{ action, payload, command string }{
-				{"session", codexPayload, "report-agent-session"},
-				{"idle", codexStopPayload, "report-agent"},
-			} {
-				_ = os.Remove(filepath.Join(dir, "record.json"))
-				run([]string{hook.action, "codex"}, strings.NewReader(hook.payload))
-				r, called := readRecord(t, dir)
-				if called != c.report {
-					t.Fatalf("%s: reported = %v, want %v (args %q)", hook.action, called, c.report, r.Args)
-				}
-				if called && r.Args[1] != hook.command {
-					t.Errorf("%s: unexpected args %q", hook.action, r.Args)
-				}
+			run([]string{"session", "codex"}, strings.NewReader(codexPayload))
+			r, called := readRecord(t, dir)
+			if called != c.report {
+				t.Fatalf("reported = %v, want %v (args %q)", called, c.report, r.Args)
+			}
+			if called && r.Args[1] != "report-agent-session" {
+				t.Errorf("unexpected args %q", r.Args)
 			}
 		})
 	}
