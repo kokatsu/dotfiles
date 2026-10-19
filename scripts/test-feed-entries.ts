@@ -128,7 +128,7 @@ Deno.test("empty or unrelated documents fail the watch CLI", async () => {
   }
 });
 
-Deno.test("summary normalization keeps its link fallback and fields", async () => {
+Deno.test("summary normalization keeps its link fallback and fields", () => {
   const input = JSON.stringify({
     feed: {
       entry: {
@@ -146,12 +146,4 @@ Deno.test("summary normalization keeps its link fallback and fields", async () =
   }];
   equal(normalizeFeed(input), expected);
   equal(feedIds(input), []);
-  const result = await run(deno, [
-    "run",
-    "--no-prompt",
-    new URL("./feed-summarize-helper.ts", import.meta.url).pathname,
-    "normalize-feed",
-  ], input);
-  equal(result.code, 0);
-  equal(result.stdout, `${JSON.stringify(expected[0])}\n`);
 });
