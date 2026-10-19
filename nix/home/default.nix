@@ -77,9 +77,7 @@ in {
     ./programs/zoxide.nix
     ./programs/zsh.nix
     ./services/claude-otel.nix
-    ./services/disk-watch.nix
-    ./services/feed-watch.nix
-    ./services/status-watch.nix
+    ./services/watch.nix
     ./themes/catppuccin-env.nix
     ./themes/claude-code.nix
   ];
