@@ -28,9 +28,6 @@
     ],
     "defaultMode": "auto"
   },
-  "skillOverrides": {
-    "logging": "off"
-  },
   "hooks": {
     "Notification": [
       {
