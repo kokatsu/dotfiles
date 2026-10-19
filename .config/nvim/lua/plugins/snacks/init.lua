@@ -1,19 +1,15 @@
 -- https://github.com/folke/snacks.nvim
 
-local bigfile = require('plugins.snacks.bigfile')
 local bookmarks = require('plugins.snacks.bookmarks')
-local bufdelete = require('plugins.snacks.bufdelete')
 local dashboard = require('plugins.snacks.dashboard')
 local explorer = require('plugins.snacks.explorer')
 local gitbrowse = require('plugins.snacks.gitbrowse')
 local indent = require('plugins.snacks.indent')
 local lazygit = require('plugins.snacks.lazygit')
-local notifier = require('plugins.snacks.notifier')
 local picker = require('plugins.snacks.picker')
 local quickfile = require('plugins.snacks.quickfile')
 local scroll = require('plugins.snacks.scroll')
 local terminal = require('plugins.snacks.terminal')
-local words = require('plugins.snacks.words')
 
 return {
   'folke/snacks.nvim',
@@ -22,22 +18,20 @@ return {
   ---@type snacks.Config
   opts = {
     ---@class snacks.bigfile.Config
-    bigfile = bigfile.opts,
-    ---@class snacks.bufdelete.Config
-    bufdelete = bufdelete.opts,
+    bigfile = {},
     ---@class snacks.gitbrowse.Config
     gitbrowse = gitbrowse.opts,
     -- opts に載っているモジュールだけが有効化されるため、既定設定のまま使う場合も空テーブルを置く
     ---@class snacks.image.Config
     image = {},
     ---@class snacks.notifier.Config
-    notifier = notifier.opts,
+    notifier = {},
     ---@class snacks.quickfile.Config
     quickfile = quickfile.opts,
     ---@class snacks.scroll.Config
     scroll = scroll.opts,
     ---@class snacks.words.Config
-    words = words.opts,
+    words = {},
     ---@class snacks.explorer.Config
     explorer = explorer.opts,
     ---@class snacks.lazygit.Config

@@ -12,20 +12,13 @@ return {
         ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
         ['vim.lsp.util.stylize_markdown'] = true,
       },
-      hover = { enabled = true },
-      signature = { enabled = true },
       progress = {
-        enabled = true,
-        format = 'lsp_progress',
-        format_done = 'lsp_progress_done',
         throttle = 1000 / 30,
       },
     },
     notify = { enabled = false },
     presets = {
-      bottom_search = false,
       command_palette = true,
-      inc_rename = false,
       lsp_doc_border = true,
     },
     views = {

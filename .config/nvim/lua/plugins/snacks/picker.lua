@@ -30,11 +30,6 @@ M.opts = {
     },
   },
   matcher = {
-    fuzzy = true,
-    ignorecase = true,
-    sort_empty = false,
-    filename_bonus = true,
-    file_pos = true,
     cwd_bonus = true,
     frecency = true,
     history_bonus = true,

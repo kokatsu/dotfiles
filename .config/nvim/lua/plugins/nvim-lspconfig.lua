@@ -13,7 +13,6 @@ return {
         end,
       },
       severity_sort = true,
-      update_in_insert = false,
       float = {
         format = function(diagnostic)
           if diagnostic.source then
