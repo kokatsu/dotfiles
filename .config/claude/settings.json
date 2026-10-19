@@ -26,6 +26,7 @@
       "WebFetch(domain:github.com)",
       "WebSearch"
     ],
+    "ask": ["Artifact", "mcp__claude_ai_Claude_Docs"],
     "defaultMode": "auto"
   },
   "hooks": {
