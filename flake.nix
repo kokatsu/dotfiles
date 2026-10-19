@@ -205,7 +205,6 @@
       customOverlays.kakehashi
       customOverlays.karabiner-config
       customOverlays.lazy-nvim
-      customOverlays.mise
       customOverlays.peek-nvim
       customOverlays.pkl
       customOverlays.pkl-neovim

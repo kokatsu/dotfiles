@@ -317,7 +317,7 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
       ),
     );
     const binarySource = await Deno.readTextFile(binaryFile);
-    const originalBinary = section(binarySource, "mise")!;
+    const originalBinary = section(binarySource, "pkl")!;
     await Deno.writeTextFile(
       binaryFile,
       binarySource.replace(
@@ -381,7 +381,7 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
       }
       return { code: 0, stdout, stderr: "" };
     };
-    equal(await update(base, mock, temporary), "mise 9.9.9");
+    equal(await update(base, mock, temporary), "pkl 9.9.9");
     const updated = await Deno.readTextFile(npmFile);
     equal(
       updated.replace(section(updated, "vite-plus")!, ""),
@@ -473,7 +473,7 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
     for (const name of goModules) {
       await Deno.writeTextFile(`tools/${name}/go.sum`, "changed\n");
     }
-    equal(await update(base, mock, temporary), "mise 9.9.9");
+    equal(await update(base, mock, temporary), "pkl 9.9.9");
     const source = await Deno.readTextFile("nix/overlays/source-builds.nix");
     equal(
       section(source, "cssmodules-language-server")!.match(

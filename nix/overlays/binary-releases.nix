@@ -8,55 +8,6 @@ let
     "x86_64-linux" = "x86_64-unknown-linux-gnu";
   };
 in {
-  # mise - dev tools, env vars, task runner
-  # Renovate: datasource=github-releases depName=jdx/mise
-  mise = mkBinaryRelease rec {
-    pname = "mise";
-    version = "2026.10.3";
-    hashes = {
-      "aarch64-darwin" = "sha256-CZm9SUNSPM29FJta1AgCgVNoAbP2QGrESVaZvQMQlpw=";
-      "aarch64-linux" = "sha256-G4SQmKI8oLfsJzO93yQ+nSlQd3m7pODhEB7sPFGLxUI=";
-      "x86_64-linux" = "sha256-65VolcNiDtPXU7LaPBXqF5+JLImA+oh1umCW9YW4RPg=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "macos-arm64";
-      "aarch64-linux" = "linux-arm64-musl";
-      "x86_64-linux" = "linux-x64-musl";
-    };
-    url = platform: "https://github.com/jdx/mise/releases/download/v${version}/mise-v${version}-${platform}";
-    extraAttrs = prev: {
-      nativeBuildInputs = [prev.installShellFiles prev.makeWrapper prev.usage];
-      installPhase = ''
-        runHook preInstall
-        mkdir -p $out/bin $out/libexec/mise $out/share/man/man1
-        cp $src $out/libexec/mise/mise
-        chmod +x $out/libexec/mise/mise
-        makeWrapper $out/libexec/mise/mise $out/bin/mise \
-          --prefix PATH : ${prev.lib.makeBinPath [prev.usage]}
-
-        $out/bin/mise completion bash > mise.bash
-        $out/bin/mise completion fish > mise.fish
-        $out/bin/mise completion zsh > _mise
-        substituteInPlace mise.bash mise.fish _mise \
-          --replace 'type -p usage' 'test -x ${prev.lib.getExe prev.usage}' \
-          --replace 'command usage ' 'command ${prev.lib.getExe prev.usage} '
-        installShellCompletion --cmd mise \
-          --bash mise.bash \
-          --fish mise.fish \
-          --zsh _mise
-
-        $out/bin/mise usage > mise.usage.kdl
-        usage generate manpage --file mise.usage.kdl --out-file $out/share/man/man1/mise.1
-        gzip -9 $out/share/man/man1/mise.1
-        runHook postInstall
-      '';
-    };
-    meta = {
-      description = "Dev tools, env vars, task runner";
-      homepage = "https://github.com/jdx/mise";
-    };
-  };
-
   # Pkl - configuration as code language
   # nixpkgs の更新から独立して、セキュリティ修正を含む最新 patch release を使用する。
   # Renovate: datasource=github-releases depName=apple/pkl
