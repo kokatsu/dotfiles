@@ -1,0 +1,77 @@
+# theme 行は nix/home/programs/helix.nix が catppuccin.flavor から生成して先頭に付与する。
+# ここには theme 以外の設定だけを書くこと。
+
+[editor]
+line-number = "relative"
+cursorline = true
+color-modes = true
+bufferline = "multiple"
+rulers = [80, 100]
+text-width = 80
+end-of-line-diagnostics = "hint"
+# Neovim の scrolloff / sidescrolloff = 8 に合わせる (helix の既定は 5)
+scrolloff = 8
+# clipboard-provider は指定しない。helix の自動検出が WSL では x-sel を選び、
+# WSLg 経由で Windows のクリップボードと同期する。win32-yank を明示すると
+# yank/paste の度に Windows プロセスの起動 (実測 462ms) を待つことになる。
+
+# Neovim では insert モードを抜けるたびに保存している (keymaps/editor.lua)。
+# helix に同じフックは無いため、無操作タイマーとフォーカス喪失で代替する。
+[editor.auto-save]
+focus-lost = true
+
+[editor.auto-save.after-delay]
+enable = true
+
+# space b を開いた時点で直前のバッファを選択しておき、2 ファイル間の往復を
+# Enter だけで済ませる (既定は current)。
+[editor.buffer-picker]
+start-position = "previous"
+
+[editor.cursor-shape]
+normal = "block"
+insert = "bar"
+select = "underline"
+
+[editor.file-picker]
+hidden = false
+
+# code-action-hint は既定の layout に含まれないため明示する。
+# 他の要素は helix の既定値と同じ。
+[editor.gutters]
+layout = ["diagnostics", "code-action-hint", "spacer", "line-numbers", "spacer", "diff"]
+
+[editor.indent-guides]
+render = true
+character = "▏"
+
+[editor.inline-diagnostics]
+cursor-line = "warning"
+
+[editor.lsp]
+display-inlay-hints = true
+display-progress-messages = true
+# カーソル下のシンボルの参照を自動ハイライトする (Neovim の snacks.words 相当)。
+auto-document-highlight = true
+
+[editor.soft-wrap]
+enable = true
+wrap-indicator = "↪ "
+
+[editor.statusline]
+left = [
+  "mode",
+  "spinner",
+  "version-control",
+  "file-name",
+  "read-only-indicator",
+  "file-modification-indicator",
+]
+right = [
+  "diagnostics",
+  "workspace-diagnostics",
+  "selections",
+  "position",
+  "position-percentage",
+  "file-type",
+]

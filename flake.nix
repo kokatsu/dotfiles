@@ -53,6 +53,16 @@
       url = "github:xna00/unocss-language-server/v0.1.9";
     };
 
+    # Helix (25.07.1 以降リリースが無く、master をそのまま使う)
+    # https://github.com/helix-editor/helix
+    # nixpkgs.follows は付けない: 上流 CI (.github/workflows/cachix.yml) が master の
+    # push ごとに上流自身の flake.lock でビルドして helix.cachix.org へ push しており、
+    # pin をすげ替えると store path が変わってキャッシュを外し Rust のフルビルドになる。
+    # 同じ理由で overlays.default も使わず packages.<system>.default を直接参照する。
+    # 上流 CI が失敗したコミットはキャッシュに無いため、更新でビルドが始まったら
+    # Cachix ワークフローが成功したコミットへ pin し直す。
+    helix.url = "github:helix-editor/helix";
+
     # MoonBit ツールチェーン (公式 nixpkgs 未収録のためコミュニティ overlay を使用)
     # https://github.com/moonbit-community/moonbit-overlay
     # overlay 自体は master 追従 (パッケージング修正を取り込む) だが、

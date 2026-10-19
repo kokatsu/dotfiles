@@ -25,9 +25,11 @@
       // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
         # CI が main ブランチで構築した custom package を再利用する。
         # Linux は single-user Nix のため、ユーザー設定を source of truth とする。
-        extra-substituters = ["https://kokatsu.cachix.org"];
+        # helix は上流 CI が master の push ごとに push している。
+        extra-substituters = ["https://kokatsu.cachix.org" "https://helix.cachix.org"];
         extra-trusted-public-keys = [
           "kokatsu.cachix.org-1:womBGQiv46ieMIq9Lll7fa06bN0CMKMjIEDIjvp8+rI="
+          "helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs="
         ];
       };
   };

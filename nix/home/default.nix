@@ -55,6 +55,7 @@ in {
     ./programs/gh.nix
     ./programs/ghostty.nix
     ./programs/git.nix
+    ./programs/helix.nix
     ./programs/herdr.nix
     ./programs/karabiner.nix
     ./programs/lazydocker.nix
