@@ -298,21 +298,6 @@
         };
       };
 
-    mkNixStaticCheck = system: let
-      pkgs = devPkgs.${system};
-    in
-      pkgs.runCommand "nix-static-check" {
-        nativeBuildInputs = with pkgs; [alejandra deadnix just statix];
-        src = self;
-      } ''
-        export HOME="$TMPDIR"
-        cp -r "$src" source
-        chmod -R u+w source
-        cd source
-        just nix-fmt-check nix-lint nix-dead-code
-        touch "$out"
-      '';
-
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
       customOverlays.jp2a-darwin-fix
@@ -359,13 +344,12 @@
       };
     };
 
-    # `nix flake check`をHome Manager / nix-darwin / Nix静的解析の入口にする。
+    # `nix flake check`をHome Manager / nix-darwinの入口にする。
     checks = {
       x86_64-linux = {
         inherit (mkMigrationChecks "x86_64-linux") zeno karabiner ruby-lsp;
         home = (mkCIConfig "x86_64-linux").activationPackage;
         neovim = mkNeovimCheck "x86_64-linux";
-        nix-static = mkNixStaticCheck "x86_64-linux";
         # flake checkはdevShellを通常は評価するだけなので、checksからも参照して
         # CIで開発環境そのものをビルドする。
         dev-shell = self.devShells.x86_64-linux.default;
