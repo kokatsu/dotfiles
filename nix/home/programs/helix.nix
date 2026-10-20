@@ -1,9 +1,13 @@
 {
   config,
   inputs,
+  lib,
   pkgs,
+  validDotfilesDir,
   ...
 }: let
+  # gitignore 対象のため flake のソースに入らず、作業ツリーから直接リンクする
+  ignoreFile = "${validDotfilesDir}/.config/helix/ignore";
   names = config.catppuccinLib.flavorNames config.catppuccin.flavor;
 
   webCodeActions = ["source.addMissingImports.ts" "source.fixAll.eslint"];
@@ -16,6 +20,10 @@
     "unocss"
   ];
 in {
+  home.file.".config/helix/ignore" = lib.mkIf (builtins.pathExists ignoreFile) {
+    source = config.lib.file.mkOutOfStoreSymlink ignoreFile;
+  };
+
   programs.helix = {
     enable = true;
     # overlay や nixpkgs の差し替えを通すと helix.cachix.org の store path と
