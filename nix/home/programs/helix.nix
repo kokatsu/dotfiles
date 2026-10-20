@@ -30,9 +30,30 @@ in {
     # 一致せず Rust のフルビルドになる (flake.nix の helix input 参照)。
     package = inputs.helix.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
+    # ビルトインの catppuccin_<flavor> は各 UI に bg を塗るため、
+    # bg を外して WezTerm の背景透過を通す (Neovim の transparent_background 相当)。
+    # inherits の上書きは scope 単位で丸ごと置き換わるので、残す fg なども書き直す。
+    themes."${names.snake}_transparent" = {
+      inherits = names.snake;
+      "ui.background" = {};
+      "ui.statusline" = {fg = "subtext1";};
+      "ui.statusline.inactive" = {fg = "surface2";};
+      "ui.bufferline.background" = {};
+      "ui.bufferline" = {fg = "subtext0";};
+      "ui.bufferline.active" = {
+        fg = "mauve";
+        underline = {
+          color = "mauve";
+          style = "line";
+        };
+      };
+      "ui.popup" = {fg = "text";};
+      "ui.menu" = {fg = "overlay2";};
+      "ui.help" = {fg = "overlay2";};
+    };
+
     settings = {
-      # theme はビルトインの catppuccin_<flavor> を使う
-      theme = names.snake;
+      theme = "${names.snake}_transparent";
 
       editor = {
         line-number = "relative";
@@ -66,6 +87,9 @@ in {
         };
 
         file-picker.hidden = false;
+
+        # popup / menu の bg を透過させたので、本文との境界を枠線で示す
+        popup-border = "all";
 
         # code-action-hint は既定の layout に含まれないため明示する。
         # 他の要素は helix の既定値と同じ。
