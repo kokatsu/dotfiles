@@ -19,6 +19,20 @@
     "tailwindcss-ls"
     "unocss"
   ];
+  clipboardCommand =
+    if pkgs.stdenv.hostPlatform.isDarwin
+    then "/usr/bin/pbcopy"
+    else "${pkgs.xsel}/bin/xsel";
+  copyCodeblock = pkgs.writeShellApplication {
+    name = "helix-copy-codeblock";
+    runtimeInputs = [pkgs.deno];
+    text = ''
+      exec env -u LD_LIBRARY_PATH -u LD_DYLD_PATH \
+        deno run --no-config --no-prompt --allow-run=${clipboardCommand} \
+        ${../../../scripts/helix-copy-codeblock.ts} "$@" \
+        ${clipboardCommand} ${lib.optionalString (!pkgs.stdenv.hostPlatform.isDarwin) "-ib"}
+    '';
+  };
 in {
   home.file.".config/helix/ignore" = lib.mkIf (builtins.pathExists ignoreFile) {
     source = config.lib.file.mkOutOfStoreSymlink ignoreFile;
@@ -159,6 +173,18 @@ in {
           # workspace_directory は開いているファイルではなく hx を起動したディレクトリから辿る
           C-y = yaziFrom "%{workspace_directory}";
           C-e = yaziFrom "%{buffer_name}";
+          space = {
+            M = '':open "%sh{memo --no-edit}"'';
+            L = '':open "%sh{memo --local --no-edit}"'';
+            y.b = [
+              # 全選択でカーソルが移動する前に行番号を退避し、未保存の本文を stdin で渡す。
+              ":set-register | %{cursor_line}"
+              "save_selection"
+              "select_all"
+              ":pipe-to ${copyCodeblock}/bin/helix-copy-codeblock %reg{|} %{language}"
+              "jump_backward"
+            ];
+          };
         };
         select.y = yankBoth;
       };

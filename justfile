@@ -323,6 +323,7 @@ mods-test:
 # Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
 # LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
 reliability-test:
+    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-read --allow-write --allow-run scripts/test-helix-copy-codeblock.ts
     env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-read --allow-write --allow-run --allow-env scripts/test-feed-summarize.ts
     env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-entries.ts -- "$(command -v yq)" "$(command -v deno)"
     env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-opml.ts -- "$(command -v yq)" "$(command -v deno)"
