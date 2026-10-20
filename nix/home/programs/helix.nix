@@ -23,6 +23,10 @@
     if pkgs.stdenv.hostPlatform.isDarwin
     then "/usr/bin/pbcopy"
     else "${pkgs.xsel}/bin/xsel";
+  clipboardReadCommand =
+    if pkgs.stdenv.hostPlatform.isDarwin
+    then "/usr/bin/pbpaste"
+    else "${pkgs.xsel}/bin/xsel -ob";
   copyCodeblock = pkgs.writeShellApplication {
     name = "helix-copy-codeblock";
     runtimeInputs = [pkgs.deno];
@@ -176,14 +180,23 @@ in {
           space = {
             M = '':open "%sh{memo --no-edit}"'';
             L = '':open "%sh{memo --local --no-edit}"'';
-            y.b = [
-              # 全選択でカーソルが移動する前に行番号を退避し、未保存の本文を stdin で渡す。
-              ":set-register | %{cursor_line}"
-              "save_selection"
-              "select_all"
-              ":pipe-to ${copyCodeblock}/bin/helix-copy-codeblock %reg{|} %{language}"
-              "jump_backward"
-            ];
+            D = '':open "%sh{daily --no-edit}"'';
+            y = {
+              p = ":set-register + %{buffer_name}";
+              P = [
+                # ファイル名をシェルのコードに埋め込まず、クリップボード経由で dirname に渡す。
+                ":set-register + %{buffer_name}"
+                '':set-register + %sh{${pkgs.coreutils}/bin/dirname -- "$(${clipboardReadCommand})"}''
+              ];
+              b = [
+                # 全選択でカーソルが移動する前に行番号を退避し、未保存の本文を stdin で渡す。
+                ":set-register | %{cursor_line}"
+                "save_selection"
+                "select_all"
+                ":pipe-to ${copyCodeblock}/bin/helix-copy-codeblock %reg{|} %{language}"
+                "jump_backward"
+              ];
+            };
           };
         };
         select.y = yankBoth;
