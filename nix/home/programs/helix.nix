@@ -101,6 +101,15 @@ in {
           ];
         };
       };
+
+      # Neovim (autocmds.lua) と同じく y だけをシステムクリップボードへ同期し、
+      # d / c ではクリップボードを上書きしない。
+      keys = let
+        yankBoth = ["yank" "yank_to_clipboard"];
+      in {
+        normal.y = yankBoth;
+        select.y = yankBoth;
+      };
     };
 
     # Neovim (.config/nvim/after/lsp/) と同じ language server 構成に寄せる。
