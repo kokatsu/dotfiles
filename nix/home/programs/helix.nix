@@ -114,8 +114,28 @@ in {
       # d / c ではクリップボードを上書きしない。
       keys = let
         yankBoth = ["yank" "yank_to_clipboard"];
+
+        # yazi をファイルピッカーにする (ピッカーのキーは再割り当てできず、階層移動に h/l を使えないため)。
+        # 手順は https://yazi-rs.github.io/docs/tips#helix のまま。yazi が抜けた
+        # alternate screen と bracketed paste を printf で戻してから再描画する。
+        yaziFrom = entry: let
+          chooser = "/tmp/unique-ca1ea106";
+        in [
+          ":sh rm -f ${chooser}"
+          '':insert-output yazi "${entry}" --chooser-file=${chooser}''
+          '':sh printf "\x1b[?1049h\x1b[?2004h" > /dev/tty''
+          ":open %sh{cat ${chooser}}"
+          ":redraw"
+          ":set mouse false"
+          ":set mouse true"
+        ];
       in {
-        normal.y = yankBoth;
+        normal = {
+          y = yankBoth;
+          # workspace_directory は開いているファイルではなく hx を起動したディレクトリから辿る
+          C-y = yaziFrom "%{workspace_directory}";
+          C-e = yaziFrom "%{buffer_name}";
+        };
         select.y = yankBoth;
       };
     };
