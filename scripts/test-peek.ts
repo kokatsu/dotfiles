@@ -68,14 +68,14 @@ async function send(chunks: string[]) {
 
 try {
   let address: string | undefined;
-  for (let attempt = 0; attempt < 100; attempt++) {
+  for (let attempt = 0; attempt < 400; attempt++) {
     if (await Deno.stat(addressFile).then(() => true).catch(() => false)) {
       address = new URL(await Deno.readTextFile(addressFile)).host;
     }
     if (address) break;
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
-  if (!address) throw new Error("Peek did not start within 5 seconds");
+  if (!address) throw new Error("Peek did not start within 20 seconds");
   const root = `http://${address}`;
   for (
     const asset of [

@@ -47,17 +47,15 @@ try {
     exited = true;
     return result;
   });
-  let available = false;
-  for (let attempt = 0; attempt < 100; attempt++) {
-    available = await Deno.stat(socketPath).then(() => true).catch(() => false);
-    if (available || exited) break;
+  // The socket file appears at bind(), before listen(), so poll connect() instead of stat().
+  let connection: Deno.UnixConn | undefined;
+  for (let attempt = 0; attempt < 400 && !exited; attempt++) {
+    connection = await Deno.connect({ transport: "unix", path: socketPath })
+      .catch(() => undefined);
+    if (connection) break;
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
-  if (!available) throw new Error("Zeno socket did not start");
-  const connection = await Deno.connect({
-    transport: "unix",
-    path: socketPath,
-  });
+  if (!connection) throw new Error("Zeno socket did not start");
   await connection.write(
     new TextEncoder().encode(
       JSON.stringify({ args: ["--zeno-mode", "snippet-list"] }),
