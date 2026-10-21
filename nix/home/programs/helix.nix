@@ -27,6 +27,13 @@
     if pkgs.stdenv.hostPlatform.isDarwin
     then "/usr/bin/pbpaste"
     else "${pkgs.xsel}/bin/xsel -ob";
+  # wslview は PowerShell の Constrained Language Mode でエンコーディング設定に失敗し、
+  # そのエラーが :sh のポップアップに出るため cmd.exe の start で開く。
+  # cmd.exe は cwd が UNC パスだと警告を出すので Windows 側のディレクトリから起動する。
+  openFile =
+    if pkgs.stdenv.hostPlatform.isDarwin
+    then '':sh /usr/bin/open "%{file_path_absolute}"''
+    else '':sh cd /mnt/c && cmd.exe /c start "" "$(wslpath -w "%{file_path_absolute}")"'';
   copyCodeblock = pkgs.writeShellApplication {
     name = "helix-copy-codeblock";
     runtimeInputs = [pkgs.deno];
@@ -177,6 +184,7 @@ in {
           # workspace_directory は開いているファイルではなく hx を起動したディレクトリから辿る
           C-y = yaziFrom "%{workspace_directory}";
           C-e = yaziFrom "%{buffer_name}";
+          g.X = openFile;
           space = {
             M = '':open "%sh{memo --no-edit}"'';
             L = '':open "%sh{memo --local --no-edit}"'';
