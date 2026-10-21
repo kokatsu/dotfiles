@@ -14,7 +14,7 @@
 
       src = ../npm-locks/vite-plus;
 
-      npmDepsHash = "sha256-B+biD0L7pKb8wVG5HlnEdjIJYPG3YRViHR70xwDPN1w=";
+      npmDepsHash = "sha256-kJfgzha7UuznlAHh6E8o/Fm3vrjXEoHbHpS73kDUvyY=";
       npmFlags = ["--legacy-peer-deps"];
       dontNpmBuild = true;
 
