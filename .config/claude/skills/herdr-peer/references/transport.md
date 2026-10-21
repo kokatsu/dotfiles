@@ -6,14 +6,14 @@ Read before sending a peer request or interpreting a wrapper verdict. Use [task 
 
 1. Run `herdr-peer resolve` to select the sole opposite agent in the current tab. Respect the adapter's sandbox and approval requirements for every CLI invocation.
 2. Verify both panes share one local Git worktree, and the peer's canonical `cwd` equals its canonical Git root. Compare that root with the caller's canonical Git root. Different worktrees, subdirectory peer cwd, remote machines, and containers are outside this workflow. Matching Herdr workspace IDs alone does not prove filesystem sharing.
-3. Check that `<git-root>/.cache/herdr-peer/` resolves inside the shared root, including any existing symlink components. Verify the prospective result paths are ignored with `git check-ignore`. Stop on missing ignore rules or an unsuitable path; do not silently change ignore rules or choose a different destination.
+3. Check that `<git-root>/.kokatsu/herdr-peer/` resolves inside the shared root, including any existing symlink components. Verify the prospective result paths are ignored with `git check-ignore`. Stop on missing ignore rules or an unsuitable path; do not silently change ignore rules or choose a different destination.
 4. Use `umask 077`, create the parent directory, and create a fresh task directory with `mktemp -d` under that parent. Its generated basename is `task_id`. Check the resolved directory remains inside the shared root. Do not reuse or overwrite a prior task directory.
 5. Save the resolved peer JSON as `peer.json` and the assembled prompt body as `request.md`. Keep the initial identity for later calls; a fresh resolution alone does not detect replacement between invocations. Immediately before sending, compare a new resolution with the recorded pane, tab, workspace, agent kind, and session ID. Allow only an initial null-to-initialized session transition when all other fields match; record the initialized ID for later comparisons.
 
 Each request, including a delta review or retrieval-only request, gets its own directory:
 
 ```text
-<git-root>/.cache/herdr-peer/<task_id>/
+<git-root>/.kokatsu/herdr-peer/<task_id>/
   request.md       Caller: exact assembled prompt body before wrapper additions
   peer.json        Caller: resolved peer identity, including cwd and session ID
   execution.md     Caller: tool handle, execution state, exit code when known
@@ -26,7 +26,7 @@ Each request, including a delta review or retrieval-only request, gets its own d
 
 `request.md` is a caller record; send its full contents as the prompt argument. The peer need not read it. Include the absolute result paths and receiver contract in that body. The peer checks its cwd and ability to create `result.tmp.md` before product work; path validation by the caller does not prove write access inside the peer's sandbox.
 
-Only the caller writes request, peer, execution, transport, and recovery records. Only the peer writes the two result files. Result directories have no automatic retention or cleanup: they remain until explicitly deleted or caches are cleared. Move durable conclusions into user-requested tracked documentation separately.
+Only the caller writes request, peer, execution, transport, and recovery records. Only the peer writes the two result files. Result directories have no automatic retention or cleanup: they remain until explicitly deleted. Move durable conclusions into user-requested tracked documentation separately.
 
 ## Send once and track execution
 
