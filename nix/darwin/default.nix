@@ -14,17 +14,6 @@
     extra-trusted-public-keys = kokatsu.cachix.org-1:womBGQiv46ieMIq9Lll7fa06bN0CMKMjIEDIjvp8+rI= helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs=
   '';
 
-  # CVE-2026-111943 (eMudhra intermediate CA compromise) の対象ルートを
-  # /etc/ssl/certs/ca-certificates.crt から除外する (NixOS/nixpkgs issue 576485)。
-  # nix-darwin 側で同じ除外が既定になれば (nix-darwin PR 1876) 不要。
-  # Determinate Nix の daemon は macos-keychain.crt を使うので、これでは守られない。
-  security.pki.caCertificateBlacklist = [
-    "Comodo AAA Services root"
-    "emSign ECC Root CA - G3"
-    "emSign Root CA - C1"
-    "emSign ECC Root CA - C3"
-  ];
-
   # nixpkgsの設定
   nixpkgs.config = {
     allowUnfree = true;
@@ -130,11 +119,30 @@
     stateVersion = 5;
   };
 
-  # セキュリティ設定 (Touch ID for sudo)
-  # reattach は herdr / tmux などの端末マルチプレクサ内でも Touch ID を使うため
-  security.pam.services.sudo_local = {
-    touchIdAuth = true;
-    reattach = true;
+  security = {
+    # CVE-2026-111943 (eMudhra intermediate CA compromise) の対象ルートを
+    # /etc/ssl/certs/ca-certificates.crt から除外する (NixOS/nixpkgs issue 576485)。
+    # nix-darwin 側で同じ除外が既定になれば (nix-darwin PR 1876) 不要。
+    # Determinate Nix の daemon は macos-keychain.crt を使うので、これでは守られない。
+    pki.caCertificateBlacklist = [
+      "Comodo AAA Services root"
+      "emSign ECC Root CA - G3"
+      "emSign Root CA - C1"
+      "emSign ECC Root CA - C3"
+    ];
+
+    # Touch ID for sudo
+    # reattach は herdr / tmux などの端末マルチプレクサ内でも Touch ID を使うため
+    pam.services.sudo_local = {
+      touchIdAuth = true;
+      reattach = true;
+    };
+
+    # sudo が NIX_SSL_CERT_FILE を消すと、root で動く git などの OpenSSL は
+    # デフォルトプロファイルの古い CA バンドルに戻り、pki.caCertificateBlacklist が効かない
+    sudo.extraConfig = ''
+      Defaults:root,%admin env_keep+=NIX_SSL_CERT_FILE
+    '';
   };
 
   # ユーザー設定
