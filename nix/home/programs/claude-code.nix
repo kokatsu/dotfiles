@@ -30,6 +30,9 @@
     };
     # Claude Code が型定義と tsconfig.json を mod フォルダへ書き込むため、store ではなく作業ツリーを指す
     ".config/claude/mods".source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/claude/mods";
+    # Claude Code は bridge-spawn などを CLAUDE_CONFIG_DIR ではなく homedir 直下の .claude に書くため、
+    # 同じディレクトリへ寄せる
+    ".claude".source = config.lib.file.mkOutOfStoreSymlink "${config.xdg.configHome}/claude";
     ".config/claude/CLAUDE.md".source = ../../../.config/claude/.CLAUDE.md;
     ".config/claude/skills".source = ../../../.config/claude/skills;
     ".config/claude/rules".source = ../../../.config/claude/rules;
