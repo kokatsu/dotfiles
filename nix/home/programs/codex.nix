@@ -177,23 +177,7 @@ in {
         RULES_DIR="$CODEX_DIR/rules"
         RULES_BASE="${validDotfilesDir}/.config/codex/rules/managed.rules"
         RULES_TARGET="$RULES_DIR/managed.rules"
-        LOCAL_RULES_TARGET="$RULES_DIR/default.rules"
         $DRY_RUN_CMD mkdir -p "$RULES_DIR"
-
-        # 旧構成の管理ルールをdefault.rulesから取り除き、Codexが追記した
-        # 1行形式のローカル許可だけを初回移行時に残す。
-        if [ -f "$LOCAL_RULES_TARGET" ] && \
-          [ "$(${pkgs.coreutils}/bin/head -n 1 "$LOCAL_RULES_TARGET")" = "# Read-only git inspection commands." ]; then
-          LOCAL_RULES=$(${pkgs.gnugrep}/bin/grep '^prefix_rule(pattern=' "$LOCAL_RULES_TARGET" || true)
-          if [ -n "$DRY_RUN_CMD" ]; then
-            echo "Migrating Codex-local rules in $LOCAL_RULES_TARGET"
-          elif [ -n "$LOCAL_RULES" ]; then
-            printf '%s\n' "$LOCAL_RULES" > "$LOCAL_RULES_TARGET"
-          else
-            ${pkgs.coreutils}/bin/rm -f "$LOCAL_RULES_TARGET"
-          fi
-        fi
-
         $DRY_RUN_CMD cp "$RULES_BASE" "$RULES_TARGET"
       '';
   };
