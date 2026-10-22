@@ -20,7 +20,7 @@ GUARD="$work/bin/agent-guard"
 # そのまま使い、`|| exit 2` まで含めて検証する。
 # 下の bash -c へは環境変数で渡す。文字列に埋め込むとコマンド中の引用符で壊れる。
 export HOOK_COMMAND
-HOOK_COMMAND=$(jq -r '.hooks.PreToolUse[] | select(.matcher == "Bash") | .hooks[0].command' \
+HOOK_COMMAND=$(jq -r '.hooks.PreToolUse[] | select(.matcher == "Bash|Monitor") | .hooks[0].command' \
   "$repo_root/.config/claude/settings.json")
 hook() {
   PATH="$work/bin:$PATH" /bin/sh -c "$HOOK_COMMAND"
@@ -116,6 +116,18 @@ assert_raw_blocked '{"tool_input":null}' 'tool_input が null'
 assert_raw_blocked '{"tool_input":{}}' 'command キーが無い'
 assert_raw_blocked '{"tool_input":{"command":42}}' 'command が文字列でない'
 assert_raw_blocked '{"tool_input":{"command":"echo ok"}}{}' '2 つ目の値が続く'
+assert_raw_blocked '{"tool_name":"Bash","tool_input":{"ws":{"url":"wss://x"}}}' 'Bash で command キーが無い'
+echo ""
+
+echo "--- Monitor ---"
+assert_raw_blocked '{"tool_name":"Monitor","tool_input":{"command":"grep -r x .","description":"d"}}' 'Monitor の command も判定する'
+rc=0
+printf '%s' '{"tool_name":"Monitor","tool_input":{"ws":{"url":"wss://x"},"description":"d"}}' | hook >/dev/null 2>&1 || rc=$?
+if [ "$rc" -eq 0 ]; then
+  pass "allowed: command の無い ws の Monitor"
+else
+  fail "should be allowed (exit 0), got exit $rc: command の無い ws の Monitor"
+fi
 echo ""
 
 # 見張りを自前で持つのは、coreutils の timeout が macOS に無いからである。

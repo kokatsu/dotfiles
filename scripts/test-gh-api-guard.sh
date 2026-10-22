@@ -17,7 +17,7 @@ trap 'rm -rf "$work"' EXIT
 
 (cd "$repo_root/tools/agent-hooks/agent-guard" && go build -o "$work/bin/agent-guard" .)
 
-hook_entry=$(jq -c '[.hooks.PreToolUse[] | select(.matcher == "Bash") | .hooks[]
+hook_entry=$(jq -c '[.hooks.PreToolUse[] | select(.matcher == "Bash|Monitor") | .hooks[]
   | select(.command | test("agent-guard gh-api"))]' "$repo_root/.config/claude/settings.json")
 
 pass=0

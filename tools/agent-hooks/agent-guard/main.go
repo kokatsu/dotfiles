@@ -2,7 +2,7 @@
 // stdin で hook payload を受け取る。gh-api 以外は、ブロックするなら理由を stderr に
 // 出して exit 2 で終わる。
 //
-//	agent-guard banned         Claude Code の Bash 用。Herdr 入力ガードと禁止コマンド
+//	agent-guard banned         Claude Code の Bash と Monitor 用。Herdr 入力ガードと禁止コマンド
 //	agent-guard codex          Codex の Bash 用。Herdr 入力ガードと禁止コマンド (GREP_R を除く)
 //	agent-guard managed-paths  Claude Code の Edit/Write 用。Home Manager の管理下を守る
 //	agent-guard gh-api         Claude Code の `gh api` 用。読み取りだけを自動で許可する
@@ -213,6 +213,10 @@ func run(mode string) {
 		}
 		checkCommand(value, present, codexSkipped...)
 	case "banned":
+		// ws だけを渡した Monitor は command を持たない。
+		if call.name == "Monitor" && !present {
+			return
+		}
 		checkCommand(value, present, bannedSkipped...)
 	}
 }
