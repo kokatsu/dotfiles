@@ -199,6 +199,10 @@ in {
         # deno 2.9.4 上で segfault し、zeno-server が socket を作れず起動に失敗する。
         # nixpkgs の libsqlite3 を使わせる。
         DENO_SQLITE_PATH = "${pkgs.sqlite.out}/lib/libsqlite3${pkgs.stdenv.hostPlatform.extensions.sharedLibrary}";
+        # 既定ではバイナリ内蔵のルート証明書も信頼するため、OS 側で除外した
+        # ルート (CVE-2026-111943 の emSign など) が残る。OS のストアだけを使わせる
+        DENO_TLS_CA_STORE = "system";
+        CLAUDE_CODE_CERT_STORE = "system";
         CATPPUCCIN_VIVID_THEME = "catppuccin-${config.catppuccin.flavor}";
         # Catppuccin 対応の自前設定が参照する共通の flavor / accent。
         CATPPUCCIN_FLAVOR = config.catppuccin.flavor;
@@ -223,6 +227,8 @@ in {
         # macOS は OrbStack が Docker CLI の設定を管理するため Linux のみ
         DOCKER_CONFIG = "${config.xdg.configHome}/docker";
         GNUPGHOME = "${config.xdg.dataHome}/gnupg";
+        # awscli2 は同梱の cacert.pem を信頼し、OS 側で除外したルートが残る
+        AWS_CA_BUNDLE = "/etc/ssl/certs/ca-certificates.crt";
       };
   };
 
@@ -250,6 +256,9 @@ in {
       DUB_HOME
       NPM_CONFIG_CACHE
       DOCKER_CONFIG
+      DENO_TLS_CA_STORE
+      CLAUDE_CODE_CERT_STORE
+      AWS_CA_BUNDLE
       ;
   };
 
