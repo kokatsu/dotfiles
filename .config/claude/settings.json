@@ -147,7 +147,16 @@
     "security-guidance@claude-plugins-official": false,
     "session-report@claude-plugins-official": false,
     "skill-creator@claude-plugins-official": false,
-    "codex@openai-codex": true
+    "codex@openai-codex": true,
+    "pstack@cursor-plugins": true
+  },
+  "extraKnownMarketplaces": {
+    "cursor-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "cursor/plugins"
+      }
+    }
   },
   "language": "japanese",
   "feedbackDrafts": "off",
