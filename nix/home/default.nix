@@ -9,14 +9,6 @@
   ...
 }: let
   inherit (pkgs.stdenv.hostPlatform) isDarwin;
-  isWSL =
-    !isCI
-    && pkgs.stdenv.hostPlatform.isLinux
-    && (
-      builtins.getEnv "WSL_DISTRO_NAME"
-      != ""
-      || builtins.getEnv "WSL_INTEROP" != ""
-    );
   validDotfilesDir =
     if isCI
     then "/tmp/dotfiles"
@@ -34,7 +26,7 @@
 in {
   # dotfiles の実パスと実行環境を各ツールの module に共有する。
   _module.args = {
-    inherit isWSL validDotfilesDir;
+    inherit validDotfilesDir;
   };
 
   imports = [

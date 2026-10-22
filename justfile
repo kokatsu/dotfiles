@@ -115,7 +115,7 @@ go-fmt:
 
 # Check Go formatting (no write)。gofmt -l は差分があっても exit 0 なので出力の有無で判定する
 go-fmt-check:
-    @out=$(gofmt -l tools); if [ -n "$out" ]; then echo "$out"; exit 1; fi
+    @out=$(gofmt -l tools) || exit $?; if [ -n "$out" ]; then echo "$out"; exit 1; fi
 
 # Vet Go packages
 go-vet:

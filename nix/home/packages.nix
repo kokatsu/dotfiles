@@ -4,7 +4,7 @@
   isCI ? false,
   ...
 }: let
-  inherit (pkgs.stdenv.hostPlatform) isDarwin;
+  inherit (pkgs.stdenv.hostPlatform) isDarwin system;
 
   cargo-with-openssl = pkgs.writeShellScriptBin "cargo-with-openssl" ''
     export PATH="${lib.makeBinPath [pkgs.pkg-config]}:$PATH"
@@ -47,12 +47,6 @@ in {
       # https://github.com/rust-lang/rustup
       rustup # Rust ツールチェーンマネージャ
       cargo-with-openssl # openssl-sys が必要な Cargo コマンド用 wrapper
-      # https://github.com/moonbit-community/moonbit-overlay
-      # MoonBit ツールチェーン (moon/moonc/moonrun + LSP 同梱)。特定バージョンをピン留め:
-      # 更新時は overlay の versions/toolchains/ から版を選び、ここの属性名を差し替える
-      # (必要なら `nix flake update moonbit-overlay` で overlay 側も追従させる)。
-      # overlay は 0.10.0 未満の版を公開しない。
-      moonbit-bin."v0.10.14+7d59c7ec9+914d7da"
 
       #####################################
       # CLIツール
@@ -327,6 +321,13 @@ in {
       biome # Web ツールチェーン (formatter + linter)
 
       agent-hooks # Claude Code / Codex のフック: agent-guard, herdr-cache-token, report-agent-session (tools/agent-hooks)
+    ]
+    ++ lib.optionals (builtins.elem system ["x86_64-linux" "aarch64-darwin"]) [
+      # https://github.com/moonbit-community/moonbit-overlay
+      # overlay は Linux ARM に未対応。0.10.0 未満の版も公開しない。
+      # 更新時は overlay の versions/toolchains/ から版を選び、ここの属性名を差し替える。
+      # 必要なら `nix flake update moonbit-overlay` で overlay 側も追従させる。
+      moonbit-bin."v0.10.14+7d59c7ec9+914d7da"
     ]
     ++ lib.optionals (!isCI) [
       # CI ではスキップ (ビルド時間短縮)

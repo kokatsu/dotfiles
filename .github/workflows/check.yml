@@ -49,25 +49,6 @@ jobs:
         # nix-eval は含めない (build job の `nix flake check` が同じ評価をするため)。
         run: nix develop --command just check-static
 
-  hash-patterns:
-    # NOTE: 中身は lint job の `just check-static` にも含まれる。main の ruleset が
-    # `Check / Hash update patterns` を required status check として参照しているため
-    # job 名を残している。ruleset から外したらこの job ごと削除できる。
-    name: Hash update patterns
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ inputs.ref }}
-          persist-credentials: false
-      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
-      - uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
-        with:
-          name: kokatsu
-      - name: Verify hash-update and Renovate patterns match overlay files
-        run: nix develop --command just hash-patterns-test renovate-patterns-test
-
   npm-audit:
     name: npm audit
     runs-on: ubuntu-latest
@@ -90,8 +71,16 @@ jobs:
           exit $failed
 
   build-linux:
-    name: Build (Linux)
-    runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Build (Linux)
+            runner: ubuntu-latest
+          - name: Build (Linux ARM)
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -106,6 +95,9 @@ jobs:
           authToken: ${{ github.ref == 'refs/heads/main' && secrets.CACHIX_AUTH_TOKEN || '' }}
       - name: Check flake
         run: nix flake check --fallback
+      - name: Run ARM tests
+        if: matrix.runner == 'ubuntu-24.04-arm'
+        run: nix develop --command just test
 
   build-darwin:
     name: Build (macOS)

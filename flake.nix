@@ -238,6 +238,7 @@
       username,
       isCI,
       dotfilesDir,
+      isWSL ? !isCI && builtins.elem system linuxSystems && (builtins.getEnv "WSL_DISTRO_NAME" != "" || builtins.getEnv "WSL_INTEROP" != ""),
     }:
       home-manager.lib.homeManagerConfiguration {
         pkgs = import nixpkgs {
@@ -251,14 +252,17 @@
           inputs.nix-index-database.homeModules.nix-index
         ];
         extraSpecialArgs = {
-          inherit inputs self username isCI dotfilesDir;
+          inherit inputs self username isCI isWSL dotfilesDir;
         };
       };
 
     # CI用ヘルパー
-    mkCIConfig = system:
+    mkCIConfig = {
+      system,
+      isWSL ? false,
+    }:
       mkHomeConfig {
-        inherit system;
+        inherit system isWSL;
         username = "ci";
         isCI = true;
         dotfilesDir = "/tmp/dotfiles";
@@ -344,23 +348,32 @@
     };
 
     # `nix flake check`をHome Manager / nix-darwinの入口にする。
-    checks = {
-      x86_64-linux = {
-        karabiner = mkKarabinerCheck "x86_64-linux";
-        home = (mkCIConfig "x86_64-linux").activationPackage;
-        neovim = mkNeovimCheck "x86_64-linux";
+    checks = forAllSystems (system: let
+      home = mkCIConfig {inherit system;};
+      wslHome = mkCIConfig {
+        inherit system;
+        isWSL = true;
+      };
+    in
+      {
+        karabiner = mkKarabinerCheck system;
+        home = home.activationPackage;
+        neovim = mkNeovimCheck system;
         # flake checkはdevShellを通常は評価するだけなので、checksからも参照して
         # CIで開発環境そのものをビルドする。
-        dev-shell = self.devShells.x86_64-linux.default;
-      };
-      aarch64-darwin = {
-        karabiner = mkKarabinerCheck "aarch64-darwin";
-        home = (mkCIConfig "aarch64-darwin").activationPackage;
-        neovim = mkNeovimCheck "aarch64-darwin";
+        dev-shell = self.devShells.${system}.default;
+      }
+      // lib.optionalAttrs (builtins.elem system linuxSystems) {
+        home-wsl = wslHome.activationPackage;
+        wsl-services = import ./nix/checks/wsl-services.nix {
+          pkgs = devPkgs.${system};
+          inherit (wslHome) config;
+          plainConfig = home.config;
+        };
+      }
+      // lib.optionalAttrs (builtins.elem system darwinSystems) {
         darwin = (mkDarwinConfig "ci").system;
-        dev-shell = self.devShells.aarch64-darwin.default;
-      };
-    };
+      });
 
     # 開発シェル
     devShells = forAllSystems (system: let
@@ -391,6 +404,7 @@
             bash # Shell regression tests
             zsh # `just zsh-lint` (zsh -n)
             jq # Feed state regression tests
+            yq-go # Feed XML / OPML regression tests
             shellcheck # シェルスクリプト linter
             shfmt # シェルスクリプト formatter
 
