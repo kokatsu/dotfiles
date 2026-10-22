@@ -19,6 +19,7 @@
       "**",
       "!karabiner-config",
       "!scripts/*.ts",
+      "!.kokatsu",
       "!.claude",
       "!.config/zeno",
       "!.config/claude/hooks",
