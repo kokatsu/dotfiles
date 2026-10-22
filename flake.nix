@@ -24,13 +24,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Herdr 公式リリースバイナリ。nixpkgs 収録版より安定版への追従が速く、
-    # Rust/Zig ツールチェーンを使ったソースビルドも不要。
-    # 更新: nix flake update herdr-nix
-    # https://github.com/herdrdev/herdr-nix
-    herdr-nix = {
-      url = "github:herdrdev/herdr-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+    # prefix バーの描画パッチを適用するため公式ソースからビルドする。
+    # Rust/Zig は上流の nixpkgs とツールチェーンの組み合わせを使う。
+    # 更新時はタグを変更し、描画パッチの適用を確認する。
+    # Renovate: datasource=github-releases depName=herdrdev/herdr
+    herdr-src = {
+      url = "github:herdrdev/herdr/v0.9.5";
     };
 
     # herdr の numbering プラグイン。dotfiles から切り出した別リポジトリで、

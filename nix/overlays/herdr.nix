@@ -1,8 +1,9 @@
-# Herdr 公式リリースバイナリを pkgs.herdr として公開する。
-# herdr-nix 自体は bin/herdr のみなので、nixpkgs 版から失われるシェル補完を補う。
+# 公式のソースビルドに prefix バーの描画パッチとシェル補完を追加する。
 {inputs}: {
   herdr = _final: prev: let
-    upstream = inputs.herdr-nix.packages.${prev.stdenv.hostPlatform.system}.default;
+    upstream = inputs.herdr-src.packages.${prev.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [./patches/herdr-prefix-bar.patch];
+    });
   in {
     herdr = prev.symlinkJoin {
       name = "herdr-${upstream.version}";

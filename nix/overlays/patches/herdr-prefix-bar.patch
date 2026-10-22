@@ -1,0 +1,19 @@
+diff --git a/src/client/shell/render.rs b/src/client/shell/render.rs
+--- a/src/client/shell/render.rs
++++ b/src/client/shell/render.rs
+@@ -227,4 +227,15 @@
+         );
+     }
++    if mode == ClientShellMode::Prefix && endpoint_error.is_none() {
++        buffer.set_style(
++            bar,
++            Style::default()
++                .fg(match palette.panel_bg {
++                    ratatui::style::Color::Reset => palette.surface_dim,
++                    color => color,
++                })
++                .bg(palette.peach),
++        );
++    }
+     Some(bar)
+ }

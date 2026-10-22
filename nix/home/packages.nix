@@ -365,7 +365,7 @@ in {
       git-graph # Git コミットグラフ可視化 (fork: kokatsu/git-graph)
       # https://github.com/brevity1swos/rgx
       rgx # ターミナル正規表現テスター (regex101 の TUI 版)
-      # https://github.com/herdrdev/herdr-nix (公式リリースバイナリ、overlay)
+      # https://github.com/herdrdev/herdr (公式ソース + 描画パッチ、overlay)
       herdr # tmux 的なエージェント対応ターミナルマルチプレクサ
       #--- エディタ ---#
       # https://github.com/vim/vim
