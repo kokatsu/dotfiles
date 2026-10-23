@@ -1,8 +1,13 @@
-# 公式のソースビルドに prefix バーの描画パッチとシェル補完を追加する。
+# 公式のソースビルドに prefix バーとフォーカス枠の描画パッチ、シェル補完を追加する。
 {inputs}: {
   herdr = _final: prev: let
     upstream = inputs.herdr-src.packages.${prev.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-      patches = (old.patches or []) ++ [./patches/herdr-prefix-bar.patch];
+      patches =
+        (old.patches or [])
+        ++ [
+          ./patches/herdr-prefix-bar.patch
+          ./patches/herdr-heavy-focus-border.patch
+        ];
     });
   in {
     herdr = prev.symlinkJoin {

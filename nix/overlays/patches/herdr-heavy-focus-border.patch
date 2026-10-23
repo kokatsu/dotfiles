@@ -1,0 +1,50 @@
+--- a/src/ui/panes.rs
++++ b/src/ui/panes.rs
+@@ -591,6 +591,11 @@
+             .iter()
+             .any(|info| info.is_focused && line_touches_pane(x, y, info, app.pane_gaps));
+         let symbol = line_cell_symbol(line);
++        let symbol = if focused {
++            heavy_line_symbol(symbol)
++        } else {
++            symbol
++        };
+         if symbol.is_empty() {
+             continue;
+         }
+@@ -803,6 +808,23 @@
+     }
+ }
+ 
++fn heavy_line_symbol(symbol: &'static str) -> &'static str {
++    match symbol {
++        "┼" => "╋",
++        "┤" => "┫",
++        "├" => "┣",
++        "┴" => "┻",
++        "┬" => "┳",
++        "│" => "┃",
++        "─" => "━",
++        "┌" => "┏",
++        "┐" => "┓",
++        "└" => "┗",
++        "┘" => "┛",
++        other => other,
++    }
++}
++
+ pub(crate) fn render_selection_highlight<P: PartialEq>(
+     selection: Option<&crate::selection::Selection<P>>,
+     buffer: &mut Buffer,
+@@ -1264,9 +1286,9 @@
+             .unwrap();
+ 
+         let buffer = terminal.backend().buffer();
+-        assert_eq!(buffer[(2, 2)].symbol(), "┼");
++        assert_eq!(buffer[(2, 2)].symbol(), "╋");
+         assert_eq!(buffer[(2, 2)].style().fg, Some(app.palette.accent));
+-        assert_eq!(buffer[(2, 1)].symbol(), "│");
++        assert_eq!(buffer[(2, 1)].symbol(), "┃");
+         assert_eq!(buffer[(2, 1)].style().fg, Some(app.palette.accent));
+     }
+ 
