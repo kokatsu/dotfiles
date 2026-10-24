@@ -301,6 +301,8 @@ in {
 
       #--- CLI ツール (overlay) ---#
       cc-statusline # 高速 Claude Code statusline (Zig)
+      # https://github.com/AlexanderGrooff/mermaid-ascii
+      mermaid-ascii # Mermaid を ASCII で描画 (Claude Code mod が使う)
 
       #--- Language Servers (overlay) ---#
       # https://github.com/antonk52/cssmodules-language-server

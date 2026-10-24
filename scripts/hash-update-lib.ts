@@ -8,7 +8,11 @@ type Package =
   & (
     | { kind: "binary" }
     | { kind: "npm"; dependency: string; npmFlags: string[] }
-    | { kind: "source-npm" | "source-go"; repository: string }
+    | {
+      kind: "source-npm" | "source-go";
+      repository: string;
+      tagPrefix: "v" | "";
+    }
   );
 
 export const packages: Package[] = [
@@ -17,6 +21,7 @@ export const packages: Package[] = [
     file: "nix/overlays/source-builds.nix",
     kind: "source-npm",
     repository: "antonk52/cssmodules-language-server",
+    tagPrefix: "v",
   },
   {
     name: "vite-plus",
@@ -38,6 +43,14 @@ export const packages: Package[] = [
     file: "nix/overlays/source-builds.nix",
     kind: "source-go",
     repository: "xdevplatform/playground",
+    tagPrefix: "v",
+  },
+  {
+    name: "mermaid-ascii",
+    file: "nix/overlays/source-builds.nix",
+    kind: "source-go",
+    repository: "AlexanderGrooff/mermaid-ascii",
+    tagPrefix: "",
   },
   { name: "claude-code", file: binaryFile, kind: "binary" },
 ];

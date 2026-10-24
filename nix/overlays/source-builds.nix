@@ -27,6 +27,31 @@ in {
     };
   };
 
+  # mermaid-ascii - Render Mermaid graphs as ASCII/Unicode text
+  # Renovate: datasource=github-releases depName=AlexanderGrooff/mermaid-ascii
+  mermaid-ascii = _final: prev: {
+    mermaid-ascii = prev.buildGoModule rec {
+      pname = "mermaid-ascii";
+      version = "1.6.1";
+
+      src = prev.fetchFromGitHub {
+        owner = "AlexanderGrooff";
+        repo = "mermaid-ascii";
+        rev = version;
+        hash = "sha256-KYCJIgLwjJR5RM1AdGrV47UhFgpLqwro42E54pzhYWE=";
+      };
+
+      vendorHash = "sha256-S/K6W8KC6YzwZPioucoiwOMd29LPv0J22T3MS0X+W5g=";
+
+      meta = with prev.lib; {
+        description = "Render Mermaid graphs as ASCII/Unicode text";
+        homepage = "https://github.com/AlexanderGrooff/mermaid-ascii";
+        license = licenses.mit;
+        mainProgram = "mermaid-ascii";
+      };
+    };
+  };
+
   # xdevplatform/playground - X API v2 simulator for testing
   # Renovate: datasource=github-releases depName=xdevplatform/playground
   x-api-playground = _final: prev: {
