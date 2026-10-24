@@ -1,0 +1,5 @@
+{
+  "name": "mermaid-ascii",
+  "version": "0.1.0",
+  "description": "Draw mermaid fences in assistant replies as ASCII diagrams"
+}

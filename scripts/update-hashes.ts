@@ -241,7 +241,7 @@ export async function update(
         );
       } else {
         const hash = await prefetch(
-          `https://github.com/${pkg.repository}/archive/refs/tags/v${current}.tar.gz`,
+          `https://github.com/${pkg.repository}/archive/refs/tags/${pkg.tagPrefix}${current}.tar.gz`,
           true,
           runCommand,
         );
@@ -252,7 +252,7 @@ export async function update(
             "--depth",
             "1",
             "--branch",
-            `v${current}`,
+            `${pkg.tagPrefix}${current}`,
             `https://github.com/${pkg.repository}.git`,
             directory,
           ]);

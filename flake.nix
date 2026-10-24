@@ -214,6 +214,7 @@
       customOverlays.kakehashi
       customOverlays.karabiner-config
       customOverlays.lazy-nvim
+      customOverlays.mermaid-ascii
       customOverlays.peek-nvim
       customOverlays.pkl
       customOverlays.pkl-neovim
