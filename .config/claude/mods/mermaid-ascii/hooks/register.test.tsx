@@ -135,7 +135,7 @@ function painted(node: unknown): [string, string][] {
 test('tilde and spaced fences convert, and prose keeps its indentation', async ($, on) => {
   const sources: (string | undefined)[] = [];
   on('process.run', (_$, e) => {
-    sources.push(e.init?.stdin);
+    if (e.argv[0] === 'mermaid-ascii') sources.push(e.init?.stdin);
     return {
       value: {
         exitCode: 0,
@@ -166,4 +166,60 @@ test('tilde and spaced fences convert, and prose keeps its indentation', async (
     flowchart,
   ]);
   expect(prose).toEqual(['    echo hello', '    echo bye']);
+});
+
+test('a reply opening with a diagram draws its own bullet', async ($, on) => {
+  on('process.run', (_$, e) => ({
+    value: {
+      exitCode: 0,
+      stdout: e.argv[0] === 'uname' ? 'Darwin\n' : '┌─┐',
+      stderr: '',
+      isStdoutTruncated: false,
+      isStderrTruncated: false,
+    },
+  }));
+  const prose: { text: string; isFirstOfReply: boolean }[] = [];
+  on('ui.render', (_$, e) => {
+    if (e.component === 'AssistantMessage') {
+      const { text, isFirstOfReply } = e.props;
+      prose.push({ text, isFirstOfReply });
+    }
+    return { type: 'Text', props: {}, children: [] };
+  });
+
+  const tree = await $.ui.render(
+    draw(`\`\`\`mermaid\n${flowchart}\`\`\`\nafter`),
+  );
+  expect(painted(tree)).toEqual([
+    ['text', '⏺'],
+    ['subtle', '┌─┐'],
+  ]);
+  expect(prose).toEqual([{ text: 'after', isFirstOfReply: false }]);
+});
+
+test('a run that could not finish is retried on the next draw', async ($, on) => {
+  let calls = 0;
+  on('process.run', () => {
+    calls += 1;
+    if (calls === 1) throw new Error('spawn mermaid-ascii ENOENT');
+    return {
+      value: {
+        exitCode: 0,
+        stdout: '┌─┐',
+        stderr: '',
+        isStdoutTruncated: false,
+        isStderrTruncated: false,
+      },
+    };
+  });
+  on('ui.render', () => ({ type: 'Text', props: {}, children: [] }));
+
+  const reply = {
+    ...draw(`\`\`\`mermaid\n${flowchart}\`\`\``),
+    props: { text: `\`\`\`mermaid\n${flowchart}\`\`\``, isFirstOfReply: false },
+  };
+  await $.ui.render(reply);
+  const tree = await $.ui.render(reply);
+  expect(calls).toBe(2);
+  expect(painted(tree)).toEqual([['subtle', '┌─┐']]);
 });

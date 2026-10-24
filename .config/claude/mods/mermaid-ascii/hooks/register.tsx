@@ -43,8 +43,12 @@ export function findDiagrams(text: string): Diagram[] {
 const INDENT = 4;
 
 export const register: Register = (on) => {
-  // A streaming reply redraws on every flush; each diagram renders once.
+  // A streaming reply redraws on every flush; each diagram renders once. A
+  // diagram the tool rejects stays cached as undefined, but a run that could
+  // not finish (binary not installed yet, timeout) is dropped so a redraw
+  // retries it.
   const cache = new Map<string, Promise<string | undefined>>();
+  let bullet: Promise<string> | undefined;
 
   on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
     const { text } = e.props;
@@ -58,6 +62,7 @@ export const register: Register = (on) => {
         ascii = $.process
           .run(['mermaid-ascii', '-f', '-', ...width], { stdin: source })
           .then((r) => (r.exitCode === 0 ? r.stdout.trimEnd() : undefined));
+        ascii.catch(() => cache.delete(key));
         cache.set(key, ascii);
       }
       return ascii;
@@ -100,8 +105,8 @@ export const register: Register = (on) => {
           });
           return i === 0 ? prose : <Box paddingLeft={2}>{prose}</Box>;
         }
-        return (
-          <Box flexDirection="column" paddingLeft={2} marginTop={1}>
+        const diagram = (
+          <Box flexDirection="column">
             {p.ascii.split('\n').map((line) => (
               <Text wrap="truncate-end">
                 {runs(line).map((r) => (
@@ -109,6 +114,26 @@ export const register: Register = (on) => {
                 ))}
               </Text>
             ))}
+          </Box>
+        );
+        if (!(e.props.isFirstOfReply && i === 0)) {
+          return (
+            <Box paddingLeft={2} marginTop={1}>
+              {diagram}
+            </Box>
+          );
+        }
+        // The engine draws no bullet for an empty block, so a reply that opens
+        // with a diagram draws its own, using the glyph the engine picks per OS.
+        bullet ??= $.process
+          .run(['uname'])
+          .then((r) => (r.stdout.trim() === 'Darwin' ? '⏺' : '●'));
+        return (
+          <Box flexDirection="row" marginTop={1}>
+            <Box width={2}>
+              <Text color="text">{await bullet}</Text>
+            </Box>
+            {diagram}
           </Box>
         );
       }),
