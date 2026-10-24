@@ -1,4 +1,8 @@
-{lib, ...}: {
+{
+  lib,
+  pkgs,
+  ...
+}: {
   # 参考: https://blog.gitbutler.com/how-git-core-devs-configure-git/
   programs.git = {
     enable = true;
@@ -100,6 +104,8 @@
         quotepath = false;
         # 未追跡ファイルのキャッシュを有効にする。
         untrackedCache = true;
+        # WSL の /mnt/c (NTFS) では fsmonitor デーモンの Unix ソケットが作れない。
+        fsmonitor = pkgs.stdenv.hostPlatform.isDarwin;
         # デフォルトのページャーを less に設定する場合はコメント解除。
         # pager = "less -+X -+F -+S --quit-if-one-screen -+G --no-init --raw-control-chars -K";
         # difftastic 使用時は delta を無効化 (戻す場合はコメント解除)。
@@ -116,6 +122,8 @@
         algorithm = "histogram";
         # コードの移動を検出し、色付けして表示する。
         colorMoved = "plain";
+        # インデントだけ変えたブロックも移動として扱う。
+        colorMovedWS = "allow-indentation-change";
         # 差分表示のプレフィックスをわかりやすくする。
         mnemonicPrefix = true;
         # 差分表示の際にファイル名の変更を検出する。
@@ -128,6 +136,8 @@
         pruneTags = false;
         # フェッチする時に、すべてのリモートから取得する。
         all = true;
+        # pack を受け取るたびに commit-graph を更新し、log --graph などを速くする。
+        writeCommitGraph = true;
       };
       help = {
         # コマンド名を間違えた場合、補正候補の実行前に確認する。
@@ -181,6 +191,8 @@
       transfer = {
         # URL に平文の認証情報が埋め込まれていた場合、警告ではなく失敗させる。
         credentialsInUrl = "die";
+        # 壊れた・危険なオブジェクトを受け取ったら fetch / receive を中断する。
+        fsckObjects = true;
       };
       user = {
         # user.name / user.email を推測せず、設定ファイルに明示された値だけを使う。
@@ -196,6 +208,16 @@
       ".env"
       ".env.*"
       ".DS_Store"
+      "**/.claude/settings.local.json"
+    ];
+    # binary ではなく -diff にする。binary は -merge も含み、mergiraf.nix の
+    # "* merge=mergiraf" を打ち消してしまう。flake.lock / Cargo.lock は差分を読むので対象外。
+    attributes = [
+      "package-lock.json -diff"
+      "pnpm-lock.yaml -diff"
+      "yarn.lock -diff"
+      "bun.lock -diff"
+      "bun.lockb -diff"
     ];
   };
 
