@@ -102,6 +102,17 @@ export default defineConfig(({ env }) => {
       snippet:
         "HERDR_AGENT=claude devcontainer exec --workspace-folder . claude --dangerously-skip-permissions",
     },
+    {
+      name: "devcontainer codex",
+      keyword: "dcx",
+      snippet: "HERDR_AGENT=codex devcontainer exec --workspace-folder . codex",
+    },
+    {
+      name: "devcontainer codex (bypass approvals and sandbox)",
+      keyword: "dcxy",
+      snippet:
+        "HERDR_AGENT=codex devcontainer exec --workspace-folder . codex --dangerously-bypass-approvals-and-sandbox",
+    },
 
     // -------------------------------------------------------------------------
     // Nix

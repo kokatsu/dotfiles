@@ -11,12 +11,14 @@
     "TZ": "${localEnv:TZ:Asia/Tokyo}",
     "NODE_OPTIONS": "--max-old-space-size=4096",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+    "CODEX_HOME": "/home/vscode/.codex"
   },
-  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.claude && sudo apt-get update && sudo apt-get install -y iptables ipset iproute2 dnsutils jq curl aggregate && sudo install -m 0755 .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh && sudo sh -c 'echo \"vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\" > /etc/sudoers.d/vscode && chmod 0440 /etc/sudoers.d/vscode'",
+  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.claude /home/vscode/.codex && npm install -g @openai/codex && sudo apt-get update && sudo apt-get install -y iptables ipset iproute2 dnsutils jq curl aggregate && sudo install -m 0755 .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh && sudo sh -c 'echo \"vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\" > /etc/sudoers.d/vscode && chmod 0440 /etc/sudoers.d/vscode'",
   "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
   "waitFor": "postStartCommand",
   "mounts": [
-    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
+    "source=codex-config-${devcontainerId},target=/home/vscode/.codex,type=volume"
   ]
 }
