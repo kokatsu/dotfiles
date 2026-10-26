@@ -169,9 +169,9 @@ in {
     pname = "deck-slides";
     version = "1.24.4";
     hashes = {
-      "aarch64-darwin" = "sha256-Gs3Dq8h7w0z9WTnnYLesYybe6xng9lplnh92qbxPr5M=";
-      "aarch64-linux" = "sha256-4XBJLWrMNl8UxhrT3IpKKDE2sGzpF0JyXt9zPMjoaDg=";
-      "x86_64-linux" = "sha256-JgsNLPmKJ8lQAIu/phHiFABjO4GC4aD+cFMEZbqfsDQ=";
+      "aarch64-darwin" = "sha256-0l5uz8IBEvWReXvSqYQNYyCsG/1lM0voOj9R9kT2wE0=";
+      "aarch64-linux" = "sha256-VyESNSwG07eD94mEDuWhV6Cuucpp003X4iR6qgMCZ78=";
+      "x86_64-linux" = "sha256-lN/ObCXkYTJY/0i6QXhB3wYRuy8xgd/PI3gJObyCCek=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin_arm64.zip";
