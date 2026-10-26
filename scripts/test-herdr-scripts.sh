@@ -547,4 +547,161 @@ FZF_PICK=justfile FZF_KEY=ctrl-y run_pick </dev/null
 expect_calls "pick: copy" <<<"pane get p1"
 [[ $(<"$test_dir/clipboard") == "$repo/justfile" ]]
 
+# --- search-target.sh ---
+
+export REAL_FZF
+REAL_FZF=$(command -v fzf)
+mkdir -p "$test_dir/config/herdr"
+cat >"$test_dir/config/herdr/search-colors.json" <<'EOF'
+{"peach":[250,179,135],"blue":[137,180,250],"mauve":[203,166,247],"yellow":[249,226,175],"red":[243,139,168],"green":[166,227,161],"overlay1":[127,132,156],"subtext0":[166,173,200]}
+EOF
+cat >"$test_dir/bin/fzf" <<'EOF'
+#!/usr/bin/env bash
+cat >"$TEST_DIR/search-targets.tsv"
+if [[ -n ${FZF_STATUS:-} ]]; then exit "$FZF_STATUS"; fi
+exec "$REAL_FZF" "$@" --filter="$FZF_PICK" <"$TEST_DIR/search-targets.tsv"
+EOF
+
+cat >"$test_dir/search-snapshot.json" <<'EOF'
+{"result":{"snapshot":{
+  "workspaces":[{"workspace_id":"w1","label":"開発"},{"workspace_id":"w2","label":"dotfiles"}],
+  "tabs":[
+    {"workspace_id":"w1","tab_id":"w1:t1","label":"[1] API","agent_status":"working"},
+    {"workspace_id":"w2","tab_id":"w2:t1","label":"[1] 設定","agent_status":"idle"},
+    {"workspace_id":"w2","tab_id":"w2:t2","label":"[2] シェル"}],
+  "panes":[
+    {"pane_id":"w1:p1","tab_id":"w1:t1","cwd":"/work/old","focused":false},
+    {"pane_id":"w1:p2","tab_id":"w1:t1","cwd":"/work/old","foreground_cwd":"/work/日本語 project","focused":true},
+    {"pane_id":"w2:p1","tab_id":"w2:t1","cwd":"/work/dotfiles"},
+    {"pane_id":"w2:p2","tab_id":"w2:t2","cwd":"/work/shell"},
+    {"pane_id":"w2:p3","tab_id":"w2:t2","cwd":"/work/背景 dir"}],
+  "agents":[
+    {"workspace_id":"w1","tab_id":"w1:t1","pane_id":"w1:p2","agent":"claude","agent_status":"blocked","terminal_title_stripped":"日本語の設計レビュー","foreground_cwd":"/work/日本語 project"},
+    {"workspace_id":"w2","tab_id":"w2:t1","pane_id":"w2:p1","agent":"codex","agent_status":"idle","cwd":"/work/dotfiles"}],
+  "layouts":[{"tab_id":"w1:t1","focused_pane_id":"w1:p2"},{"tab_id":"w2:t2","focused_pane_id":"w2:p3"}]
+}}}
+EOF
+
+search_handler() {
+  start_case <<'EOF'
+respond() {
+  case "$1" in
+  "api snapshot") cat "$TEST_DIR/search-snapshot.json" ;;
+  "tab focus w2:t2" | "agent focus w1:p2" | "agent focus w2:p1") return "${FOCUS_STATUS:-0}" ;;
+  "pane read "*)
+    [[ ${READ_STATUS:-0} == 0 ]] || return "$READ_STATUS"
+    printf 'テスト用の端末出力\n次の行\n'
+    ;;
+  *) exit 9 ;;
+  esac
+}
+EOF
+}
+run_search() { XDG_CONFIG_HOME="$test_dir/config" PATH="$test_dir/bin:$PATH" bash "$scripts/search-target.sh"; }
+
+search_handler
+FZF_PICK="'シェル" run_search
+expect_calls 'search: shell-only tab in another workspace' <<'EOF'
+api snapshot
+tab focus w2:t2
+EOF
+[[ $(wc -l <"$test_dir/search-targets.tsv") == 5 ]]
+awk -F '\t' '$1 == "tab" && $2 == "w1:t1" && $8 == "/work/日本語 project" {found=1} END {exit !found}' \
+  "$test_dir/search-targets.tsv"
+
+search_handler
+FZF_PICK="'背景" run_search
+expect_calls 'search: inactive tab cwd comes from its selected pane' <<'EOF'
+api snapshot
+tab focus w2:t2
+EOF
+
+search_handler
+FZF_PICK="'blocked" run_search
+expect_calls 'search: colored state remains searchable and preserves target ID' <<'EOF'
+api snapshot
+agent focus w1:p2
+EOF
+
+search_handler
+FZF_PICK="'設計レビュー" run_search
+expect_calls 'search: Japanese agent title' <<'EOF'
+api snapshot
+agent focus w1:p2
+EOF
+
+search_handler
+FZF_PICK="'codex" run_search
+expect_calls 'search: agent without title' <<'EOF'
+api snapshot
+agent focus w2:p1
+EOF
+
+search_handler
+preview=$(bash "$scripts/search-target.sh" --preview "$test_dir/search-snapshot.json" agent w1:p2)
+[[ "$preview" == *'作業名: 日本語の設計レビュー'* ]]
+[[ "$preview" == *'ディレクトリ: /work/日本語 project'* ]]
+[[ "$preview" == *$'テスト用の端末出力\n次の行'* ]]
+[[ "$preview" != *'ペイン一覧'* ]]
+expect_calls 'search: agent preview reads without focusing' <<<'pane read w1:p2 --source recent --lines 50 --format text --raw'
+
+search_handler
+preview=$(bash "$scripts/search-target.sh" --preview "$test_dir/search-snapshot.json" tab w1:t1)
+[[ "$preview" == *'ペイン一覧'* ]]
+[[ "$preview" == *'> claude blocked 日本語の設計レビュー'* ]]
+[[ "$preview" == *'shell unknown /work/old'* ]]
+expect_calls 'search: tab preview uses its selected pane' <<<'pane read w1:p2 --source recent --lines 50 --format text --raw'
+
+search_handler
+preview=$(READ_STATUS=1 bash "$scripts/search-target.sh" --preview "$test_dir/search-snapshot.json" agent w2:p1)
+[[ "$preview" == *'端末出力を取得できませんでした'* ]]
+expect_no_notification 'search: preview failure stays in preview'
+
+for status in 1 130; do
+  search_handler
+  FZF_STATUS=$status run_search
+  expect_calls "search: cancel $status" <<<'api snapshot'
+  expect_no_notification "search: cancel $status"
+done
+
+search_handler
+if FZF_STATUS=2 run_search; then exit 1; fi
+expect_calls 'search: fzf failure' <<<'api snapshot'
+expect_notified 'search: fzf failure' '作業検索に失敗しました'
+
+search_handler
+if FOCUS_STATUS=1 FZF_PICK="'codex" run_search; then exit 1; fi
+expect_notified 'search: target closed' '選択した作業へ移動できませんでした'
+
+# 改行や TAB を含むタイトルも 1 候補に収め、制御文字を端末へ渡さない。
+jq '.result.snapshot.agents[0].terminal_title_stripped = "制御\n文字\t入り\u001bタイトル"' \
+  "$test_dir/search-snapshot.json" >"$test_dir/search-control.json"
+mv "$test_dir/search-control.json" "$test_dir/search-snapshot.json"
+search_handler
+FZF_PICK="'制御" run_search
+[[ $(wc -l <"$test_dir/search-targets.tsv") == 5 ]]
+awk -F '\t' 'NF != 8 {exit 1}' "$test_dir/search-targets.tsv"
+
+printf '%s\n' '{"result":{"snapshot":{"workspaces":[],"tabs":[],"agents":[],"panes":[]}}}' \
+  >"$test_dir/search-snapshot.json"
+search_handler
+run_search
+expect_calls 'search: empty session' <<<'api snapshot'
+expect_notified 'search: empty session' '検索できるタブ・エージェントがありません'
+
+for invalid in '{}' '{"result":{"snapshot":{"workspaces":null,"tabs":[],"agents":[],"panes":[]}}}' broken; do
+  printf '%s\n' "$invalid" >"$test_dir/search-snapshot.json"
+  search_handler
+  if run_search 2>/dev/null; then exit 1; fi
+  expect_calls 'search: invalid snapshot' <<<'api snapshot'
+  expect_notified 'search: invalid snapshot' 'タブ・エージェント一覧を作成できませんでした'
+done
+
+start_case <<'EOF'
+respond() { return 1; }
+EOF
+if run_search; then exit 1; fi
+expect_calls 'search: snapshot failure' <<<'api snapshot'
+expect_notified 'search: snapshot failure' 'タブ・エージェント一覧の取得に失敗しました'
+
 printf 'herdr script tests passed\n'

@@ -55,6 +55,12 @@ in {
   # Claude Code/codex ペインでの IME 候補窓追従。
   home.file =
     {
+      ".config/herdr/search-colors.json".text = builtins.toJSON (
+        lib.genAttrs ["peach" "blue" "mauve" "yellow" "red" "green" "overlay1" "subtext0"]
+        (name: let
+          rgb = p.${name}.rgb;
+        in [rgb.r rgb.g rgb.b])
+      );
       ".config/herdr/config.toml".text = let
         scriptsDir = "${config.xdg.configHome}/herdr/scripts";
       in
@@ -188,6 +194,14 @@ in {
           # サイドバー切替を別キーへ移す
           toggle_sidebar = "prefix+shift+b"
           copy_mode = "prefix+["
+
+          [[keys.command]]
+          key = "prefix+k"
+          type = "popup"
+          command = "${scriptsDir}/search-target.sh"
+          description = "タブ・エージェントを検索"
+          width = "90%"
+          height = "80%"
 
           # Herdr の agent list 順。末尾では先頭へ折り返し、該当がなければ通知する
           [[keys.command]]
