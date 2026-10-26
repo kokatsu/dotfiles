@@ -405,6 +405,7 @@
             bash # Shell regression tests
             zsh # `just zsh-lint` (zsh -n)
             jq # Feed state regression tests
+            fzf # herdr search-target regression tests
             yq-go # Feed XML / OPML regression tests
             shellcheck # シェルスクリプト linter
             shfmt # シェルスクリプト formatter
