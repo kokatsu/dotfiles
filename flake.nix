@@ -254,6 +254,25 @@
         ];
         extraSpecialArgs = {
           inherit inputs self username isCI isWSL dotfilesDir;
+          isDevcontainer = false;
+        };
+      };
+
+    # .devcontainer で Claude Code と Codex の設定を配置する構成 (nix/devcontainer/home.nix)
+    mkDevcontainerHome = {
+      system,
+      dotfilesDir,
+    }:
+      home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          overlays = commonOverlays;
+        };
+        modules = [./nix/devcontainer/home.nix];
+        extraSpecialArgs = {
+          inherit dotfilesDir;
+          isDevcontainer = true;
         };
       };
 
@@ -346,6 +365,11 @@
         isCI = false;
         inherit dotfilesDir;
       };
+      # コンテナ内で .devcontainer/apply-home.sh が適用する
+      devcontainer = mkDevcontainerHome {
+        system = currentSystem;
+        inherit dotfilesDir;
+      };
     };
 
     # `nix flake check`をHome Manager / nix-darwinの入口にする。
@@ -366,6 +390,11 @@
       }
       // lib.optionalAttrs (builtins.elem system linuxSystems) {
         home-wsl = wslHome.activationPackage;
+        devcontainer-home =
+          (mkDevcontainerHome {
+            inherit system;
+            dotfilesDir = "/tmp/dotfiles";
+          }).activationPackage;
         wsl-services = import ./nix/checks/wsl-services.nix {
           pkgs = devPkgs.${system};
           inherit (wslHome) config;

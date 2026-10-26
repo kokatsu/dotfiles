@@ -3,7 +3,11 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {},
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
+    // Claude Code と Codex の設定とフックを Home Manager で配置する (.devcontainer/apply-home.sh)
+    "ghcr.io/devcontainers/features/nix:1": {
+      "extraNixConfig": "experimental-features = nix-command flakes"
+    }
   },
   "remoteUser": "vscode",
   "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
@@ -11,14 +15,26 @@
     "TZ": "${localEnv:TZ:Asia/Tokyo}",
     "NODE_OPTIONS": "--max-old-space-size=4096",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
-    "CODEX_HOME": "/home/vscode/.codex"
+    // 上の設定で feature flag を取得しなくなり、入力欄に端末のカーソルを使う既定が flag から取れない
+    "CLAUDE_CODE_NATIVE_CURSOR": "1",
+    // ホストと同じ場所に置き、ホスト向けの設定に書かれたパスをそのまま通す
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.config/claude",
+    "CODEX_HOME": "/home/vscode/.config/codex"
   },
-  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.claude /home/vscode/.codex && npm install -g @openai/codex && sudo apt-get update && sudo apt-get install -y iptables ipset iproute2 dnsutils jq curl aggregate && sudo install -m 0755 .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh && sudo sh -c 'echo \"vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\" > /etc/sudoers.d/vscode && chmod 0440 /etc/sudoers.d/vscode'",
+  "remoteEnv": {
+    // devcontainer exec はホストの端末の情報を渡さず TERM=xterm になり、Claude Code の色数が落ちる
+    "TERM": "${localEnv:TERM}",
+    "COLORTERM": "${localEnv:COLORTERM}",
+    // ホストでは Home Manager の sessionVariables が設定している
+    "CC_STATUSLINE_THEME": "${localEnv:CC_STATUSLINE_THEME}",
+    // Home Manager が入れる agent-guard と cc-statusline
+    "PATH": "/home/vscode/.nix-profile/bin:${containerEnv:PATH}"
+  },
+  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.config /home/vscode/.config/claude /home/vscode/.config/codex && npm install -g @openai/codex && sudo apt-get update && sudo apt-get install -y iptables ipset iproute2 dnsutils jq curl aggregate && sudo install -m 0755 .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh && sudo sh -c 'echo \"vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\" > /etc/sudoers.d/vscode && chmod 0440 /etc/sudoers.d/vscode' && .devcontainer/apply-home.sh",
   "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
   "waitFor": "postStartCommand",
   "mounts": [
-    "source=claude-code-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
-    "source=codex-config-${devcontainerId},target=/home/vscode/.codex,type=volume"
+    "source=claude-code-config-${devcontainerId},target=/home/vscode/.config/claude,type=volume",
+    "source=codex-config-${devcontainerId},target=/home/vscode/.config/codex,type=volume"
   ]
 }
