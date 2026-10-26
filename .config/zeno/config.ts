@@ -113,6 +113,13 @@ export default defineConfig(({ env }) => {
       snippet:
         "HERDR_AGENT=codex devcontainer exec --workspace-folder . codex --dangerously-bypass-approvals-and-sandbox",
     },
+    {
+      // devcontainer exec はポートを転送せず、ブラウザ経由の localhost:1455 コールバックが届かない
+      name: "devcontainer codex login (device auth)",
+      keyword: "dcxl",
+      snippet:
+        "devcontainer exec --workspace-folder . codex login --device-auth",
+    },
 
     // -------------------------------------------------------------------------
     // Nix
