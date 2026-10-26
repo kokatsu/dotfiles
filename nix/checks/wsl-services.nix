@@ -34,13 +34,14 @@
     '';
 in
   assert lib.assertMsg
-  (lib.all (name: !(builtins.hasAttr name plainConfig.systemd.user.services)) (builtins.attrNames commands ++ ["claude-otel"]))
+  (lib.all (name: !(builtins.hasAttr name plainConfig.systemd.user.services)) (builtins.attrNames commands ++ ["claude-otel" "devcontainer-transcripts"]))
   "WSL services must not be enabled on ordinary Linux";
     pkgs.runCommand "wsl-services-check" {} ''
       testHome="$TMPDIR/home"
       mkdir -p "$testHome/.local/bin/scripts"
       ${lib.concatStringsSep "\n" (lib.mapAttrsToList checkWatch commands)}
       grep -Fx 'TimeoutStartSec=10min' ${config.xdg.configFile."systemd/user/feed-watch.service".source}
+      grep -Fx 'OnCalendar=minutely' ${config.xdg.configFile."systemd/user/devcontainer-transcripts.timer".source}
       grep -Fx 'Restart=always' ${config.xdg.configFile."systemd/user/claude-otel.service".source}
       grep -Fx 'WantedBy=default.target' ${config.xdg.configFile."systemd/user/claude-otel.service".source}
       touch "$out"
