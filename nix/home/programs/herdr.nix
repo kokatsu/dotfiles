@@ -56,7 +56,7 @@ in {
   home.file =
     {
       ".config/herdr/search-colors.json".text = builtins.toJSON (
-        lib.genAttrs ["peach" "blue" "mauve" "yellow" "red" "green" "overlay1" "subtext0"]
+        lib.genAttrs ["peach" "blue" "yellow" "red" "green" "overlay1" "subtext0"]
         (name: let
           rgb = p.${name}.rgb;
         in [rgb.r rgb.g rgb.b])
@@ -199,7 +199,7 @@ in {
           key = "prefix+k"
           type = "popup"
           command = "${scriptsDir}/search-target.sh"
-          description = "タブ・エージェントを検索"
+          description = "ペインを検索"
           width = "90%"
           height = "80%"
 
