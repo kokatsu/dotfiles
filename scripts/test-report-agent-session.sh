@@ -28,6 +28,9 @@ fi
 printf '%s\0' "\$@" >"$record"
 EOF
 chmod +x "$test_dir/herdr"
+# macOS checks a new executable on its first exec, which can take hundreds of ms
+# and then eats the binary's 500ms deadline. Pay that cost outside the deadline.
+"$test_dir/herdr" warmup
 # The Codex pane check walks a ps snapshot, so the hook's PATH needs ps.
 ln -s "$(command -v ps)" "$test_dir/bin/ps"
 
