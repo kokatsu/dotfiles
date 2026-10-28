@@ -229,6 +229,10 @@ in {
       typos # タイポ検出
       # https://github.com/koalaman/shellcheck
       shellcheck # シェルスクリプト linter
+      # https://github.com/zizmorcore/zizmor
+      zizmor # GitHub Actions セキュリティ linter
+      # https://github.com/jdx/jactionlint
+      jactionlint # GitHub Actions linter (actionlint fork)
       # https://github.com/mvdan/sh
       shfmt # シェルスクリプト formatter
       # https://github.com/editorconfig-checker/editorconfig-checker

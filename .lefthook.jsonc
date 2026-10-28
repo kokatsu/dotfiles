@@ -74,6 +74,14 @@
         "glob": ["*.zsh", ".config/zsh/.zshrc"],
         "run": "echo {staged_files} | xargs -n1 zsh -n"
       },
+      "zizmor": {
+        "glob": [".github/**/*.{yml,yaml}"],
+        "run": "zizmor --offline {staged_files}"
+      },
+      "jactionlint": {
+        "glob": [".github/**/*.{yml,yaml}"],
+        "run": "jactionlint {staged_files}"
+      },
       "markdownlint": {
         "glob": ["*.md"],
         "exclude": [".config/yazi/flavors/**/*", ".config/yazi/plugins/**/*"],
@@ -166,6 +174,14 @@
       "zsh-lint": {
         "glob": ["*.zsh", ".config/zsh/.zshrc"],
         "run": "echo {push_files} | xargs -n1 zsh -n"
+      },
+      "zizmor": {
+        "glob": [".github/**/*.{yml,yaml}"],
+        "run": "zizmor --offline {push_files}"
+      },
+      "jactionlint": {
+        "glob": [".github/**/*.{yml,yaml}"],
+        "run": "jactionlint {push_files}"
       },
       "markdownlint": {
         "glob": ["*.md"],

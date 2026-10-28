@@ -40,7 +40,7 @@ fmt: lua-fmt nix-fmt biome-fmt deno-fmt go-fmt shfmt toml-fmt yaml-fmt pkl-fmt
 fmt-check: lua-fmt-check nix-fmt-check deno-fmt-check go-fmt-check shfmt-check toml-fmt-check yaml-fmt-check pkl-fmt-check
 
 # Run all linters
-lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint deno-lint deno-check go-vet biome-ci markdownlint toml-check editorconfig gitleaks-smoke-test gitleaks-scan
+lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint jactionlint zizmor deno-lint deno-check go-vet biome-ci markdownlint toml-check editorconfig gitleaks-smoke-test gitleaks-scan
 
 # List git-tracked Lua files (vendored yazi plugins are excluded)
 # lua_dirs だけだと .config/yazi/init.lua や scripts/*.lua を取りこぼすため動的に列挙する。
@@ -169,6 +169,15 @@ shfmt:
 # Check shell script formatting (no write)
 shfmt-check:
     @just _sh-files | xargs shfmt -d
+
+# Lint GitHub Actions workflows
+jactionlint:
+    jactionlint
+
+# Audit GitHub Actions workflows for security issues
+# online audit は GitHub API の token を要求するため、手元と CI で結果が揃うよう --offline で固定する
+zizmor:
+    zizmor --offline .github
 
 # Lint Markdown files (除外は .markdownlintignore が担う)
 markdownlint:

@@ -453,6 +453,8 @@
             pkl # Pkl formatter + test case generator
             textlint-with-rules # 日本語校正 (AI 文体 hook のテストが使う)
             yamlfmt # YAML formatter
+            zizmor # GitHub Actions セキュリティ linter
+            jactionlint # GitHub Actions linter (actionlint fork)
 
             # Cross-cutting
             editorconfig-checker # EditorConfig 準拠チェッカー
