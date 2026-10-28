@@ -3,7 +3,7 @@
 # if ゲートは「解析できないコマンド」でも起動するため、gh api が無い入力が届く)。
 # その行の reason 列には - を置く。タブは IFS の空白なので、空の列は隣と潰れる。
 #
-# A: 書き込みの疑いで ask になる形
+# A: 書き込みの疑いがある形
 # B: 読み取りと証明できて allow になる形
 # C: 値の中身が旗に見えるだけの読み取り
 # D: 展開が旗を持ち込める形
@@ -25,7 +25,7 @@ A5	ask	gh api: HTTP method override to 'put' (not GET) — confirm intent	gh api
 A6	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -F a=b
 A7	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r -f a=b
 A8	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r --input body.json
-A9	ask	gh api: an expanded argument could add a flag — confirm intent	gh api repos/o/r --method$M
+A9	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api repos/o/r --method$M
 A10	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api repos/o/r -X GET -X DELETE
 A11	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	sh -c 'gh api r -X DELETE'
 A12	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	xargs gh api
@@ -59,11 +59,11 @@ C2	allow	gh api: explicit GET	gh api -X GET repos/o/r | grep -F name
 C3	allow	gh api: explicit GET	echo $(date) && gh api -X GET repos/o/r
 C4	allow	gh api: explicit GET	x=$(gh api -X GET repos/o/r)
 C5	allow	gh api: explicit GET	gh api -X GET repos/o/r && rm -f /tmp/x
-D1	ask	gh api: an expanded argument could add a flag — confirm intent	gh api repos/o/r/issues $X
-D2	ask	gh api: an expanded argument could add a flag — confirm intent	gh api repos/o/r "$@"
-D3	ask	gh api: an expanded argument could add a flag — confirm intent	gh api $FLAGS repos/o/r
-D4	ask	gh api: an expanded argument could add a flag — confirm intent	gh api repos/$O/commits
-D5	ask	gh api: an expanded argument could add a flag — confirm intent	gh api "$X"
+D1	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api repos/o/r/issues $X
+D2	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api repos/o/r "$@"
+D3	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api $FLAGS repos/o/r
+D4	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api repos/$O/commits
+D5	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api "$X"
 E1	none	-	echo hello
 E2	none	-	VIS=/x/vis && $VIS in out --no-vis
 E3	none	-	$SP/b.out < in.txt > out.txt
@@ -71,23 +71,26 @@ F1	allow	gh api: explicit GET	gh api -X GET -- "$X"
 F2	deny	gh api: no explicit HTTP method — re-run with -X GET for a read	gh api -- -X DELETE
 F3	allow	gh api: explicit GET	gh api -X GET repos/o/r -H"$V"
 F4	ask	gh api: unknown flag '--nonesuch' — confirm intent	gh api repos/o/r --nonesuch
-F5	ask	gh api: an expanded argument could add a flag — confirm intent	gh api "repos/${a[@]}"
+F5	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api "repos/${a[@]}"
 F6	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	env GH_HOST=x gh api r -X DELETE
 F7	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api repos/o/r --input"$F"
 G1	ask	gh api: could not parse this command as bash — confirm intent	gh api 'unterminated
 G2	none	-	echo 'unterminated
-H1	ask	gh api: an expanded argument could add a flag — confirm intent	gh api r -H $H
-H2	ask	gh api: an expanded argument could add a flag — confirm intent	gh api r --header $H
+H1	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api r -H $H
+H2	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api r --header $H
 H3	ask	gh api: an expanded word hides what runs — confirm intent	env -u $V gh api r
 H4	ask	gh api: an expanded word hides what runs — confirm intent	gh api r -X GET && $CMD api r -X DELETE
 H5	ask	gh api: an expanded word hides what runs — confirm intent	$CMD api r -X DELETE
 H6	ask	gh api: an expanded word hides what runs — confirm intent	env -u $V gh a${P}i r -X DELETE
 H7	ask	gh api: an expanded word hides what runs — confirm intent	gh a${P}i r -X DELETE
 H8	ask	gh api: an expanded word hides what runs — confirm intent	gh $X r -X DELETE
+H9	allow	gh api: explicit GET	gh api -X GET r -H "$H"
 J1	deny	gh api: no explicit HTTP method — re-run with -X GET for a read	gh api r && gh api r -X DELETE
 J2	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api r -X DELETE && gh api r
 J3	deny	gh api: no explicit HTTP method — re-run with -X GET for a read	gh api r -X GET > >(gh api s)
 J4	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api r -X GET <<< "$(gh api s -X DELETE)"
+J5	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api -X GET repos/$O && gh api r -X DELETE
+J6	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api r -X DELETE && gh api -X GET repos/$O
 K1	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	timeout 5 gh api r -X GET
 K2	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	xargs gh api r -X GET
 K3	ask	gh api: indirect invocation (eval / sh -c / xargs) — confirm intent	nohup gh api r -X GET

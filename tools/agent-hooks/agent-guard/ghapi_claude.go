@@ -2,8 +2,9 @@ package main
 
 // gh-api モード: Claude Code の `gh api` が GET を明示した読み取りだと証明できた
 // ときだけ allow を返す PreToolUse 判定。証明できなければ ask へ落とす。ただし
-// メソッドの書き忘れだけは deny にする。ask の理由はユーザーにしか見えず、deny の
-// 理由だけが Claude に届くので、deny なら Claude が -X GET を足して自分で再実行できる。
+// メソッドの書き忘れと、展開が旗を持ち込める書き方は deny にする。ask の理由は
+// ユーザーにしか見えず、deny の理由だけが Claude に届くので、deny なら Claude が
+// -X GET を足したり展開を引用したりして自分で再実行できる。
 //
 // 判定は生文字列ではなく AST の argv に対して行う。値の中身が旗に見えるだけの
 // 読み取り (`--jq '… -X DELETE …'`) を ask にせず、展開が旗を持ち込める形
@@ -46,7 +47,7 @@ var ghAPILongBody = map[string]bool{"field": true, "input": true, "raw-field": t
 
 const (
 	ghAPIBodyReason       = "gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST"
-	ghAPINonLiteralReason = "gh api: an expanded argument could add a flag — confirm intent"
+	ghAPINonLiteralReason = `gh api: an expanded argument could add a flag — write flag names literally and double-quote each expansion (gh api -X GET "repos/$repo" -H "$h"); an endpoint that starts with an expansion goes last, after -- (gh api -X GET --jq . -- "$url")`
 	ghAPIIndirectReason   = "gh api: indirect invocation (eval / sh -c / xargs) — confirm intent"
 	ghAPIUnreadableReason = "gh api: an expanded word hides what runs — confirm intent"
 	ghAPIUnparsedReason   = "gh api: could not parse this command as bash — confirm intent"
@@ -431,7 +432,7 @@ func ghAPIDecide(file *syntax.File) (ghAPIDecision, bool) {
 	switch {
 	case !seen && !mayBeAPI:
 		return ghAPIDecision{}, false
-	case reason == ghAPINoMethodReason:
+	case reason == ghAPINoMethodReason, reason == ghAPINonLiteralReason:
 		return ghAPIDecision{"deny", reason}, true
 	case reason != "":
 		return ghAPIDecision{"ask", reason}, true
