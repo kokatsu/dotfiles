@@ -212,7 +212,10 @@ Deno.test("every real overlay target can be changed without touching its neighbo
   const names = [...binary.matchAll(/^ {2}([\w-]+) = mkBinaryRelease/gm)].map((
     m,
   ) => m[1]);
-  equal(names.length, [...binary.matchAll(/mkBinaryRelease.*\{/g)].length);
+  equal(
+    names.length,
+    [...binary.matchAll(/^(?![ \t]*#).*mkBinaryRelease.*\{/gm)].length,
+  );
   if (!names.length) throw new Error("no binary packages");
   for (const name of names) {
     version(binary, name);

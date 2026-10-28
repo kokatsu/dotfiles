@@ -218,7 +218,7 @@
       customOverlays.peek-nvim
       customOverlays.pkl
       customOverlays.pkl-neovim
-      customOverlays.qo
+      # customOverlays.qo
       customOverlays.ruby-lsp
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.textlint-with-rules
@@ -323,7 +323,7 @@
 
     # Darwin専用オーバーレイ (ビルド修正)
     darwinOnlyOverlays = [
-      customOverlays.jp2a-darwin-fix
+      # customOverlays.jp2a-darwin-fix
     ];
 
     # CI の hash 検証用マニフェスト。

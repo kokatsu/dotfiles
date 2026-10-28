@@ -136,10 +136,10 @@ function extractRegexManagers(): RegexManager[] {
 }
 
 function findRenovateComments(content: string): RenovateComment[] {
-  const re = /#\s*Renovate:\s*datasource=[\w.-]+\s+depName=([\w@/-]+)/g;
+  const re = /^[ \t]*#\s*Renovate:\s*datasource=[\w.-]+\s+depName=([\w@/-]+)/gm;
   return [...content.matchAll(re)].map((m) => ({
     depName: m[1],
-    pos: m.index ?? 0,
+    pos: m.index + m[0].indexOf("#"),
     line: content.slice(0, m.index).split("\n").length,
   }));
 }

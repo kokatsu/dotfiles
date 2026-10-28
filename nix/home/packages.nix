@@ -101,8 +101,6 @@ in {
       jq # JSON プロセッサ
       # https://github.com/johnkerl/miller
       miller # CSV/TSV/JSON 処理
-      # https://github.com/kiki-ki/go-qo
-      qo # JSON/CSV を SQL で問い合わせる TUI
       # https://github.com/mikefarah/yq
       yq-go # YAML/JSON/XML プロセッサ (yq コマンド)
       # https://github.com/rofl0r/ncdu
@@ -111,22 +109,14 @@ in {
       nkf # 文字コード変換
       # https://github.com/nmap/nmap
       nmap # ネットワークスキャナ
-      # https://github.com/o2sh/onefetch
-      onefetch # Git リポジトリ情報表示
       # https://github.com/noborus/ov
       ov # ページャー
       # https://github.com/ast-grep/ast-grep
       ast-grep # AST ベース構造的コード検索・書き換え (grep/sed alternative, sg)
-      # https://github.com/boyter/scc
-      scc # コード統計
       # http://www.dest-unreach.org/socat/
       socat # 多機能ソケットリレー
       # https://github.com/homeport/termshot
       termshot # ターミナルスクリーンショット (PNG)
-      # https://github.com/xampprocky/tokei
-      tokei # コード統計ツール (行数カウント)
-      # https://github.com/Epistates/treemd
-      treemd # Markdown navigator TUI
       # https://gitlab.com/OldManProgrammer/unix-tree
       tree # ディレクトリツリー表示
       # https://github.com/tree-sitter/tree-sitter
@@ -147,20 +137,10 @@ in {
       bento4 # MP4 解析/操作ツールキット (mp4dump, mp4info 等)
       # https://github.com/FFmpeg/FFmpeg
       ffmpeg # メディア処理ツールキット
-      # https://github.com/karlstav/cava
-      cava # 音声ビジュアライザ
-      # https://github.com/dominikwilkowski/cfonts
-      cfonts # ASCIIアート
       # https://exiftool.org/
       exiftool # 画像/動画メタデータ編集
       # https://github.com/ImageMagick/ImageMagick
       imagemagick # 画像処理ツールキット
-      # https://github.com/eddieantonio/imgcat
-      imgcat # 画像表示
-      # https://github.com/cslarsen/jp2a
-      jp2a # JPG→ASCII変換
-      # https://github.com/cacalabs/libcaca
-      libcaca # テキストグラフィックス
       # https://potrace.sourceforge.net/
       potrace # ビットマップ→ベクター変換
       # https://github.com/tesseract-ocr/tesseract
@@ -219,8 +199,6 @@ in {
       stylua # Lua formatter
       # https://github.com/Kampfkarren/selene
       selene # Lua linter
-      # https://github.com/lunarmodules/luacheck
-      luaPackages.luacheck # Lua linter (.luacheckrc 用)
       # https://github.com/textlint/textlint
       textlint-with-rules # 日本語校正 (overlay)
       # https://github.com/Redocly/redocly-cli
@@ -245,8 +223,6 @@ in {
       #--- プレゼン ---#
       # https://github.com/marp-team/marp-cli
       marp-cli # Markdown → スライド
-      # https://github.com/mfontanini/presenterm
-      presenterm # ターミナルプレゼンテーション
 
       #####################################
       # Language Servers
@@ -370,8 +346,6 @@ in {
       git-open # リポジトリをブラウザで開く
       # https://github.com/mlange-42/git-graph
       git-graph # Git コミットグラフ可視化 (fork: kokatsu/git-graph)
-      # https://github.com/brevity1swos/rgx
-      rgx # ターミナル正規表現テスター (regex101 の TUI 版)
       # https://github.com/herdrdev/herdr (公式ソース + 描画パッチ、overlay)
       herdr # tmux 的なエージェント対応ターミナルマルチプレクサ
       #--- エディタ ---#
@@ -421,4 +395,32 @@ in {
       # https://github.com/googlefonts/noto-cjk
       noto-fonts-cjk-sans # 日本語フォント
     ];
+
+  # 使用停止中のパッケージ
+  # https://github.com/o2sh/onefetch
+  # onefetch # Git リポジトリ情報表示
+  # https://github.com/lunarmodules/luacheck
+  # luaPackages.luacheck # Lua linter (.luacheckrc 用)
+  # https://github.com/mfontanini/presenterm
+  # presenterm # ターミナルプレゼンテーション
+  # https://github.com/karlstav/cava
+  # cava # 音声ビジュアライザ
+  # https://github.com/cacalabs/libcaca
+  # libcaca # テキストグラフィックス
+  # https://github.com/dominikwilkowski/cfonts
+  # cfonts # ASCIIアート
+  # https://github.com/boyter/scc
+  # scc # コード統計
+  # https://github.com/xampprocky/tokei
+  # tokei # コード統計ツール (行数カウント)
+  # https://github.com/Epistates/treemd
+  # treemd # Markdown navigator TUI
+  # https://github.com/kiki-ki/go-qo
+  # qo # JSON/CSV を SQL で問い合わせる TUI
+  # https://github.com/brevity1swos/rgx
+  # rgx # ターミナル正規表現テスター (regex101 の TUI 版)
+  # https://github.com/cslarsen/jp2a
+  # jp2a # JPG→ASCII変換
+  # https://github.com/eddieantonio/imgcat
+  # imgcat # 画像表示
 }

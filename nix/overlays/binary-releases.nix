@@ -213,27 +213,27 @@ in {
     };
   };
 
-  # qo - Interactive TUI to query JSON and CSV with SQL
-  # Renovate: datasource=github-releases depName=kiki-ki/go-qo
-  qo = mkBinaryRelease rec {
-    pname = "qo";
-    version = "0.5.1";
-    hashes = {
-      "aarch64-darwin" = "sha256-CHNhJcxvY6bWesgZkt6Sxbga8Aru8Tu6DIaX3V3puMU=";
-      "aarch64-linux" = "sha256-ZqUB26ngjWEGDkh9hfq4++3XGxTdGNBgFIOWDhP5UoY=";
-      "x86_64-linux" = "sha256-ned1TYemI0C80sol93IgWBmwpDh7pk/Vr3zqAPmNjG4=";
-    };
-    platformMap = {
-      "aarch64-darwin" = "darwin_arm64";
-      "aarch64-linux" = "linux_arm64";
-      "x86_64-linux" = "linux_amd64";
-    };
-    url = platform: "https://github.com/kiki-ki/go-qo/releases/download/v${version}/qo_${version}_${platform}.tar.gz";
-    format = "tar";
-    extraAttrs = {sourceRoot = ".";};
-    meta = {
-      description = "Interactive TUI to query JSON and CSV using SQL";
-      homepage = "https://github.com/kiki-ki/go-qo";
-    };
-  };
+  # # qo - Interactive TUI to query JSON and CSV with SQL
+  # # Renovate: datasource=github-releases depName=kiki-ki/go-qo
+  # qo = mkBinaryRelease rec {
+  #   pname = "qo";
+  #   version = "0.5.1";
+  #   hashes = {
+  #     "aarch64-darwin" = "sha256-CHNhJcxvY6bWesgZkt6Sxbga8Aru8Tu6DIaX3V3puMU=";
+  #     "aarch64-linux" = "sha256-ZqUB26ngjWEGDkh9hfq4++3XGxTdGNBgFIOWDhP5UoY=";
+  #     "x86_64-linux" = "sha256-ned1TYemI0C80sol93IgWBmwpDh7pk/Vr3zqAPmNjG4=";
+  #   };
+  #   platformMap = {
+  #     "aarch64-darwin" = "darwin_arm64";
+  #     "aarch64-linux" = "linux_arm64";
+  #     "x86_64-linux" = "linux_amd64";
+  #   };
+  #   url = platform: "https://github.com/kiki-ki/go-qo/releases/download/v${version}/qo_${version}_${platform}.tar.gz";
+  #   format = "tar";
+  #   extraAttrs = {sourceRoot = ".";};
+  #   meta = {
+  #     description = "Interactive TUI to query JSON and CSV using SQL";
+  #     homepage = "https://github.com/kiki-ki/go-qo";
+  #   };
+  # };
 }
