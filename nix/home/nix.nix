@@ -7,6 +7,10 @@
     # プロファイルにはインストールされない。
     package = pkgs.nix;
 
+    # macOS では use-xdg-base-directories を nix/darwin/default.nix のシステム設定に置く。
+    # ユーザー設定の値は daemon へ転送され、trusted user でないと毎回警告が出るため。
+    assumeXdg = pkgs.stdenv.hostPlatform.isDarwin;
+
     settings =
       {
         # extra- 接頭辞にして、システム側 (Determinate Nix 等) の
@@ -17,12 +21,12 @@
         # max-jobs * cores が利用可能スレッド数を超えないようにする。
         max-jobs = 4;
         cores = 3;
-
+      }
+      // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
         # ~/.nix-profile と ~/.nix-defexpr を $XDG_STATE_HOME/nix へ移す。
         # Home Manager は home.profileDirectory と NIX_PATH をこれに合わせて切り替える。
         use-xdg-base-directories = true;
-      }
-      // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+
         # CI が main ブランチで構築した custom package を再利用する。
         # Linux は single-user Nix のため、ユーザー設定を source of truth とする。
         # helix は上流 CI が master の push ごとに push している。

@@ -10,6 +10,7 @@
   # 以外がユーザー設定で足した substituter を無視するため、システム側で宣言する
   # (nix/home/nix.nix の Linux 向け設定と同じキャッシュ)。
   environment.etc."nix/nix.custom.conf".text = ''
+    use-xdg-base-directories = true
     extra-substituters = https://kokatsu.cachix.org https://helix.cachix.org
     extra-trusted-public-keys = kokatsu.cachix.org-1:womBGQiv46ieMIq9Lll7fa06bN0CMKMjIEDIjvp8+rI= helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs=
   '';
@@ -152,7 +153,7 @@
   # root ユーザーの home を明示的に設定 (nix-darwin の assertion を満たすため)
   users.users.root.home = "/var/root";
 
-  # nix-darwin の既定は $HOME/.nix-profile を固定で含むが、Home Manager 側で
+  # nix-darwin の既定は $HOME/.nix-profile を固定で含むが、
   # use-xdg-base-directories を有効にしているためユーザープロファイルはこちらにある。
   # PATH・TERMINFO_DIRS・XDG_*_DIRS・NIX_PROFILES はこの一覧から生成される。
   environment.profiles = lib.mkForce [
