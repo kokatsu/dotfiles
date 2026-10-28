@@ -617,7 +617,7 @@ expect_calls 'search: shell pane in a split tab' <<'EOF'
 api snapshot
 socket pane.focus w1:p1
 EOF
-[[ $(wc -l <"$test_dir/search-targets.tsv") == 5 ]]
+(($(wc -l <"$test_dir/search-targets.tsv") == 5))
 [[ $(cut -f1 "$test_dir/search-targets.tsv" | sort | uniq -d) == "" ]]
 awk -F '\t' '$1 == "w1:p2" && $7 == "/work/日本語 project" {found=1} END {exit !found}' \
   "$test_dir/search-targets.tsv"
@@ -668,7 +668,7 @@ expect_calls 'search: shell preview' <<<'pane read w2:p3 --source recent --lines
 
 search_order() {
   XDG_CONFIG_HOME="$test_dir/config" bash "$scripts/search-target.sh" --list "$test_dir/search-snapshot.json" "$1" |
-    cut -f1 | paste -sd ' '
+    cut -f1 | paste -sd ' ' -
 }
 [[ $(search_order default) == 'w1:p1 w1:p2 w2:p1 w2:p2 w2:p3' ]]
 [[ $(search_order priority) == 'w1:p2 w2:p1 w1:p1 w2:p2 w2:p3' ]]
@@ -704,7 +704,7 @@ jq '.result.snapshot.panes[1].terminal_title_stripped = "制御\n文字\t入り\
 mv "$test_dir/search-control.json" "$test_dir/search-snapshot.json"
 search_handler
 FZF_PICK="'制御" run_search
-[[ $(wc -l <"$test_dir/search-targets.tsv") == 5 ]]
+(($(wc -l <"$test_dir/search-targets.tsv") == 5))
 awk -F '\t' 'NF != 7 {exit 1}' "$test_dir/search-targets.tsv"
 
 printf '%s\n' '{"result":{"snapshot":{"workspaces":[],"tabs":[],"agents":[],"panes":[]}}}' \
