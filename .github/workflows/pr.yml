@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.RENOVATE_PUSH_TOKEN }}
+          token: ${{ secrets.RENOVATE_PUSH_TOKEN }} # zizmor: ignore[artipacked] 後段の git push がこの認証情報を使う
 
       - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
 
@@ -63,6 +63,7 @@ jobs:
 
       - name: Detect changed packages
         id: detect
+        shell: bash
         run: |
           git fetch origin main
           bash scripts/detect-hash-updates.sh origin/main | tee -a "$GITHUB_OUTPUT"
@@ -76,6 +77,7 @@ jobs:
 
       - name: Update package hashes
         id: update_prefetch
+        shell: bash
         run: |
           deno run --no-prompt --allow-read --allow-write \
             --allow-run=git,nix,nix-prefetch-url,nix-instantiate,curl,npm \
@@ -110,6 +112,7 @@ jobs:
 
       - name: Update Deno dependency locks and hashes
         id: update-deno
+        shell: bash
         run: |
           deno run --no-prompt --allow-read --allow-write --allow-env \
             --allow-run \
@@ -175,7 +178,7 @@ jobs:
     # push したコミットは、その push が起こす synchronize の実行が検査する。ここで
     # 検査しても結果は push 前のコミットに付き、必須チェックの判定に使われない
     if: always() && needs.update-hashes.result != 'failure' && needs.update-hashes.result != 'cancelled' && needs.update-hashes.outputs.pushed != 'true'
-    uses: ./.github/workflows/check.yml
+    uses: $/.github/workflows/check.yml
     with:
       ref: ${{ github.head_ref }}
     secrets:
