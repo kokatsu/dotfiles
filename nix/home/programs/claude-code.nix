@@ -44,10 +44,6 @@ in {
       source = ../../../.config/claude/file-suggestion.sh;
       executable = true;
     };
-    ".config/claude/hooks/check-ai-writing.sh" = {
-      source = ../../../.config/claude/hooks/check-ai-writing.sh;
-      executable = true;
-    };
     ".config/claude/hooks/herdr-cache-token.sh" = {
       source = ../../../.config/claude/hooks/herdr-cache-token.sh;
       executable = true;
@@ -56,7 +52,6 @@ in {
       source = ../../../.config/claude/hooks/notify.sh;
       executable = true;
     };
-    ".config/claude/hooks/textlint-response.json".source = ../../../.config/claude/hooks/textlint-response.json;
     ".config/claude/keybindings.json".text = builtins.toJSON {
       "$schema" = "https://platform.claude.com/docs/schemas/claude-code/keybindings.json";
       "$docs" = "https://code.claude.com/docs/en/keybindings";

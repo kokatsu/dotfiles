@@ -6,7 +6,7 @@
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-config="$repo_root/.config/claude/hooks/textlint-response.json"
+config="$repo_root/.config/ai-writing/textlint-response.json"
 
 workdir=$(mktemp -d)
 trap 'rm -rf "$workdir"' EXIT
@@ -147,12 +147,12 @@ expect_clean '```text
 run_cases
 
 # Also exercise the actual hook with the symlink layout Home Manager deploys.
-mkdir -p "$workdir/claude/hooks"
-ln -s "$config" "$workdir/claude/hooks/textlint-response.json"
+mkdir -p "$workdir/ai-writing"
+ln -s "$config" "$workdir/ai-writing/textlint-response.json"
 run_real_hook() {
   printf '%s\n' "$1" >"$workdir/$2"
   jq -cn --arg p "$workdir/$2" '{tool_name: "Write", tool_input: {file_path: $p}}' |
-    XDG_CONFIG_HOME="$workdir" bash "$repo_root/.config/claude/hooks/check-ai-writing.sh"
+    XDG_CONFIG_HOME="$workdir" bash "$repo_root/.config/ai-writing/check-ai-writing.sh"
 }
 for message in '> これは革命的な技術です。' '必要に応じて設定します。'; do
   [ -z "$(run_real_hook "$message" note.md)" ] || fail "hook should pass: $message"

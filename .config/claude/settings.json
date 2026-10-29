@@ -115,7 +115,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.config/claude/hooks/check-ai-writing.sh",
+            "command": "~/.config/ai-writing/check-ai-writing.sh",
             "timeout": 15
           }
         ]

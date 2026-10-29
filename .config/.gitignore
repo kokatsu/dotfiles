@@ -1,6 +1,9 @@
 *
 !.gitignore
 
+!ai-writing/
+!ai-writing/**
+
 # bulletty (https://github.com/crocidb/bulletty)
 !bulletty/
 !bulletty/**

@@ -30,6 +30,7 @@ in {
   };
 
   imports = [
+    ./ai-writing.nix
     ./catppuccin-palette.nix
     ./packages.nix
     ./files.nix

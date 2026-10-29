@@ -7,7 +7,7 @@
 set -uo pipefail
 
 payload=$(cat || true)
-textlint_config="${XDG_CONFIG_HOME:-$HOME/.config}/claude/hooks/textlint-response.json"
+textlint_config="${XDG_CONFIG_HOME:-$HOME/.config}/ai-writing/textlint-response.json"
 
 if ! paths=$(printf '%s' "$payload" | jq -r '
   if .tool_input.file_path then .tool_input.file_path

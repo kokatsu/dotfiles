@@ -116,7 +116,7 @@ in {
                 matcher = "^apply_patch$";
                 hooks = [
                   {
-                    command = "bash '${config.xdg.configHome}/claude/hooks/check-ai-writing.sh'";
+                    command = "bash '${config.xdg.configHome}/ai-writing/check-ai-writing.sh'";
                     timeout = 15;
                     type = "command";
                   }

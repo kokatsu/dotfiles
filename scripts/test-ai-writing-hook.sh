@@ -5,7 +5,7 @@
 set -euo pipefail
 
 repo_root=$(git rev-parse --show-toplevel)
-hook="$repo_root/.config/claude/hooks/check-ai-writing.sh"
+hook="$repo_root/.config/ai-writing/check-ai-writing.sh"
 
 workdir=$(mktemp -d)
 trap 'rm -rf "$workdir"' EXIT
@@ -99,7 +99,7 @@ expect_system_message 0 "" 'not json at all' "malformed payload"
 run_hook 0 "$(clean "$md_file")" "$(payload "$md_file")" >/dev/null
 grep -qx -- "--config" "$args_file" ||
   fail "expected textlint to be invoked with --config"
-grep -qx -- "$xdg/claude/hooks/textlint-response.json" "$args_file" ||
+grep -qx -- "$xdg/ai-writing/textlint-response.json" "$args_file" ||
   fail "expected the config path to resolve under XDG_CONFIG_HOME"
 
 expect_block 1 "$(finding "$html_file")" "$(payload "$html_file")" "HTML finding"

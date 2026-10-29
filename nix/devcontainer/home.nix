@@ -8,6 +8,7 @@
   # .devcontainer の Claude Code と Codex にホストと同じ設定とフックを渡す最小構成。
   # 設定を生成する module はホストと共有し、ホストの他の module は読まない
   imports = [
+    ../home/ai-writing.nix
     ../home/catppuccin-palette.nix
     ../home/programs/claude-code.nix
     ../home/programs/codex.nix

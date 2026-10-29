@@ -129,7 +129,7 @@
         final.textlint-rule-preset-ai-writing
         # Keep the local filter on NODE_PATH, like the other textlint rules.
         (prev.writeTextDir "lib/node_modules/textlint-filter-rule-quotes/index.js"
-          (builtins.readFile ../../.config/claude/hooks/textlint-filter-quotes.cjs))
+          (builtins.readFile ../../scripts/textlint-filter-quotes.cjs))
       ];
       nativeBuildInputs = [prev.makeWrapper];
       postBuild = ''
