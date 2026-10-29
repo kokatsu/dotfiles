@@ -380,6 +380,13 @@ in {
       # WSLg が X クリップボードと Windows クリップボードを双方向同期するため、
       # WSL でも win32yank.exe (Windows プロセス起動で実測 462ms) の代わりに使える (実測 9ms)
       xsel # X セレクション操作
+      # クリップボードの画像を PNG にしてリポジトリ内に保存し、devcontainer の Claude Code にパスで渡す。
+      # wl-clipboard を home.packages に入れると Helix の自動検出が x-sel から Wayland に変わる
+      (writeShellApplication {
+        name = "save-clipboard-image";
+        runtimeInputs = [coreutils git imagemagick wl-clipboard];
+        text = builtins.readFile ../../scripts/save-clipboard-image.sh;
+      })
       # https://github.com/strace/strace
       strace # システムコールトレーサ
       # https://valgrind.org
