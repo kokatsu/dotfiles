@@ -35,7 +35,7 @@ import (
 // ghapi.go の ghAPIShortValue / ghAPILongValue を使う。
 const (
 	ghAPIShortBool = "i"
-	ghAPIShortBody = "Ff"
+	ghAPIShortBody = "F"
 )
 
 var ghAPILongBool = map[string]bool{
@@ -43,7 +43,9 @@ var ghAPILongBool = map[string]bool{
 	"silent": true, "slurp": true, "verbose": true,
 }
 
-var ghAPILongBody = map[string]bool{"field": true, "input": true, "raw-field": true}
+// -f/--raw-field は明示した GET ではクエリ文字列になるので、ここに入れない。
+// -F は @path でローカルファイルを、--input は GET でもボディを送る。
+var ghAPILongBody = map[string]bool{"field": true, "input": true}
 
 const (
 	ghAPIBodyReason       = "gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST"
@@ -164,6 +166,7 @@ type ghAPICluster struct {
 	eatsNext   bool
 	valueTaken bool
 	sawGet     bool
+	rawField   bool
 }
 
 // 束ねられた短オプションを左から解く。値を取る文字が現れたら束の残りが値になり、
@@ -181,7 +184,7 @@ func ghAPIShortCluster(cluster string, next *ghAPIWord) ghAPICluster {
 		}
 		glued := cluster[i+utf8.RuneLen(letter):]
 		if letter != 'X' {
-			return ghAPICluster{eatsNext: glued == "", valueTaken: true}
+			return ghAPICluster{eatsNext: glued == "", valueTaken: true, rawField: letter == 'f'}
 		}
 		verb := &glued
 		if glued == "" {
@@ -202,40 +205,42 @@ func ghAPIShortCluster(cluster string, next *ghAPIWord) ghAPICluster {
 // 展開を含む語。語分割が起きず、字面で読めた頭が旗でなければオペランドであり、
 // 展開しても旗にはならない。旗なら、読めた頭から旗を見分けて理由を具体化する。
 // 値を取る旗まで読めていれば展開はその値にしかならないので、そこで安全になる。
-func ghAPIExpansionReason(word ghAPIWord) string {
+// 2 つ目の戻り値は -f/--raw-field を読んだかどうか。
+func ghAPIExpansionReason(word ghAPIWord) (string, bool) {
 	if word.splittable || word.prefix == "" {
-		return ghAPINonLiteralReason
+		return ghAPINonLiteralReason, false
 	}
 	if !strings.HasPrefix(word.prefix, "-") {
-		return ""
+		return "", false
 	}
 	if strings.HasPrefix(word.prefix, "--") {
 		name, _, _ := strings.Cut(word.prefix[2:], "=")
 		switch {
 		case ghAPILongBody[name]:
-			return ghAPIBodyReason
+			return ghAPIBodyReason, false
 		case name == "method":
-			return ghAPIMethodReason(nil)
+			return ghAPIMethodReason(nil), false
 		case ghAPILongValue[name] || ghAPILongBool[name]:
-			return ""
+			return "", name == "raw-field"
 		}
-		return ghAPINonLiteralReason
+		return ghAPINonLiteralReason, false
 	}
 	cluster := ghAPIShortCluster(word.prefix[1:], nil)
 	if cluster.reason != "" {
-		return cluster.reason
+		return cluster.reason, false
 	}
 	// 真偽値の文字だけで字面が尽きた。展開が X や F を足せる。
 	if !cluster.valueTaken {
-		return ghAPINonLiteralReason
+		return ghAPINonLiteralReason, false
 	}
-	return ""
+	return "", cluster.rawField
 }
 
 // gh api の後ろの argv を歩き、読み取りと証明できなければ理由を返す。
 func ghAPIArgvReason(words []ghAPIWord) string {
 	endOfOptions := false
 	sawGet := false
+	rawField := false
 	next := func(i int) *ghAPIWord {
 		if i+1 < len(words) {
 			return &words[i+1]
@@ -258,9 +263,11 @@ func ghAPIArgvReason(words []ghAPIWord) string {
 			if endOfOptions {
 				continue
 			}
-			if reason := ghAPIExpansionReason(word); reason != "" {
+			reason, raw := ghAPIExpansionReason(word)
+			if reason != "" {
 				return reason
 			}
+			rawField = rawField || raw
 			continue
 		}
 
@@ -291,6 +298,7 @@ func ghAPIArgvReason(words []ghAPIWord) string {
 				}
 				sawGet = true
 			}
+			rawField = rawField || name == "raw-field"
 			if ghAPILongValue[name] && !hasValue {
 				if !eats(i) {
 					return ghAPINonLiteralReason
@@ -305,6 +313,7 @@ func ghAPIArgvReason(words []ghAPIWord) string {
 			return cluster.reason
 		}
 		sawGet = sawGet || cluster.sawGet
+		rawField = rawField || cluster.rawField
 		if cluster.eatsNext {
 			if !eats(i) {
 				return ghAPINonLiteralReason
@@ -313,6 +322,10 @@ func ghAPIArgvReason(words []ghAPIWord) string {
 		}
 	}
 
+	// メソッドを書かない -f は gh が POST に切り替える。
+	if !sawGet && rawField {
+		return ghAPIBodyReason
+	}
 	if !sawGet {
 		return ghAPINoMethodReason
 	}

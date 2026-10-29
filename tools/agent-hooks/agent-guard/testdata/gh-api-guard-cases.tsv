@@ -16,6 +16,7 @@
 # K: banned モードの wrapper 剥がしだけが知る形。ここでは間接呼び出しとして読む
 # L: パスで呼んだ gh。判定を出さず通常の確認に任せる
 # M: env -S が語を増やし、元の語の並びとずれる形
+# N: -f/--raw-field と明示した GET。-F/--field/--input は GET でも ask のまま
 
 A1	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api repos/o/r -X DELETE
 A2	ask	gh api: HTTP method override to 'POST' (not GET) — confirm intent	gh api repos/o/r -iX POST
@@ -116,3 +117,28 @@ L5	none	-	=gh api r -X GET
 M1	ask	gh api: unknown flag '-S' — confirm intent	env -S 'gh api r -X GET'
 M2	allow	gh api: explicit GET	env -S'gh api a b c d' -X GET
 M3	allow	gh api: explicit GET	env -S 'gh api' r -X GET
+N1	allow	gh api: explicit GET	gh api -X GET search/code -f q='noncurrentVersionExpiration repo:o/r' --jq '.items[]|.path'
+N2	allow	gh api: explicit GET	gh api search/code -f q=x -X GET
+N3	allow	gh api: explicit GET	gh api -X GET r --raw-field q=x
+N4	allow	gh api: explicit GET	gh api r --raw-field=q=x --method GET
+N5	allow	gh api: explicit GET	gh api -X GET r -fq=x
+N6	allow	gh api: explicit GET	gh api -X GET r -if q=x
+N7	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api r --raw-field q=x
+N8	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api -X GET r -f q=x -X DELETE
+N9	ask	gh api: HTTP method override to 'POST' (not GET) — confirm intent	gh api -X POST r -f q=x -X GET
+N10	ask	gh api: HTTP method override to 'POST' (not GET) — confirm intent	gh api r -f q=x --method POST
+N11	allow	gh api: explicit GET	gh api -X GET r -f 'q=a -X DELETE'
+N12	allow	gh api: explicit GET	gh api -X GET r -f "q=$Q"
+N13	allow	gh api: explicit GET	gh api -X GET r -f"q=$Q"
+N14	allow	gh api: explicit GET	gh api -X GET r --raw-field="q=$Q"
+N15	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api r -f"q=$Q"
+N16	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api -X GET r -f $Q
+N17	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api -X GET r --raw-field $Q
+N18	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api -X GET r -f "$@"
+N19	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api -X GET r -fq=$Q
+N20	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api -X GET r --raw-field=q=$Q
+N21	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api -X GET r -F q=x
+N22	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api -X GET r --field q=x
+N23	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api -X GET r --input q.json
+N24	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api -X GET r -f q=x -F p=@secret
+N25	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api -X GET r -F"q=$Q"
