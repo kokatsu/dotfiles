@@ -318,6 +318,12 @@ in {
           width = "90%"
           height = "80%"
 
+          [[keys.command]]
+          key = "prefix+alt+v"
+          type = "shell"
+          command = "${scriptsDir}/paste-clipboard-image.sh"
+          description = "クリップボードの画像を保存してパスを送る"
+
           # alt+l は nvim の plugin/move.lua (<M-l>) を奪うため prefix 側に置く。
           # prefix+l の既定 (focus_pane_right) は上で alt+矢印 に移してあるので空いている
           [[keys.command]]
