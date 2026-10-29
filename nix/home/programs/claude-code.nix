@@ -14,7 +14,7 @@ in {
   # OOMPolicy の既定 (stop) だと scope ごと止まり claude 本体も巻き添えになる
   home.packages = lib.optionals useSlice [
     (lib.hiPrio (pkgs.writeShellScriptBin "claude" ''
-      exec systemd-run --user --scope --quiet --collect --slice=claude.slice \
+      PATH=${pkgs.wl-clipboard}/bin:$PATH exec systemd-run --user --scope --quiet --collect --slice=claude.slice \
         -p OOMPolicy=continue -- ${pkgs.claude-code}/bin/claude "$@"
     ''))
   ];
