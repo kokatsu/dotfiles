@@ -100,10 +100,12 @@ wezterm.on('open-uri', function(window, pane, uri)
     end
 
     -- ファイルパスと行番号を分離
-    local file, line = path:match('^(.+):(%d+):?%d*$')
+    local file, line = path:match('^(.-):(%d+):%d+$')
+    if not file then
+      file, line = path:match('^(.-):(%d+)$')
+    end
     if not file then
       file = path
-      line = nil
     end
 
     -- HTML はブラウザで開く

@@ -67,11 +67,15 @@ local window = {
 local cases = {
   { uri = 'file:///tmp/plain.rb', file = '/tmp/plain.rb' },
   { uri = 'file:///tmp/日本語 space.rb:12', file = '/tmp/日本語 space.rb', line = '+12' },
+  { uri = 'file:///tmp/example.rb:12:3', file = '/tmp/example.rb', line = '+12' },
+  { uri = 'file:///tmp/日本語 space.rb:24:8', file = '/tmp/日本語 space.rb', line = '+24' },
+  { uri = 'file:///tmp/part:12/example.rb:24:8', file = '/tmp/part:12/example.rb', line = '+24' },
   {
     uri = 'file:///tmp/a\'"$(printf injected)`printf injected`.rb',
     file = '/tmp/a\'"$(printf injected)`printf injected`.rb',
   },
   { uri = 'editor://$PWD/test.rb', file = '/tmp/project $(printf cwd-probe)/test.rb' },
+  { uri = 'editor://$PWD/test.rb:12:3', file = '/tmp/project $(printf cwd-probe)/test.rb', line = '+12' },
   { uri = 'editor://-option.rb', file = '-option.rb' },
 }
 
@@ -102,5 +106,7 @@ actions[1].selector.action(window, pane, nil)
 assert(#actions == 1, 'cancel opened a tab')
 handlers['open-uri'](window, pane, 'file:///tmp/report.html')
 assert(vim.deep_equal(background_commands[1], { 'open', '/tmp/report.html' }), 'HTML opener changed')
+handlers['open-uri'](window, pane, 'file:///tmp/report.html:12:3')
+assert(vim.deep_equal(background_commands[2], { 'open', '/tmp/report.html' }), 'HTML line and column changed opener')
 assert(handlers['open-uri'](window, pane, 'https://example.com') == nil, 'ordinary URL was intercepted')
-print('WezTerm links: 5 filename cases, cancellation, HTML and ordinary URL passed')
+print(('WezTerm links: %d filename cases, cancellation, HTML and ordinary URL passed'):format(#cases))
