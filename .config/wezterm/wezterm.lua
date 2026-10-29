@@ -108,8 +108,33 @@ wezterm.on('open-uri', function(window, pane, uri)
       file = path
     end
 
+    local function herdr_script_args(p, script_args)
+      local args = {
+        '/bin/zsh',
+        '-l',
+        '-c',
+        '"$HOME/.config/herdr/scripts/open-in-nvim.sh" "$@"',
+        'open-in-nvim',
+      }
+      for _, arg in ipairs(script_args) do
+        table.insert(args, arg)
+      end
+      if platform.is_wsl_domain(p) then
+        args = platform.wsl_args(p, args)
+      end
+      return args
+    end
+
     -- HTML はブラウザで開く
     if file:match('%.html?$') then
+      if in_herdr and not file:match('^/') then
+        local ok, stdout, stderr = wezterm.run_child_process(herdr_script_args(pane, { '--resolve-only', file }))
+        if not ok or not stdout:match('^/') then
+          wezterm.log_error('open-in-nvim: ' .. stderr)
+          return false
+        end
+        file = stdout:gsub('\n$', '')
+      end
       local opener
       if platform.is_wsl_domain(pane) then
         -- WezTerm が Windows ホスト + WSL ペイン
@@ -126,23 +151,6 @@ wezterm.on('open-uri', function(window, pane, uri)
       end
       wezterm.background_child_process(opener)
       return false
-    end
-
-    local function herdr_script_args(p, script_args)
-      local args = {
-        '/bin/zsh',
-        '-l',
-        '-c',
-        '"$HOME/.config/herdr/scripts/open-in-nvim.sh" "$@"',
-        'open-in-nvim',
-      }
-      for _, arg in ipairs(script_args) do
-        table.insert(args, arg)
-      end
-      if platform.is_wsl_domain(p) then
-        args = platform.wsl_args(p, args)
-      end
-      return args
     end
 
     local function choice_label(action, detail)

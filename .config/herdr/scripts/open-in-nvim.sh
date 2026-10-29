@@ -1,20 +1,22 @@
 #!/bin/bash
 # WezTerm の open-uri (ファイルパスのクリック) から呼ばれ、herdr の同じタブの nvim か新規タブの nvim で開く
 # 使い方:
+#   open-in-nvim.sh --resolve-only <path>
+#     フォーカス中のペインの cwd で絶対パスを解決して出力し、エディタやタブは開かない
 #   open-in-nvim.sh --existing-only <path> [line]
 #     同じタブの nvim がちょうど 1 つならそこで開いて exit 0。それ以外は exit 1 し、stdout の
 #     1 行目に <絶対パス>\t<cwd>\t<workspace>、2 行目以降に nvim が複数あるときの候補 <ソケット>\t<ラベル> を出す
 #   open-in-nvim.sh --new-tab --cwd <cwd> --workspace <workspace> <絶対パス> [line]
 #   open-in-nvim.sh --server <ソケット> --cwd <cwd> --workspace <workspace> <絶対パス> [line]
 #     指定の nvim で開き、開けなければ新規タブで開く
-# WezTerm からはフォーカス中の herdr ペインの cwd が見えないため、相対パスは --existing-only で解決する
+# WezTerm からはフォーカス中の herdr ペインの cwd が見えないため、このスクリプトで相対パスを解決する
 
 set -euo pipefail
 
 mode='' server='' cwd='' workspace=''
 while [[ ${1:-} == --* ]]; do
   case $1 in
-  --existing-only | --new-tab)
+  --existing-only | --new-tab | --resolve-only)
     mode=${1#--}
     shift
     ;;
@@ -67,12 +69,17 @@ server)
 esac
 
 panes=$(herdr pane list)
-focused=$(jq -c '.result.panes[] | select(.focused)' <<<"$panes")
-cwd=$(jq -r '.foreground_cwd // .cwd' <<<"$focused")
+focused=$(jq -ce '.result.panes[] | select(.focused)' <<<"$panes")
+cwd=$(jq -er '.foreground_cwd // .cwd' <<<"$focused")
 workspace=$(jq -r '.workspace_id' <<<"$focused")
 tab=$(jq -r '.tab_id' <<<"$focused")
 
 [[ $file == /* ]] || file="$cwd/$file"
+
+if [[ $mode == resolve-only ]]; then
+  printf '%s\n' "$file"
+  exit 0
+fi
 
 # 同じタブの nvim ごとに RPC ソケットを 1 行ずつ集める
 # Neovim 0.12 の RPC サーバーは TUI ではなく子の --embed プロセスの pid でソケットを作る

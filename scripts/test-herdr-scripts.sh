@@ -547,6 +547,60 @@ FZF_PICK=justfile FZF_KEY=ctrl-y run_pick </dev/null
 expect_calls "pick: copy" <<<"pane get p1"
 [[ $(<"$test_dir/clipboard") == "$repo/justfile" ]]
 
+# --- open-in-nvim.sh --resolve-only ---
+
+start_case <<'EOF'
+respond() {
+  case "$1" in
+  "pane list")
+    printf '{"result":{"panes":[{"focused":true,"cwd":"/work/old","foreground_cwd":"/work/日本語 project","workspace_id":"w1","tab_id":"t1"}]}}\n'
+    ;;
+  *) exit 9 ;;
+  esac
+}
+EOF
+actual=$(PATH="$test_dir/bin:$PATH" bash "$scripts/open-in-nvim.sh" --resolve-only 'report $(probe).html')
+[[ $actual == "/work/日本語 project/report \$(probe).html" ]]
+expect_calls 'resolve-only: foreground cwd, no editor or tab' <<<'pane list'
+
+: >"$test_dir/calls.jsonl"
+actual=$(PATH="$test_dir/bin:$PATH" bash "$scripts/open-in-nvim.sh" --resolve-only '/tmp/report.html')
+[[ $actual == /tmp/report.html ]]
+expect_calls 'resolve-only: absolute path' <<<'pane list'
+
+start_case <<'EOF'
+respond() {
+  case "$1" in
+  "pane list") printf '{"result":{"panes":[{"focused":true,"cwd":"/work","workspace_id":"w1","tab_id":"t1"}]}}\n' ;;
+  *) exit 9 ;;
+  esac
+}
+EOF
+actual=$(PATH="$test_dir/bin:$PATH" bash "$scripts/open-in-nvim.sh" --resolve-only report.html)
+[[ $actual == /work/report.html ]]
+expect_calls 'resolve-only: pane cwd fallback' <<<'pane list'
+
+for response in '{"result":{"panes":[]}}' '{"result":{"panes":[{"focused":true}]}}'; do
+  printf '%s\n' "$response" >"$test_dir/resolve-panes.json"
+  start_case <<'EOF'
+respond() { cat "$TEST_DIR/resolve-panes.json"; }
+EOF
+  if actual=$(PATH="$test_dir/bin:$PATH" bash "$scripts/open-in-nvim.sh" --resolve-only report.html); then
+    echo 'resolve-only: missing pane or cwd succeeded' >&2
+    exit 1
+  fi
+  [[ -z "$actual" ]]
+done
+
+start_case <<'EOF'
+respond() { exit 7; }
+EOF
+if actual=$(PATH="$test_dir/bin:$PATH" bash "$scripts/open-in-nvim.sh" --resolve-only report.html); then
+  echo 'resolve-only: Herdr failure succeeded' >&2
+  exit 1
+fi
+[[ -z "$actual" ]]
+
 # --- search-target.sh ---
 
 export REAL_FZF

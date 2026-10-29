@@ -109,4 +109,59 @@ assert(vim.deep_equal(background_commands[1], { 'open', '/tmp/report.html' }), '
 handlers['open-uri'](window, pane, 'file:///tmp/report.html:12:3')
 assert(vim.deep_equal(background_commands[2], { 'open', '/tmp/report.html' }), 'HTML line and column changed opener')
 assert(handlers['open-uri'](window, pane, 'https://example.com') == nil, 'ordinary URL was intercepted')
-print(('WezTerm links: %d filename cases, cancellation, HTML and ordinary URL passed'):format(#cases))
+
+local probe_commands = {}
+local errors = {}
+local resolve_ok = true
+local resolve_output = '/work/日本語 project/report.html\n'
+package.loaded.wezterm.run_child_process = function(args)
+  table.insert(probe_commands, args)
+  return resolve_ok, resolve_ok and resolve_output or '', 'resolution failed'
+end
+package.loaded.wezterm.log_error = function(message)
+  table.insert(errors, message)
+end
+pane.get_user_vars = function()
+  return { HERDR_CLIENT = '1' }
+end
+background_commands = {}
+actions = {}
+handlers['open-uri'](window, pane, 'editor://$PWD/report.html:12:3')
+assert(#probe_commands == 1, 'Herdr HTML path was not resolved')
+assert(vim.deep_equal(vim.list_slice(probe_commands[1], 6), { '--resolve-only', 'report.html' }))
+assert(vim.deep_equal(background_commands[1], { 'open', '/work/日本語 project/report.html' }))
+assert(#actions == 0, 'HTML opened the editor selector')
+
+resolve_ok = false
+handlers['open-uri'](window, pane, 'editor://$PWD/report.html')
+assert(#background_commands == 1 and #errors == 1, 'failed resolution opened a browser or was not reported')
+handlers['open-uri'](window, pane, 'file:///tmp/report.html')
+assert(#probe_commands == 2, 'absolute HTML path unnecessarily queried Herdr')
+assert(vim.deep_equal(background_commands[2], { 'open', '/tmp/report.html' }))
+
+resolve_ok = true
+resolve_output = 'report.html\n'
+handlers['open-uri'](window, pane, 'editor://$PWD/report.html')
+assert(#background_commands == 2 and #errors == 2, 'relative resolver output opened a browser')
+
+package.loaded.wezterm.target_triple = 'x86_64-pc-windows-msvc'
+local wsl_platform = dofile(wezterm_dir .. '/platform.lua')
+package.loaded.platform.is_wsl_domain = wsl_platform.is_wsl_domain
+package.loaded.platform.wsl_args = wsl_platform.wsl_args
+pane.get_domain_name = function()
+  return 'WSL:Ubuntu'
+end
+resolve_output = '/work/日本語 project/report.html\n'
+handlers['open-uri'](window, pane, 'editor://$PWD/report.html')
+local probe = probe_commands[#probe_commands]
+assert(vim.deep_equal(vim.list_slice(probe, 1, 5), { 'wsl.exe', '-d', 'Ubuntu', '-e', '/bin/zsh' }))
+assert(vim.deep_equal(vim.list_slice(probe, 10), { '--resolve-only', 'report.html' }))
+assert(
+  vim.deep_equal(
+    background_commands[3],
+    { 'wsl.exe', '-d', 'Ubuntu', '-e', 'wslview', '/work/日本語 project/report.html' }
+  )
+)
+print(
+  ('WezTerm links: %d filename cases, cancellation, HTML resolution, WSL argv and ordinary URL passed'):format(#cases)
+)
