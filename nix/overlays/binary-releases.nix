@@ -15,9 +15,9 @@ in {
     pname = "pkl";
     version = "0.32.2";
     hashes = {
-      "aarch64-darwin" = "sha256-Vj61HJogsWo2JUZO10XGde2XUDgfISZyJpag18rB2dM=";
-      "aarch64-linux" = "sha256-p20t1H2kNaj5EbA0c3P0fH5Z6lT7df+EbSC43xDboFg=";
-      "x86_64-linux" = "sha256-MYC2LalcDK0dkE6btsX0qPkDJBPCHlMZS7kf8e5fMhE=";
+      "aarch64-darwin" = "sha256-RmlS8LMMk9+jY5Ols2lRWZF85CkePJNqGKCiQM++mOk=";
+      "aarch64-linux" = "sha256-5gdE4X1N3AJXo1JgmYtfmDh7XWpehoMXzM++vo2WKuM=";
+      "x86_64-linux" = "sha256-h0x1SEx5rdd/sjRupKsuiHXuo1+3B4lL9UV6LfXQPe8=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-aarch64";
