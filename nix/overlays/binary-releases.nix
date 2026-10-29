@@ -13,7 +13,7 @@ in {
   # Renovate: datasource=github-releases depName=apple/pkl
   pkl = mkBinaryRelease rec {
     pname = "pkl";
-    version = "0.32.1";
+    version = "0.32.2";
     hashes = {
       "aarch64-darwin" = "sha256-Vj61HJogsWo2JUZO10XGde2XUDgfISZyJpag18rB2dM=";
       "aarch64-linux" = "sha256-p20t1H2kNaj5EbA0c3P0fH5Z6lT7df+EbSC43xDboFg=";
