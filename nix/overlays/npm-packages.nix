@@ -26,7 +26,7 @@
       # The official global vp is a Rust binary that hands dev/build/test/run
       # to the project's own vite-plus; the npm bin/vp has no such delegation,
       # so it would run the store's vitest, which cannot resolve project-only
-      # deps such as jsdom. $out/bin/{vp,vpr} emulate the Rust lookup: the
+      # deps such as jsdom. $out/bin/{vp,vpr,vpx} emulate the Rust lookup: the
       # nearest node_modules/.bin/<bin> above $PWD wins, else the store copy.
       installPhase = ''
         runHook preInstall
@@ -34,7 +34,7 @@
         mkdir -p "$(dirname "$dest")" $out/bin
         mv node_modules/vite-plus "$dest"
         mv node_modules "$dest/node_modules"
-        for bin in vp vpr; do
+        for bin in vp vpr vpx; do
           ln -sfn ../../bin/$bin "$dest/node_modules/.bin/$bin"
           cat > $out/bin/$bin <<EOF
         #!${prev.runtimeShell}
