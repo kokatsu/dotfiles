@@ -31,6 +31,7 @@ config.font = wezterm.font_with_fallback({
   'Firge35Nerd Console',
   'HackGen35 Console NF',
 })
+config.line_height = 1.2
 config.tab_bar_at_bottom = true
 config.tab_max_width = 32
 config.use_dead_keys = false
