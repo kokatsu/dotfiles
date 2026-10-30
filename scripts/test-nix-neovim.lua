@@ -16,10 +16,11 @@ require('lazy').setup({
   spec = {
     { name = 'blink.cmp', dir = blink_path, lazy = true },
     { name = 'peek.nvim', dir = peek_path, lazy = true },
-    { name = 'nvim-treesitter', dir = treesitter_path, lazy = true },
+    { 'nvim-treesitter/nvim-treesitter', name = 'nvim-treesitter', dir = treesitter_path, lazy = true },
     { name = 'pkl-neovim', dir = pkl_path, lazy = true },
   },
   local_spec = false,
+  pkg = { enabled = false },
   checker = { enabled = false },
   change_detection = { enabled = false },
   lockfile = vim.fn.stdpath('state') .. '/test-lazy-lock.json',
@@ -29,6 +30,29 @@ for _, name in ipairs({ 'lazy.nvim', 'blink.cmp', 'peek.nvim', 'nvim-treesitter'
   assert(plugins[name]._.is_local, name .. ' must be local')
   assert(require('lazy.manage.task.git').fetch.skip(plugins[name]), name .. ' must skip fetch')
 end
+
+require('lazy.manage').restore({ wait = true, show = false })
+for _, name in ipairs({ 'lazy.nvim', 'nvim-treesitter' }) do
+  local restored = false
+  for _, task in ipairs(plugins[name]._.tasks or {}) do
+    assert(not task:has_errors(), name .. ': ' .. task:output())
+    restored = true
+  end
+  assert(restored, name .. ' did not enter the restore pipeline')
+end
+
+local docs = require('lazy.manage.task.plugin').docs
+local git_plugin = { _ = { is_local = false, dirty = true }, dir = vim.fn.tempname() }
+assert(not docs.skip(git_plugin), 'updated Git plugin must still generate help tags')
+vim.fn.mkdir(git_plugin.dir .. '/doc', 'p')
+vim.fn.writefile(
+  { '*nix-neovim-doc-test*  Help tag generation for writable plugins.' },
+  git_plugin.dir .. '/doc/test.txt'
+)
+docs.run({ plugin = git_plugin, log = function() end })
+assert(vim.fn.filereadable(git_plugin.dir .. '/doc/tags') == 1, 'Git plugin help tags were not generated')
+vim.fn.delete(git_plugin.dir, 'rf')
+print('Nix Neovim: restore skips local help tags and generates Git plugin tags')
 
 vim.opt.rtp:prepend(blink_path)
 require('blink.cmp.config').merge_with({

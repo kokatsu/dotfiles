@@ -86,11 +86,19 @@
     };
   };
   lazy-nvim = _final: prev: {
-    lazy-nvim = prev.vimPlugins.lazy-nvim.overrideAttrs {
+    lazy-nvim = prev.vimPlugins.lazy-nvim.overrideAttrs (old: {
       version = builtins.substring 0 12 inputs.lazy-nvim.rev;
       name = "vimplugin-lazy.nvim-${builtins.substring 0 12 inputs.lazy-nvim.rev}";
       src = inputs.lazy-nvim;
-    };
+      # Nix が生成した help tags は store 内にあり、restore 時に再生成できない。
+      postPatch =
+        (old.postPatch or "")
+        + ''
+          substituteInPlace lua/lazy/manage/task/plugin.lua \
+            --replace-fail 'return not plugin._.is_local and not plugin._.dirty' \
+              'return plugin._.is_local or not plugin._.dirty'
+        '';
+    });
   };
   peek-nvim = _final: prev: let
     revision = inputs.peek-nvim.rev;
