@@ -41,9 +41,9 @@ in {
     # artifact 自体の prefetch を省き、scripts/update-hashes.ts が変換する。
     hashSource = "manifest";
     hashes = {
-      "aarch64-darwin" = "sha256-a17GkRleVRsCxB3599cj9Oph6qA8LfkKzv43NvGutiA=";
-      "aarch64-linux" = "sha256-3EryiRdFXgCdJnBLgqQ4NToGFJ6CW2zfeCkIstKGYfU=";
-      "x86_64-linux" = "sha256-T0F4zkHYPiM0Hr+67NvPjqa/e66gaQAlq+Se7sOl0B0=";
+      "aarch64-darwin" = "sha256-Idbnuabwe0z8t98Tdgs7cqol4IThOlNUQTOCmHuoMu0=";
+      "aarch64-linux" = "sha256-pmwKj10Mh6Q5lT15eYUZK7y677zi4Ney6qjfMO8PPvI=";
+      "x86_64-linux" = "sha256-RIcEK0xPXYjUVo9orpiq4LH/rliGTPV/uGhkG8X4RZQ=";
     };
     platformMap = {
       "aarch64-darwin" = "darwin-arm64";
