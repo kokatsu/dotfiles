@@ -39,6 +39,11 @@
           --replace-fail 'args=("$@")' 'export ZENO_ROOT='"$out"'; args=("$@")' \
           --replace-fail '--node-modules-dir=auto' '--node-modules-dir=manual' \
           --replace-fail 'exec deno run' 'export DENO_SQLITE_PATH=${prev.sqlite.out}/lib/libsqlite3${prev.stdenv.hostPlatform.extensions.sharedLibrary}; exec ${prev.deno}/bin/deno run --config "$ZENO_ROOT/deno.json" --vendor --cached-only --frozen-lockfile'
+        # zeno-set-pid only fills an empty ZENO_PID, so after the server was stopped from
+        # outside (zsh.nix onChange) a restart would keep the dead server's PID.
+        # `just zeno-restart-test` covers this; it cannot run in the build sandbox.
+        substituteInPlace "$out/shells/zsh/functions/zeno-enable-sock" \
+          --replace-fail 'nohup "''${server_bin}"' 'ZENO_PID=; nohup "''${server_bin}"'
         cat > "$out/bin/zeno-server" <<EOF
         #!${prev.zsh}/bin/zsh
         export DENO_SQLITE_PATH=${prev.sqlite.out}/lib/libsqlite3${prev.stdenv.hostPlatform.extensions.sharedLibrary}

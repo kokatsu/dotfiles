@@ -6,7 +6,16 @@
   validDotfilesDir,
   ...
 }: let
+  inherit (pkgs.stdenv.hostPlatform) isDarwin;
   pluginDir = "${config.xdg.configHome}/zsh/plugins";
+  # zeno のサーバは設定を一度だけ import してキャッシュし、Nix store のファイルは
+  # mtime が固定なので変更を検出できない。止めておけば、クライアントが次の利用時に
+  # ZENO_ROOT (この symlink 経由で新しい store を指す) から起動し直す。
+  pkill =
+    if isDarwin
+    then "/usr/bin/pkill"
+    else "${pkgs.procps}/bin/pkill";
+  stopZenoServers = "${pkill} -f 'zeno\\.zsh-[^ ]*/src/server\\.ts' || true";
   plugins = {
     completion = inputs.zim-completion;
     environment = inputs.zim-environment;
@@ -71,10 +80,14 @@ in {
         "${pluginDir}/zeno.zsh" = {
           source = pkgs.zeno-zsh;
           force = true;
+          onChange = stopZenoServers;
         };
 
         "${config.xdg.configHome}/zsh/functions.zsh".source = ../../../.config/zsh/functions.zsh;
-        "${config.xdg.configHome}/zeno/config.ts".source = ../../../.config/zeno/config.ts;
+        "${config.xdg.configHome}/zeno/config.ts" = {
+          source = ../../../.config/zeno/config.ts;
+          onChange = stopZenoServers;
+        };
         "${config.xdg.configHome}/zsh/darwin.zsh".source = ../../../.config/zsh/darwin.zsh;
         "${config.xdg.configHome}/zsh/linux.zsh".source = ../../../.config/zsh/linux.zsh;
         "${config.xdg.configHome}/zsh/wezterm-integration.sh".source = ../../../.config/zsh/wezterm-integration.sh;

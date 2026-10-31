@@ -249,6 +249,11 @@ typos:
 typos-fix:
     typos -w
 
+# Runs against the deployed plugin, so it is not in test_recipes (CI has none)
+# Verify zeno-start-server records the PID of a restarted server
+zeno-restart-test:
+    zsh scripts/test-zeno-restart.zsh "${ZENO_ROOT:-$HOME/.config/zsh/plugins/zeno.zsh}"
+
 # Test Neovim custom plugins (smoke test)
 nvim-test:
     nvim --headless --clean -l scripts/test-nvim-config.lua
