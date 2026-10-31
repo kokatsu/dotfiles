@@ -53,34 +53,28 @@ in {
   };
 
   # Use forked git-graph with:
-  # - --current option
-  # - ANSI color wrapping fix
-  # - HEAD highlight feature
-  # - Performance optimizations for graph construction
-  # Also fixes build on aarch64-darwin (libz-sys crate can't find zlib.h)
+  # - models read from ~/.config/git-graph on macOS too
+  # - ANSI color wrapping fix (via forked gleisbau)
+  # - --highlight-head to style the HEAD commit hash (via forked gleisbau)
   git-graph-fork = _final: prev: let
     forkedSrc = prev.fetchFromGitHub {
       owner = "kokatsu";
       repo = "git-graph";
-      # branch: perf/optimize-graph-construction
-      rev = "2781f5305c8d46c6dda0e7c71d4238954887f5d9";
-      hash = "sha256-i1E6Rxc+LqEetSqlhrHciybm+DQIAYeJfzWGO87G5+I=";
+      # branch: feat/highlight-head-cli
+      rev = "e2f38a2b852d4a386f55735d2cfdf7e9240d1d76";
+      hash = "sha256-/ZVZy4Ux6jUFMxIf+lSHY700do7h0lfx0iUOe9jSmzM=";
     };
   in {
-    git-graph = guardedOverride "git-graph" "0.8.0" prev.git-graph (old: {
+    git-graph = guardedOverride "git-graph" "0.8.1" prev.git-graph (old: {
+      # fork は upstream 0.8.3 ベースで、versionCheckHook はこの値を --version の出力から探す
+      version = "0.8.3";
       src = forkedSrc;
       cargoDeps = prev.rustPlatform.fetchCargoVendor {
         inherit (old) pname;
         version = "fork";
         src = forkedSrc;
-        hash = "sha256-a7Jo/kHuQH7OQrzAMY63jFEOPfnYKAb4AW65V5BEfWM=";
+        hash = "sha256-8VOOd9GgnJ/VgiSJ2m9t0R4cj2s4MEDfGhLcHPBiRlU=";
       };
-      buildInputs = (old.buildInputs or []) ++ [prev.zlib];
-      nativeBuildInputs = (old.nativeBuildInputs or []) ++ [prev.pkg-config];
-      LIBZ_SYS_STATIC = "0";
-      PKG_CONFIG_PATH = "${prev.zlib.dev}/lib/pkgconfig";
-      # fork の Cargo.toml は 0.7.0 のままで、versionCheckHook が 0.8.0 を探して落ちる
-      doInstallCheck = false;
     });
   };
 

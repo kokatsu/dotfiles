@@ -26,7 +26,7 @@ export default defineConfig(({ env }) => {
       name: "git-graph",
       keyword: "gg",
       snippet:
-        `git-graph --model catppuccin-${catppuccinFlavor} --style bold --color always --current --max-count 50 --format '%H%d %s' --highlight-head 'bold,black,bg:bright_yellow'`,
+        `git-graph --model catppuccin-${catppuccinFlavor} --style bold --color always --max-count 50 --format '%H%d %s' --highlight-head 'bold,black,bg:bright_yellow' HEAD`,
     },
     { name: "lazygit", keyword: "lg", snippet: "lazygit" },
     { name: "neovim", keyword: "vi", snippet: "nvim" },
