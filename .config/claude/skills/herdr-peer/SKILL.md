@@ -1,6 +1,6 @@
 ---
 name: herdr-peer
-description: Request research, implementation, or review from the opposite Claude or Codex agent in the same Herdr tab, with results saved to files, when the user explicitly requests cross-agent collaboration or invokes herdr-peer.
+description: Request research, implementation, or review from the opposite Claude or Codex agent in the same Herdr tab, with results saved to files, when the user requests cross-agent collaboration or invokes herdr-peer, and automatically to review the edits of a finished implementation task.
 ---
 
 # Herdr Peer
@@ -54,7 +54,8 @@ Use `herdr-peer resolve` to select the peer, `herdr-peer prompt` to send, and `h
 
 ## Coordination rules
 
-- Send only when the user explicitly requested Claude/Codex collaboration.
+- Send when the user requested Claude/Codex collaboration, or for an automatic review: after finishing an implementation task the user delegated and running its checks, request the default read-only review of the task's edits without asking first. The task's own fix authority covers the review loop's fixes.
+- Skip the automatic review when the user asked for no edits or no review, when the edits are trivial (a typo, a comment, a single mechanical line), or when the task came from a peer. A resolution failure ends only that attempt. Report the skip or failure reason in the final summary instead of asking the user.
 - Keep the peer request self-contained and state whether it is read-only or may edit files.
 - Do not invoke this skill in response to a peer-originated prompt; return the result to the caller and prevent delegation loops.
 - Do not bypass `herdr-peer` with raw Herdr prompt or pane-input commands.

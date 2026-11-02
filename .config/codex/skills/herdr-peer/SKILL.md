@@ -1,6 +1,6 @@
 ---
 name: herdr-peer
-description: Request research, implementation, or review from the opposite Claude or Codex agent in the same Herdr tab, with results saved to files, when the user explicitly requests cross-agent collaboration or invokes herdr-peer.
+description: Request research, implementation, or review from the opposite Claude or Codex agent in the same Herdr tab, with results saved to files, when the user requests cross-agent collaboration or invokes herdr-peer, and automatically to review the edits of a finished implementation task.
 ---
 
 # Herdr Peer
