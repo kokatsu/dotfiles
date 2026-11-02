@@ -177,21 +177,24 @@ func TestReadCommand(t *testing.T) {
 	}
 }
 
-// codex モードは GREP_R を飛ばし GH_API_METHOD を足す以外、banned と同じ判定を返す。
-func TestCodexDiffersOnlyByGrepRAndGhAPI(t *testing.T) {
+// codex モードは GREP_R を飛ばし bannedSkipped の判定を足す以外、banned と同じ判定を返す。
+func TestCodexDiffersOnlyBySkippedVerdicts(t *testing.T) {
 	ruleSet := loadRules(t)
 	grepR := verdictMessages["GREP_R"]
-	ghAPI := verdictMessages["GH_API_METHOD"]
+	codexOnly := map[string]bool{}
+	for _, v := range bannedSkipped {
+		codexOnly[verdictMessages[v]] = true
+	}
 	for _, c := range append(loadCases(t), loadCaseFile(t, "testdata/codex-cases.json")...) {
 		claude := checkBanned(c.Command, ruleSet, bannedSkipped...)
 		codex := checkBanned(c.Command, ruleSet, codexSkipped...)
 		if codex == grepR {
 			t.Errorf("codex returned GREP_R for %q", c.Command)
 		}
-		if claude == ghAPI {
-			t.Errorf("banned returned GH_API_METHOD for %q", c.Command)
+		if codexOnly[claude] {
+			t.Errorf("banned returned a codex-only verdict for %q: %s", c.Command, claude)
 		}
-		if claude != grepR && codex != ghAPI && codex != claude {
+		if claude != grepR && !codexOnly[codex] && codex != claude {
 			t.Errorf("%q: banned=%q codex=%q", c.Command, claude, codex)
 		}
 	}

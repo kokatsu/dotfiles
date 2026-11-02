@@ -30,13 +30,16 @@ var verdictMessages = map[verdict]string{
 	"GREP_R":           "Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.config/ripgrep/ripgreprc glob excludes.",
 	"FORCE_PUSH":       "Refuse git push -f/--force. Use --force-with-lease or run manually.",
 	"GIT_CLEAN":        "Refuse git clean -fd/-fx (destructive). Inspect untracked files first.",
-	"GIT_RESET_HARD":   "Refuse git reset --hard to a remote/historical ref. Confirm intent and run manually.",
+	"GIT_RESET_HARD":   "Refuse git reset --hard to anything but HEAD. Confirm intent and run manually.",
 	"SHALLOW":          "Refuse shallow git fetch/pull (--depth/--shallow-*) because it makes the existing repository shallow. Use a temporary shallow clone (git clone --depth), or fetch normally. --deepen/--unshallow remain allowed.",
+	"GIT_OUTPUT":       "Refuse git diff/log/show --output: Codex runs these Git commands outside the sandbox without asking, so the file write would escape it. Print to stdout instead.",
 	"GIT_IDENTITY":     "Don't set or override Git identity. ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes Git fail loudly where no entry matches. Ask the user instead of choosing a value.",
 	"HERDR_INPUT":      herdrInputMessage,
-	"GH_API_METHOD":    "gh api: give a literal HTTP method (-X GET for a read) and put expanded endpoints after `--` or behind a literal prefix; if this is not a gh call, quote the words.",
+	"GH_API_METHOD":    "gh api: give exactly one literal HTTP method (-X GET for a read) and put expanded endpoints after `--` or behind a literal prefix; if this is not a gh call, quote the words.",
+	"GH_API_GET":       "gh api -X GET runs outside the Codex sandbox without asking, so it must stay a read on github.com: drop --input, -F/--field and --hostname, and give an endpoint path instead of a full URL. Use another method if Codex should ask.",
 	"FIND_DELETE":      "Refuse find -delete. Use find ... -exec gomi {} + instead, so the files stay recoverable.",
 	"NPM_BIOME":        "Refuse running the npm package named biome (npx, bunx, pnpm dlx, npm exec): it is an unrelated env-var manager, not the Biome formatter. Run biome from PATH (Nix) directly.",
+	"SHELL_UNCHECKED":  "Refuse a shell whose script cannot be checked: read from a pipe or a file redirect, or built from a command or process substitution. Run the commands directly, pass them in a quoted heredoc, or run a script file by path.",
 	"SHELL_C_UNPARSED": "Refuse sh -c with a command string that does not parse as shell: it cannot be checked, and the shell runs the lines before the error. Run the commands directly instead.",
 	"GLOB_EXEC":        "Refuse zsh glob qualifiers that run code (e:...: or +cmd). List the files first, then run the command on them directly.",
 	"RG_STDIN":         "rg without a path searches stdin when stdin is readable; in a non-interactive tool call stdin can be a socket that never closes, so rg hangs. Name the directories to search, or add `< /dev/null` to search the current directory.",
@@ -92,10 +95,10 @@ func clusterFlags(cluster, argChars string) string {
 	return cluster
 }
 
-// pathspec 区切りの "--" までを歩く。値を別に取るオプションの値を先に落とすので、
-// 値そのものが "--" でも区切りとは読まれない ("git clean -e -- -fd")。
-func gitOpts(args, valOpts []string, argChars string) []string {
-	var out []string
+// pathspec 区切りの "--" までを歩き、その手前の語と、区切りより後ろの語を返す。
+// 値を別に取るオプションの値を先に落とすので、値そのものが "--" でも区切りとは
+// 読まれない ("git clean -e -- -fd")。
+func gitOpts(args, valOpts []string, argChars string) (out, tail []string) {
 	for len(args) > 0 {
 		head := args[0]
 		switch {
@@ -104,13 +107,13 @@ func gitOpts(args, valOpts []string, argChars string) []string {
 			out = append(out, head)
 			args = drop(args, 2)
 		case head == "--":
-			return out
+			return out, args[1:]
 		default:
 			out = append(out, head)
 			args = args[1:]
 		}
 	}
-	return out
+	return out, nil
 }
 
 // オプションの走査は "--" で止まる。"-R" という名前のファイルはフラグに見えない。
@@ -398,12 +401,15 @@ func gitVerdict(args []string) verdict {
 	valOpts, valChars := valueOptsFor(sub)
 	// "--" の後ろは全て pathspec/refspec なので、フラグの走査は区切りの手前だけを
 	// 見る。"--force" という名前のパスをフラグと読まないためである。
-	opts := gitOpts(rest[1:], valOpts, valChars)
+	opts, tail := gitOpts(rest[1:], valOpts, valChars)
 
-	if sub == "push" && slices.ContainsFunc(opts, func(a string) bool {
-		return a == "--force" ||
-			(shortOpt.MatchString(a) && strings.Contains(clusterFlags(a[1:], "o"), "f"))
-	}) {
+	// 先頭が + の refspec はその ref だけを強制更新し、--mirror は remote の ref を
+	// ローカルに合わせて上書き・削除する。
+	if sub == "push" && (slices.ContainsFunc(opts, func(a string) bool {
+		return a == "--force" || isAbbrevOf(a, "--mirror", 4) ||
+			(shortOpt.MatchString(a) && strings.Contains(clusterFlags(a[1:], "o"), "f")) ||
+			strings.HasPrefix(a, "+")
+	}) || slices.ContainsFunc(tail, func(a string) bool { return strings.HasPrefix(a, "+") })) {
 		return "FORCE_PUSH"
 	}
 
@@ -423,19 +429,25 @@ func gitVerdict(args []string) verdict {
 		}
 	}
 
-	if sub == "reset" && slices.Contains(opts, "--hard") &&
+	// 名前で過去や remote を指す形は列挙しきれない (@~1、FETCH_HEAD、ハッシュ) ので、
+	// 現在の HEAD を指す形だけを通す。
+	if sub == "reset" && slices.ContainsFunc(opts, func(a string) bool { return isAbbrevOf(a, "--hard", 4) }) &&
 		slices.ContainsFunc(opts, func(a string) bool {
-			return strings.HasPrefix(a, "origin/") ||
-				strings.HasPrefix(a, "upstream/") ||
-				strings.HasPrefix(a, "HEAD~") ||
-				strings.HasPrefix(a, "HEAD@")
+			return !strings.HasPrefix(a, "-") && a != "HEAD" && a != "@"
 		}) {
 		return "GIT_RESET_HARD"
 	}
 
-	if (sub == "fetch" || sub == "pull") &&
-		hasFlag(opts, []string{"--depth", "--shallow-since", "--shallow-exclude", "--update-shallow"}) {
+	// 最短の長さは、fetch の他のオプション (--deepen、--update-head-ok) と区別できる長さ。
+	if (sub == "fetch" || sub == "pull") && slices.ContainsFunc(opts, func(a string) bool {
+		return isAbbrevOf(a, "--depth", 5) || isAbbrevOf(a, "--shallow-since", 11) ||
+			isAbbrevOf(a, "--shallow-exclude", 11) || isAbbrevOf(a, "--update-shallow", 10)
+	}) {
 		return "SHALLOW"
+	}
+
+	if (sub == "diff" || sub == "log" || sub == "show") && hasFlag(opts, []string{"--output"}) {
+		return "GIT_OUTPUT"
 	}
 
 	if sub == "config" && configIdentityWrite(rest[1:]) {
@@ -476,37 +488,45 @@ func shellVariant(shell string) (syntax.LangVariant, bool) {
 	return 0, false
 }
 
-// シェルの引数から -c に渡した文字列を探す。-c が無ければ最初のオペランドは
-// スクリプトのファイルで、そこから先はその引数なので見ない。-o/-O は値を取り、
-// 束 ("-eo pipefail") の末尾にあっても次の語を食べる。
-func shellCommandString(args []string) (int, bool) {
-	hasC := false
+// シェルの引数から、-c に渡した文字列かスクリプトのファイルの位置を探す。無ければ
+// -1。そこから先はスクリプトの引数なので見ない。-o/-O は値を取り、束
+// ("-eo pipefail") の末尾にあっても次の語を食べる。fromStdin は、シェルが
+// スクリプトを標準入力から読むか (-c もファイルも無い、-s、`-`)。
+func shellScript(args []string) (index int, hasC, fromStdin bool) {
+	stdinFlag := false
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
+		case a == "--version" || a == "--help":
+			return -1, false, false
+		case a == "-" && !hasC:
+			return -1, false, true
 		case a == "--" || a == "-":
-			if hasC && i+1 < len(args) {
-				return i + 1, true
+			if i+1 < len(args) {
+				return i + 1, hasC, stdinFlag && !hasC
 			}
-			return 0, false
+			return -1, hasC, !hasC
 		case a == "--rcfile" || a == "--init-file":
 			i++
 		case strings.HasPrefix(a, "--"):
 		case len(a) > 1 && (a[0] == '-' || a[0] == '+'):
-			if a[0] == '-' && strings.Contains(a[1:], "c") {
-				hasC = true
+			if a[0] == '-' {
+				hasC = hasC || strings.Contains(a[1:], "c")
+				stdinFlag = stdinFlag || strings.Contains(a[1:], "s")
 			}
 			if last := a[len(a)-1]; last == 'o' || last == 'O' {
 				i++
 			}
 		default:
-			if hasC {
-				return i, true
-			}
-			return 0, false
+			return i, hasC, stdinFlag && !hasC
 		}
 	}
-	return 0, false
+	return -1, hasC, !hasC
+}
+
+func shellCommandString(args []string) (int, bool) {
+	i, hasC, _ := shellScript(args)
+	return i, hasC && i >= 0
 }
 
 // ラッパーを剥がした後の引数は元の語の末尾と並びが揃うので、末尾から数えて
@@ -706,7 +726,7 @@ var (
 // 先頭 1 つに絞ると、後ろにある HERDR_INPUT や、codex モードが GREP_R を
 // 飛ばした後の判定が見えなくなる。
 //
-// GH_API_METHOD は、語の並びと wrapper を剥がした結果の両方で、他の判定の後に足す。
+// gh api の判定は、語の並びと wrapper を剥がした結果の両方で、他の判定の後に足す。
 // ここに置くと find -exec や fd -x が切り出した範囲にも、その中の env -S にも届く。
 // find と fd 自身の語の並びは見ない。範囲の外にある find の条件 (`-name "$X"`) を
 // gh api の引数として読んでしまうため。
@@ -716,8 +736,11 @@ func commandVerdict(words, scripts []string, infos []wordInfo, fed bool) []verdi
 	if len(args) > 0 && (args[0] == "find" || args[0] == "fd") {
 		return out
 	}
-	if ghAPIMissingMethod(words, infos) || ghAPIMissingMethod(args, alignInfos(words, infos, args)) {
-		out = append(out, "GH_API_METHOD")
+	if v := ghAPIVerdict(words, infos); v != "" {
+		return append(out, v)
+	}
+	if v := ghAPIVerdict(args, alignInfos(words, infos, args)); v != "" {
+		return append(out, v)
 	}
 	return out
 }
@@ -735,9 +758,14 @@ func callVerdicts(words, scripts []string, infos []wordInfo, fed bool) []verdict
 	restScripts := alignScripts(words, scripts, rest)
 	restInfos := alignInfos(words, infos, rest)
 
-	// 文字列で受け取ったコマンドを解析し直して、同じ判定にかける。
+	// 文字列で受け取ったコマンドを解析し直して、同じ判定にかける。標準入力、
+	// プロセス置換、コマンド置換から来るスクリプトは中身を読めない。
 	if lang, ok := shellVariant(cmd); ok {
-		if i, ok := shellCommandString(rest); ok {
+		i, hasC, fromStdin := shellScript(rest)
+		switch {
+		case fromStdin, i >= 0 && restInfos[i].subst:
+			return []verdict{"SHELL_UNCHECKED"}
+		case hasC && i >= 0:
 			file, err := parseAs(restScripts[i], lang)
 			if err != nil {
 				return []verdict{"SHELL_C_UNPARSED"}
@@ -745,6 +773,9 @@ func callVerdicts(words, scripts []string, infos []wordInfo, fed bool) []verdict
 			return analyze(file, fed)
 		}
 		return nil
+	}
+	if (cmd == "source" || cmd == ".") && len(rest) > 0 && restInfos[0].subst {
+		return []verdict{"SHELL_UNCHECKED"}
 	}
 
 	// 引数として受け取ったコマンドを同じ判定にかける。
@@ -890,6 +921,8 @@ func analyze(file *syntax.File, fed bool) []verdict {
 	// 標準入力を与えられた部分木の中の呼び出し。$( ) の中も含めるので、文に
 	// 付いた `<` を受け継がない $( ) の中の rg は取りこぼす。
 	fedCalls := map[*syntax.CallExpr]bool{}
+	// 標準入力にヒアドキュメントかヒアストリングを受ける呼び出しと、その語。
+	stdinWords := map[*syntax.CallExpr]*syntax.Word{}
 	feed := func(node syntax.Node) {
 		syntax.Walk(node, func(node syntax.Node) bool {
 			if call, ok := node.(*syntax.CallExpr); ok {
@@ -914,6 +947,11 @@ func analyze(file *syntax.File, fed bool) []verdict {
 		case *syntax.Stmt:
 			if feedsStdin(node) {
 				feed(node)
+			}
+			if call, ok := node.Cmd.(*syntax.CallExpr); ok {
+				if word := stdinDocument(node); word != nil {
+					stdinWords[call] = word
+				}
 			}
 		case *syntax.BinaryCmd:
 			if node.Op == syntax.Pipe || node.Op == syntax.PipeAll {
@@ -951,10 +989,63 @@ func analyze(file *syntax.File, fed bool) []verdict {
 	}
 
 	for _, c := range calls {
+		if v, ok := documentVerdicts(c.words, stdinWords[c.node]); ok {
+			verdicts = append(verdicts, v...)
+			continue
+		}
 		verdicts = append(verdicts, commandVerdict(c.words, c.scripts, c.infos, fed || fedCalls[c.node])...)
 	}
 
 	return verdicts
+}
+
+// 標準入力へつないだヒアドキュメントかヒアストリングの語。無ければ nil。
+func stdinDocument(stmt *syntax.Stmt) *syntax.Word {
+	var word *syntax.Word
+	for _, r := range stmt.Redirs {
+		if r.N != nil && r.N.Value != "0" {
+			continue
+		}
+		switch r.Op {
+		case syntax.Hdoc, syntax.DashHdoc:
+			word = r.Hdoc
+		case syntax.WordHdoc:
+			word = r.Word
+		case syntax.RdrIn, syntax.RdrInOut, syntax.DplIn:
+			// 後ろのリダイレクトが標準入力を置き換える。
+			word = nil
+		}
+	}
+	return word
+}
+
+// シェルがスクリプトを標準入力のヒアドキュメントから読むなら、その中身を同じ判定に
+// かける。中身はコマンドの中に書かれているので読める。中のコマンドはシェルの
+// 標準入力 (ヒアドキュメントの残り) を受け継ぐ。ok はこの経路で判定したか。
+func documentVerdicts(words []string, doc *syntax.Word) (_ []verdict, ok bool) {
+	if doc == nil {
+		return nil, false
+	}
+	args := stripWrappers(words)
+	if len(args) == 0 {
+		return nil, false
+	}
+	lang, isShell := shellVariant(args[0])
+	if !isShell {
+		return nil, false
+	}
+	if _, _, fromStdin := shellScript(args[1:]); !fromStdin {
+		return nil, false
+	}
+	// 引用しない区切りのヒアドキュメントは中のコマンド置換を展開してから渡す。
+	if readWordInfo(doc).subst {
+		return []verdict{"SHELL_UNCHECKED"}, true
+	}
+	file, err := parseAs(scriptText(doc), lang)
+	if err != nil {
+		return []verdict{"SHELL_C_UNPARSED"}, true
+	}
+	return analyze(file, true), true
 }
 
 // 非対話シェルは & で起動したコマンドの標準入力を /dev/null にする。

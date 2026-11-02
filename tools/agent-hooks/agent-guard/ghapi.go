@@ -1,8 +1,11 @@
 package main
 
-// GH_API_METHOD: gh api の呼び出しに、値の読める HTTP メソッドの明示を求める。
-// codex モードだけの判定で、Claude Code には gh-api モード (ghapi_claude.go)
-// があるので banned モードでは飛ばす。
+// GH_API_METHOD: gh api の呼び出しに、値の読める HTTP メソッドの明示をちょうど
+// 1 つ求める。GH_API_GET: その GET を github.com の読み取りに留める。
+// .config/codex/rules/managed.rules は `gh api -X GET` で始まる呼び出しを確認なしに
+// サンドボックスの外で走らせるので、その接頭辞の後ろで中身を変えさせない。
+// どちらも codex モードだけの判定で、Claude Code には gh-api モード
+// (ghapi_claude.go) があるので banned モードでは飛ばす。
 //
 // 呼び出しはコマンド位置や wrapper を読まず、字面の gh と api (または読めない
 // 語) が並んだ所とみなす。一覧にない wrapper が前に付いても見落とさない代わりに、
@@ -33,6 +36,7 @@ type wordInfo struct {
 	// env -S が展開を含む文字列を分割して作った語。字面として並べて呼び出しを
 	// 見つけるが、値は信用しない。
 	unsure bool
+	subst  bool // コマンド置換かプロセス置換を含む
 }
 
 func readWordInfo(word *syntax.Word) wordInfo {
@@ -75,11 +79,19 @@ func readWordInfo(word *syntax.Word) wordInfo {
 						info.splittable = true
 					}
 					unknown()
+				case *syntax.CmdSubst:
+					info.subst = true
+					info.splittable = true
+					unknown()
 				default:
 					info.splittable = true
 					unknown()
 				}
 			}
+		case *syntax.CmdSubst, *syntax.ProcSubst:
+			info.subst = true
+			info.splittable = true
+			unknown()
 		default:
 			info.splittable = true
 			unknown()
@@ -169,45 +181,108 @@ func methodReadable(text string, info wordInfo) bool {
 	return info.literal && text != ""
 }
 
-// gh api の後ろの語に、読めるメソッド指定が 1 つ以上あり、読めないメソッド指定が
-// 無ければ true。
-func explicitMethod(texts []string, infos []wordInfo) bool {
-	seen := false
+// gh api の後ろの語から読んだ指定。
+type ghAPIArgs struct {
+	methods []string // 読めたメソッド指定の値
+	// 読めないメソッド指定があるか、展開がメソッドの指定を持ち込める。
+	unreadable bool
+	// GET の読み取りを外へ広げる指定。ボディ (--input、-F/--field) と、github.com
+	// 以外への送信 (--hostname、完全な URL)。
+	widens bool
+}
+
+// 展開を含む語では、展開より前の字面 (prefix) で同じことを見る。
+func widensGet(text string) bool {
+	if isURL(text) {
+		return true
+	}
+	if strings.HasPrefix(text, "--") {
+		name, _, _ := strings.Cut(text[2:], "=")
+		return name == "input" || name == "field" || name == "hostname"
+	}
+	if strings.HasPrefix(text, "-") {
+		for _, c := range text[1:] {
+			if c == 'F' {
+				return true
+			}
+			if strings.ContainsRune(ghAPIShortValue, c) {
+				return false
+			}
+		}
+	}
+	return false
+}
+
+func isURL(text string) bool {
+	lower := strings.ToLower(text)
+	return strings.HasPrefix(lower, "http://") || strings.HasPrefix(lower, "https://")
+}
+
+func readGhAPIArgs(texts []string, infos []wordInfo) ghAPIArgs {
+	var out ghAPIArgs
 	// 値を取るオプションが次の語を飲み込む。その語が語分割を起こすなら、値の後ろに
 	// オプションを残せる。
 	eats := func(i int) bool { return i+1 >= len(texts) || !infos[i+1].splittable }
+	// 次の語を値として読む。読めなければ nil。
+	value := func(i int) *string {
+		if i+1 < len(texts) && methodReadable(texts[i+1], infos[i+1]) {
+			return &texts[i+1]
+		}
+		return nil
+	}
+	method := func(v *string) {
+		if v == nil || *v == "" {
+			out.unreadable = true
+			return
+		}
+		out.methods = append(out.methods, *v)
+	}
+	host := func(v *string) {
+		out.widens = out.widens || v == nil || *v != "github.com"
+	}
+	endOfOptions := false
 	for i := 0; i < len(texts); i++ {
 		text, info := texts[i], infos[i]
+		if endOfOptions {
+			out.widens = out.widens || isURL(info.prefix)
+			continue
+		}
 		if !info.literal {
 			if !optionSafe(info) {
-				return false
+				out.unreadable = true
+				return out
 			}
+			out.widens = out.widens || widensGet(info.prefix)
 			continue
 		}
 		if text == "--" {
-			break
+			endOfOptions = true
+			continue
 		}
 		if !strings.HasPrefix(text, "-") || text == "-" {
+			out.widens = out.widens || isURL(text)
 			continue
 		}
 
 		if strings.HasPrefix(text, "--") {
-			name, value, glued := strings.Cut(text[2:], "=")
+			name, v, glued := strings.Cut(text[2:], "=")
+			out.widens = out.widens || name == "input" || name == "field"
 			switch {
-			case name == "method" && glued:
-				if value == "" {
-					return false
-				}
-				seen = true
-			case name == "method":
-				if i+1 >= len(texts) || !methodReadable(texts[i+1], infos[i+1]) {
-					return false
-				}
-				seen = true
-				i++
+			case glued && name == "method":
+				method(&v)
+			case glued && name == "hostname":
+				host(&v)
 			case ghAPILongValue[name] && !glued:
-				if !eats(i) {
-					return false
+				switch name {
+				case "method":
+					method(value(i))
+				case "hostname":
+					host(value(i))
+				default:
+					if !eats(i) {
+						out.unreadable = true
+						return out
+					}
 				}
 				i++
 			}
@@ -220,28 +295,31 @@ func explicitMethod(texts []string, infos []wordInfo) bool {
 			if !strings.ContainsRune(ghAPIShortValue, rune(c)) {
 				continue
 			}
+			out.widens = out.widens || c == 'F'
 			if j+1 < len(cluster) {
-				seen = seen || c == 'X'
+				if c == 'X' {
+					v := cluster[j+1:]
+					method(&v)
+				}
 				break
 			}
 			if c == 'X' {
-				if i+1 >= len(texts) || !methodReadable(texts[i+1], infos[i+1]) {
-					return false
-				}
-				seen = true
+				method(value(i))
 			} else if !eats(i) {
-				return false
+				out.unreadable = true
+				return out
 			}
 			i++
 			break
 		}
 	}
-	return seen
+	return out
 }
 
 // 字面の gh と、字面の api または読めない語が並んだ所を呼び出しの開始とする。
 // 各呼び出しは次の呼び出しの手前まで。後ろの呼び出しの -X GET を借りないため。
-func ghAPIMissingMethod(texts []string, infos []wordInfo) bool {
+// 判定が無ければ ""。
+func ghAPIVerdict(texts []string, infos []wordInfo) verdict {
 	var starts []int
 	for i := 0; i+1 < len(texts); i++ {
 		if infos[i].literal && commandName(texts[i]) == "gh" &&
@@ -254,10 +332,18 @@ func ghAPIMissingMethod(texts []string, infos []wordInfo) bool {
 		if k+1 < len(starts) {
 			end = starts[k+1]
 		}
-		if slices.ContainsFunc(infos[start:end], func(info wordInfo) bool { return info.unsure }) ||
-			!explicitMethod(texts[start+2:end], infos[start+2:end]) {
-			return true
+		if slices.ContainsFunc(infos[start:end], func(info wordInfo) bool { return info.unsure }) {
+			return "GH_API_METHOD"
+		}
+		// 複数のメソッド指定では最後の指定が効くので、`-X GET … -X DELETE` は
+		// managed.rules の `gh api -X GET` に一致したまま DELETE を送る。
+		args := readGhAPIArgs(texts[start+2:end], infos[start+2:end])
+		switch {
+		case args.unreadable || len(args.methods) != 1:
+			return "GH_API_METHOD"
+		case args.methods[0] == "GET" && args.widens:
+			return "GH_API_GET"
 		}
 	}
-	return false
+	return ""
 }

@@ -48,8 +48,9 @@ func refuse(format string, args ...any) {
 var codexSkipped = []verdict{"GREP_R"}
 
 // bannedSkipped は Claude Code では使わない判定。Claude Code の gh api は
-// gh-api モードが見る。
-var bannedSkipped = []verdict{"GH_API_METHOD"}
+// gh-api モードが見る。GIT_OUTPUT は Codex のサンドボックスを守る判定で、
+// Claude Code の書き込みは権限設定が見る。
+var bannedSkipped = []verdict{"GH_API_METHOD", "GH_API_GET", "GIT_OUTPUT"}
 
 type toolCall struct {
 	name    string // 文字列の tool_name がなければ空

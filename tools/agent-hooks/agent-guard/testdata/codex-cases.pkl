@@ -116,6 +116,41 @@ local cases: Listing<Case> = new {
   block(#"gh api -X GET --template ';' --method "$M" repos/o/r"#)
   allow(#"gh api --template ';' -X GET repos/o/r"#)
   allow(#"gh api -X GET --template + r"#)
+
+  // managed.rules は `gh api -X GET` で始まる呼び出しを確認なしにサンドボックスの外で
+  // 走らせるので、メソッドは 1 つに限り、GET は github.com の読み取りに留める
+  block(#"gh api -X GET -X DELETE r"#)
+  block(#"gh api -X GET --method=DELETE r"#)
+  block(#"gh api -X GET r -X DELETE"#)
+  block(#"gh api -X GET -iX DELETE r"#)
+  block(#"gh api -X POST -X GET r"#)
+  block(#"gh api -X GET --input body.json r"#)
+  block(#"gh api -X GET --input=body.json r"#)
+  block(#"gh api -X GET -F a=@secret r"#)
+  block(#"gh api -X GET -Fa=b r"#)
+  block(#"gh api -X GET --field a=b r"#)
+  block(#"gh api -X GET --hostname evil.example r"#)
+  block(#"gh api -X GET --hostname=evil.example r"#)
+  block(#"gh api -X GET https://evil.example/x"#)
+  block(#"gh api -X GET http://127.0.0.1:9/x"#)
+  block(#"gh api -X GET --hostname="$H" r"#)
+  block(#"gh api -X GET --input="$F" r"#)
+  block(#"gh api -X GET -F"$X" r"#)
+  block(#"gh api -X GET -iF"$X" r"#)
+  block(#"gh api -X GET "https://$H/x""#)
+  block(#"gh api -X GET -- "https://$H/x""#)
+  allow(#"gh api -X GET --hostname github.com r"#)
+  allow(#"gh api -X GET -f per_page=100 r"#)
+  allow(#"gh api -X POST --input body.json r"#)
+  allow(#"gh api -X POST -F a=@body r"#)
+  allow(#"gh api -X POST https://example.com/x"#)
+
+  // managed.rules が読み取りとして許す git diff/log/show でも、--output はファイルを書く
+  block(#"git diff --output=/etc/x"#)
+  block(#"git log --output /tmp/x"#)
+  block(#"git show --output=x HEAD"#)
+  allow(#"git diff --stat"#)
+  allow(#"git log --oneline -- --output"#)
 }
 
 output {
