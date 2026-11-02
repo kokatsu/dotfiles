@@ -8,7 +8,7 @@ return {
         version = 'LuaJIT',
         pathStrict = true,
         path = {
-          '?/.lua',
+          '?.lua',
           '?/init.lua',
         },
       },

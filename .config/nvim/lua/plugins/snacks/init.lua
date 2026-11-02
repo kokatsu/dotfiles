@@ -207,7 +207,6 @@ return {
         Snacks.words.jump(1, true)
       end,
       desc = 'Next Reference',
-      mode = { 'n', 't' },
     },
     {
       '[[',
@@ -215,7 +214,6 @@ return {
         Snacks.words.jump(-1, true)
       end,
       desc = 'Prev Reference',
-      mode = { 'n', 't' },
     },
     -- Bufdelete
     {
