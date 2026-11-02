@@ -6,8 +6,9 @@
 # C-quotes any path with a space/tab/quote even under core.quotePath=false (e.g.
 # `"with space.txt"`), which would then be passed verbatim to git/bat/cat and
 # fail to resolve. The -z form emits raw, NUL-delimited paths. Renames arrive as
-# two records (new path, then old path); the awk below drops the trailing old
-# one, so every list line is just `XY <path>` and the new name wins.
+# two records (new path, then old path); list_changes drops the trailing old
+# one, so every list line is just `XY <path>` and the new name wins. The loop
+# reads NUL with bash because macOS awk cannot split records on NUL.
 set -u
 
 # Self-invoked by fzf for each highlighted line: render that file's preview.
@@ -23,17 +24,26 @@ if [ "${1:-}" = "--preview" ]; then
   exit 0
 fi
 
+list_changes() {
+  local rec skip=0
+  while IFS= read -r -d '' rec; do
+    if ((skip)); then
+      skip=0
+      continue
+    fi
+    case ${rec:0:2} in
+    R? | C? | ?R | ?C) skip=1 ;;
+    esac
+    printf '%s\n' "$rec"
+  done < <(git -c core.quotePath=false status --porcelain -z)
+}
+
 self=$0
 root=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
 cd "$root" || exit 0
 
 sel=$(
-  git -c core.quotePath=false status --porcelain -z |
-    awk 'BEGIN { RS = "\0"; ORS = "\n" }
-        skip { skip = 0; next }  # drop a renames old-path record
-        { x = substr($0, 1, 1); y = substr($0, 2, 1)
-          if (x == "R" || x == "C" || y == "R" || y == "C") skip = 1
-          print }' |
+  list_changes |
     fzf --no-multi --layout=reverse --border --prompt="git changes> " \
       --preview "bash '$self' --preview {}"
 ) || exit 0
