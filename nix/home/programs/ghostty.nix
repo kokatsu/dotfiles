@@ -18,7 +18,6 @@
       cursor-style = "bar";
       cursor-style-blink = true;
       background-opacity = 0.75;
-      background-image-opacity = 0.3;
       window-padding-x = 20;
       window-padding-y = 5;
       window-padding-balance = true;

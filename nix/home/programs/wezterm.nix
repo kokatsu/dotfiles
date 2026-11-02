@@ -93,7 +93,6 @@ in {
       ".config/wezterm/keybinds.lua".source = ../../../.config/wezterm/keybinds.lua;
       ".config/wezterm/mac.lua".source = ../../../.config/wezterm/mac.lua;
       ".config/wezterm/platform.lua".source = ../../../.config/wezterm/platform.lua;
-      ".config/wezterm/stylua.toml".source = ../../../.config/wezterm/stylua.toml;
       ".config/wezterm/wezterm.lua".source = ../../../.config/wezterm/wezterm.lua;
       ".config/wezterm/windows.lua".source = ../../../.config/wezterm/windows.lua;
       ".config/wezterm/backgrounds.lua" = lib.mkIf (!isCI && builtins.pathExists backgroundsLua) {

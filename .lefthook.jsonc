@@ -93,7 +93,6 @@
       },
       "markdownlint": {
         "glob": ["*.md"],
-        "exclude": [".config/yazi/flavors/**/*", ".config/yazi/plugins/**/*"],
         "run": "markdownlint {staged_files}"
       },
       "editorconfig": {
@@ -207,7 +206,6 @@
       },
       "markdownlint": {
         "glob": ["*.md"],
-        "exclude": [".config/yazi/flavors/**/*", ".config/yazi/plugins/**/*"],
         "run": "markdownlint {push_files}"
       },
       "editorconfig": {
