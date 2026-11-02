@@ -30,7 +30,7 @@
     // Home Manager が入れる agent-guard と cc-statusline
     "PATH": "/home/vscode/.nix-profile/bin:${containerEnv:PATH}"
   },
-  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.config /home/vscode/.config/claude /home/vscode/.config/codex && npm install -g @openai/codex && sudo apt-get update && sudo apt-get install -y iptables ipset iproute2 dnsutils jq curl aggregate && sudo install -m 0755 .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh && sudo sh -c 'echo \"vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\" > /etc/sudoers.d/vscode && chmod 0440 /etc/sudoers.d/vscode' && .devcontainer/apply-home.sh",
+  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.config /home/vscode/.config/claude /home/vscode/.config/codex && sudo apt-get update && sudo apt-get install -y iptables ipset iproute2 dnsutils jq curl aggregate && sudo install -m 0755 .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh && sudo sh -c 'echo \"vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\" > /etc/sudoers.d/vscode && chmod 0440 /etc/sudoers.d/vscode' && .devcontainer/apply-home.sh",
   "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
   "waitFor": "postStartCommand",
   "mounts": [

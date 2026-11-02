@@ -28,6 +28,7 @@
     packages = with pkgs; [
       agent-hooks
       cc-statusline
+      codex
       fd
       jq
       textlint-with-rules
