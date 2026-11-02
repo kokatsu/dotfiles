@@ -88,7 +88,8 @@ nix-dead-code:
 
 # Evaluate flake outputs and checks without building them
 nix-eval:
-    nix flake check "path:$PWD" --no-build --impure --no-update-lock-file
+    # CI と同じく git の fetcher で読み、未追跡のファイルを評価に含めない
+    nix flake check . --no-build --impure --no-update-lock-file
 
 # Format JSON with biome (リポジトリの .ts/.tsx は全て Deno 管理で biome の対象外)
 biome-fmt:
