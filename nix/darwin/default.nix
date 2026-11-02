@@ -121,15 +121,6 @@
   };
 
   security = {
-    # CVE-2026-111943 (eMudhra intermediate CA compromise) の対象ルートを
-    # /etc/ssl/certs/ca-certificates.crt から除外する (NixOS/nixpkgs issue 576485)。
-    # emSign の各ルートは NSS 側で削除済みで、ストアにない名前を並べると cacert のビルドが失敗する。
-    # nix-darwin 側で同じ除外が既定になれば (nix-darwin PR 1876) 不要。
-    # Determinate Nix の daemon は macos-keychain.crt を使うので、これでは守られない。
-    pki.caCertificateBlacklist = [
-      "Comodo AAA Services root"
-    ];
-
     # Touch ID for sudo
     # reattach は herdr / tmux などの端末マルチプレクサ内でも Touch ID を使うため
     pam.services.sudo_local = {
