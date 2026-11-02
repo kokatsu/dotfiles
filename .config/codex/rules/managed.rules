@@ -25,7 +25,6 @@ prefix_rule(
             "log",
             "blame",
             "ls-files",
-            "grep",
             "rev-parse",
             "merge-base",
             "describe",
@@ -47,6 +46,7 @@ prefix_rule(
         "git commit -m test",
         "git push",
         "git branch new-branch",
+        "git grep -O'sh -c id' x",
     ],
 )
 

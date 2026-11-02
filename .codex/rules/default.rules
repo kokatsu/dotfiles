@@ -1,8 +1,8 @@
 # Dotfiles repository-local commands.
 prefix_rule(
     pattern = ["just", ["check", "check-static", "fmt", "nvim-test"]],
-    decision = "allow",
-    justification = "Allow this trusted repository's standard check, format, and Neovim test recipes without prompting.",
+    decision = "prompt",
+    justification = "The recipes run repository files that the sandboxed agent can edit, so running them outside the sandbox needs approval each time.",
     match = [
         "just check",
         "just check-static",

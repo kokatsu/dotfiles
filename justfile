@@ -15,7 +15,7 @@ check: check-static nix-eval
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-guard-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test herdr-cache-token-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
+test_recipes := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test herdr-cache-token-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -285,6 +285,10 @@ ai-writing-hook-test:
 # Verify which textlint rules the AI writing hook enforces and how they treat decisive inputs
 textlint-response-config-test:
     bash scripts/test-textlint-response-config.sh
+
+# Validate the match/not_match examples in the Codex rules; Codex only checks them when it loads the files
+codex-rules-test:
+    git ls-files -z '*.rules' | xargs -0 -I{} codex execpolicy check --rules {} -- true > /dev/null
 
 # Verify `gh api` is auto-allowed only when it is provably read-only
 gh-api-guard-test:

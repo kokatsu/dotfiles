@@ -455,6 +455,7 @@
             biome # formatter + linter
             deno # fmt / lint / check
             claude-code
+            codex # `just codex-rules-test` (execpolicy)
 
             # Markup / config
             markdownlint-cli # Markdown linter
