@@ -136,7 +136,8 @@ in {
                 matcher = "^Bash$";
                 hooks = [
                   {
-                    command = "'${config.home.profileDirectory}/bin/agent-guard' codex";
+                    # Codex がブロックとして扱うのは exit 2 だけなので、無いときも 2 で終える。
+                    command = "test -x '${config.home.profileDirectory}/bin/agent-guard' || { echo 'agent-guard not found; run home-manager switch' >&2; exit 2; }; exec '${config.home.profileDirectory}/bin/agent-guard' codex";
                     type = "command";
                   }
                 ];
