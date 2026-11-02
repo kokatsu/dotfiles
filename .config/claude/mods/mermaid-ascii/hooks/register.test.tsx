@@ -223,3 +223,29 @@ test('a run that could not finish is retried on the next draw', async ($, on) =>
   expect(calls).toBe(2);
   expect(painted(tree)).toEqual([['subtle', '┌─┐']]);
 });
+
+test('a bullet lookup that failed is retried on the next draw', async ($, on) => {
+  let unames = 0;
+  on('process.run', (_$, e) => {
+    if (e.argv[0] === 'uname' && ++unames === 1) throw new Error('aborted');
+    return {
+      value: {
+        exitCode: 0,
+        stdout: e.argv[0] === 'uname' ? 'Darwin\n' : '┌─┐',
+        stderr: '',
+        isStdoutTruncated: false,
+        isStderrTruncated: false,
+      },
+    };
+  });
+  on('ui.render', () => ({ type: 'Text', props: {}, children: [] }));
+
+  const reply = draw(`\`\`\`mermaid\n${flowchart}\`\`\``);
+  await $.ui.render(reply).catch(() => undefined);
+  const tree = await $.ui.render(reply);
+  expect(unames).toBe(2);
+  expect(painted(tree)).toEqual([
+    ['text', '⏺'],
+    ['subtle', '┌─┐'],
+  ]);
+});

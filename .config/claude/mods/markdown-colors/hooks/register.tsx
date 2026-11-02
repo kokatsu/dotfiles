@@ -263,9 +263,14 @@ export const register: Register = (on) => {
         // The engine draws no bullet for an empty block, so a reply that opens
         // with a block of ours draws its own, using the glyph the engine picks
         // per OS.
-        bullet ??= $.process
-          .run(['uname'])
-          .then((r) => (r.stdout.trim() === 'Darwin' ? '⏺' : '●'));
+        if (!bullet) {
+          bullet = $.process
+            .run(['uname'])
+            .then((r) => (r.stdout.trim() === 'Darwin' ? '⏺' : '●'));
+          bullet.catch(() => {
+            bullet = undefined;
+          });
+        }
         return (
           <Box flexDirection="row" marginTop={1}>
             <Box width={2}>
