@@ -56,6 +56,15 @@
         "glob": ["*.pkl"],
         "run": "pkl format -w {staged_files} && git update-index --again"
       },
+      "go-format": {
+        "glob": ["*.go"],
+        "run": "gofmt -w {staged_files} && git update-index --again"
+      },
+      // codex-cases.json は .pkl から生成するので、片方だけの変更を止める
+      "agent-guard-cases": {
+        "glob": ["tools/agent-hooks/agent-guard/testdata/codex-cases.*"],
+        "run": "just agent-guard-cases-test"
+      },
       "yaml-format": {
         "glob": ["*.{yml,yaml}"],
         "run": "yamlfmt {staged_files} && git update-index --again"
@@ -134,6 +143,19 @@
       "pkl-format": {
         "glob": ["*.pkl"],
         "run": "pkl format --diff-name-only {push_files}"
+      },
+      // gofmt -l は差分があっても exit 0 なので出力の有無で判定する
+      "go-format": {
+        "glob": ["*.go"],
+        "run": "out=$(gofmt -l {push_files}) && test -z \"$out\" || { echo \"$out\"; exit 1; }"
+      },
+      "go-vet": {
+        "glob": ["tools/agent-hooks/**/*.go"],
+        "run": "cd tools/agent-hooks && go vet ./..."
+      },
+      "agent-guard-cases": {
+        "glob": ["tools/agent-hooks/agent-guard/testdata/codex-cases.*"],
+        "run": "just agent-guard-cases-test"
       },
       "lua-lint-nvim": {
         "glob": [".config/nvim/*.lua"],
