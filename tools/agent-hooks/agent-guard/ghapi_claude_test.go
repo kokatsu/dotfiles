@@ -13,32 +13,8 @@ type ghAPICase struct {
 	id, decision, reason, command string
 }
 
-func loadGhAPICases(t *testing.T) []ghAPICase {
-	t.Helper()
-	data, err := os.ReadFile("testdata/gh-api-guard-cases.tsv")
-	if err != nil {
-		t.Fatal(err)
-	}
-	var cases []ghAPICase
-	for _, line := range strings.Split(string(data), "\n") {
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		fields := strings.SplitN(line, "\t", 4)
-		if len(fields) != 4 {
-			t.Fatalf("malformed case: %q", line)
-		}
-		cases = append(cases, ghAPICase{fields[0], fields[1], fields[2], fields[3]})
-	}
-	return append(cases,
-		// 改行を含む形は表に書けない。
-		ghAPICase{"I1", "allow", ghAPIAllowReason, "gh ap\\\ni repos/o/r -X GET"},
-		ghAPICase{"I2", "allow", ghAPIAllowReason, "gh a\\\np\\\ni repos/o/r -X GET"},
-	)
-}
-
 func TestCheckGhAPI(t *testing.T) {
-	for _, c := range loadGhAPICases(t) {
+	for _, c := range ghAPICases {
 		got, ok := checkGhAPI(c.command)
 		switch {
 		case c.decision == "none":

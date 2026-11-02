@@ -370,7 +370,7 @@ func hidesGhAPI(texts []string) bool {
 // jsSlice は JavaScript の Array.prototype.slice の位置の解釈で、負の値は末尾から
 // 数える。env -S は語を分割して増やすので、剥がした後の語数が元より多くなり、
 // 下の offset が負になる。移植元はその負の位置で argv を切っており、判定は
-// testdata/gh-api-guard-cases.tsv の M 行が固定している。
+// ghapi_claude_cases_test.go の M 群が固定している。
 func jsSlice(n, i int) int {
 	if i < 0 {
 		return max(n+i, 0)
@@ -605,7 +605,7 @@ func ghAPIDecide(file *syntax.File) (ghAPIDecision, bool) {
 	}
 
 	// 採用される理由は走査順の先頭なので、順序自体が仕様。deny と ask が入れ替わる
-	// 形は testdata/gh-api-guard-cases.tsv の J 行が固定している。
+	// 形は ghapi_claude_cases_test.go の J 群が固定している。
 	syntax.Walk(file, func(node syntax.Node) bool {
 		call, ok := node.(*syntax.CallExpr)
 		if !ok || len(call.Args) == 0 {

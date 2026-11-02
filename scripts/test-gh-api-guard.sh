@@ -5,7 +5,7 @@ set -eEuo pipefail
 # PreToolUse の入力ごと叩く。コマンドが gh-api モードを起動し、判定が JSON と
 # exit 0 で返ること、判定に届かなかった失敗でも exit 0 で判定を出さないことを
 # 確かめる。判定そのものは tools/agent-hooks/agent-guard の go test が
-# testdata/gh-api-guard-cases.tsv で固定する。
+# ghapi_claude_cases_test.go で固定する。
 
 # shellcheck source=scripts/test-lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/test-lib.sh"
