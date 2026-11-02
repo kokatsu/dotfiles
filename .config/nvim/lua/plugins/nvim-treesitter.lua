@@ -12,6 +12,7 @@ return {
 
     -- Treesitterハイライトを全ファイルタイプで有効化
     vim.api.nvim_create_autocmd('FileType', {
+      group = vim.api.nvim_create_augroup('treesitter_start', { clear = true }),
       callback = function(args)
         pcall(vim.treesitter.start, args.buf)
       end,

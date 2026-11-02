@@ -10,6 +10,7 @@ do
 
   -- lazy-load イベントをログに記録
   vim.api.nvim_create_autocmd('User', {
+    group = vim.api.nvim_create_augroup('lazy_load_log', { clear = true }),
     pattern = 'LazyLoad',
     callback = function(event)
       local f = io.open(logfile, 'a')
@@ -22,6 +23,7 @@ do
 
   -- 起動時に未使用プラグインを検出して通知
   vim.api.nvim_create_autocmd('User', {
+    group = vim.api.nvim_create_augroup('unused_plugin_report', { clear = true }),
     pattern = 'VeryLazy',
     once = true,
     callback = function()
@@ -158,6 +160,7 @@ vim.api.nvim_create_autocmd('FocusGained', {
 
 -- ファイル再オープン時に前回のカーソル位置へ移動
 vim.api.nvim_create_autocmd('BufReadPost', {
+  group = vim.api.nvim_create_augroup('restore_cursor', { clear = true }),
   callback = function()
     local mark = vim.api.nvim_buf_get_mark(0, '"')
     if mark[1] > 0 and mark[1] <= vim.api.nvim_buf_line_count(0) then
@@ -169,6 +172,7 @@ vim.api.nvim_create_autocmd('BufReadPost', {
 -- snacks_dashboardでの:qをフリーズさせない
 -- GIFアニメーション(chafa)が実行中のため、:qaで強制終了する
 vim.api.nvim_create_autocmd('FileType', {
+  group = vim.api.nvim_create_augroup('dashboard_quit', { clear = true }),
   pattern = 'snacks_dashboard',
   callback = function()
     vim.keymap.set('ca', 'q', function()
@@ -191,6 +195,7 @@ vim.api.nvim_create_autocmd('FileType', {
 -- CursorHold/CursorHoldIを追加してClaude Code等の外部ツールによる変更を検知
 -- コマンドラインウィンドウ (q:) 内の checktime は E11 になる
 vim.api.nvim_create_autocmd({ 'WinEnter', 'FocusGained', 'BufEnter', 'CursorHold', 'CursorHoldI' }, {
+  group = vim.api.nvim_create_augroup('checktime', { clear = true }),
   pattern = '*',
   callback = function()
     if vim.fn.getcmdwintype() == '' then
@@ -202,6 +207,7 @@ vim.api.nvim_create_autocmd({ 'WinEnter', 'FocusGained', 'BufEnter', 'CursorHold
 -- 外部でファイルが変更された後、LSPに変更を通知して診断を更新
 -- Claude Code等の外部ツールによる変更後にrust-analyzer等の診断を反映させる
 vim.api.nvim_create_autocmd('FileChangedShellPost', {
+  group = vim.api.nvim_create_augroup('lsp_did_save_on_external_change', { clear = true }),
   pattern = '*',
   callback = function()
     local bufnr = vim.api.nvim_get_current_buf()
@@ -255,6 +261,7 @@ vim.api.nvim_create_autocmd('CmdlineLeave', {
 -- フォーカスを失ったときにVisualモードを解除する
 -- 別ペーンから戻ったときにVisualモードに気づかず操作するミスを防ぐ
 vim.api.nvim_create_autocmd('FocusLost', {
+  group = vim.api.nvim_create_augroup('visual_off_on_focus_lost', { clear = true }),
   callback = function()
     local mode = vim.api.nvim_get_mode().mode
     if mode == 'v' or mode == 'V' or mode == '\22' then
@@ -265,6 +272,7 @@ vim.api.nvim_create_autocmd('FocusLost', {
 
 -- ターミナルバッファでは重い表示系を無効化して描画を軽くする
 vim.api.nvim_create_autocmd('TermOpen', {
+  group = vim.api.nvim_create_augroup('terminal_light_ui', { clear = true }),
   callback = function()
     vim.wo.scrolloff = 0
     vim.wo.sidescrolloff = 0
@@ -276,6 +284,7 @@ vim.api.nvim_create_autocmd('TermOpen', {
 -- 新しいウィンドウは開いた時点のウィンドウの winhighlight を受け継ぐため、カレントからは外しておく
 local dim_inactive = 'NormalNC:DimInactive'
 vim.api.nvim_create_autocmd({ 'VimEnter', 'WinEnter' }, {
+  group = vim.api.nvim_create_augroup('dim_inactive_windows', { clear = true }),
   callback = function()
     local current = vim.api.nvim_get_current_win()
     for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
@@ -297,6 +306,7 @@ vim.api.nvim_create_autocmd({ 'VimEnter', 'WinEnter' }, {
 -- :quit時に特殊ウィンドウ(quickfix, help等)だけが残る場合は一括で閉じる
 -- https://zenn.dev/vim_jp/articles/ff6cd224fab0c7
 vim.api.nvim_create_autocmd('QuitPre', {
+  group = vim.api.nvim_create_augroup('close_special_windows_on_quit', { clear = true }),
   callback = function()
     local current_win = vim.api.nvim_get_current_win()
     for _, win in ipairs(vim.api.nvim_list_wins()) do

@@ -1,6 +1,7 @@
 -- https://github.com/mrcjkb/rustaceanvim
 
 vim.api.nvim_create_autocmd('FileType', {
+  group = vim.api.nvim_create_augroup('rustaceanvim_keymaps', { clear = true }),
   pattern = 'rust',
   callback = function(args)
     local map = function(lhs, rhs, desc)

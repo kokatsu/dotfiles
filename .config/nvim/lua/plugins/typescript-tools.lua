@@ -34,6 +34,7 @@ end
 -- FileType ではなく attach 時に張る。Deno のファイルなど root_dir で attach を見送った
 -- バッファでは TSTools* コマンドが失敗するため
 vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('typescript_tools_keymaps', { clear = true }),
   callback = function(args)
     local client = vim.lsp.get_client_by_id(args.data.client_id)
     if not client or client.name ~= 'typescript-tools' then

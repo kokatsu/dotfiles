@@ -25,6 +25,7 @@ local function check_deno_shebang(bufnr)
 end
 
 vim.api.nvim_create_autocmd({ 'BufReadPost', 'BufNewFile' }, {
+  group = vim.api.nvim_create_augroup('deno_shebang_filetype', { clear = true }),
   pattern = '*',
   callback = function(args)
     if check_deno_shebang(args.buf) then
