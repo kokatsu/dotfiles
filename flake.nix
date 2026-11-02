@@ -51,7 +51,7 @@
       flake = false;
     };
 
-    # UnoCSS LSP (上流が flake を提供しているため自前ビルドから移行)
+    # UnoCSS LSP (上流の flake を使う)
     # https://github.com/xna00/unocss-language-server
     # nixpkgs.follows は付けない: package.nix が pnpm.fetchDeps の offline store を
     # 上流 pin の pnpm バージョンに密結合しており、別 nixpkgs だと
