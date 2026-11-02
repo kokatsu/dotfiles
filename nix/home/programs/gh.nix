@@ -17,11 +17,11 @@
       aliases = {
         co = "pr checkout";
       };
-      # WSL: Open URLs in Windows browser
+      # WSL: Open URLs in Windows browser (bin/wsl-open escapes & for cmd.exe)
       # macOS/Linux: Use system default (empty string)
       browser =
         if isWSL
-        then "cmd.exe /c start"
+        then "wsl-open"
         else "";
     };
   };

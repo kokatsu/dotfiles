@@ -1,6 +1,7 @@
 {
   config,
   inputs,
+  isWSL,
   lib,
   pkgs,
   validDotfilesDir,
@@ -33,7 +34,9 @@
   openFile =
     if pkgs.stdenv.hostPlatform.isDarwin
     then '':sh /usr/bin/open "%{file_path_absolute}"''
-    else '':sh cd /mnt/c && cmd.exe /c start "" "$(wslpath -w "%{file_path_absolute}")"'';
+    else if isWSL
+    then '':sh cd /mnt/c && cmd.exe /c start "" "$(wslpath -w "%{file_path_absolute}")"''
+    else '':sh xdg-open "%{file_path_absolute}"'';
   copyCodeblock = pkgs.writeShellApplication {
     name = "helix-copy-codeblock";
     runtimeInputs = [pkgs.deno];

@@ -27,7 +27,7 @@
         d1 = "-c diff.external=difft diff HEAD^";
         # d1d = ''!f() { git diff HEAD^ "$@" | delta --side-by-side --paging=never; }; f'';
         f = "fetch origin";
-        fd = "!git branch | fzf --preview 'git log -1 --color=always --stat {-1}' --preview-window=right,60% | xargs git checkout";
+        fd = "!git branch --format='%(refname:short)' | fzf --preview 'git log -1 --color=always --stat {-1}' --preview-window=right,60% | xargs git checkout";
         l = "log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph";
         la = "log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph --all --date-order";
         lf = "log --pretty=fuller";
@@ -208,7 +208,6 @@
       ".env"
       ".env.*"
       ".DS_Store"
-      "**/.claude/settings.local.json"
     ];
     # binary ではなく -diff にする。binary は -merge も含み、mergiraf.nix の
     # "* merge=mergiraf" を打ち消してしまう。flake.lock / Cargo.lock は差分を読むので対象外。
