@@ -9,7 +9,6 @@ vim.api.nvim_create_autocmd('FileType', {
     end
     map('<leader>lr', '<cmd>RustLsp runnables<cr>', 'Runnables')
     map('<leader>lt', '<cmd>RustLsp testables<cr>', 'Testables')
-    map('<leader>lD', '<cmd>RustLsp debuggables<cr>', 'Debuggables')
     map('<leader>le', '<cmd>RustLsp expandMacro<cr>', 'Expand macro')
     map('<leader>lc', '<cmd>RustLsp openCargo<cr>', 'Open Cargo.toml')
     map('<leader>lp', '<cmd>RustLsp parentModule<cr>', 'Parent module')

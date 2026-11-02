@@ -13,7 +13,6 @@ local palette = require('utils.palette')
 require('lazy').setup({
   spec = {
     -- import your plugins
-    -- { import = 'plugins' },
     require('plugins.barbar'),
     require('plugins.blink'),
     require('plugins.catppuccin'),
@@ -44,8 +43,4 @@ require('lazy').setup({
   install = { colorscheme = { 'catppuccin-' .. palette.flavor() } },
   -- automatically check for plugin updates
   checker = { enabled = true },
-  change_detection = {
-    enabled = true,
-    notify = false,
-  },
 })
