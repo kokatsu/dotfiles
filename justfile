@@ -10,7 +10,7 @@ default:
     @just --list
 
 # Run all checks
-check: check-static nix-eval
+check: (_run-all "check-static nix-eval")
 
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
