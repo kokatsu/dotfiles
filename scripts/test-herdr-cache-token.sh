@@ -42,10 +42,8 @@ if PATH=$system_path command -v deno >/dev/null 2>&1; then
 fi
 
 failures=0
-fail() {
-  printf 'FAIL: %s\n' "$*" >&2
-  failures=$((failures + 1))
-}
+# shellcheck source=scripts/test-lib.sh
+source "$(dirname "${BASH_SOURCE[0]}")/test-lib.sh"
 
 # run_hook <name> <stdin> <env assignment>... -- <hook args>...
 # Runs the hook in a clean environment and checks it exits 0 with no output.
