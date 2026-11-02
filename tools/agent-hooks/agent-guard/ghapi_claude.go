@@ -378,10 +378,226 @@ func jsSlice(n, i int) int {
 	return min(i, n)
 }
 
+// allow はコマンド全体の確認を飛ばすので、gh api と並ぶ部分も副作用が無いと
+// 証明できなければならない。引数をどう与えても書き込みも実行もしないコマンドだけを
+// 置く。printf (-v で変数を書く)、date (--set)、sort (-o)、rg (--pre)、find、awk、
+// sed は入れない。test と [ は引数の形を ghAPISafeTest で確かめる。
+var ghAPICompanions = map[string]bool{
+	"cat": true, "cut": true, "echo": true, "false": true, "grep": true, "head": true,
+	"jq": true, "sleep": true, "tail": true, "tr": true, "true": true, "wc": true,
+}
+
+// bash は名前の添字や算術比較の被演算子を算術式として評価し、その中の $(…) を
+// 実行する (`test -v 'a[$(cmd)0]'`、`[[ 'a[$(cmd)0]' -eq 1 ]]`)。値に置いた文字列でも
+// 起きるので、評価の入口になる演算子と展開の形をすべて断つ。
+func ghAPISafeTest(args []*syntax.Word) bool {
+	// 引数の数で形が決まるので、語を増減させる展開は認めない。引用の中の $(…) は
+	// 1 語のままなので通す。readGhAPIWord の splittable はこれも分割扱いにする。
+	if ghAPIHasGlob(args[1:]) {
+		return false
+	}
+	words := make([]ghAPIWord, len(args))
+	for i, arg := range args {
+		words[i] = readGhAPIWord(arg)
+		for _, part := range arg.Parts {
+			switch part := part.(type) {
+			case *syntax.Lit, *syntax.SglQuoted:
+			case *syntax.DblQuoted:
+				for _, inner := range part.Parts {
+					if exp, ok := inner.(*syntax.ParamExp); ok && exp.Param != nil &&
+						(exp.Param.Value == "@" || exp.Param.Value == "*") {
+						return false
+					}
+				}
+			default:
+				return false
+			}
+		}
+	}
+	lit := func(w ghAPIWord) string {
+		if w.literal == nil {
+			return "\x00"
+		}
+		return *w.literal
+	}
+	ops := words[1:]
+	if lit(words[0]) == "[" {
+		if len(ops) == 0 || lit(ops[len(ops)-1]) != "]" {
+			return false
+		}
+		ops = ops[:len(ops)-1]
+	}
+	// 引数の数で形が決まる (POSIX test)。1 個なら空でないかの判定だけになる。
+	switch len(ops) {
+	case 0, 1:
+		return true
+	case 2:
+		op := lit(ops[0])
+		return op == "-z" || op == "-n" || op == "!"
+	case 3:
+		op := lit(ops[1])
+		return op == "=" || op == "==" || op == "!="
+	}
+	return false
+}
+
+func ghAPISafeParamExp(p *syntax.ParamExp) bool {
+	// ${!x} と ${a[i]} は値を名前や添字として評価し、${x@P} は値を展開し直す。
+	if p.Excl || p.Index != nil || p.Slice != nil || p.Names != 0 || p.Flags != nil ||
+		p.NestedParam != nil || p.Modifiers != nil {
+		return false
+	}
+	if p.Exp == nil {
+		return true
+	}
+	switch p.Exp.Op {
+	case syntax.DefaultUnset, syntax.DefaultUnsetOrNull, syntax.AlternateUnset, syntax.AlternateUnsetOrNull,
+		syntax.RemSmallSuffix, syntax.RemLargeSuffix, syntax.RemSmallPrefix, syntax.RemLargePrefix:
+		return true
+	}
+	return false
+}
+
+// zsh ではこれらへの代入が PATH などの配列を書き換える。
+var ghAPITiedNames = map[string]bool{
+	"cdpath": true, "fpath": true, "mailpath": true, "manpath": true, "module_path": true, "path": true,
+}
+
+// 大文字を含む名前は環境変数として子に渡りうるので認めない。
+func ghAPISafeName(name string) bool {
+	return name == strings.ToLower(name) && !ghAPITiedNames[name]
+}
+
+func ghAPISafeAssigns(assigns []*syntax.Assign) bool {
+	for _, a := range assigns {
+		if !ghAPISafeName(a.Name.Value) || a.Index != nil {
+			return false
+		}
+	}
+	return true
+}
+
+// 引用されていない glob はファイル名に展開され、語の数も中身も作業ディレクトリ
+// 次第になる (`-v` や `--method=DELETE` という名前のファイル)。^ # ~ は zsh の
+// EXTENDED_GLOB で glob になる。
+func ghAPIHasGlob(words []*syntax.Word) bool {
+	for _, word := range words {
+		for _, part := range word.Parts {
+			if lit, ok := part.(*syntax.Lit); ok && strings.ContainsAny(lit.Value, "*?[{^#~") {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// `--` の後ろの語は ghAPIArgvReason が見ないので、置換の出力が URL に入る。
+// `-- "repos/o/r?q=$(cat ~/.ssh/id_rsa)"` は秘密を GET で送れる。
+func ghAPIHasSubst(call *syntax.CallExpr) bool {
+	found := false
+	syntax.Walk(call, func(node syntax.Node) bool {
+		switch node.(type) {
+		case *syntax.CmdSubst, *syntax.ProcSubst:
+			found = true
+		}
+		return !found
+	})
+	return found
+}
+
+// /dev/null への出力と fd の複製だけを認める。`>& file` はファイルへ書くので、
+// 複製先は数字か - に限る。
+func ghAPISafeRedirect(r *syntax.Redirect) bool {
+	target := readGhAPIWord(r.Word).literal
+	if target == nil {
+		return false
+	}
+	switch r.Op {
+	case syntax.RdrOut, syntax.AppOut, syntax.RdrAll, syntax.AppAll, syntax.ClbOut:
+		return *target == "/dev/null"
+	case syntax.DplOut, syntax.DplIn:
+		return *target == "-" || *target != "" && strings.Trim(*target, "0123456789") == ""
+	}
+	return false
+}
+
+// 前置きの wrapper が環境を書き換える形 (`env PATH=/x gh api`, `env -S'PATH=/x gh api'`)。
+func ghAPISetsEnv(texts []string) bool {
+	for _, text := range texts {
+		if text == "gh" {
+			return false
+		}
+		if strings.Contains(text, "=") {
+			return true
+		}
+	}
+	return false
+}
+
+// ghCalls は ghAPIDecide が読み取りと確かめた gh api 呼び出し。知らない構文は
+// 安全と証明できないので、型の許可リストで歩く。
+func ghAPIOnlySafe(file *syntax.File, ghCalls map[*syntax.CallExpr]bool) bool {
+	safe := true
+	syntax.Walk(file, func(node syntax.Node) bool {
+		if !safe {
+			return false
+		}
+		switch node := node.(type) {
+		case nil, *syntax.File, *syntax.Comment, *syntax.BinaryCmd, *syntax.Block, *syntax.Subshell,
+			*syntax.IfClause, *syntax.WhileClause, *syntax.ForClause,
+			*syntax.TimeClause, *syntax.TestClause, *syntax.ParenTest, *syntax.Word, *syntax.Lit,
+			*syntax.SglQuoted, *syntax.DblQuoted, *syntax.CmdSubst, *syntax.Redirect:
+		case *syntax.BinaryTest:
+			switch node.Op {
+			case syntax.AndTest, syntax.OrTest, syntax.TsMatchShort, syntax.TsMatch, syntax.TsNoMatch:
+			default:
+				safe = false
+			}
+		case *syntax.UnaryTest:
+			safe = node.Op == syntax.TsEmpStr || node.Op == syntax.TsNempStr || node.Op == syntax.TsNot
+		case *syntax.Stmt:
+			for _, r := range node.Redirs {
+				safe = safe && ghAPISafeRedirect(r)
+			}
+		case *syntax.ParamExp:
+			safe = ghAPISafeParamExp(node)
+		case *syntax.WordIter:
+			// for と select のループ変数も代入になる。
+			safe = ghAPISafeName(node.Name.Value)
+		case *syntax.Assign:
+			// 中身は CallExpr 側で確かめ、値の語は続けて歩く。
+		case *syntax.CallExpr:
+			switch {
+			case len(node.Args) == 0:
+				safe = ghAPISafeAssigns(node.Assigns)
+			case len(node.Assigns) > 0:
+				safe = false
+			case ghCalls[node]:
+				safe = !ghAPIHasSubst(node) && !ghAPIHasGlob(node.Args)
+			default:
+				name := readGhAPIWord(node.Args[0]).literal
+				switch {
+				case name == nil:
+					safe = false
+				case *name == "test" || *name == "[":
+					safe = ghAPISafeTest(node.Args)
+				default:
+					safe = ghAPICompanions[*name]
+				}
+			}
+		default:
+			safe = false
+		}
+		return safe
+	})
+	return safe
+}
+
 func ghAPIDecide(file *syntax.File) (ghAPIDecision, bool) {
 	seen := false
 	mayBeAPI := false
 	reason := ""
+	ghCalls := map[*syntax.CallExpr]bool{}
 	setReason := func(r string) {
 		if reason == "" {
 			reason = r
@@ -429,6 +645,9 @@ func ghAPIDecide(file *syntax.File) (ghAPIDecision, bool) {
 
 		if isGh && len(stripped) > 1 && stripped[1] == "api" {
 			seen = true
+			if !ghAPISetsEnv(texts) {
+				ghCalls[call] = true
+			}
 			setReason(ghAPIArgvReason(words[jsSlice(len(words), offset+2):]))
 			return true
 		}
@@ -449,7 +668,8 @@ func ghAPIDecide(file *syntax.File) (ghAPIDecision, bool) {
 		return ghAPIDecision{"deny", reason}, true
 	case reason != "":
 		return ghAPIDecision{"ask", reason}, true
-	case seen:
+	// 並ぶ部分を証明できない読み取りは判定を出さず、通常の確認に任せる。
+	case seen && ghAPIOnlySafe(file, ghCalls):
 		return ghAPIDecision{"allow", ghAPIAllowReason}, true
 	}
 	return ghAPIDecision{}, false

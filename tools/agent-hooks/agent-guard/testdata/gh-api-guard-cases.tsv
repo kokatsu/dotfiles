@@ -17,6 +17,7 @@
 # L: パスで呼んだ gh。判定を出さず通常の確認に任せる
 # M: env -S が語を増やし、元の語の並びとずれる形
 # N: -f/--raw-field と明示した GET。-F/--field/--input は GET でも ask のまま
+# O: GET と証明できても、並ぶ部分の副作用を証明できなければ判定を出さない
 
 A1	ask	gh api: HTTP method override to 'DELETE' (not GET) — confirm intent	gh api repos/o/r -X DELETE
 A2	ask	gh api: HTTP method override to 'POST' (not GET) — confirm intent	gh api repos/o/r -iX POST
@@ -57,9 +58,9 @@ B11	allow	gh api: explicit GET	gh a"pi" -X GET repos/o/r
 B12	allow	gh api: explicit GET	gh ap\i -X GET repos/o/r
 C1	allow	gh api: explicit GET	gh api -X GET repos/o/r --jq "select(.x) | -X DELETE"
 C2	allow	gh api: explicit GET	gh api -X GET repos/o/r | grep -F name
-C3	allow	gh api: explicit GET	echo $(date) && gh api -X GET repos/o/r
+C3	none	-	echo $(date) && gh api -X GET repos/o/r
 C4	allow	gh api: explicit GET	x=$(gh api -X GET repos/o/r)
-C5	allow	gh api: explicit GET	gh api -X GET repos/o/r && rm -f /tmp/x
+C5	none	-	gh api -X GET repos/o/r && rm -f /tmp/x
 D1	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api repos/o/r/issues $X
 D2	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api repos/o/r "$@"
 D3	deny	gh api: an expanded argument could add a flag — write flag names literally	gh api $FLAGS repos/o/r
@@ -142,3 +143,47 @@ N22	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies PO
 N23	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api -X GET r --input q.json
 N24	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api -X GET r -f q=x -F p=@secret
 N25	ask	gh api: body-bearing flag (-f/-F/--field/--raw-field/--input) implies POST	gh api -X GET r -F"q=$Q"
+O1	none	-	gh api -X GET repos/o/r --jq .x; rm -rf build
+O2	none	-	gh api -X GET repos/o/r --jq .x; git push origin main
+O3	none	-	gh api -X GET repos/o/r && echo x > file
+O4	none	-	gh api -X GET r && echo "$(rm -rf x)"
+O5	none	-	cat <(gh api -X GET repos/o/r)
+O6	none	-	PATH=/tmp/x gh api -X GET r
+O7	none	-	env PATH=/tmp/x gh api -X GET r
+O8	none	-	env -S'PATH=/tmp/x gh api' -X GET r
+O9	none	-	PATH=/tmp/x; gh api -X GET r
+O10	none	-	gh api -X GET r >& out
+O11	none	-	gh api -X GET r | sort -o out
+O12	none	-	echo ${x:=1}; gh api -X GET r
+O13	none	-	gh api -X GET r; f() { :; }
+O14	allow	gh api: explicit GET	until [ "$(gh api -X GET repos/o/r/actions/runs/1 --jq .status)" = completed ]; do sleep 30; done
+O15	allow	gh api: explicit GET	while true; do gh api -X GET r --jq length 2>/dev/null; sleep 60; done
+O16	allow	gh api: explicit GET	gh api -X GET r 2>&1 | head -n 5
+O17	deny	gh api: no explicit HTTP method	gh api r; rm -rf build
+O18	ask	gh api: HTTP method override to 'DELETE'	gh api r -X DELETE > out
+O19	deny	gh api: an expanded argument could add a flag	gh api -X GET r --jq "$(rm -rf x)"
+O20	none	-	for PATH in /tmp/x; do gh api -X GET r; done
+O21	none	-	select PATH in /tmp/x; do gh api -X GET r; done
+O22	none	-	gh api -X GET -- "repos/o/r?q=$(cat ~/.ssh/id_rsa)"
+O23	allow	gh api: explicit GET	for i in a b; do gh api -X GET "repos/o/$i"; done
+O24	none	-	gh api -X GET r; test -v 'BASH_VERSINFO[$(echo injected >&2)0]'
+O25	none	-	gh api -X GET r; [ -v 'a[$(echo x)0]' ]
+O26	none	-	gh api -X GET r; [[ -v 'a[$(echo x)0]' ]]
+O27	none	-	gh api -X GET r; [[ 'a[$(echo x)0]' -eq 1 ]]
+O28	none	-	gh api -X GET r; [ "$a" "$b" ]
+O29	none	-	gh api -X GET r; date --set='2030-01-01'
+O30	none	-	x='b[$(echo y)0]'; echo "${a[x]}"; gh api -X GET r
+O31	none	-	x='a[$(echo y)0]'; echo "${!x}"; gh api -X GET r
+O32	none	-	x='$(echo y)'; echo "${x@P}"; gh api -X GET r
+O33	none	-	gh api -X GET r; echo "${x:i}"
+O34	allow	gh api: explicit GET	until [[ "$(gh api -X GET r --jq .status)" == completed ]]; do sleep 30; done
+O35	allow	gh api: explicit GET	s=$(gh api -X GET r --jq .state); [ -n "$s" ] && [ "$s" != open ] && echo "${s:-none}"
+O36	none	-	i='x[$(echo y)0]'; a[i]=1; gh api -X GET r
+O37	none	-	gh api -X GET r; [ "$@" ]
+O38	none	-	gh api -X GET r; [ $a = b ]
+O39	none	-	gh api -X GET r; [ * ]
+O40	none	-	gh api -X GET r; test *
+O41	none	-	gh api -X GET r; [ x = ? ]
+O42	allow	gh api: explicit GET	gh api -X GET r; [[ * == x ]]
+O43	none	-	gh api -X GET r *
+O44	allow	gh api: explicit GET	gh api -X GET r; [ "*" = '?' ]
