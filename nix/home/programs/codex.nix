@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  inputs,
   validDotfilesDir,
   ...
 }: let
@@ -26,6 +27,10 @@
     history = {
       max_bytes = 104857600;
     };
+    marketplaces.cursor-plugins = {
+      source_type = "local";
+      source = "${inputs.cursor-plugins}";
+    };
     mcp_servers = {
       openaiDeveloperDocs = {
         url = "https://developers.openai.com/mcp";
@@ -34,6 +39,7 @@
     memories = {
       disable_on_external_context = true;
     };
+    plugins."pstack@cursor-plugins".enabled = true;
     sandbox_workspace_write = {
       network_access = false;
       writable_roots = ["${config.xdg.dataHome}/Trash"];
@@ -78,6 +84,7 @@ in {
   home = {
     file = {
       ".config/codex/AGENTS.md".source = ../../../.config/codex/.AGENTS.md;
+      ".config/codex/pstack-adapter.md".source = ../../../.config/codex/pstack-adapter.md;
 
       # ペットを有効にするとTUIがKitty graphicsのスプライトをアイドル中も
       # 描き続け、herdr serverが全ペインの出力を端末エミュレートするCPUに
@@ -180,6 +187,10 @@ in {
         RULES_TARGET="$RULES_DIR/managed.rules"
         $DRY_RUN_CMD mkdir -p "$RULES_DIR"
         $DRY_RUN_CMD cp "$RULES_BASE" "$RULES_TARGET"
+
+        # config.toml の [plugins.*] は有効化の宣言だけで、Codex が読むのは
+        # plugin add が作る plugins/cache 側のコピー。
+        $DRY_RUN_CMD env CODEX_HOME="$CODEX_DIR" ${lib.getExe pkgs.codex} plugin add pstack@cursor-plugins >/dev/null
       '';
   };
 }

@@ -40,6 +40,22 @@
         "type": "github"
       }
     },
+    "cursor-plugins": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1793491838,
+        "narHash": "sha256-sX6KIElyFreuDPt4zViNis2nuAn9QG0n38z3uejJU98=",
+        "owner": "cursor",
+        "repo": "plugins",
+        "rev": "ae5650febf4320793844c12c4adaa937f417f8da",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cursor",
+        "repo": "plugins",
+        "type": "github"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib"
@@ -345,6 +361,7 @@
       "inputs": {
         "catppuccin": "catppuccin",
         "cc-statusline": "cc-statusline",
+        "cursor-plugins": "cursor-plugins",
         "helix": "helix",
         "herdr-numbering": "herdr-numbering",
         "herdr-src": "herdr-src",

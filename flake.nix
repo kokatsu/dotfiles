@@ -42,6 +42,15 @@
       flake = false;
     };
 
+    # Codex の pstack プラグイン。Codex はこのリポジトリの .claude-plugin/marketplace.json を
+    # ローカル marketplace として読める。
+    # 更新: nix flake update cursor-plugins
+    # https://github.com/cursor/plugins
+    cursor-plugins = {
+      url = "github:cursor/plugins";
+      flake = false;
+    };
+
     # UnoCSS LSP (上流が flake を提供しているため自前ビルドから移行)
     # https://github.com/xna00/unocss-language-server
     # nixpkgs.follows は付けない: package.nix が pnpm.fetchDeps の offline store を
@@ -271,7 +280,7 @@
         };
         modules = [./nix/devcontainer/home.nix];
         extraSpecialArgs = {
-          inherit dotfilesDir;
+          inherit inputs dotfilesDir;
           isDevcontainer = true;
         };
       };
