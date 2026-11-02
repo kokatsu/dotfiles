@@ -144,6 +144,13 @@ in {
               loadingText = "Checking out PR...";
             }
             {
+              key = "P";
+              context = "localBranches";
+              command = "git push origin {{.SelectedLocalBranch.Name}}";
+              description = "Push";
+              loadingText = "Pushing...";
+            }
+            {
               key = "p";
               context = "localBranches";
               command = "git push --force-with-lease origin {{.SelectedLocalBranch.Name}}";
