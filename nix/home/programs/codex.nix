@@ -103,49 +103,56 @@ in {
       ".config/codex/skills/browser-research".source = ../../../.config/codex/skills/browser-research;
       ".config/codex/skills/herdr-peer".source = ../../../.config/codex/skills/herdr-peer;
 
-      ".config/codex/hooks.json".text = let
-        # herdr.nix が配置する共有フック (Claude Code 側と同じ実装)。
-        reportSession = [
-          {
-            hooks = [
-              {
-                command = "bash '${config.xdg.configHome}/herdr/hooks/report-agent-session.sh' session codex";
-                timeout = 10;
-                type = "command";
-              }
-            ];
-          }
-        ];
-      in
-        builtins.toJSON {
-          hooks = {
-            PostToolUse = [
-              {
-                matcher = "^apply_patch$";
-                hooks = [
-                  {
-                    command = "bash '${config.xdg.configHome}/ai-writing/check-ai-writing.sh'";
-                    timeout = 15;
-                    type = "command";
-                  }
-                ];
-              }
-            ];
-            PreToolUse = [
-              {
-                matcher = "^Bash$";
-                hooks = [
-                  {
-                    # Codex がブロックとして扱うのは exit 2 だけなので、無いときも 2 で終える。
-                    command = "test -x '${config.home.profileDirectory}/bin/agent-guard' || { echo 'agent-guard not found; run home-manager switch' >&2; exit 2; }; exec '${config.home.profileDirectory}/bin/agent-guard' codex";
-                    type = "command";
-                  }
-                ];
-              }
-            ];
-            SessionStart = reportSession;
+      ".config/codex/hooks.json" = {
+        # Codex は中身や並びの変わったフックを承認されるまで実行しない。対話モードは起動時に
+        # 承認を求めるが、codex exec には承認の手順が無い。
+        onChange = ''
+          warnEcho "Codex の hooks.json が変更されました。対話モードで Codex を起動し、フックを承認してください。承認が済むまで、codex exec（pstack・herdr-peer を含む）では agent-guard が実行されない可能性があります。"
+        '';
+        text = let
+          # herdr.nix が配置する共有フック (Claude Code 側と同じ実装)。
+          reportSession = [
+            {
+              hooks = [
+                {
+                  command = "bash '${config.xdg.configHome}/herdr/hooks/report-agent-session.sh' session codex";
+                  timeout = 10;
+                  type = "command";
+                }
+              ];
+            }
+          ];
+        in
+          builtins.toJSON {
+            hooks = {
+              PostToolUse = [
+                {
+                  matcher = "^apply_patch$";
+                  hooks = [
+                    {
+                      command = "bash '${config.xdg.configHome}/ai-writing/check-ai-writing.sh'";
+                      timeout = 15;
+                      type = "command";
+                    }
+                  ];
+                }
+              ];
+              PreToolUse = [
+                {
+                  matcher = "^Bash$";
+                  hooks = [
+                    {
+                      # Codex がブロックとして扱うのは exit 2 だけなので、無いときも 2 で終える。
+                      command = "test -x '${config.home.profileDirectory}/bin/agent-guard' || { echo 'agent-guard not found; run home-manager switch' >&2; exit 2; }; exec '${config.home.profileDirectory}/bin/agent-guard' codex";
+                      type = "command";
+                    }
+                  ];
+                }
+              ];
+              SessionStart = reportSession;
+            };
           };
-        };
+      };
     };
 
     # git管理の設定とCodex自身が書き戻すローカル状態をマージする。
