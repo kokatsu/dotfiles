@@ -356,7 +356,7 @@ reliability-test:
 
 # Verify Renovate regex patterns match overlay files
 renovate-patterns-test:
-    deno run --allow-read scripts/test-renovate-patterns.ts
+    deno run --allow-read --allow-run=git scripts/test-renovate-patterns.ts
 
 # Build karabiner.json from karabiner.ts
 karabiner-build:

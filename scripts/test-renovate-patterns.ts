@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read
 // test-renovate-patterns.ts — renovate.json5 の regex manager が # Renovate: コメントを
-// 全て拾えるか検証する。overlay (nix/overlays/*.nix) 用と flake.nix のタグ pin 用の
-// 2 つの customManagers を、それぞれの managerFilePatterns が指すファイルで検査する。
+// 全て拾えるか検証する。git 管理下の全 .nix ファイルからコメントを探し、それぞれを
+// 担当する customManagers (managerFilePatterns が指すもの) で検査する。
 //
 // 検証項目:
 //   1. # Renovate: コメントを含む各ファイルが、いずれかの manager の
@@ -9,12 +9,7 @@
 //   2. その manager の matchStrings のいずれかがコメント位置にマッチすること
 //   3. マッチから currentValue が抽出できること
 
-import { join } from "node:path";
-
-const OVERLAY_DIR = Deno.args[0] || "nix/overlays";
 const RENOVATE_CONFIG = "renovate.json5";
-// overlay 以外で # Renovate: コメントを持つファイル
-const EXTRA_FILES = ["flake.nix"];
 
 const RED = "\x1b[0;31m";
 const GREEN = "\x1b[0;32m";
@@ -152,17 +147,15 @@ console.log(
 );
 console.log();
 
-const overlayFiles = [...Deno.readDirSync(OVERLAY_DIR)]
-  .filter(
-    (e) =>
-      e.isFile &&
-      e.name.endsWith(".nix") &&
-      e.name !== "lib.nix" &&
-      e.name !== "default.nix",
-  )
-  .map((e) => join(OVERLAY_DIR, e.name))
-  .sort();
-const targetFiles = [...overlayFiles, ...EXTRA_FILES];
+// managerFilePatterns に無い場所へ書いたコメントも Test 1 で落とすため、全ファイルを見る
+const listed = new Deno.Command("git", { args: ["ls-files", "-z", "*.nix"] })
+  .outputSync();
+if (!listed.success) {
+  console.error("ERROR: git ls-files failed");
+  Deno.exit(1);
+}
+const targetFiles = new TextDecoder().decode(listed.stdout).split("\0")
+  .filter(Boolean);
 
 for (const filepath of targetFiles) {
   const content = Deno.readTextFileSync(filepath);
