@@ -180,6 +180,6 @@ jobs:
     if: always() && needs.update-hashes.result != 'failure' && needs.update-hashes.result != 'cancelled' && needs.update-hashes.outputs.pushed != 'true'
     uses: $/.github/workflows/check.yml
     with:
-      ref: ${{ github.head_ref }}
+      ref: ${{ github.event.pull_request.head.sha }}
     secrets:
       CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
