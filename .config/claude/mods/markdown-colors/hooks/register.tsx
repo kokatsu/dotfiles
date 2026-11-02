@@ -1,4 +1,5 @@
-import type { Color, Register } from 'claude-code';
+// deno-lint-ignore-file jsx-key -- the mod JSX factory (h) is not React and has no keys
+import type { Color, Register } from "claude-code";
 
 const FENCE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
 const HEADING = /^ {0,3}(#{1,6})[ \t]+(.*?)(?:[ \t]+#+)?[ \t]*$/;
@@ -18,7 +19,7 @@ type Part =
 const isBlank = (line: string | undefined) => !line?.trim();
 
 export function parse(text: string): Part[] {
-  const lines = text.split('\n');
+  const lines = text.split("\n");
   const parts: Part[] = [];
   let markdown: string[] = [];
   let fence: string | undefined;
@@ -28,23 +29,23 @@ export function parse(text: string): Part[] {
   let engineUntil = 0;
   const flush = () => {
     const chunk = markdown
-      .join('\n')
-      .replace(/^\s*\n/, '')
+      .join("\n")
+      .replace(/^\s*\n/, "")
       .trimEnd();
     if (chunk) parts.push({ markdown: chunk });
     markdown = [];
   };
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i] ?? '';
+    const line = lines[i] ?? "";
     const open = FENCE.exec(line);
     if (open) {
-      const [, marker = '', info = ''] = open;
+      const [, marker = "", info = ""] = open;
       if (!fence) {
-        if (!(marker[0] === '`' && info.includes('`'))) fence = marker;
+        if (!(marker[0] === "`" && info.includes("`"))) fence = marker;
       } else if (
         marker[0] === fence[0] &&
         marker.length >= fence.length &&
-        info.trim() === ''
+        info.trim() === ""
       ) {
         fence = undefined;
       }
@@ -58,7 +59,7 @@ export function parse(text: string): Part[] {
     const heading = HEADING.exec(line);
     if (heading) {
       flush();
-      const [, hashes = '', title = ''] = heading;
+      const [, hashes = "", title = ""] = heading;
       parts.push({ level: hashes.length, title: plain(title) });
       isBoundary = true;
       continue;
@@ -79,13 +80,12 @@ export function parse(text: string): Part[] {
       continue;
     }
 
-    const runs =
-      isBoundary &&
-      !BLOCK.test(line) &&
-      !LIST.test(line) &&
-      endsParagraph(lines[i + 1])
-        ? strongRuns(line)
-        : undefined;
+    const runs = isBoundary &&
+        !BLOCK.test(line) &&
+        !LIST.test(line) &&
+        endsParagraph(lines[i + 1])
+      ? strongRuns(line)
+      : undefined;
     if (runs) {
       flush();
       parts.push({ runs });
@@ -106,7 +106,7 @@ const INTERRUPTS = /^ *(?:[-*+]|1[.)])[ \t]+\S/;
 
 function endsParagraph(next: string | undefined): boolean {
   return (
-    isBlank(next) || INTERRUPTS.test(next ?? '') || HEADING.test(next ?? '')
+    isBlank(next) || INTERRUPTS.test(next ?? "") || HEADING.test(next ?? "")
   );
 }
 
@@ -121,25 +121,25 @@ function listAt(
   const items: Item[] = [];
   let end = start;
   for (; end < lines.length; end++) {
-    const m = LIST.exec(lines[end] ?? '');
+    const m = LIST.exec(lines[end] ?? "");
     if (!m) break;
-    const [, indent = '', marker = '', text = ''] = m;
+    const [, indent = "", marker = "", text = ""] = m;
     items.push({ indent: indent.length, marker, text });
   }
   const [first] = items;
   if (!first) return undefined;
-  if (!isBoundary && !INTERRUPTS.test(lines[start] ?? '')) return undefined;
+  if (!isBoundary && !INTERRUPTS.test(lines[start] ?? "")) return undefined;
   const after = (from: number) => {
     let at = from;
     while (at < lines.length && isBlank(lines[at])) at++;
     return at;
   };
-  if (isBlank(lines[end]) && !/^[ \t]/.test(lines[after(end)] ?? '')) {
+  if (isBlank(lines[end]) && !/^[ \t]/.test(lines[after(end)] ?? "")) {
     return { items, end };
   }
   for (;;) {
     while (end < lines.length && !isBlank(lines[end])) end++;
-    const next = lines[after(end)] ?? '';
+    const next = lines[after(end)] ?? "";
     if (!/^[ \t]/.test(next) && !LIST.test(next)) return { end };
     end = after(end);
   }
@@ -153,12 +153,12 @@ export function strongRuns(line: string): Run[] | undefined {
   let at = 0;
   for (const m of line.matchAll(/\*\*([^*\s](?:[^*]*[^*\s])?)\*\*/g)) {
     runs.push({ text: line.slice(at, m.index), isStrong: false });
-    runs.push({ text: m[1] ?? '', isStrong: true });
+    runs.push({ text: m[1] ?? "", isStrong: true });
     at = m.index + m[0].length;
   }
   runs.push({ text: line.slice(at), isStrong: false });
   const rest = runs.filter((r) => !r.isStrong).map((r) => r.text);
-  if (runs.length === 1 || rest.some((t) => t.includes('*'))) return undefined;
+  if (runs.length === 1 || rest.some((t) => t.includes("*"))) return undefined;
   return runs.filter((r) => r.text);
 }
 
@@ -168,13 +168,13 @@ const CODE_SPAN = /(?<!`)(`+)(?!`)(.*?[^`])\1(?!`)/g;
 
 // A Text draws no markdown, so the heading's inline marks would show as written.
 function plain(title: string): string {
-  let out = '';
+  let out = "";
   let at = 0;
   for (const m of title.matchAll(CODE_SPAN)) {
-    const [span, , code = ''] = m;
-    const isPadded = code.startsWith(' ') && code.endsWith(' ') && code.trim();
-    out +=
-      unmark(title.slice(at, m.index)) + (isPadded ? code.slice(1, -1) : code);
+    const [span, , code = ""] = m;
+    const isPadded = code.startsWith(" ") && code.endsWith(" ") && code.trim();
+    out += unmark(title.slice(at, m.index)) +
+      (isPadded ? code.slice(1, -1) : code);
     at = m.index + span.length;
   }
   return out + unmark(title.slice(at));
@@ -182,37 +182,39 @@ function plain(title: string): string {
 
 function unmark(s: string): string {
   return s
-    .replace(/(\*\*|__|~~)(.+?)\1/g, '$2')
-    .replace(/\*(.+?)\*/g, '$1')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+    .replace(/(\*\*|__|~~)(.+?)\1/g, "$2")
+    .replace(/\*(.+?)\*/g, "$1")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1");
 }
 
 const COLORS: Record<number, Color> = {
-  1: 'claude',
-  2: 'ide',
-  3: 'success',
+  1: "claude",
+  2: "ide",
+  3: "success",
 };
-const STRONG: Color = 'merged';
-const MARKER: Color = 'planMode';
+const STRONG: Color = "merged";
+const MARKER: Color = "planMode";
 
 export const register: Register = (on) => {
   let bullet: Promise<string> | undefined;
 
-  on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
+  on("ui.render", { component: "AssistantMessage" }, async ($, e, next) => {
     const parts = parse(e.props.text);
-    if (parts.every((p) => 'markdown' in p)) return next(e);
+    if (parts.every((p) => "markdown" in p)) return next(e);
 
     const { Box, Text, Markdown } = $.ui.resolve(e);
     const strong = (runs: Run[]) => (
       <Text>
         {runs.map((r) =>
-          r.isStrong ? (
-            <Text color={STRONG} bold>
-              {r.text}
-            </Text>
-          ) : (
-            r.text
-          ),
+          r.isStrong
+            ? (
+              <Text color={STRONG} bold>
+                {r.text}
+              </Text>
+            )
+            : (
+              r.text
+            )
         )}
       </Text>
     );
@@ -222,21 +224,24 @@ export const register: Register = (on) => {
     const drawn = await Promise.all(
       parts.map(async (p, i) => {
         const isFirst = e.props.isFirstOfReply && i === 0;
-        if ('markdown' in p) {
+        if ("markdown" in p) {
           const prose = await next({
             ...e,
             props: { ...e.props, text: p.markdown, isFirstOfReply: isFirst },
           });
           return i === 0 ? prose : <Box paddingLeft={2}>{prose}</Box>;
         }
-        const block =
-          'level' in p ? (
-            <Text color={COLORS[p.level] ?? 'warning'} bold>
+        const block = "level" in p
+          ? (
+            <Text color={COLORS[p.level] ?? "warning"} bold>
               {p.title}
             </Text>
-          ) : 'runs' in p ? (
+          )
+          : "runs" in p
+          ? (
             strong(p.runs)
-          ) : (
+          )
+          : (
             <Box flexDirection="column">
               {p.items.map((item) => {
                 const runs = strongRuns(item.text);
@@ -265,8 +270,8 @@ export const register: Register = (on) => {
         // per OS.
         if (!bullet) {
           bullet = $.process
-            .run(['uname'])
-            .then((r) => (r.stdout.trim() === 'Darwin' ? '⏺' : '●'));
+            .run(["uname"])
+            .then((r) => (r.stdout.trim() === "Darwin" ? "⏺" : "●"));
           bullet.catch(() => {
             bullet = undefined;
           });

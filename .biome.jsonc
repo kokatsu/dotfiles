@@ -25,6 +25,7 @@
       "!.config/claude/hooks",
       "!.config/claude/settings.json",
       "!.config/claude/mods/**/*.ts",
+      "!.config/claude/mods/**/*.tsx",
       "!.config/herdr/hooks",
       "!.config/nvim/lazy-lock.json"
     ]

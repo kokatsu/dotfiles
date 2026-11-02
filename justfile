@@ -2,8 +2,8 @@
 
 lua_dirs := ".config/nvim .config/wezterm"
 deno_dirs := "karabiner-config scripts"
-# deno_dirs の外にある .ts は全て単体の Deno スクリプトなので、手書きせず git から列挙する
-deno_files := `git ls-files '*.ts' | grep -vE '^(karabiner-config|scripts)/' | tr '\n' ' '`
+# deno_dirs の外にある .ts/.tsx は全て単体の Deno スクリプトか mod なので、手書きせず git から列挙する
+deno_files := `git ls-files '*.ts' '*.tsx' | grep -vE '^(karabiner-config|scripts)/' | tr '\n' ' '`
 
 # List available recipes
 default:
@@ -90,7 +90,7 @@ nix-dead-code:
 nix-eval:
     nix flake check "path:$PWD" --no-build --impure --no-update-lock-file
 
-# Format JSON with biome (リポジトリの .ts は全て Deno 管理で biome の対象外)
+# Format JSON with biome (リポジトリの .ts/.tsx は全て Deno 管理で biome の対象外)
 biome-fmt:
     biome format --write .
 

@@ -1,4 +1,5 @@
-import type { Register } from 'claude-code';
+// deno-lint-ignore-file jsx-key -- the mod JSX factory (h) is not React and has no keys
+import type { Register } from "claude-code";
 
 const FENCE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
 
@@ -12,20 +13,20 @@ export function findDiagrams(text: string): Diagram[] {
     | { marker: string; start: number; body: number; isMermaid: boolean }
     | undefined;
   let at = 0;
-  for (const line of text.split('\n')) {
+  for (const line of text.split("\n")) {
     const lineEnd = at + line.length;
     const fence = FENCE.exec(line);
     if (fence) {
-      const [, marker = '', info = ''] = fence;
+      const [, marker = "", info = ""] = fence;
       if (!open) {
-        if (!(marker[0] === '`' && info.includes('`'))) {
-          const isMermaid = info.trim().split(/\s/)[0] === 'mermaid';
+        if (!(marker[0] === "`" && info.includes("`"))) {
+          const isMermaid = info.trim().split(/\s/)[0] === "mermaid";
           open = { marker, start: at, body: lineEnd + 1, isMermaid };
         }
       } else if (
         marker[0] === open.marker[0] &&
         marker.length >= open.marker.length &&
-        info.trim() === ''
+        info.trim() === ""
       ) {
         if (open.isMermaid) {
           const source = text.slice(open.body, at);
@@ -50,7 +51,7 @@ export const register: Register = (on) => {
   const cache = new Map<string, Promise<string | undefined>>();
   let bullet: Promise<string> | undefined;
 
-  on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
+  on("ui.render", { component: "AssistantMessage" }, async ($, e, next) => {
     const { text } = e.props;
     const columns = e.viewport ? e.viewport.columns - INDENT : undefined;
 
@@ -58,9 +59,9 @@ export const register: Register = (on) => {
       const key = `${columns}\0${source}`;
       let ascii = cache.get(key);
       if (!ascii) {
-        const width = columns ? ['--max-width', String(columns)] : [];
+        const width = columns ? ["--max-width", String(columns)] : [];
         ascii = $.process
-          .run(['mermaid-ascii', '-f', '-', ...width], { stdin: source })
+          .run(["mermaid-ascii", "-f", "-", ...width], { stdin: source })
           .then((r) => (r.exitCode === 0 ? r.stdout.trimEnd() : undefined));
         ascii.catch(() => cache.delete(key));
         cache.set(key, ascii);
@@ -74,7 +75,7 @@ export const register: Register = (on) => {
 
     const { Box, Text } = $.ui.resolve(e);
     const parts: Array<{ markdown: string } | { ascii: string }> = [];
-    let markdown = '';
+    let markdown = "";
     let at = 0;
     diagrams.forEach((d, i) => {
       const ascii = rendered[i];
@@ -82,7 +83,7 @@ export const register: Register = (on) => {
       markdown += text.slice(at, d.start);
       if (markdown.trim()) parts.push({ markdown });
       parts.push({ ascii });
-      markdown = '';
+      markdown = "";
       at = d.end;
     });
     markdown += text.slice(at);
@@ -93,13 +94,13 @@ export const register: Register = (on) => {
     // block after it, so those take the bullet's width as padding.
     const drawn = await Promise.all(
       parts.map(async (p, i) => {
-        if ('markdown' in p) {
+        if ("markdown" in p) {
           const isFirst = e.props.isFirstOfReply && i === 0;
           const prose = await next({
             ...e,
             props: {
               ...e.props,
-              text: p.markdown.replace(/^\s*\n/, '').trimEnd(),
+              text: p.markdown.replace(/^\s*\n/, "").trimEnd(),
               isFirstOfReply: isFirst,
             },
           });
@@ -107,7 +108,7 @@ export const register: Register = (on) => {
         }
         const diagram = (
           <Box flexDirection="column">
-            {p.ascii.split('\n').map((line) => (
+            {p.ascii.split("\n").map((line) => (
               <Text wrap="truncate-end">
                 {runs(line).map((r) => (
                   <Text {...PAINT[r.kind]}>{r.text}</Text>
@@ -127,8 +128,8 @@ export const register: Register = (on) => {
         // with a diagram draws its own, using the glyph the engine picks per OS.
         if (!bullet) {
           bullet = $.process
-            .run(['uname'])
-            .then((r) => (r.stdout.trim() === 'Darwin' ? '⏺' : '●'));
+            .run(["uname"])
+            .then((r) => (r.stdout.trim() === "Darwin" ? "⏺" : "●"));
           bullet.catch(() => {
             bullet = undefined;
           });
@@ -147,23 +148,23 @@ export const register: Register = (on) => {
   }).catch((_$, e, next) => next(e));
 };
 
-type Kind = 'border' | 'arrow' | 'label';
+type Kind = "border" | "arrow" | "label";
 
 const PAINT: Record<Kind, { color?: string; bold?: boolean }> = {
-  border: { color: 'subtle' },
-  arrow: { color: 'claude' },
+  border: { color: "subtle" },
+  arrow: { color: "claude" },
   label: { bold: true },
 };
 
 function kindOf(ch: string): Kind {
-  if (/[►◄▲▼]/.test(ch)) return 'arrow';
-  return /[─-╿]/.test(ch) ? 'border' : 'label';
+  if (/[►◄▲▼]/.test(ch)) return "arrow";
+  return /[─-╿]/.test(ch) ? "border" : "label";
 }
 
 function runs(line: string): Array<{ kind: Kind; text: string }> {
   const out: Array<{ kind: Kind; text: string }> = [];
   for (const ch of line) {
-    const kind = ch === ' ' ? (out.at(-1)?.kind ?? 'label') : kindOf(ch);
+    const kind = ch === " " ? (out.at(-1)?.kind ?? "label") : kindOf(ch);
     const last = out.at(-1);
     if (last?.kind === kind) last.text += ch;
     else out.push({ kind, text: ch });
