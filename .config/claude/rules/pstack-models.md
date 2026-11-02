@@ -5,6 +5,8 @@ One line per role. Delete a line to fall back to the skill default.
 
 `codex` as a value: run that seat on Codex instead of the `Agent` tool, and only for a read-only seat. Make a fresh output dir per run with `mktemp -d`, write the seat's filled prompt to `<out>/prompt.md`, and in the same message as the other seats start `codex exec -s read-only -C <repo root> -o <out>/result.md - < <out>/prompt.md` with Bash `run_in_background: true`. Merge `<out>/result.md` like any other seat's report, crediting it to `codex`, only after the completion notice arrives with exit code 0 and that file exists. Otherwise report the seat as vacant with the exit code and the gist of stderr: never merge it as "no findings" and never rerun it on Claude.
 
+For arena's model-family rules, `codex` is its own family, distinct from Claude. A `codex` cross-judge is a seat like any other: start it after every candidate finishes and keep reading candidates while it runs. If it is vacant, pick the base on your own scoring alone, and in the synthesis note's cross-judge entry give the vacancy, its reason, and that the pick has no cross-judge confirmation.
+
 This file is managed declaratively in the dotfiles repo at `.config/claude/rules/pstack-models.md`. In `setup-pstack`, skip detecting models, choosing a budget, and writing the rule; tell the user to edit that repo file instead.
 
 budget: small (medium)
@@ -22,7 +24,7 @@ why synthesizer: opus medium
 reflect tooling: inherit-parent
 reflect judgment, divergent, synthesizer: opus medium
 arena runners: opus medium, inherit-parent
-arena cross-judge pool: opus medium, inherit-parent
+arena cross-judge pool: codex
 swarm workers: inherit-parent
 architect runners: opus medium, inherit-parent
 interrogate reviewers: opus medium, codex
