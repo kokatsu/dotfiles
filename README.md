@@ -73,6 +73,9 @@ watch services, timers, and command paths. They do not start WSL or activate the
 configuration on Windows.
 MoonBit is installed only on Linux x86_64 and macOS ARM64 because the pinned
 MoonBit overlay does not support Linux ARM64.
+Optuna is left out of the Python environment on Linux ARM64, where its
+scientific dependencies are often missing from the binary cache and would
+build past the CI time limit.
 
 ## Directory Structure
 
