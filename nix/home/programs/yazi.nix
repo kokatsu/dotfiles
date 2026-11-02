@@ -1,28 +1,7 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}: let
-  # 旧構成の .config/yazi 全体へのリンクをそのまま置換する。
-  # 個別リンクへ変えると activation が旧リンクを辿り、作業ツリーを書き換えてしまう。
-  files =
-    ["yazi.toml" "keymap.toml" "theme.toml" "init.lua" "git-changes.sh"]
-    ++ map (name: "plugins/${name}.yazi") (builtins.attrNames config.programs.yazi.plugins)
-    ++ map (name: "flavors/${name}.yazi") (builtins.attrNames config.programs.yazi.flavors);
-  managedFiles = map (name: "yazi/${name}") files;
+{pkgs, ...}: let
   # opener の `for` は WSL と素の Linux を区別できないため、実行時に判定する
   openWithDefaultApp = arg: "if command -v wslview >/dev/null 2>&1; then wslview ${arg}; elif [ \"$(uname)\" = \"Darwin\" ]; then open ${arg}; else xdg-open ${arg}; fi";
 in {
-  assertions = [
-    {
-      # Home Manager が出力を追加した場合も、ディレクトリ内の配置を漏らさない。
-      assertion =
-        lib.sort builtins.lessThan managedFiles
-        == lib.filter (lib.hasPrefix "yazi/") (builtins.attrNames config.xdg.configFile);
-      message = "Yazi config files differ from the linkFarm file list. Update nix/home/programs/yazi.nix to include every yazi/ entry.";
-    }
-  ];
   # vendored sources: kokatsu/ansi-preview 865f404,
   # llanosrocas/githead 317d09f (patched: load と bulk-rename を購読), yazi-rs/flavors 20b47bf。更新はリポジトリのソースを更新して switch する。
   # ya pkg は使用しない。シェルの yi 関数は既存の functions.zsh が管理する。
@@ -243,20 +222,5 @@ in {
       catppuccin-mocha = ../../../.config/yazi/flavors/catppuccin-mocha.yazi;
     };
   };
-  xdg.configFile =
-    lib.genAttrs managedFiles (_: {enable = false;})
-    // {
-      "yazi" = {
-        source = pkgs.linkFarm "yazi-config-directory" (map (name: {
-            inherit name;
-            path = config.xdg.configFile."yazi/${name}".source;
-          })
-          files);
-        force = true;
-      };
-      "yazi/git-changes.sh" = {
-        enable = false;
-        source = ../../../.config/yazi/git-changes.sh;
-      };
-    };
+  xdg.configFile."yazi/git-changes.sh".source = ../../../.config/yazi/git-changes.sh;
 }

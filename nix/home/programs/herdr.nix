@@ -405,11 +405,6 @@ in {
     (
       # bash
       ''
-        if [ -f "${config.xdg.configHome}/herdr/plugins.json" ] &&
-          ${pkgs.jq}/bin/jq -e 'any(.[]; .plugin_id == "kokatsu.tab-numbers")' \
-            "${config.xdg.configHome}/herdr/plugins.json" > /dev/null; then
-          $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin unlink kokatsu.tab-numbers > /dev/null
-        fi
         $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
           "${validDotfilesDir}/.config/herdr/plugins/close-confirm" > /dev/null
         $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \

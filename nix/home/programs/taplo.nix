@@ -6,6 +6,5 @@
     };
   };
 in {
-  # 既存のディレクトリ単位のリンクを維持する。
-  xdg.configFile."taplo".source = pkgs.linkFarm "taplo-config-directory" {"taplo.toml" = configFile;};
+  xdg.configFile."taplo/taplo.toml".source = configFile;
 }

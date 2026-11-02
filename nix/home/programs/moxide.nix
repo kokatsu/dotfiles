@@ -11,6 +11,5 @@
     ];
   };
 in {
-  # 既存のディレクトリ単位のリンクを維持する。
-  xdg.configFile."moxide".source = pkgs.linkFarm "moxide-config-directory" {"settings.toml" = configFile;};
+  xdg.configFile."moxide/settings.toml".source = configFile;
 }
