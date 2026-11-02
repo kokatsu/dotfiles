@@ -42,9 +42,20 @@ A step that compares different models, such as arena runners or a cross-judge po
 | Cursor | Codex |
 | --- | --- |
 | `~/.cursor/plugins/`, the pstack plugin folder | `<pstack>` |
+| `.cursor/skills/` (project skills) | `<repo root>/.agents/skills/` |
+| `~/.cursor/skills/` (user skills) | `~/.agents/skills/`. Codex also reads `$CODEX_HOME/skills/`, but its entries here are Home Manager links; never write into them. |
 | `.cursor/rules/*.mdc`, always-applied rules | `AGENTS.md` |
 | `https://github.com/cursor/plugins/blob/main/pstack/<path>` | `<pstack>/<path>` when that file exists. Read the local copy and never fetch it. |
-| Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | `$CODEX_HOME/sessions/YYYY/MM/DD/rollout-*.jsonl`. |
+| Transcripts in `~/.cursor/projects/<slug>/agent-transcripts/` | See Transcripts. |
+
+## Transcripts
+
+Codex writes every session, from every workspace, to `$CODEX_HOME/sessions/YYYY/MM/DD/rollout-*.jsonl`. Line 1 of each file is a `session_meta` record; its `payload.cwd` is the workspace and its `payload.id` is the session.
+
+- This workspace's transcripts are the files whose `payload.cwd` equals the workspace root. Read no other file.
+- The current session is the file whose `payload.id` equals `$CODEX_THREAD_ID`. Its subagents are the files whose `payload.source.subagent.thread_spawn.parent_thread_id` equals that id.
+- A skill that matches a transcript by `message.content[0].text` or another Cursor field: match on these `session_meta` fields instead.
+- If `$CODEX_THREAD_ID` is unset or no file matches, stop before reading any transcript and say which lookup failed. Never fall back to the newest file.
 
 ## Cursor-only features
 
