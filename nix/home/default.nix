@@ -189,10 +189,6 @@ in {
         # -c で backspace 重ね打ち形式に戻す。bat.nix の paging = "never" を上書きする
         MANROFFOPT = "-c";
         MANPAGER = "sh -c 'col -bx | bat -l man -p --paging=always'";
-        # zeno (@db/sqlite) が実行時に取得する upstream プリビルトの libsqlite3 は
-        # deno 2.9.4 上で segfault し、zeno-server が socket を作れず起動に失敗する。
-        # nixpkgs の libsqlite3 を使わせる。
-        DENO_SQLITE_PATH = "${pkgs.sqlite.out}/lib/libsqlite3${pkgs.stdenv.hostPlatform.extensions.sharedLibrary}";
         # 既定ではバイナリ内蔵のルート証明書も信頼するため、OS 側で除外した
         # ルート (CVE-2026-111943 の emSign など) が残る。OS のストアだけを使わせる
         DENO_TLS_CA_STORE = "system";
