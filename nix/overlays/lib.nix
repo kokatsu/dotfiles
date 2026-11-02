@@ -94,10 +94,7 @@
 
         meta = with prev.lib; {
           inherit (meta) description homepage;
-          license =
-            if meta ? license
-            then licenses.${meta.license}
-            else licenses.mit;
+          license = licenses.${meta.license};
           platforms = meta.platforms or allPlatforms;
           mainProgram = meta.mainProgram or binName;
         };

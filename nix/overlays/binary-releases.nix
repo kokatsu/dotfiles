@@ -121,6 +121,7 @@ in {
     meta = {
       description = "Tree-sitter Language Server for embedded languages";
       homepage = "https://github.com/atusy/kakehashi";
+      license = "mit";
     };
   };
 
@@ -157,6 +158,7 @@ in {
     meta = {
       description = "D Completion Daemon - autocompletion for the D programming language";
       homepage = "https://github.com/dlang-community/DCD";
+      license = "gpl3Only";
       mainProgram = "dcd-server";
     };
   };
@@ -210,6 +212,7 @@ in {
     meta = {
       description = "Run tasks and workflows from Markdown";
       homepage = "https://github.com/rezigned/upmd";
+      license = "mit";
     };
   };
 
