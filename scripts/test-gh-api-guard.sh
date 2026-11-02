@@ -32,10 +32,11 @@ record() {
   printf 'FAIL %s\n' "$2" >&2
 }
 
-if [[ $(jq length <<<"$hook_entry") == 1 && $(jq -r '.[0].if' <<<"$hook_entry") == 'Bash(gh api *)' ]]; then
+hook_shape=$(jq -c '{if: [.[].if], commands: ([.[].command] | unique | length)}' <<<"$hook_entry")
+if [[ $hook_shape == '{"if":["Bash(gh api *)","Monitor(gh api *)"],"commands":1}' ]]; then
   record ok
 else
-  record ng "settings.json: want one gh-api hook gated by Bash(gh api *), got $hook_entry"
+  record ng "settings.json: want one gh-api command gated by Bash(gh api *) and Monitor(gh api *), got $hook_entry"
 fi
 
 # Claude Code はフックのコマンドを /bin/sh に渡す。下の sh -c へは環境変数で渡す。
@@ -83,6 +84,7 @@ check allow allow "gh api: explicit GET" 'gh api repos/o/r -X GET'
 check ask ask "HTTP method override to 'DELETE'" 'gh api repos/o/r -X DELETE'
 check deny deny "gh api: no explicit HTTP method" 'gh api repos/o/r'
 check none none - 'echo hello'
+check companion none - 'gh api -X GET repos/o/r; rm -rf build'
 
 # バイナリが無ければ判定を出さず、通常の確認に任せる。
 run /usr/bin:/bin '{"tool_input":{"command":"gh api r -X GET"}}'

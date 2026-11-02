@@ -57,6 +57,11 @@
             "type": "command",
             "command": "command -v agent-guard >/dev/null || exit 0; exec agent-guard gh-api",
             "if": "Bash(gh api *)"
+          },
+          {
+            "type": "command",
+            "command": "command -v agent-guard >/dev/null || exit 0; exec agent-guard gh-api",
+            "if": "Monitor(gh api *)"
           }
         ]
       },
