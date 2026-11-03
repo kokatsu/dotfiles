@@ -348,6 +348,8 @@ in {
       git-graph # Git コミットグラフ可視化 (fork: kokatsu/git-graph)
       # https://github.com/herdrdev/herdr (公式ソース + 描画パッチ、overlay)
       herdr # tmux 的なエージェント対応ターミナルマルチプレクサ
+      # https://github.com/ChmaraX/herdr-nvim (overlay)
+      herdr-nvim # herdr の nvim サイドバー。plugin 登録は programs/herdr.nix、ここは daemons 管理 CLI 用
       #--- エディタ ---#
       # https://github.com/vim/vim
       vim

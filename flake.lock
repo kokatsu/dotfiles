@@ -109,6 +109,23 @@
         "type": "github"
       }
     },
+    "herdr-nvim-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792697582,
+        "narHash": "sha256-XPa9UEd6NuSOhtPnd5jEuz6XBIEZwhE7Rkz8a1++iRE=",
+        "owner": "ChmaraX",
+        "repo": "herdr-nvim",
+        "rev": "b7c69cab2c1eb8754b505061e942fffc4a557a3e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ChmaraX",
+        "ref": "v1.2.2",
+        "repo": "herdr-nvim",
+        "type": "github"
+      }
+    },
     "herdr-src": {
       "inputs": {
         "nixpkgs": "nixpkgs_2",
@@ -364,6 +381,7 @@
         "cursor-plugins": "cursor-plugins",
         "helix": "helix",
         "herdr-numbering": "herdr-numbering",
+        "herdr-nvim-src": "herdr-nvim-src",
         "herdr-src": "herdr-src",
         "home-manager": "home-manager",
         "lazy-nvim": "lazy-nvim",

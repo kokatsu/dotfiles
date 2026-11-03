@@ -4,7 +4,8 @@
 #   open-in-nvim.sh --resolve-only <path>
 #     フォーカス中のペインの cwd で絶対パスを解決して出力し、エディタやタブは開かない
 #   open-in-nvim.sh --existing-only <path> [line]
-#     同じタブの nvim がちょうど 1 つならそこで開いて exit 0。それ以外は exit 1 し、stdout の
+#     同じタブの nvim がちょうど 1 つならそこで開いて exit 0。同じタブに nvim がなく、
+#     ファイルが実在すれば herdr-nvim のサイドバーで開いて exit 0。それ以外は exit 1 し、stdout の
 #     1 行目に <絶対パス>\t<cwd>\t<workspace>、2 行目以降に nvim が複数あるときの候補 <ソケット>\t<ラベル> を出す
 #   open-in-nvim.sh --new-tab --cwd <cwd> --workspace <workspace> <絶対パス> [line]
 #   open-in-nvim.sh --server <ソケット> --cwd <cwd> --workspace <workspace> <絶対パス> [line]
@@ -97,6 +98,16 @@ while read -r p; do
 done < <(jq -r --arg tab "$tab" '.result.panes[] | select(.tab_id == $tab) | .pane_id' <<<"$panes")
 
 if ((${#sockets[@]} == 1)) && open_in "${sockets[0]}"; then
+  exit
+fi
+
+# herdr 0.9.5 は OSC 8 以外の地の文のパスを link handler へ渡さないため、herdr-nvim の
+# open-link をクリック時と同じ環境変数で直接呼ぶ。file:// にしておくと空白や日本語を
+# 含むパスも herdr-nvim 側の percent-decode で元に戻る
+if ((${#sockets[@]} == 0)) && [[ -f $file ]] &&
+  HERDR_PLUGIN_CLICKED_URL="file://$(jq -rn --arg p "$file" '$p | @uri | gsub("%2F"; "/")')${line:+:$line}" \
+  HERDR_PANE_ID=$(jq -r '.pane_id' <<<"$focused") HERDR_TAB_ID=$tab HERDR_WORKSPACE_ID=$workspace \
+    herdr-nvim open-link </dev/null; then
   exit
 fi
 

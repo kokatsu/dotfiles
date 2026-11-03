@@ -234,6 +234,20 @@ in {
           command = "${scriptsDir}/wide-top-layout.sh"
           description = "3ペイン作業レイアウト (上を全幅)"
 
+          # herdr-nvim の README の例 (prefix+e / prefix+o) は既定の
+          # edit_scrollback / open_notification_target と重なるので alt 付きに置く
+          [[keys.command]]
+          key = "prefix+alt+e"
+          type = "plugin_action"
+          command = "chmarax.herdr-nvim.toggle"
+          description = "nvim サイドバーの表示を切り替え"
+
+          [[keys.command]]
+          key = "prefix+alt+p"
+          type = "plugin_action"
+          command = "chmarax.herdr-nvim.pick-file"
+          description = "エージェントが触ったファイルを nvim サイドバーで開く"
+
           # 新しいペインを全高の左列として追加し、既存ペインを右列で上下 1:1 に分割する。
           [[keys.command]]
           key = "prefix+left"
@@ -405,6 +419,7 @@ in {
   #
   # numbering は kokatsu/herdr-numbering に切り出したので flake input の
   # store パスを登録する。pin を変えたときだけパスが変わるため陳腐化しない。
+  # herdr-nvim も同じく overlay でビルドした store パスを登録する。
   # close-confirm は close-pane-confirm.sh と対でこのリポジトリに残しているため、
   # 従来どおりチェックアウトの実パスを登録する
   home.activation.linkHerdrPlugins =
@@ -416,6 +431,8 @@ in {
           "${validDotfilesDir}/.config/herdr/plugins/close-confirm" > /dev/null
         $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
           "${inputs.herdr-numbering}" > /dev/null
+        $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \
+          "${pkgs.herdr-nvim}" > /dev/null
       ''
       + lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
         $DRY_RUN_CMD ${pkgs.herdr}/bin/herdr plugin link \

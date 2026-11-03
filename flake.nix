@@ -42,6 +42,14 @@
       flake = false;
     };
 
+    # herdr の nvim サイドバープラグイン (Rust)。nix/overlays/herdr.nix でビルドする。
+    # Cargo.lock を cargoLock.lockFile で直接読むため、更新時に hash の書き換えは要らない
+    # Renovate: datasource=github-releases depName=ChmaraX/herdr-nvim
+    herdr-nvim-src = {
+      url = "github:ChmaraX/herdr-nvim/v1.2.2";
+      flake = false;
+    };
+
     # Codex の pstack プラグイン。Codex はこのリポジトリの .claude-plugin/marketplace.json を
     # ローカル marketplace として読める。
     # 更新: nix flake update cursor-plugins
@@ -220,6 +228,7 @@
       customOverlays.deck-slides
       customOverlays.git-graph-fork
       customOverlays.herdr
+      customOverlays.herdr-nvim
       customOverlays.kakehashi
       customOverlays.karabiner-config
       customOverlays.lazy-nvim

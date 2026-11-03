@@ -408,7 +408,14 @@ cat >"$test_dir/bin/xsel" <<'EOF'
 cat >"$TEST_DIR/clipboard"
 EOF
 cp "$test_dir/bin/xsel" "$test_dir/bin/pbcopy"
-chmod +x "$test_dir/bin/fzf" "$test_dir/bin/xsel" "$test_dir/bin/pbcopy"
+# herdr-nvim は受け取ったクリックの環境変数を記録し、HERDR_NVIM_STATUS (既定 1) で終わる
+cat >"$test_dir/bin/herdr-nvim" <<'EOF'
+#!/usr/bin/env bash
+jq -cn --args '$ARGS.positional' -- "$@" "$HERDR_PLUGIN_CLICKED_URL" \
+  "$HERDR_PANE_ID" "$HERDR_TAB_ID" "$HERDR_WORKSPACE_ID" >"$TEST_DIR/herdr-nvim.json"
+exit "${HERDR_NVIM_STATUS:-1}"
+EOF
+chmod +x "$test_dir/bin/fzf" "$test_dir/bin/xsel" "$test_dir/bin/pbcopy" "$test_dir/bin/herdr-nvim"
 
 run_pick() {
   PATH="$test_dir/bin:$PATH" HERDR_ACTIVE_PANE_ID=p1 \
@@ -510,9 +517,10 @@ EOF
 FZF_PICK='c4\.jsonl|justfile' FZF_KEY=ctrl-y run_pick </dev/null
 [[ $(<"$test_dir/clipboard") == "$repo/justfile" ]]
 
-# 省略されたタイトルは前方一致で探す。同じタブに nvim がないので、
-# open-in-nvim.sh の 1 行目の cwd と workspace で新規タブを作る
-start_case <<'EOF'
+# 省略されたタイトルは前方一致で探す。同じタブに nvim がなければ herdr-nvim の
+# サイドバーで開き、新規タブは作らない
+pick_without_nvim_case() {
+  start_case <<'EOF'
 respond() {
   case "$1" in
   "pane get p1") codex_pane "Open tar..." ;;
@@ -524,6 +532,19 @@ respond() {
   esac
 }
 EOF
+}
+pick_without_nvim_case
+HERDR_NVIM_STATUS=0 FZF_PICK=a.ts run_pick </dev/null
+expect_calls "pick: open in sidebar" <<'EOF'
+pane get p1
+pane list
+pane process-info --pane p1
+EOF
+jq -e --arg url "file://$repo/src/a.ts:3" '. == ["open-link", $url, "p1", "t1", "w1"]' \
+  "$test_dir/herdr-nvim.json" >/dev/null
+
+# サイドバーでも開けなければ、open-in-nvim.sh の 1 行目の cwd と workspace で新規タブを作る
+pick_without_nvim_case
 FZF_PICK=a.ts run_pick </dev/null
 expect_calls "pick: open in new tab" <<'EOF'
 pane get p1
