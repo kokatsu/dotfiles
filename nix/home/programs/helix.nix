@@ -54,9 +54,12 @@ in {
 
   programs.helix = {
     enable = true;
-    # overlay や nixpkgs の差し替えを通すと helix.cachix.org の store path と
-    # 一致せず Rust のフルビルドになる (flake.nix の helix input 参照)。
-    package = inputs.helix.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    # override すると helix.cachix.org の store path と一致せず Rust のフルビルドになる
+    # (flake.nix の helix input 参照)。cylc は上流の文法リポジトリが消えて評価時の
+    # fetchTree が 404 になるため、上流の languages.toml から外れるまで除外する。
+    package = inputs.helix.packages.${pkgs.stdenv.hostPlatform.system}.default.override {
+      includeGrammarIf = grammar: grammar.name != "cylc";
+    };
 
     # ビルトインの catppuccin_<flavor> は各 UI に bg を塗るため、
     # bg を外して WezTerm の背景透過を通す (Neovim の transparent_background 相当)。
