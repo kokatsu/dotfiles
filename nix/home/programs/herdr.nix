@@ -227,6 +227,13 @@ in {
           command = "${scriptsDir}/four-pane-layout.sh"
           description = "4ペイン作業レイアウト"
 
+          # 現在のペインを全幅の上段 (Claude Code) とし、下段を左シェル・右 Codex に分割
+          [[keys.command]]
+          key = "prefix+up"
+          type = "shell"
+          command = "${scriptsDir}/wide-top-layout.sh"
+          description = "3ペイン作業レイアウト (上を全幅)"
+
           # 新しいペインを全高の左列として追加し、既存ペインを右列で上下 1:1 に分割する。
           [[keys.command]]
           key = "prefix+left"

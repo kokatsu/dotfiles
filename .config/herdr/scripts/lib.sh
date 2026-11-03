@@ -44,6 +44,47 @@ split_pane() {
   jq -er '.result.pane.pane_id' <<<"$response"
 }
 
+# ペインが素のシェルなら agent を起動する。起動済みや別コマンド実行中なら何もしない
+start_agent_if_needed() {
+  local pane_id=$1
+  local agent=$2
+  local pane_state
+  local process_info
+
+  # 失敗しても return 0 で抜け、もう片方のエージェントの起動は続ける
+  if ! process_info=$("$herdr_bin" pane process-info --pane "$pane_id"); then
+    notify "${agent} の起動判定に失敗しました" "ペインのプロセス情報を取得できません"
+    return 0
+  fi
+  # 素のシェルかどうかは $SHELL 名ではなく shell_pid との一致で判定する。
+  # terminal.default_shell を設定してもヘルパー側の $SHELL に引きずられない
+  if ! pane_state=$(
+    jq -er --arg agent "$agent" '
+      .result.process_info as $info
+      | $info.foreground_processes as $processes
+      | select($processes | type == "array")
+      | if any($processes[]?; .name == $agent) then
+          "running"
+        elif ($processes | length) > 0
+          and all($processes[]; .pid == $info.shell_pid)
+        then
+          "shell"
+        else
+          "busy"
+        end
+    ' <<<"$process_info"
+  ); then
+    notify "${agent} の起動判定に失敗しました" "プロセス情報の形式が想定と異なります"
+    return 0
+  fi
+
+  # 先頭の空白で履歴に残さない (hist_ignore_space)
+  if [[ "$pane_state" == shell ]] &&
+    ! "$herdr_bin" pane run "$pane_id" " $agent" >/dev/null; then
+    notify "${agent} を起動できませんでした"
+  fi
+}
+
 # 標準入力の改行区切りのパスを、起動元ペインのエージェントに合わせた形で送る。
 # herdr は 1 キー = 1 コマンド固定で bind 時点の振り分けができないため、
 # 送信時に herdr pane get の .result.pane.agent (なしは null) で判定する。
