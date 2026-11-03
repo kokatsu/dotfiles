@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# flake-outdated: flake.lock の github インプットのうち、リモートに新しいコミットがあるものを表示する
+#
+# Usage:
+#   flake-outdated [flake.lock]   既定はカレントディレクトリの flake.lock
+#
+# lock の書き換えも tarball の取得もせず、git ls-remote で ref の先頭だけを比べる。
+# タグ固定のインプットは「そのタグが同じコミットを指しているか」しか見ないため、新しいタグは検出しない
+
+lock=${1:-flake.lock}
+[[ -f $lock ]] || {
+  echo "flake-outdated: $lock not found" >&2
+  exit 1
+}
+
+# follows の別名 (値が配列) と rev 固定のインプットは nix flake update でも動かないので除く
+jq -r '.nodes as $n | $n.root.inputs | to_entries[] | select(.value | type == "string") | $n[.value] as $v
+  | select($v.original.type == "github" and $v.original.rev == null)
+  | [.key, $v.original.owner + "/" + $v.original.repo, ($v.original.ref // "HEAD"), $v.locked.rev] | @tsv' "$lock" |
+  while IFS=$'\t' read -r name repo ref rev; do
+    if [[ $ref == HEAD ]]; then
+      refs=(HEAD)
+    else
+      refs=("refs/heads/$ref" "refs/tags/$ref" "refs/tags/$ref^{}")
+    fi
+    # ls-remote のパターンは末尾一致で foo/main なども拾うため、完全一致で絞る。
+    # 注釈付きタグは ^{} 行が実コミットを指し、出力順で最後に来る
+    remote=$(git ls-remote "https://github.com/$repo" "${refs[@]}" |
+      awk -v r="$ref" '$2 == r || $2 == "refs/heads/" r || $2 == "refs/tags/" r || $2 == "refs/tags/" r "^{}"' |
+      tail -1 | cut -f1)
+    if [[ -z $remote ]]; then
+      status="?"
+    elif [[ $remote == "$rev" ]]; then
+      status="ok"
+    else
+      status="NEW ${remote:0:7}  https://github.com/$repo/compare/${rev:0:12}...${remote:0:12}"
+    fi
+    printf '%-24s %-24s %s -> %s\n' "$name" "$ref" "${rev:0:7}" "$status"
+  done
