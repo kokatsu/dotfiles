@@ -355,8 +355,10 @@ reliability-test:
     bash scripts/test-sync-flake-inputs.sh
 
 # Verify Renovate regex patterns match overlay files
+# Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
+# LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
 renovate-patterns-test:
-    deno run --allow-read --allow-run=git scripts/test-renovate-patterns.ts
+    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno run --allow-read --allow-run=git scripts/test-renovate-patterns.ts
 
 # Build karabiner.json from karabiner.ts
 karabiner-build:
