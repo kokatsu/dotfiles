@@ -7,6 +7,9 @@
         ++ [
           ./patches/herdr-prefix-bar.patch
           ./patches/herdr-heavy-focus-border.patch
+          # herdr-nvim のサイドバーを最初から目的の幅で開くため。
+          # 上流の提案: https://github.com/herdrdev/herdr/discussions/3541
+          ./patches/herdr-plugin-pane-ratio.patch
         ];
     });
   in {
@@ -66,7 +69,12 @@
       # サイドバーはエージェントではなくプラグインのペインなので、上流の
       # `herdr agent focus` は agent_not_found で失敗し、リンクのクリックで
       # ファイルを開いてもフォーカスがサイドバーへ移らない
-      patches = [./patches/herdr-nvim-focus-plugin-pane.patch];
+      patches = [
+        ./patches/herdr-nvim-focus-plugin-pane.patch
+        # 上流は幅を設定できず、サイドバーは herdr 既定の 50% で開く。
+        # herdr 側の herdr-plugin-pane-ratio.patch が前提
+        ./patches/herdr-nvim-sidebar-width.patch
+      ];
 
       nativeCheckInputs = [prev.git];
       # ソースを git チェックアウトとして git ls-files で索引するテスト。

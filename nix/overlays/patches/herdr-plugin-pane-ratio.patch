@@ -1,0 +1,225 @@
+diff --git i/docs/next/api/herdr-api.schema.json w/docs/next/api/herdr-api.schema.json
+--- i/docs/next/api/herdr-api.schema.json
++++ w/docs/next/api/herdr-api.schema.json
+@@ -3678,6 +3678,13 @@
+             "plugin_id": {
+               "type": "string"
+             },
++            "ratio": {
++              "format": "float",
++              "type": [
++                "number",
++                "null"
++              ]
++            },
+             "target_pane_id": {
+               "type": [
+                 "string",
+diff --git i/src/api/schema/plugins.rs w/src/api/schema/plugins.rs
+--- i/src/api/schema/plugins.rs
++++ w/src/api/schema/plugins.rs
+@@ -414,7 +414,7 @@ impl PluginActionInfo {
+     }
+ }
+ 
+-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
++#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, schemars::JsonSchema)]
+ pub struct PluginPaneOpenParams {
+     pub plugin_id: String,
+     pub entrypoint: String,
+@@ -431,6 +431,8 @@ pub struct PluginPaneOpenParams {
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub direction: Option<SplitDirection>,
+     #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub ratio: Option<f32>,
++    #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub cwd: Option<String>,
+     #[serde(default)]
+     pub focus: bool,
+diff --git i/src/api/schema/tests.rs w/src/api/schema/tests.rs
+--- i/src/api/schema/tests.rs
++++ w/src/api/schema/tests.rs
+@@ -1407,6 +1407,7 @@ fn plugin_pane_open_request_round_trips() {
+             workspace_id: None,
+             target_pane_id: None,
+             direction: None,
++            ratio: None,
+             cwd: Some("/tmp".into()),
+             focus: true,
+             env: [("HERDR_ROLE".to_string(), "board".to_string())].into(),
+diff --git i/src/app/api/plugins/mod.rs w/src/app/api/plugins/mod.rs
+--- i/src/app/api/plugins/mod.rs
++++ w/src/app/api/plugins/mod.rs
+@@ -1597,6 +1597,7 @@ platforms = ["linux", "macos"]
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: None,
++                ratio: None,
+                 cwd: None,
+                 focus: false,
+                 env: std::collections::HashMap::new(),
+@@ -1624,6 +1625,7 @@ platforms = ["linux", "macos"]
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: Some(crate::api::schema::SplitDirection::Right),
++                ratio: None,
+                 cwd: None,
+                 focus: false,
+                 env: std::collections::HashMap::new(),
+@@ -1740,6 +1742,7 @@ command = ["cmd.exe", "/d", "/c", "slot.cmd", "default"]
+                     workspace_id: None,
+                     target_pane_id: None,
+                     direction: None,
++                    ratio: None,
+                     cwd: cwd.map(|path| path.display().to_string()),
+                     focus: false,
+                     env: std::collections::HashMap::new(),
+@@ -1860,6 +1863,7 @@ command = ["sh", "-c", '"$HERDR_BIN_PATH" --list >/dev/null; printf "%s\n" "$?"
+                     workspace_id: None,
+                     target_pane_id: None,
+                     direction: None,
++                    ratio: None,
+                     cwd: None,
+                     focus: true,
+                     env: std::collections::HashMap::new(),
+@@ -1964,6 +1968,7 @@ command = ["sh", "-c", "printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \"$PWD\" \
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: None,
++                ratio: None,
+                 cwd: None,
+                 focus: true,
+                 env: std::collections::HashMap::from([
+@@ -2071,6 +2076,7 @@ command = ["sh", "-c", "printf '%s\n%s\n%s\n' \"$HERDR_PLUGIN_ROOT\" \"$HERDR_PL
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: None,
++                ratio: None,
+                 cwd: None,
+                 focus: true,
+                 env: std::collections::HashMap::from([
+@@ -2174,6 +2180,7 @@ command = ["sh", "-c", "sleep 1"]
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: None,
++                ratio: None,
+                 cwd: None,
+                 focus: true,
+                 env: std::collections::HashMap::new(),
+@@ -2257,6 +2264,7 @@ command = ["sh", "-c", "sleep 1"]
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: Some(crate::api::schema::SplitDirection::Right),
++                ratio: None,
+                 cwd: None,
+                 focus: true,
+                 env: std::collections::HashMap::new(),
+@@ -2336,6 +2344,7 @@ command = ["sh", "-c", "sleep 1"]
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: None,
++                ratio: None,
+                 cwd: None,
+                 focus: true,
+                 env: std::collections::HashMap::new(),
+@@ -2421,6 +2430,7 @@ command = ["sh", "-c", "printf %s ${{HERDR_PANE_ID-unset}} > '{}'; sleep 1"]
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: None,
++                ratio: None,
+                 cwd: None,
+                 focus: true,
+                 env: std::collections::HashMap::new(),
+@@ -2618,6 +2628,7 @@ command = ["sh", "-c", "printf %s ${{HERDR_PANE_ID-unset}} > '{}'; sleep 1"]
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: None,
++                ratio: None,
+                 cwd: None,
+                 focus: true,
+                 env: std::collections::HashMap::new(),
+@@ -2685,6 +2696,7 @@ command = ["sh", "-c", "printf %s ${{HERDR_PANE_ID-unset}} > '{}'; sleep 1"]
+                 workspace_id: None,
+                 target_pane_id: None,
+                 direction: None,
++                ratio: None,
+                 cwd: None,
+                 focus: true,
+                 env: std::collections::HashMap::new(),
+diff --git i/src/app/api/plugins/panes.rs w/src/app/api/plugins/panes.rs
+--- i/src/app/api/plugins/panes.rs
++++ w/src/app/api/plugins/panes.rs
+@@ -115,6 +115,7 @@ impl App {
+             crate::api::schema::SplitDirection::Right => Direction::Horizontal,
+             crate::api::schema::SplitDirection::Down => Direction::Vertical,
+         };
++        let ratio = params.ratio.unwrap_or(0.5);
+         let new_pane_placement = if placement == PluginPanePlacement::Zoomed {
+             crate::ui::NewPanePlacement::ZoomedOverlay
+         } else {
+@@ -122,7 +123,7 @@ impl App {
+                 ws_idx,
+                 target: target_pane,
+                 direction,
+-                ratio: 0.5,
++                ratio,
+             }
+         };
+         let (rows, cols) = self.state.new_pane_size(new_pane_placement);
+@@ -130,9 +131,10 @@ impl App {
+         let Some(ws) = self.state.workspaces.get_mut(ws_idx) else {
+             return encode_error(id, "workspace_not_found", "workspace not found");
+         };
+-        let result = ws.split_pane_argv_command(
++        let result = ws.split_pane_argv_command_with_ratio(
+             target_pane,
+             direction,
++            ratio,
+             rows,
+             cols,
+             Some(cwd),
+diff --git i/src/cli/plugin.rs w/src/cli/plugin.rs
+--- i/src/cli/plugin.rs
++++ w/src/cli/plugin.rs
+@@ -694,6 +694,7 @@ fn plugin_pane_open(args: &[String]) -> std::io::Result<i32> {
+     let mut workspace_id = None;
+     let mut target_pane_id = None;
+     let mut direction = None;
++    let mut ratio = None;
+     let mut cwd = None;
+     let mut focus = true;
+     let mut env = HashMap::new();
+@@ -761,6 +762,16 @@ fn plugin_pane_open(args: &[String]) -> std::io::Result<i32> {
+                 };
+                 direction = Some(parsed);
+             }
++            "--ratio" => {
++                let Some(value) = required_value(args, &mut index, "--ratio") else {
++                    return Ok(2);
++                };
++                let Some(parsed) = value.parse::<f32>().ok().filter(|r| r.is_finite()) else {
++                    eprintln!("invalid ratio: {value}");
++                    return Ok(2);
++                };
++                ratio = Some(parsed);
++            }
+             "--cwd" => {
+                 let Some(value) = required_value(args, &mut index, "--cwd") else {
+                     return Ok(2);
+@@ -813,6 +824,7 @@ fn plugin_pane_open(args: &[String]) -> std::io::Result<i32> {
+         workspace_id,
+         target_pane_id,
+         direction,
++        ratio,
+         cwd,
+         focus,
+         env,
+@@ -1830,7 +1842,7 @@ fn print_plugin_action_help() {
+ 
+ fn print_plugin_pane_help() {
+     eprintln!("herdr plugin pane commands:");
+-    eprintln!("  herdr plugin pane open --plugin ID --entrypoint ID [--placement overlay|popup|split|tab|zoomed] [--width SIZE] [--height SIZE] [--workspace ID] [--target-pane PANE] [--direction right|down] [--cwd PATH] [--env KEY=VALUE] [--focus|--no-focus]");
++    eprintln!("  herdr plugin pane open --plugin ID --entrypoint ID [--placement overlay|popup|split|tab|zoomed] [--width SIZE] [--height SIZE] [--workspace ID] [--target-pane PANE] [--direction right|down] [--ratio FLOAT] [--cwd PATH] [--env KEY=VALUE] [--focus|--no-focus]");
+     eprintln!("  herdr plugin pane focus <pane_id>");
+     eprintln!("  herdr plugin pane close <pane_id>");
+ }

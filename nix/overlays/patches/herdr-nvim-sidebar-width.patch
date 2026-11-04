@@ -1,0 +1,14 @@
+diff --git i/src/herdr.rs w/src/herdr.rs
+--- i/src/herdr.rs
++++ w/src/herdr.rs
+@@ -403,6 +403,10 @@ impl Herdr for CliHerdr {
+             anchor,
+             "--direction",
+             dir.as_cli_arg(),
++            // The anchor's share: the sidebar gets 40%. `--ratio` comes from a
++            // local herdr patch (upstream discussion herdrdev/herdr#3541).
++            "--ratio",
++            "0.6",
+             "--cwd",
+             &cwd.display().to_string(),
+             "--env",
