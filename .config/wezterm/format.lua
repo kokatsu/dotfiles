@@ -526,7 +526,7 @@ end
 
 --- イベントハンドラを登録する
 M.apply = function()
-  wezterm.on('update-status', function(window, _pane)
+  wezterm.on('update-status', function(window)
     window:set_left_status(wezterm.format({}))
 
     -- ダブルプレス確認メッセージの表示/クリア

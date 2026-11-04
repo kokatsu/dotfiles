@@ -211,7 +211,7 @@ local windows_specific_keys = {
   {
     key = 'U',
     mods = 'CTRL',
-    action = wezterm.action_callback(function(_window, _pane)
+    action = wezterm.action_callback(function()
       local userprofile = os.getenv('USERPROFILE')
       if not userprofile then
         return
