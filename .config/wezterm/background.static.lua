@@ -142,6 +142,7 @@ end
 local function choice_label(active, icon, label, trailing)
   return wezterm.format({
     { Foreground = { Color = active and colors.palette.accent or colors.palette.text } },
+    ---@diagnostic disable-next-line: missing-fields
     { Attribute = { Intensity = active and 'Bold' or 'Normal' } },
     {
       Text = (active and '● ' or '  ')

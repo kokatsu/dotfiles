@@ -156,6 +156,7 @@ wezterm.on('open-uri', function(window, pane, uri)
 
     local function choice_label(action, detail)
       return wezterm.format({
+        ---@diagnostic disable-next-line: missing-fields
         { Attribute = { Intensity = 'Bold' } },
         { Text = action .. '  ' },
         'ResetAttributes',

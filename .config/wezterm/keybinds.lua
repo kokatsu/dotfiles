@@ -11,7 +11,7 @@ local is_wsl_domain = platform.is_wsl_domain
 --- ダブルプレスで実行するアクションを作成
 --- 1回目はステータスバーにメッセージを表示し、タイムアウト内に再度押すと実行
 ---@param key_name string キー名（状態管理用）
----@param action table 実行するアクション
+---@param action Action 実行するアクション
 ---@param timeout_sec number タイムアウト（秒）
 ---@param message string? 1回目に表示するメッセージ（省略時は通知なし）
 local function double_press_action(key_name, action, timeout_sec, message)
