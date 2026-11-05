@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+#
+# dc-agent: カレントディレクトリの devcontainer でエージェントを起動する。
+#
+# Usage:
+#   dc-agent <claude|codex> [args...]
+#
+# Herdr はホストから見える foreground プロセスでエージェントを判定するため、
+# devcontainer CLI の陰にいる claude/codex を HERDR_AGENT で教える。
+# exec しないこのスクリプト自身も foreground プロセスグループに残るので、
+# 判定対象がどのプロセスでも読めるよう export する。
+# 併せて Herdr の表示名の前に nf-oct-container (U+F4B7) を付けてホストのエージェントと見分ける。
+# 表示名はペインに残るので、終了時に消して後で同じペインに起動したものへ持ち越さない
+
+if (($# < 1)); then
+  echo "Usage: dc-agent <claude|codex> [args...]" >&2
+  exit 2
+fi
+agent=$1
+shift
+
+export HERDR_AGENT=$agent
+
+if [[ -n ${HERDR_PANE_ID:-} ]]; then
+  herdr pane report-metadata "$HERDR_PANE_ID" --source devcontainer \
+    --display-agent $'\uf4b7'"  $agent" >/dev/null || true
+  trap 'herdr pane report-metadata "$HERDR_PANE_ID" --source devcontainer \
+    --clear-display-agent >/dev/null || true' EXIT
+fi
+
+devcontainer exec --workspace-folder . "$agent" "$@"

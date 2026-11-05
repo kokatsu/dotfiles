@@ -93,25 +93,22 @@ export default defineConfig(({ env }) => {
     {
       name: "devcontainer claude",
       keyword: "dcc",
-      snippet:
-        "HERDR_AGENT=claude devcontainer exec --workspace-folder . claude",
+      snippet: "dc-agent claude",
     },
     {
       name: "devcontainer claude (skip permissions)",
       keyword: "dcy",
-      snippet:
-        "HERDR_AGENT=claude devcontainer exec --workspace-folder . claude --dangerously-skip-permissions",
+      snippet: "dc-agent claude --dangerously-skip-permissions",
     },
     {
       name: "devcontainer codex",
       keyword: "dcx",
-      snippet: "HERDR_AGENT=codex devcontainer exec --workspace-folder . codex",
+      snippet: "dc-agent codex",
     },
     {
       name: "devcontainer codex (bypass approvals and sandbox)",
       keyword: "dcxy",
-      snippet:
-        "HERDR_AGENT=codex devcontainer exec --workspace-folder . codex --dangerously-bypass-approvals-and-sandbox",
+      snippet: "dc-agent codex --dangerously-bypass-approvals-and-sandbox",
     },
     {
       // devcontainer exec はポートを転送せず、ブラウザ経由の localhost:1455 コールバックが届かない
