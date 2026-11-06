@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# flake-diff: flake のインプットを更新したとき、Home Manager のパッケージが何から何へ変わるかを表示する
+#
+# Usage:
+#   flake-diff [input...]   既定は全インプット。例: flake-diff nixpkgs
+#
+# 最新 rev は flake-outdated (git ls-remote) で調べ、rev 固定の --override-input で渡す。
+# rev が決まっていれば nix は GitHub API を呼ばず公開 archive URL から取るので、API の rate limit に当たらない。
+# flake.lock は変わらない。比較の基準は現在の Home Manager 世代で、nix-darwin (Homebrew) 側は含まない
+
+repo=$(dirname "$(dirname "$(readlink -f "$0")")")
+cd "$repo"
+
+outdated=$("$repo/bin/flake-outdated" -p)
+overrides=()
+while IFS=$'\t' read -r name gh rev; do
+  [[ -n $name ]] || continue
+  if (($# == 0)) || [[ " $* " == *" $name "* ]]; then
+    overrides+=(--override-input "$name" "github:$gh/$rev")
+  fi
+done <<<"$outdated"
+
+if ((${#overrides[@]} == 0)); then
+  echo "flake-diff: no outdated inputs" >&2
+  exit 0
+fi
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+DOTFILES_DIR=$repo nix build ".#homeConfigurations.$USER.activationPackage" --impure \
+  "${overrides[@]}" -o "$tmp/result"
+nix store diff-closures "${XDG_STATE_HOME:-$HOME/.local/state}/nix/profiles/home-manager" "$tmp/result"

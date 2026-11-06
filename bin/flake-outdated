@@ -4,11 +4,18 @@ set -euo pipefail
 # flake-outdated: flake.lock の github インプットのうち、リモートに新しいコミットがあるものを表示する
 #
 # Usage:
-#   flake-outdated [flake.lock]   既定はカレントディレクトリの flake.lock
+#   flake-outdated [-p] [flake.lock]   既定はカレントディレクトリの flake.lock
+#
+#   -p  新しいコミットがあるインプットだけを「名前<TAB>owner/repo<TAB>最新 rev」で出す
 #
 # lock の書き換えも tarball の取得もせず、git ls-remote で ref の先頭だけを比べる。
 # タグ固定のインプットは「そのタグが同じコミットを指しているか」しか見ないため、新しいタグは検出しない
 
+porcelain=
+if [[ ${1-} == -p ]]; then
+  porcelain=1
+  shift
+fi
 lock=${1:-flake.lock}
 [[ -f $lock ]] || {
   echo "flake-outdated: $lock not found" >&2
@@ -30,6 +37,10 @@ jq -r '.nodes as $n | $n.root.inputs | to_entries[] | select(.value | type == "s
     remote=$(git ls-remote "https://github.com/$repo" "${refs[@]}" |
       awk -v r="$ref" '$2 == r || $2 == "refs/heads/" r || $2 == "refs/tags/" r || $2 == "refs/tags/" r "^{}"' |
       tail -1 | cut -f1)
+    if [[ -n $porcelain ]]; then
+      [[ -n $remote && $remote != "$rev" ]] && printf '%s\t%s\t%s\n' "$name" "$repo" "$remote"
+      continue
+    fi
     if [[ -z $remote ]]; then
       status="?"
     elif [[ $remote == "$rev" ]]; then
