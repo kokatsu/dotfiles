@@ -10,6 +10,9 @@
     }
   },
   "remoteUser": "vscode",
+  "initializeCommand": [
+    "${localWorkspaceFolder}/.devcontainer/ensure-bind-sources.sh"
+  ],
   "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
   "containerEnv": {
     "TZ": "${localEnv:TZ:Asia/Tokyo}",
@@ -35,6 +38,20 @@
   "waitFor": "postStartCommand",
   "mounts": [
     "source=claude-code-config-${devcontainerId},target=/home/vscode/.config/claude,type=volume",
-    "source=codex-config-${devcontainerId},target=/home/vscode/.config/codex,type=volume"
+    "source=codex-config-${devcontainerId},target=/home/vscode/.config/codex,type=volume",
+    // ホストの git やツールが実行・読み込みするもののうち、書き換えても git status に出ないものを読み取り専用にする。
+    // 足すときは ensure-bind-sources.sh にも足す
+    "source=${localWorkspaceFolder}/.devcontainer,target=${containerWorkspaceFolder}/.devcontainer,type=bind,readonly",
+    // linked worktree では .git が参照ファイルのため、次の 2 つの bind で起動に失敗する
+    "source=${localWorkspaceFolder}/.git/hooks,target=${containerWorkspaceFolder}/.git/hooks,type=bind,readonly",
+    "source=${localWorkspaceFolder}/.git/config,target=${containerWorkspaceFolder}/.git/config,type=bind,readonly",
+    "source=${localWorkspaceFolder}/.lefthook-local.jsonc,target=${containerWorkspaceFolder}/.lefthook-local.jsonc,type=bind,readonly",
+    "source=${localWorkspaceFolder}/.gitleaks.local.toml,target=${containerWorkspaceFolder}/.gitleaks.local.toml,type=bind,readonly",
+    "source=${localWorkspaceFolder}/.claude/settings.local.json,target=${containerWorkspaceFolder}/.claude/settings.local.json,type=bind,readonly",
+    "source=${localWorkspaceFolder}/.config/nvim/lua/plugins/snacks/exclude.lua,target=${containerWorkspaceFolder}/.config/nvim/lua/plugins/snacks/exclude.lua,type=bind,readonly",
+    "source=${localWorkspaceFolder}/.config/wezterm/backgrounds.lua,target=${containerWorkspaceFolder}/.config/wezterm/backgrounds.lua,type=bind,readonly",
+    // home-manager switch がホストの ~/.config/zsh へコピーし、ホストの zsh が読む
+    "source=${localWorkspaceFolder}/.config/zsh/config.d,target=${containerWorkspaceFolder}/.config/zsh/config.d,type=bind,readonly",
+    "source=${localWorkspaceFolder}/.config/zsh/functions.d,target=${containerWorkspaceFolder}/.config/zsh/functions.d,type=bind,readonly"
   ]
 }
