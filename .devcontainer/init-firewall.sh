@@ -6,6 +6,11 @@ IFS=$'\n\t'       # Stricter word splitting
 DOCKER_DNS_RULES=$(iptables-save -t nat | grep "127\.0\.0\.11" || true)
 
 # Flush existing rules and delete existing ipsets
+# vscode は sudo でこのスクリプトを再実行できる。組み立て直す間に一度でも ACCEPT にすると、その隙に任意の宛先へ
+# 繋いだ接続が ESTABLISHED の許可で残るため、方針は最初から DROP にしておき、必要な通信だけを先に許可する。
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT DROP
 iptables -F
 iptables -X
 iptables -t nat -F
@@ -36,12 +41,25 @@ done < <(awk '/^nameserver/ && $2 ~ /^[0-9.]+$/ {print $2}' /etc/resolv.conf)
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
 
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
 # Create ipset with CIDR support
 ipset create allowed-domains hash:net
+iptables -A OUTPUT -m set --match-set allowed-domains dst -j ACCEPT
+
+# GitHub の範囲を取得するまで api.github.com 自体に繋がらないため、名前解決した IP を 1 つだけ許可して使う。
+# curl に解決し直させると別の IP が返ることがある。
+gh_api_ip=$(dig +short A api.github.com | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)
+if [ -z "$gh_api_ip" ]; then
+  echo "ERROR: Failed to resolve api.github.com"
+  exit 1
+fi
+ipset add -exist allowed-domains "$gh_api_ip"
 
 # Fetch GitHub meta information and aggregate + add their IP ranges
 echo "Fetching GitHub IP ranges..."
-gh_ranges=$(curl -s https://api.github.com/meta)
+gh_ranges=$(curl -s --resolve "api.github.com:443:$gh_api_ip" https://api.github.com/meta)
 if [ -z "$gh_ranges" ]; then
   echo "ERROR: Failed to fetch GitHub IP ranges"
   exit 1
@@ -59,7 +77,7 @@ while read -r cidr; do
     exit 1
   fi
   echo "Adding GitHub range $cidr"
-  ipset add allowed-domains "$cidr"
+  ipset add -exist allowed-domains "$cidr"
 done < <(echo "$gh_ranges" | jq -r '(.web + .api + .git)[]' | aggregate -q)
 
 # Resolve and add other allowed domains
@@ -87,7 +105,7 @@ for domain in \
       exit 1
     fi
     echo "Adding $ip for $domain"
-    ipset add allowed-domains "$ip"
+    ipset add -exist allowed-domains "$ip"
   done < <(echo "$ips")
 done
 
@@ -103,19 +121,6 @@ echo "Host gateway detected as: $HOST_IP"
 # Allow only the gateway itself, not the whole host network
 # (a /24 would expose the host LAN and sibling containers)
 iptables -A INPUT -s "$HOST_IP" -j ACCEPT
-iptables -A OUTPUT -d "$HOST_IP" -j ACCEPT
-
-# Set default policies to DROP first
-iptables -P INPUT DROP
-iptables -P FORWARD DROP
-iptables -P OUTPUT DROP
-
-# First allow established connections for already approved traffic
-iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-
-# Then allow only specific outbound traffic to allowed domains
-iptables -A OUTPUT -m set --match-set allowed-domains dst -j ACCEPT
 
 # Explicitly REJECT all other outbound traffic for immediate feedback
 iptables -A OUTPUT -j REJECT --reject-with icmp-admin-prohibited
