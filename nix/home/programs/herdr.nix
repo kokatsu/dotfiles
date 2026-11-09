@@ -103,7 +103,7 @@ in {
           # 1 行しか出さない。herdr はコマンド出力の最終行だけを採用するため、
           # 行を選り分けるラッパースクリプトは要らない。
           tab_bar_right = [
-            { type = "command", command = "${config.home.profileDirectory}/bin/cc-statusline", interval_seconds = 60, timeout_seconds = 1 },
+            { type = "command", command = "CC_STATUSLINE_SHOW_BLOCK=0 ${config.home.profileDirectory}/bin/cc-statusline", interval_seconds = 60, timeout_seconds = 1 },
           ]
 
           [ui.sidebar.agents]
