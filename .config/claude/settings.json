@@ -181,6 +181,7 @@
     }
   },
   "advisorModel": "fable",
-  "agentPushNotifEnabled": true,
-  "tui": "fullscreen"
+  "tui": "fullscreen",
+  "theme": "custom:catppuccin-mocha",
+  "agentPushNotifEnabled": true
 }
