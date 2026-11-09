@@ -4,12 +4,21 @@
 # 最後から 2 つ目のプロンプトから最後のプロンプトの手前までを取り出す。
 # フォアグラウンドが psql のときは psql のプロンプトを区切りにし、
 # 貼り付けてそのまま実行できるよう出力を SQL コメントにする。
+# エージェントのペインにはシェルのプロンプトがないので、エージェント自身の /copy に任せる。
 
 set -euo pipefail
 
 active_pane_id=${HERDR_ACTIVE_PANE_ID:?HERDR_ACTIVE_PANE_ID is not set}
 # shellcheck source=.config/herdr/scripts/lib.sh
 source "$(dirname "$0")/lib.sh"
+
+# 取得に失敗しても中断せず、シェルのペインとして扱う
+agent=$("$herdr_bin" pane get "$active_pane_id" | jq -r '.result.pane.agent // ""') || agent=""
+case "$agent" in
+claude | codex)
+  exec "$herdr_bin" agent prompt "$active_pane_id" /copy
+  ;;
+esac
 
 if ! screen=$("$herdr_bin" pane read "$active_pane_id" --source recent-unwrapped --lines 1000 --format text); then
   notify "ペインの読み取りに失敗しました"

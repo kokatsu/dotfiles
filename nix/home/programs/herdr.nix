@@ -297,7 +297,7 @@ in {
           key = "prefix+y"
           type = "shell"
           command = "${scriptsDir}/copy-last-output.sh"
-          description = "直前のコマンドと出力をコピー"
+          description = "直前のコマンドと出力をコピー (エージェントでは /copy)"
 
           [[keys.command]]
           key = "prefix+shift+y"
@@ -375,19 +375,13 @@ in {
           description = "異常のあるサービスの Statuspage を開く"
 
           # Claude Code / Codex のキー設定はスラッシュコマンドを割り当てられないため、
-          # herdr 側から入力として送る。/clear・/copy・/exit は両エージェント共通。
+          # herdr 側から入力として送る。/clear・/exit は両エージェント共通。
           # prefix+c / prefix+q の既定 (new_tab / detach) は上で別キーへ移してあるので空いている
           [[keys.command]]
           key = "prefix+c"
           type = "shell"
           command = "${pkgs.herdr}/bin/herdr agent prompt $HERDR_ACTIVE_PANE_ID /clear"
           description = "エージェントに /clear を送る"
-
-          [[keys.command]]
-          key = "prefix+d"
-          type = "shell"
-          command = "${pkgs.herdr}/bin/herdr agent prompt $HERDR_ACTIVE_PANE_ID /copy"
-          description = "エージェントに /copy を送る"
 
           [[keys.command]]
           key = "prefix+q"
