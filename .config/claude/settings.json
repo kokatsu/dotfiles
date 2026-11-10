@@ -32,6 +32,7 @@
     ],
     "defaultMode": "auto"
   },
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -178,10 +179,14 @@
     },
     "claude-fable-5-1": {
       "effortLevel": "medium"
+    },
+    "claude-fable-5-2": {
+      "effortLevel": "high"
     }
   },
   "advisorModel": "fable",
   "tui": "fullscreen",
   "theme": "custom:catppuccin-mocha",
+  "preferredNotifChannel": "terminal_bell",
   "agentPushNotifEnabled": true
 }
