@@ -15,4 +15,5 @@
 !.gitignore
 !.CLAUDE.md
 !file-suggestion.sh
+!statusline.sh
 !settings.json

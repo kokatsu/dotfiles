@@ -1,0 +1,5 @@
+{
+  "name": "fable-usage",
+  "version": "0.1.0",
+  "description": "Shows the weekly Fable usage from /usage as a status entry"
+}

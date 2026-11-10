@@ -12,7 +12,7 @@
     "CC_STATUSLINE_BAR_WIDTH": "0",
     "CC_STATUSLINE_SHOW_CACHE": "0",
     "CC_STATUSLINE_SHOW_SESSION": "0",
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/.config/claude/mods/verify-reminder:~/.config/claude/mods/language-guard:~/.config/claude/mods/session-uuid:~/.config/claude/mods/mermaid-ascii:~/.config/claude/mods/markdown-colors",
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/.config/claude/mods/verify-reminder:~/.config/claude/mods/language-guard:~/.config/claude/mods/session-uuid:~/.config/claude/mods/mermaid-ascii:~/.config/claude/mods/markdown-colors:~/.config/claude/mods/fable-usage",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "DISABLE_INSTALLATION_CHECKS": "1",
     "DISABLE_UPDATES": "1"
@@ -145,7 +145,7 @@
   "bashOutputMaxChars": 128000,
   "statusLine": {
     "type": "command",
-    "command": "CC_STATUSLINE_SHOW_COST=0 cc-statusline",
+    "command": "~/.config/claude/statusline.sh",
     "padding": 0
   },
   "enabledPlugins": {

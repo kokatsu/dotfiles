@@ -44,6 +44,10 @@ in {
       source = ../../../.config/claude/file-suggestion.sh;
       executable = true;
     };
+    ".config/claude/statusline.sh" = {
+      source = ../../../.config/claude/statusline.sh;
+      executable = true;
+    };
     ".config/claude/hooks/herdr-cache-token.sh" = {
       source = ../../../.config/claude/hooks/herdr-cache-token.sh;
       executable = true;
