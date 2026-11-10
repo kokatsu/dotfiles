@@ -113,6 +113,16 @@ test("a headless session runs nothing", async ($, on) => {
   expect(files.size).toBe(0);
 });
 
+test('reads a reset joined to its time with "at"', async ($, on) => {
+  const { clock, line } = world(
+    on,
+    "Current week (Fable): 12% used · resets Nov 17 at 8am (Asia/Tokyo)\n",
+  );
+  await $.session.start(interactive);
+  await clock.settle();
+  expect(line()).toBe("🦋 12% 6d 17h 11/17 08:00");
+});
+
 test("reads a reset that falls in the next year", async ($, on) => {
   const { clock, line } = world(
     on,

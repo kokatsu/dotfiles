@@ -3,9 +3,10 @@ import type { Register } from "claude-code";
 const FETCH_MS = 5 * 60 * 1000;
 const RENDER_MS = 60 * 1000;
 const FABLE_LINE = /Current week \(Fable\): (\d+)% used(?: · resets (.+))?/;
-// /usage adds the year only when the reset falls in another year.
+// /usage adds the year only when the reset falls in another year. Claude Code
+// releases differ in joining the date to the time with ", " or " at ".
 const RESET_TEXT =
-  /^(?:([A-Z][a-z]{2}) (\d{1,2}), (?:(\d{4}), )?)?(\d{1,2})(?::(\d{2}))?(am|pm)/;
+  /^(?:([A-Z][a-z]{2}) (\d{1,2}),? (?:(\d{4}),? )?(?:at )?)?(\d{1,2})(?::(\d{2}))?(am|pm)/;
 const MONTHS = [
   "Jan",
   "Feb",
