@@ -7,8 +7,7 @@ files in this repository.
 Sub-trees that are independently distributable keep their own LICENSE files
 and are not duplicated here:
 
-- `.config/yazi/flavors/*/LICENSE` — vendored yazi flavors installed by Home Manager
-- `.config/yazi/plugins/*/LICENSE` — same as above
+- `.config/yazi/plugins/*/LICENSE` — vendored yazi plugins installed by Home Manager
 
 ## Catppuccin
 

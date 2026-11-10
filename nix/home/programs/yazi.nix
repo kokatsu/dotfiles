@@ -1,4 +1,8 @@
-{pkgs, ...}: let
+{
+  pkgs,
+  inputs,
+  ...
+}: let
   # opener の `for` は WSL と素の Linux を区別できないため、実行時に判定する
   openWithDefaultApp = arg: "if command -v wslview >/dev/null 2>&1; then wslview ${arg}; elif [ \"$(uname)\" = \"Darwin\" ]; then open ${arg}; else xdg-open ${arg}; fi";
 in {
@@ -218,8 +222,8 @@ in {
       zoom = pkgs.yaziPlugins.zoom;
     };
     flavors = {
-      catppuccin-latte = ../../../.config/yazi/flavors/catppuccin-latte.yazi;
-      catppuccin-mocha = ../../../.config/yazi/flavors/catppuccin-mocha.yazi;
+      catppuccin-latte = "${inputs.yazi-flavors}/catppuccin-latte.yazi";
+      catppuccin-mocha = "${inputs.yazi-flavors}/catppuccin-mocha.yazi";
     };
   };
   xdg.configFile."yazi/git-changes.sh".source = ../../../.config/yazi/git-changes.sh;

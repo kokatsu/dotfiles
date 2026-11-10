@@ -59,6 +59,15 @@
       flake = false;
     };
 
+    # yazi の Catppuccin flavor (nix/home/programs/yazi.nix が配置する)。
+    # catppuccin/nix の yazi port は theme.toml 形式で、dark/light の flavor を同時に指定できない
+    # 更新: nix flake update yazi-flavors
+    # https://github.com/yazi-rs/flavors
+    yazi-flavors = {
+      url = "github:yazi-rs/flavors";
+      flake = false;
+    };
+
     # UnoCSS LSP (上流の flake を使う)
     # https://github.com/xna00/unocss-language-server
     # nixpkgs.follows は付けない: package.nix が pnpm.fetchDeps の offline store を
