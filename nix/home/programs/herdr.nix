@@ -104,6 +104,10 @@ in {
           # 行を選り分けるラッパースクリプトは要らない。
           tab_bar_right = [
             { type = "command", command = "CC_STATUSLINE_SHOW_BLOCK=0 ${config.home.profileDirectory}/bin/cc-statusline", interval_seconds = 60, timeout_seconds = 1 },
+            # 右端の余白。herdr はパディング設定を持たないが、text エントリの
+            # 空白は command 出力と違って trim されない。手前に
+            # tab_bar_right_separator (デフォルト " ") も入るので、余白は 1 桁ぶん広がる
+            { type = "text", text = " " },
           ]
 
           [ui.sidebar.agents]
