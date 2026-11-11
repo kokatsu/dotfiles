@@ -7,6 +7,9 @@
         ++ [
           ./patches/herdr-prefix-bar.patch
           ./patches/herdr-heavy-focus-border.patch
+          # 上流の symbols は × などの小さな Unicode 記号で、PlemolJP では
+          # セル幅いっぱいの Nerd Font アイコンより明らかに小さく見分けにくい
+          ./patches/herdr-nerd-status-icons.patch
           # herdr-nvim のサイドバーを最初から目的の幅で開くため。
           # 上流の提案: https://github.com/herdrdev/herdr/discussions/3541
           ./patches/herdr-plugin-pane-ratio.patch

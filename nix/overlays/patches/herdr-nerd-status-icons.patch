@@ -1,0 +1,28 @@
+--- a/src/client/shell/settings_overlay.rs
++++ b/src/client/shell/settings_overlay.rs
+@@ -164,7 +164,7 @@
+                 content,
+                 "agent status indicators",
+                 "choose color dots or distinct symbols for each state",
+-                &["color dots  ● ● ● ○ ·", "distinct symbols  × ◐ ✓ ○ ·"],
++                &["color dots  ● ● ● ○ ·", "distinct symbols  \u{f071} \u{f110} \u{f058} \u{f10c} ·"],
+                 settings.selected,
+                 palette,
+                 &mut choice_hits,
+--- a/src/client/shell.rs
++++ b/src/client/shell.rs
+@@ -188,10 +188,10 @@
+         ) => "●",
+         (StatusIndicatorStyle::Dots, AgentStatus::Idle) => "○",
+         (StatusIndicatorStyle::Dots, AgentStatus::Unknown) => "·",
+-        (StatusIndicatorStyle::Symbols, AgentStatus::Blocked) => "×",
+-        (StatusIndicatorStyle::Symbols, AgentStatus::Working) => "◐",
+-        (StatusIndicatorStyle::Symbols, AgentStatus::Done) => "✓",
+-        (StatusIndicatorStyle::Symbols, AgentStatus::Idle) => "○",
++        (StatusIndicatorStyle::Symbols, AgentStatus::Blocked) => "\u{f071}",
++        (StatusIndicatorStyle::Symbols, AgentStatus::Working) => "\u{f110}",
++        (StatusIndicatorStyle::Symbols, AgentStatus::Done) => "\u{f058}",
++        (StatusIndicatorStyle::Symbols, AgentStatus::Idle) => "\u{f10c}",
+         (StatusIndicatorStyle::Symbols, AgentStatus::Unknown) => "·",
+     }
+ }
