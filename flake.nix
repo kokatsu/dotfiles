@@ -487,6 +487,7 @@
             # Cross-cutting
             editorconfig-checker # EditorConfig 準拠チェッカー
             gitleaks # Secret detection and configuration smoke test
+            vulnix # `just vulnix-scan` (CVE scan of the Home Manager profile)
             bundix # Ruby LSP Gemfile.lock / gemset.nix regeneration
             typos # タイポ検出
           ]
