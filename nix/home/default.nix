@@ -175,11 +175,13 @@ in {
         CODEX_HOME = "${config.xdg.configHome}/codex";
         TAPLO_CONFIG = "${config.xdg.configHome}/taplo/taplo.toml";
         NPM_CONFIG_USERCONFIG = "${config.xdg.configHome}/npm/npmrc";
+        NPM_CONFIG_GLOBALCONFIG = "${config.xdg.configHome}/npm/global-npmrc";
         WGETRC = "${config.xdg.configHome}/wget/wgetrc";
         BUN_INSTALL = "${config.xdg.dataHome}/bun";
         BUNDLE_USER_HOME = "${config.xdg.dataHome}/bundle";
         ZSH_EVALCACHE_DIR = "${config.xdg.cacheHome}/zsh-evalcache";
         MISE_ACTIVATE_SHIMS = "false";
+        MISE_MINIMUM_RELEASE_AGE = "7d";
         # less と node と python と sqlite3 は親ディレクトリを作らないので xdg.stateFile で用意する
         LESSHISTFILE = "${config.xdg.stateHome}/less/history";
         NODE_REPL_HISTORY = "${config.xdg.stateHome}/node/repl_history";
@@ -230,6 +232,7 @@ in {
     inherit
       (config.home.sessionVariables)
       NPM_CONFIG_USERCONFIG
+      NPM_CONFIG_GLOBALCONFIG
       WGETRC
       BUN_INSTALL
       BUNDLE_USER_HOME

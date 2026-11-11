@@ -184,6 +184,23 @@ in {
     "wget/wgetrc".text = ''
       hsts_file = ${config.xdg.stateHome}/wget/hsts
     '';
+    "npm/global-npmrc".text = ''
+      min-release-age=7
+      strict-allow-scripts=true
+    '';
+    "pnpm/config.yaml".text =
+      # yaml
+      ''
+        minimumReleaseAge: 10080
+        trustPolicy: no-downgrade
+        strictDepBuilds: true
+      '';
+    ".bunfig.toml".text =
+      # toml
+      ''
+        [install]
+        minimumReleaseAge = 604800
+      '';
   };
 
   # less と node と wget と python と sqlite3 は状態ファイルの親ディレクトリを作らず、
