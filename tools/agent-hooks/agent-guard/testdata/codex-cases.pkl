@@ -151,6 +151,11 @@ local cases: Listing<Case> = new {
   block(#"git show --output=x HEAD"#)
   allow(#"git diff --stat"#)
   allow(#"git log --oneline -- --output"#)
+
+  // Nix の外へのインストールは Codex でも止める
+  block(#"npm install -g foo"#)
+  block(#"pip install foo"#)
+  allow(#"npm install"#)
 }
 
 output {

@@ -2472,5 +2472,373 @@
   {
     "want": "block",
     "command": "bash < script.sh"
+  },
+  {
+    "want": "block",
+    "command": "npm install -g foo"
+  },
+  {
+    "want": "block",
+    "command": "npm i -g foo"
+  },
+  {
+    "want": "block",
+    "command": "npm install --global foo"
+  },
+  {
+    "want": "block",
+    "command": "npm --global install foo"
+  },
+  {
+    "want": "block",
+    "command": "npm install foo -g"
+  },
+  {
+    "want": "block",
+    "command": "npm add -g foo"
+  },
+  {
+    "want": "block",
+    "command": "npm install --location=global foo"
+  },
+  {
+    "want": "block",
+    "command": "npm install --location global foo"
+  },
+  {
+    "want": "block",
+    "command": "sudo /usr/bin/npm install -g foo"
+  },
+  {
+    "want": "block",
+    "command": "yarn global add foo"
+  },
+  {
+    "want": "block",
+    "command": "pnpm add -g foo"
+  },
+  {
+    "want": "block",
+    "command": "pnpm i --global foo"
+  },
+  {
+    "want": "block",
+    "command": "pip install foo"
+  },
+  {
+    "want": "block",
+    "command": "pip3 install foo"
+  },
+  {
+    "want": "block",
+    "command": "pip3.12 install -r requirements.txt"
+  },
+  {
+    "want": "block",
+    "command": "pip -q install foo"
+  },
+  {
+    "want": "block",
+    "command": "python -m pip install foo"
+  },
+  {
+    "want": "block",
+    "command": "python3 -I -m pip install foo"
+  },
+  {
+    "want": "block",
+    "command": "python3.12 -mpip install foo"
+  },
+  {
+    "want": "block",
+    "command": "uv pip install foo"
+  },
+  {
+    "want": "block",
+    "command": "pipx install foo"
+  },
+  {
+    "want": "block",
+    "command": "uv tool install foo"
+  },
+  {
+    "want": "block",
+    "command": "cargo install foo"
+  },
+  {
+    "want": "block",
+    "command": "cargo +nightly install foo"
+  },
+  {
+    "want": "block",
+    "command": "go install example.com/foo@latest"
+  },
+  {
+    "want": "block",
+    "command": "gem install foo"
+  },
+  {
+    "want": "block",
+    "command": "nix profile install nixpkgs#foo"
+  },
+  {
+    "want": "block",
+    "command": "nix profile add nixpkgs#foo"
+  },
+  {
+    "want": "block",
+    "command": "nix --extra-experimental-features 'nix-command flakes' profile add nixpkgs#foo"
+  },
+  {
+    "want": "block",
+    "command": "nix-env -i foo"
+  },
+  {
+    "want": "block",
+    "command": "nix-env -iA nixpkgs.foo"
+  },
+  {
+    "want": "block",
+    "command": "nix-env --install foo"
+  },
+  {
+    "want": "block",
+    "command": "nix-env -f '<nixpkgs>' -iA foo"
+  },
+  {
+    "want": "block",
+    "command": "cd x && sh -c 'pip install foo'"
+  },
+  {
+    "want": "allow",
+    "command": "npm install"
+  },
+  {
+    "want": "allow",
+    "command": "npm i foo"
+  },
+  {
+    "want": "allow",
+    "command": "npm ci"
+  },
+  {
+    "want": "allow",
+    "command": "npm ls -g"
+  },
+  {
+    "want": "allow",
+    "command": "npm uninstall -g foo"
+  },
+  {
+    "want": "allow",
+    "command": "npm run install -- -g"
+  },
+  {
+    "want": "allow",
+    "command": "yarn add foo"
+  },
+  {
+    "want": "allow",
+    "command": "yarn global list"
+  },
+  {
+    "want": "allow",
+    "command": "pnpm add foo"
+  },
+  {
+    "want": "allow",
+    "command": "pip list"
+  },
+  {
+    "want": "allow",
+    "command": "pip uninstall foo"
+  },
+  {
+    "want": "allow",
+    "command": "python -m venv .venv"
+  },
+  {
+    "want": "allow",
+    "command": "python -c 'print(1)' install"
+  },
+  {
+    "want": "allow",
+    "command": "uv add foo"
+  },
+  {
+    "want": "allow",
+    "command": "uv sync"
+  },
+  {
+    "want": "allow",
+    "command": "uv tool list"
+  },
+  {
+    "want": "allow",
+    "command": "uvx foo"
+  },
+  {
+    "want": "allow",
+    "command": "pipx list"
+  },
+  {
+    "want": "allow",
+    "command": "cargo add foo"
+  },
+  {
+    "want": "allow",
+    "command": "cargo test install"
+  },
+  {
+    "want": "allow",
+    "command": "cargo run -- install"
+  },
+  {
+    "want": "allow",
+    "command": "go build ./..."
+  },
+  {
+    "want": "allow",
+    "command": "go run ./cmd/install"
+  },
+  {
+    "want": "allow",
+    "command": "gem list"
+  },
+  {
+    "want": "allow",
+    "command": "nix profile list"
+  },
+  {
+    "want": "allow",
+    "command": "nix profile remove foo"
+  },
+  {
+    "want": "allow",
+    "command": "nix profile upgrade foo"
+  },
+  {
+    "want": "allow",
+    "command": "nix shell nixpkgs#foo"
+  },
+  {
+    "want": "allow",
+    "command": "nix run nixpkgs#foo"
+  },
+  {
+    "want": "allow",
+    "command": "nix-env -q"
+  },
+  {
+    "want": "allow",
+    "command": "nix-env -q --installed"
+  },
+  {
+    "want": "allow",
+    "command": "nix-env -e foo"
+  },
+  {
+    "want": "allow",
+    "command": "nix-env -I nixpkgs=x -q"
+  },
+  {
+    "want": "allow",
+    "command": "git commit -m 'pip install のメモ'"
+  },
+  {
+    "want": "allow",
+    "command": "echo \"npm install -g foo\""
+  },
+  {
+    "want": "block",
+    "command": "npm --location global install foo"
+  },
+  {
+    "want": "block",
+    "command": "npm $OPTS install -g foo"
+  },
+  {
+    "want": "block",
+    "command": "cargo $FLAGS install foo"
+  },
+  {
+    "want": "block",
+    "command": "cargo --config x install foo"
+  },
+  {
+    "want": "block",
+    "command": "go -C dir install example.com/foo@latest"
+  },
+  {
+    "want": "block",
+    "command": "gem i foo"
+  },
+  {
+    "want": "allow",
+    "command": "gem info foo"
+  },
+  {
+    "want": "allow",
+    "command": "npm ls -g install"
+  },
+  {
+    "want": "allow",
+    "command": "npm run install -g"
+  },
+  {
+    "want": "allow",
+    "command": "pip show install"
+  },
+  {
+    "want": "allow",
+    "command": "pipx list install"
+  },
+  {
+    "want": "allow",
+    "command": "npm install --global=false foo"
+  },
+  {
+    "want": "allow",
+    "command": "npm install --no-global foo"
+  },
+  {
+    "want": "allow",
+    "command": "npm install -g --global=false foo"
+  },
+  {
+    "want": "block",
+    "command": "npm install --global=false -g foo"
+  },
+  {
+    "want": "block",
+    "command": "npm install --global=true foo"
+  },
+  {
+    "want": "block",
+    "command": "pip --proxy http://x install foo"
+  },
+  {
+    "want": "block",
+    "command": "pip --python .venv/bin/python install foo"
+  },
+  {
+    "want": "allow",
+    "command": "python -m pip show install"
+  },
+  {
+    "want": "block",
+    "command": "npm install -g --location=project foo"
+  },
+  {
+    "want": "block",
+    "command": "npm install --location=user -g foo"
+  },
+  {
+    "want": "block",
+    "command": "npm install --global=false --location=global foo"
+  },
+  {
+    "want": "allow",
+    "command": "npm install --location=global --location=project foo"
   }
 ]

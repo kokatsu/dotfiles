@@ -465,5 +465,17 @@
   {
     "want": "allow",
     "command": "git log --oneline -- --output"
+  },
+  {
+    "want": "block",
+    "command": "npm install -g foo"
+  },
+  {
+    "want": "block",
+    "command": "pip install foo"
+  },
+  {
+    "want": "allow",
+    "command": "npm install"
   }
 ]

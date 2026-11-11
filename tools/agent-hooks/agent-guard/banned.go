@@ -42,6 +42,7 @@ var verdictMessages = map[verdict]string{
 	"SHELL_UNCHECKED":  "Refuse a shell whose script cannot be checked: read from a pipe or a file redirect, or built from a command or process substitution. Run the commands directly, pass them in a quoted heredoc, or run a script file by path.",
 	"SHELL_C_UNPARSED": "Refuse sh -c with a command string that does not parse as shell: it cannot be checked, and the shell runs the lines before the error. Run the commands directly instead.",
 	"GLOB_EXEC":        "Refuse zsh glob qualifiers that run code (e:...: or +cmd). List the files first, then run the command on them directly.",
+	"GLOBAL_INSTALL":   "Refuse installing tools outside Nix (npm -g, pip, pipx, uv tool, cargo/go/gem install, nix profile add, nix-env -i). Add the package to home.packages in nix/home/packages.nix of the dotfiles flake and run `home-manager switch`, or use `nix shell nixpkgs#foo` / `nix run` for a one-off. For a project's virtualenv, ask the user to run the install.",
 	"RG_STDIN":         "rg without a path searches stdin when stdin is readable; in a non-interactive tool call stdin can be a socket that never closes, so rg hangs. Name the directories to search, or add `< /dev/null` to search the current directory.",
 }
 
@@ -851,8 +852,121 @@ func singleVerdict(cmd string, rest []string) verdict {
 		return gitVerdict(rest)
 	case runsNpmBiome(cmd, rest):
 		return "NPM_BIOME"
+	case installsOutsideNix(cmd, rest):
+		return "GLOBAL_INSTALL"
 	}
 	return ""
+}
+
+// --- Nix の外へのインストール ---------------------------------------------
+
+// ツールは Home Manager の宣言で入れる。プロジェクトの中に入れるもの
+// (npm install、cargo add、uv add) は通す。
+
+var (
+	pipName    = regexp.MustCompile(`^pip[0-9.]*$`)
+	pythonName = regexp.MustCompile(`^python[0-9.]*$`)
+	// npm help install の aliases のうち、綴り違いを受け付ける isnt* を除いたもの。
+	npmInstallAliases = []string{"install", "add", "i", "in", "ins", "inst", "insta", "instal"}
+	// 別の語で値を取るグローバルオプション。
+	// npm は任意の config を "--key value" で受け取るので数え上げきれない。ここに無い
+	// ものがサブコマンドの前にあると通る。
+	operandValueOpts = map[string][]string{
+		"npm":   {"--location", "--prefix", "--userconfig", "--registry", "--loglevel", "--workspace", "-w"},
+		"pnpm":  {"-C", "--dir", "--filter", "-F"},
+		"pip":   {"--python", "--log", "--keyring-provider", "--proxy", "--retries", "--timeout", "--exists-action", "--trusted-host", "--cert", "--client-cert", "--cache-dir", "--use-feature", "--use-deprecated"},
+		"cargo": {"--config", "-Z", "--color", "-C"},
+		"go":    {"-C"},
+	}
+)
+
+// cargo test install のように、サブコマンドより後ろの語は名前でもフィルタでもあり得る
+// ので、サブコマンドの位置だけを見る。展開は空文字列として届き、分割されて消えることも
+// あるので、サブコマンドとは読まない。
+func firstOperand(cmd string, args []string) string {
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case slices.Contains(operandValueOpts[cmd], a):
+			i++
+		case a == "" || strings.HasPrefix(a, "-") || strings.HasPrefix(a, "+"):
+		default:
+			return a
+		}
+	}
+	return ""
+}
+
+func hasPair(args []string, a string, b ...string) bool {
+	for i := 0; i+1 < len(args); i++ {
+		if args[i] == a && slices.Contains(b, args[i+1]) {
+			return true
+		}
+	}
+	return false
+}
+
+// npm は global と location をそれぞれ後勝ちで読み、global || location === "global"
+// で global モードになる (@npmcli/config の definitions.js の flatten)。
+func npmGlobal(args []string) bool {
+	global, location := false, ""
+	for i, a := range args {
+		switch {
+		case a == "-g" || a == "--global" || a == "--global=true":
+			global = true
+		case a == "--global=false" || a == "--no-global":
+			global = false
+		case strings.HasPrefix(a, "--location="):
+			location = a[len("--location="):]
+		case a == "--location" && i+1 < len(args):
+			location = args[i+1]
+		}
+	}
+	return global || location == "global"
+}
+
+func installsOutsideNix(cmd string, rest []string) bool {
+	args := optsBeforeDdash(rest)
+	switch {
+	case cmd == "npm":
+		return slices.Contains(npmInstallAliases, firstOperand(cmd, args)) && npmGlobal(args)
+	case cmd == "pnpm":
+		return slices.Contains([]string{"add", "install", "i"}, firstOperand(cmd, args)) && npmGlobal(args)
+	case cmd == "yarn":
+		return hasPair(args, "global", "add")
+	case pipName.MatchString(cmd):
+		return firstOperand("pip", args) == "install"
+	case cmd == "pipx":
+		return firstOperand(cmd, args) == "install"
+	case pythonName.MatchString(cmd):
+		// -m の後ろはモジュールの引数で、-c の後ろはスクリプトの引数。
+		for i, a := range args {
+			switch {
+			case a == "-c":
+				return false
+			case a == "-m" && i+1 < len(args) && pipName.MatchString(args[i+1]):
+				return firstOperand("pip", args[i+2:]) == "install"
+			case strings.HasPrefix(a, "-m") && pipName.MatchString(a[2:]):
+				return firstOperand("pip", args[i+1:]) == "install"
+			}
+		}
+		return false
+	case cmd == "uv":
+		return hasPair(args, "pip", "install") || hasPair(args, "tool", "install")
+	case cmd == "cargo" || cmd == "go":
+		return firstOperand(cmd, args) == "install"
+	case cmd == "gem":
+		// gem は曖昧でない限りコマンドの省略を受け付け、gem i は install になる。
+		return isAbbrevOf(firstOperand(cmd, args), "install", 1)
+	case cmd == "nix":
+		return hasPair(args, "profile", "install", "add")
+	case cmd == "nix-env":
+		// 操作は先頭の文字で決まる (-iA は --install --attr)。-I は include path。
+		return slices.ContainsFunc(args, func(a string) bool {
+			return a == "--install" || len(a) > 1 && a[0] == '-' && a[1] == 'i'
+		})
+	}
+	return false
 }
 
 // --- AST 全体の走査 -------------------------------------------------------
