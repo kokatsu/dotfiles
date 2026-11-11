@@ -1,0 +1,95 @@
+# 名前だけ一致する別製品: バージョンを問わず誤検知
+["git"]
+cve = [
+  "CVE-2021-21684",
+  "CVE-2022-30947",
+  "CVE-2022-36882",
+  "CVE-2022-36883",
+  "CVE-2022-36884",
+  "CVE-2022-38663",
+]
+comment = "Jenkins Git Plugin"
+
+["codex"]
+cve = ["CVE-2021-43635"]
+comment = "Codex notebook app, not OpenAI Codex"
+
+["shellcheck"]
+cve = ["CVE-2021-28794"]
+comment = "unofficial VS Code extension"
+
+["ruby"]
+cve = ["CVE-2026-97229"]
+comment = "GitLab"
+
+["snappy"]
+cve = ["CVE-2023-28115", "CVE-2023-41330"]
+comment = "knplabs/snappy PHP library"
+
+["orc"]
+cve = ["CVE-2025-47436"]
+comment = "Apache ORC, not GStreamer orc"
+
+["ada"]
+cve = ["CVE-2024-9410"]
+comment = "Ada.cx, not the ada URL parser"
+
+["go"]
+cve = ["CVE-2023-49292"]
+comment = "ecies Go library"
+
+["zlib"]
+cve = ["CVE-2026-27820", "CVE-2023-6992"]
+comment = "Ruby zlib gem / Cloudflare fork"
+
+["avahi"]
+cve = ["CVE-2021-26720"]
+comment = "Debian packaging script"
+
+["gcc"]
+cve = ["CVE-2023-4039"]
+comment = "disputed, AArch64 only"
+
+# 修正済みの版: バージョンを固定し、更新後は再確認させる
+["libssh2-1.11.1"]
+cve = [
+  "CVE-2025-15661",
+  "CVE-2026-55199",
+  "CVE-2026-55200",
+  "CVE-2026-58050",
+  "CVE-2026-58051",
+  "CVE-2026-66032",
+  "CVE-2026-66033",
+  "CVE-2026-66034",
+  "CVE-2026-66035",
+  "CVE-2026-7598",
+]
+comment = "patched in nixpkgs"
+
+["unzip-6.0"]
+cve = ["CVE-2021-4217", "CVE-2022-0529", "CVE-2022-0530"]
+comment = "patched in nixpkgs"
+
+["perl-5.42.3"]
+cve = ["CVE-2026-13221", "CVE-2026-57432", "CVE-2026-8376"]
+comment = "fixed in 5.42.3-RC1"
+
+["jq-1.8.2"]
+cve = ["CVE-2026-44777"]
+comment = "affects 1.8.2rc1 and earlier"
+
+["glibc-2.44-57"]
+cve = ["CVE-2026-6238"]
+comment = "affects up to 2.43"
+
+["cups-2.4.19"]
+cve = ["CVE-2022-26691"]
+comment = "fixed in 2.4.2"
+
+["ffmpeg-9.0.2"]
+cve = ["CVE-2025-25468", "CVE-2025-25469"]
+comment = "2025 git-master leaks, predate 9.0.2"
+
+["lapack-3"]
+cve = ["CVE-2021-4048"]
+comment = "3 is the wrapper version; fixed in 3.10.1"

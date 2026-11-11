@@ -233,7 +233,7 @@ gitleaks-scan:
 # Scan the Home Manager profile for known CVEs. Kept out of check because hits need triage.
 # -C limits the scan to runtime dependencies; build-only ones are not installed yet dominate the hits.
 vulnix-scan *args:
-    vulnix -C {{ args }} "${XDG_STATE_HOME:-$HOME/.local/state}/nix/profiles/home-manager"
+    vulnix -C -w .vulnix-whitelist.toml {{ args }} "${XDG_STATE_HOME:-$HOME/.local/state}/nix/profiles/home-manager"
 
 # Format YAML files
 yaml-fmt:
