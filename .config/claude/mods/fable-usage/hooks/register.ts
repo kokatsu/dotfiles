@@ -93,7 +93,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 const formatLine = (r: Reading, nowMs: number, offsetMs: number) => {
   const usage = r.percent < 50 ? GREEN : r.percent < 80 ? YELLOW : RED;
-  let line = `🦋 ${usage}${r.percent}%${RESET}`;
+  let line = `🦋 ${DIM}Fable${RESET} ${usage}${r.percent}%${RESET}`;
   if (r.resetsAtMs !== undefined) {
     const remaining = r.resetsAtMs - nowMs;
     const time = remaining < 30 * 60000
