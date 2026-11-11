@@ -10,6 +10,6 @@
   ccStatusline = import ./cc-statusline.nix {inherit inputs;};
   agentHooks = import ./agent-hooks.nix;
   herdr = import ./herdr.nix {inherit inputs;};
-  unocssLanguageServer = import ./unocss-language-server.nix {inherit inputs;};
+  # unocssLanguageServer = import ./unocss-language-server.nix {inherit inputs;};
 in
-  binaryReleases // npmPackages // buildFixes // sourceBuilds // neovimPlugins // zeno // karabinerConfig // rubyLsp // ccStatusline // agentHooks // herdr // unocssLanguageServer
+  binaryReleases // npmPackages // buildFixes // sourceBuilds // neovimPlugins // zeno // karabinerConfig // rubyLsp // ccStatusline // agentHooks // herdr

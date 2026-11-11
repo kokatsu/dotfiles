@@ -65,8 +65,6 @@ in {
       agent-browser # ブラウザ自動化エージェント
       # https://github.com/crocidb/bulletty
       bulletty # TUI RSS/Atom フィードリーダー
-      # https://github.com/contentauth/c2pa-rs
-      c2patool # C2PA マニフェストの表示・署名・検証 CLI
       # https://github.com/carapace-sh/carapace-bin
       carapace # マルチシェル補完エンジン (carapace-bin)
       # https://github.com/hpjansson/chafa
@@ -133,8 +131,6 @@ in {
       #####################################
       # メディア/画像処理
       #####################################
-      # https://github.com/nicholasHuang/bento4
-      bento4 # MP4 解析/操作ツールキット (mp4dump, mp4info 等)
       # https://github.com/FFmpeg/FFmpeg
       ffmpeg # メディア処理ツールキット
       # https://exiftool.org/
@@ -287,8 +283,6 @@ in {
       #--- Language Servers (overlay) ---#
       # https://github.com/antonk52/cssmodules-language-server
       cssmodules-language-server # CSS Modules LSP
-      # https://github.com/xna00/unocss-language-server
-      unocss-language-server # UnoCSS LSP
 
       #--- X API v2 シミュレーター (overlay) ---#
       # https://github.com/xdevplatform/playground
@@ -432,4 +426,10 @@ in {
   # jp2a # JPG→ASCII変換
   # https://github.com/eddieantonio/imgcat
   # imgcat # 画像表示
+  # https://github.com/contentauth/c2pa-rs
+  # c2patool # C2PA マニフェストの表示・署名・検証 CLI
+  # https://github.com/nicholasHuang/bento4
+  # bento4 # MP4 解析/操作ツールキット (mp4dump, mp4info 等)
+  # https://github.com/xna00/unocss-language-server
+  # unocss-language-server # UnoCSS LSP (flake.nix の input と overlay も併せて戻す)
 }

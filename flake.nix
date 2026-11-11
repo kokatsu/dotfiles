@@ -68,15 +68,15 @@
       flake = false;
     };
 
-    # UnoCSS LSP (上流の flake を使う)
-    # https://github.com/xna00/unocss-language-server
-    # nixpkgs.follows は付けない: package.nix が pnpm.fetchDeps の offline store を
-    # 上流 pin の pnpm バージョンに密結合しており、別 nixpkgs だと
-    # ERR_PNPM_NO_OFFLINE_TARBALL でビルドが壊れるため。
-    # Renovate: datasource=github-releases depName=xna00/unocss-language-server
-    unocss-language-server = {
-      url = "github:xna00/unocss-language-server/v0.1.9";
-    };
+    # # UnoCSS LSP (上流の flake を使う)
+    # # https://github.com/xna00/unocss-language-server
+    # # nixpkgs.follows は付けない: package.nix が pnpm.fetchDeps の offline store を
+    # # 上流 pin の pnpm バージョンに密結合しており、別 nixpkgs だと
+    # # ERR_PNPM_NO_OFFLINE_TARBALL でビルドが壊れるため。
+    # # Renovate: datasource=github-releases depName=xna00/unocss-language-server
+    # unocss-language-server = {
+    #   url = "github:xna00/unocss-language-server/v0.1.9";
+    # };
 
     # Helix (25.07.1 以降リリースが無く、master をそのまま使う)
     # https://github.com/helix-editor/helix
@@ -250,7 +250,7 @@
       customOverlays.textlint-rule-preset-ai-writing
       customOverlays.textlint-with-rules
       customOverlays.treesitter-nvim
-      customOverlays.unocss-language-server
+      # customOverlays.unocss-language-server
       customOverlays.upmd
       customOverlays.vite-plus
       customOverlays.vue-language-server-pin

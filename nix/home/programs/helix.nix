@@ -18,7 +18,7 @@
     "biome-lsp-proxy"
     "cssmodules"
     "tailwindcss-ls"
-    "unocss"
+    # "unocss"
   ];
   clipboardCommand =
     if pkgs.stdenv.hostPlatform.isDarwin
@@ -224,15 +224,15 @@ in {
     # 既定との主な差分:
     #   - TypeScript 系は typescript-language-server ではなく vtsls (PATH にあるのは vtsls だけ)
     #   - nix は nil を外して nixd のみ、toml は tombi を外して taplo のみ
-    #   - tailwindcss / unocss / cssmodules を Web 系の言語に追加
+    #   - tailwindcss / cssmodules を Web 系の言語に追加
     languages = {
       language-server = {
         cssmodules.command = "cssmodules-language-server";
 
-        unocss = {
-          command = "unocss-language-server";
-          args = ["--stdio"];
-        };
+        # unocss = {
+        #   command = "unocss-language-server";
+        #   args = ["--stdio"];
+        # };
 
         # biome / eslint はプロジェクトに設定ファイルがあるときだけ起動させる
         # (Neovim 側は root_markers / root_dir で同じ制御をしている)。
@@ -265,20 +265,20 @@ in {
               "vscode-eslint-language-server"
               "biome-lsp-proxy"
               "tailwindcss-ls"
-              "unocss"
+              # "unocss"
             ];
           }
           {
             name = "css";
-            language-servers = ["vscode-css-language-server" "tailwindcss-ls" "unocss"];
+            language-servers = ["vscode-css-language-server" "tailwindcss-ls"];
           }
           {
             name = "scss";
-            language-servers = ["vscode-css-language-server" "tailwindcss-ls" "unocss"];
+            language-servers = ["vscode-css-language-server" "tailwindcss-ls"];
           }
           {
             name = "html";
-            language-servers = ["vscode-html-language-server" "tailwindcss-ls" "unocss"];
+            language-servers = ["vscode-html-language-server" "tailwindcss-ls"];
           }
           {
             name = "json";
