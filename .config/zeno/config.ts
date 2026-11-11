@@ -83,7 +83,7 @@ export default defineConfig(({ env }) => {
       name: "devcontainer up (rebuild)",
       keyword: "dcur",
       snippet:
-        "devcontainer up --workspace-folder . --remove-existing-container --build-no-cache",
+        "devcontainer up --workspace-folder . --remove-existing-container --build-no-cache && docker image prune -f --filter label=devcontainer.metadata",
     },
     {
       name: "devcontainer exec",
