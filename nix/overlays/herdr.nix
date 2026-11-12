@@ -79,6 +79,9 @@
         ./patches/herdr-nvim-sidebar-width.patch
       ];
 
+      nativeBuildInputs = [prev.pkg-config];
+      buildInputs = [prev.libgit2];
+
       nativeCheckInputs = [prev.git];
       # ソースを git チェックアウトとして git ls-files で索引するテスト。
       # flake input のソースには .git がないので通らない

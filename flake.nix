@@ -221,6 +221,7 @@
           # Pkl の format と eval の結果を Home Manager の pkl と揃える
           customOverlays.pkl
           customOverlays.claude-code
+          customOverlays.jactionlint-skip-runner-label-goldens
         ];
       });
 
@@ -235,9 +236,11 @@
       customOverlays.cssmodules-language-server
       customOverlays.dcd
       customOverlays.deck-slides
+      customOverlays.fff-nvim-libgit2
       customOverlays.git-graph-fork
       customOverlays.herdr
       customOverlays.herdr-nvim
+      customOverlays.jactionlint-skip-runner-label-goldens
       customOverlays.kakehashi
       customOverlays.karabiner-config
       customOverlays.lazy-nvim
