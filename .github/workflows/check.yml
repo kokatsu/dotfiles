@@ -6,7 +6,7 @@ on:
   workflow_call:
     inputs:
       ref:
-        description: 'Git ref to checkout (defaults to event ref)'
+        description: "Git ref to checkout (defaults to event ref)"
         required: false
         type: string
     secrets:

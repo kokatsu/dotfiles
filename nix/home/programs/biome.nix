@@ -19,6 +19,12 @@
         quoteStyle = "single";
       };
     };
+    # frontmatter を Markdown として整形し、SKILL.md や rules/*.md の YAML を壊す
+    markdown = {
+      formatter = {
+        enabled = false;
+      };
+    };
   };
   configFile = (pkgs.formats.json {}).generate "biome-config.json" settings;
   # 適用前や CI でも使うリポジトリ設定は自己完結させ、共通項目の一致を評価時に検証する。
