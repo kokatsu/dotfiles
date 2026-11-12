@@ -46,7 +46,7 @@
     # Cargo.lock を cargoLock.lockFile で直接読むため、更新時に hash の書き換えは要らない
     # Renovate: datasource=github-releases depName=ChmaraX/herdr-nvim
     herdr-nvim-src = {
-      url = "github:ChmaraX/herdr-nvim/v1.2.2";
+      url = "github:ChmaraX/herdr-nvim/v1.2.3";
       flake = false;
     };
 
