@@ -9,18 +9,36 @@
   stateDir = "${config.home.homeDirectory}/.local/state/claude-otel";
   port = 4318;
 
-  # 127.0.0.1:port で OTLP/HTTP JSON を受け、api_request の 5 項目だけを追記する。
-  # user.email などほかの属性とイベントは保存しない
+  # 127.0.0.1:port で OTLP/HTTP JSON を受け、下の keep に挙げたイベントと属性だけを
+  # <event>.jsonl に追記する。user.email やツールの入力などほかの属性とイベントは保存しない
   receiver = pkgs.writeText "claude-otel-recv.py" ''
     import http.server, json, os, sys
 
     os.umask(0o077)
     out = sys.argv[1]
-    os.makedirs(os.path.dirname(out), exist_ok=True)
+    os.makedirs(out, exist_ok=True)
     # launchd が StandardErrorPath のために先に既定の権限で作ることがある
-    os.chmod(os.path.dirname(out), 0o700)
-    keep = ("event.timestamp", "session.id", "query_source", "model", "cost_usd")
+    os.chmod(out, 0o700)
+    common = ("event.timestamp", "session.id", "prompt.id", "deployment.environment",
+              "query_source", "model", "effort", "duration_ms")
+    keep = {
+        "api_request": common + (
+            "cost_usd", "input_tokens", "output_tokens", "cache_read_tokens",
+            "cache_creation_tokens", "cache_creation_5m_tokens", "cache_creation_1h_tokens",
+            "ttft_ms", "speed", "agent.name", "skill.name", "plugin.name", "mcp_server.name"),
+        "api_error": common + ("status_code", "error", "attempt"),
+        "api_retries_exhausted": common + (
+            "status_code", "error", "total_attempts", "total_retry_duration_ms"),
+    }
     max_body = 16 * 1024 * 1024
+
+    # OTLP/JSON は int64 の intValue を文字列で送る
+    def value(v):
+        kind, x = next(iter(v.items()), (None, None))
+        return int(x) if kind == "intValue" else x
+
+    def attrs(o):
+        return {x["key"]: value(x["value"]) for x in o.get("attributes", [])}
 
     class H(http.server.BaseHTTPRequestHandler):
         # 止まった接続をこの秒数で打ち切り、stderr に "Request timed out" を残す
@@ -31,16 +49,25 @@
             if n > max_body:
                 self.send_error(413)
                 return
+            lines = {}
             try:
-                recs = [r for rl in json.loads(self.rfile.read(n)).get("resourceLogs", [])
-                        for sl in rl.get("scopeLogs", []) for r in sl.get("logRecords", [])]
-            except ValueError:
-                recs = []
-            with open(out, "a") as f:
-                for r in recs:
-                    a = {x["key"]: next(iter(x["value"].values()), None) for x in r.get("attributes", [])}
-                    if a.get("event.name") == "api_request":
-                        f.write(json.dumps({k: a.get(k) for k in keep}) + "\n")
+                for rl in json.loads(self.rfile.read(n)).get("resourceLogs", []):
+                    res = attrs(rl.get("resource", {}))
+                    for sl in rl.get("scopeLogs", []):
+                        for r in sl.get("logRecords", []):
+                            a = {**res, **attrs(r)}
+                            ks = keep.get(a.get("event.name"))
+                            if ks:
+                                lines.setdefault(a["event.name"], []).append(
+                                    json.dumps({k: a[k] for k in ks if k in a}) + "\n")
+            except (ValueError, KeyError, TypeError, AttributeError):
+                lines = {}
+            for name, ls in lines.items():
+                with open(os.path.join(out, name + ".jsonl"), "a") as f:
+                    f.writelines(ls)
+                    f.flush()
+                    # WSL の VM が落ちると書きかけのページが NUL で埋まる
+                    os.fsync(f.fileno())
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
@@ -52,7 +79,7 @@
 
     http.server.HTTPServer(("127.0.0.1", ${toString port}), H).serve_forever()
   '';
-  cmd = ["${pkgs.python3}/bin/python3" "${receiver}" "${stateDir}/api_request.jsonl"];
+  cmd = ["${pkgs.python3}/bin/python3" "${receiver}" stateDir];
 in
   lib.mkMerge [
     {
@@ -79,7 +106,7 @@ in
     })
     (lib.mkIf isWSL {
       systemd.user.services.claude-otel = {
-        Unit.Description = "Receive Claude Code OTel api_request logs";
+        Unit.Description = "Receive Claude Code OTel API logs";
         Service = {
           ExecStart = lib.escapeShellArgs cmd;
           Restart = "always";
