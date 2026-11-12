@@ -84,8 +84,15 @@
 
       nativeCheckInputs = [prev.git];
       # ソースを git チェックアウトとして git ls-files で索引するテスト。
-      # flake input のソースには .git がないので通らない
-      checkFlags = ["--skip=picker::tests::fff_end_to_end_over_this_repo"];
+      # flake input のソースには .git がないので通らない。
+      # 残りは実物の nvim と ps (プロセステーブルの取得) に依存し、sandbox では動かない。
+      # nixpkgs の darwin 版 ps は rss の取得に entitlement が要り、足しても通らない
+      checkFlags = [
+        "--skip=picker::tests::fff_end_to_end_over_this_repo"
+        "--skip=daemon::registry::tests::gc_removes_orphan_entries_and_keeps_known_tabs"
+        "--skip=nothing_is_forgotten_while_the_process_table_cannot_be_read"
+        "--skip=on_event_exits_cleanly_for_missing_malformed_and_irrelevant_events"
+      ];
 
       # doc/ は fixup が share/doc へ移して runtimepath から外れるので入れない
       postInstall = ''
