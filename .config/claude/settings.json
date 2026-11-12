@@ -169,6 +169,7 @@
   },
   "language": "japanese",
   "feedbackDrafts": "off",
+  "awaySummaryEnabled": false,
   "alwaysThinkingEnabled": true,
   "modelSettings": {
     "claude-opus-5": {
