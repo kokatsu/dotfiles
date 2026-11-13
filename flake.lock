@@ -94,16 +94,16 @@
     "herdr-nvim-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1793908168,
-        "narHash": "sha256-1uxQCC1r4YCNx9fltc9YBogPMdnEKJCQdldlQ/ynVqA=",
+        "lastModified": 1793981232,
+        "narHash": "sha256-/026mNSbhZIAMJeNdSsbi9vhUuQEfdjqI99QzKAHW6w=",
         "owner": "ChmaraX",
         "repo": "herdr-nvim",
-        "rev": "397e929855fdbd8b1c427e7a358d0ac2504f951a",
+        "rev": "88a68c77fe82476bdfcba39d36c3fa37109f35a8",
         "type": "github"
       },
       "original": {
         "owner": "ChmaraX",
-        "ref": "v1.2.3",
+        "ref": "v1.3.1",
         "repo": "herdr-nvim",
         "type": "github"
       }
