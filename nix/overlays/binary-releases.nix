@@ -63,14 +63,14 @@ in {
   # Renovate: datasource=github-releases depName=openai/codex
   codex = mkBinaryRelease rec {
     pname = "codex";
-    version = "0.167.2";
+    version = "0.168.0";
     # hash は release の codex-package_SHA256SUMS (publisher 公開 checksum) から取得する
     # ため artifact 自体の prefetch を省き、scripts/update-hashes.ts が変換する。
     hashSource = "sha256sums";
     hashes = {
-      "aarch64-darwin" = "sha256-55EpBlG85Bk4+xYLXeK9n/i880Aco+I2xz9IX8pL4bs=";
-      "aarch64-linux" = "sha256-VrCMEhTgYqW2FoS6y1AzxDcqAQYqR8h8SaMr6Dr3BpU=";
-      "x86_64-linux" = "sha256-PXe+F0jTWkuw5/h1LN47EYkMYzOOjFmfAer6Slnhez0=";
+      "aarch64-darwin" = "sha256-J5VpS7W4kjTj2g3QwsnnpxdkUhCAyu0XvxLB4EWAWMo=";
+      "aarch64-linux" = "sha256-En1ZkPW0i7Mnz0ihvR0J1lt6YmGGFYYIGJs36EhG3Qc=";
+      "x86_64-linux" = "sha256-Osv/kcCo4wdn1HyLaUEnmmA6tAhygKo+VGU3zvNiLLg=";
     };
     platformMap = {
       "aarch64-darwin" = "aarch64-apple-darwin";
