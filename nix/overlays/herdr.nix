@@ -92,6 +92,7 @@
         "--skip=daemon::registry::tests::gc_removes_orphan_entries_and_keeps_known_tabs"
         "--skip=nothing_is_forgotten_while_the_process_table_cannot_be_read"
         "--skip=on_event_exits_cleanly_for_missing_malformed_and_irrelevant_events"
+        "--skip=daemon::tests::a_missing_nvim_names_the_nvim_bin_setting"
       ];
 
       # doc/ は fixup が share/doc へ移して runtimepath から外れるので入れない
