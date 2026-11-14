@@ -1,13 +1,13 @@
-diff --git i/src/bridge.rs w/src/bridge.rs
-index 98840b1..b15b0b7 100644
---- i/src/bridge.rs
-+++ w/src/bridge.rs
-@@ -349,7 +349,7 @@ fn open_in_nvim(
- /// already loaded in the daemon regardless, so a focus failure is non-fatal.
- fn focus_pane(pane: &str) {
-     let result = Command::new("herdr")
--        .args(["agent", "focus", pane])
-+        .args(["plugin", "pane", "focus", pane])
-         .status();
-     match result {
-         Ok(status) if status.success() => {}
+diff --git i/src/host.rs w/src/host.rs
+index 26afcce..5a19307 100644
+--- i/src/host.rs
++++ w/src/host.rs
+@@ -142,7 +142,7 @@ impl HostOps for Tui {
+ 
+     fn focus(&self, pane: &str) {
+         let result = Command::new("herdr")
+-            .args(["agent", "focus", pane])
++            .args(["plugin", "pane", "focus", pane])
+             .status();
+         match result {
+             Ok(status) if status.success() => {}
