@@ -24,6 +24,10 @@
 !nvim/
 !nvim/**
 
+# Pi (https://github.com/earendil-works/pi)
+!pi/
+!pi/**
+
 # WezTerm (https://github.com/wezterm/wezterm)
 !wezterm/
 !wezterm/**

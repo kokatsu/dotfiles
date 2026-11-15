@@ -30,6 +30,7 @@
       "!.config/claude/settings.json",
       "!.config/claude/mods/**/*.ts",
       "!.config/claude/mods/**/*.tsx",
+      "!.config/pi/extensions/*.ts",
       "!.config/nvim/lazy-lock.json"
     ]
   },

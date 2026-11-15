@@ -60,6 +60,7 @@ in {
     ./programs/neovim.nix
     ./programs/nix-index.nix
     ./programs/ov.nix
+    ./programs/pi.nix
     ./programs/psql.nix
     ./programs/readline.nix
     ./programs/ripgrep.nix
