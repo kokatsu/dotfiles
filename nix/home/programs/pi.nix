@@ -15,6 +15,7 @@ in {
     file = {
       ".config/pi/AGENTS.md".source = ../../../.config/pi/.AGENTS.md;
       ".config/pi/extensions/agent-guard.ts".source = ../../../.config/pi/extensions/agent-guard.ts;
+      ".config/pi/extensions/statusline.ts".source = ../../../.config/pi/extensions/statusline.ts;
 
       # herdr-peer は Claude と Codex の組を前提にするので共有しない。
       ".config/pi/skills/browser-research".source = ../../../.config/claude/skills/browser-research;

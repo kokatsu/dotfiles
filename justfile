@@ -15,7 +15,7 @@ check: (_run-all "check-static nix-eval")
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test dc-agent-test herdr-cache-token-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test"
+test_recipes := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test dc-agent-test herdr-cache-token-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test pi-statusline-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -267,6 +267,11 @@ nvim-test:
 # Exercise the real open-uri callback and shell argument boundary
 wezterm-links-test:
     nvim --headless --clean -l scripts/test-wezterm-links.lua
+
+# Check the Pi footer never renders wider than the terminal, measured by Pi's own width function
+pi-statusline-test:
+    PI_TUI="$(dirname "$(readlink -f "$(command -v pi)")")/../lib/node_modules/pi-monorepo/node_modules/@earendil-works/pi-tui/dist/index.js" \
+      node --test .config/pi/extensions/statusline.test.ts
 
 # Verify update-hashes.ts rewrites each overlay hash in place, and the detect script against fixtures
 # Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
