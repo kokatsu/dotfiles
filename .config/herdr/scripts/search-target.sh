@@ -13,7 +13,7 @@ list_targets() {
   def color($name):
     "\u001b[38;2;" + ($colors[0][$name] | map(tostring) | join(";")) + "m" + . + "\u001b[39m";
   def decorate:
-    ({claude: "peach", codex: "blue"}[.[1]] // "subtext0") as $kind_color
+    ({claude: "peach", codex: "blue", pi: "pink"}[.[1]] // "subtext0") as $kind_color
     | ({working: ["◐", "yellow"], blocked: ["!", "red"], done: ["✓", "green"],
         idle: ["○", "overlay1"], unknown: ["?", "overlay1"]}[.[2]] // ["?", "overlay1"]) as $state
     | .[1] |= color($kind_color)

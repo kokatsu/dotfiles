@@ -88,7 +88,7 @@ start_agent_if_needed() {
 # 標準入力の改行区切りのパスを、起動元ペインのエージェントに合わせた形で送る。
 # herdr は 1 キー = 1 コマンド固定で bind 時点の振り分けができないため、
 # 送信時に herdr pane get の .result.pane.agent (なしは null) で判定する。
-# Codex CLI は入力欄で "@" を打つと内蔵 fuzzy picker が開くため "@" を付けない。
+# Codex CLI と Pi は入力欄で "@" を打つと内蔵のファイル検索が開くため "@" を付けない。
 # $PWD 配下のパスは $PWD からの相対パスにする
 send_paths() {
   local pane_id=$1 agent p payload=""
@@ -105,7 +105,7 @@ send_paths() {
     esac
     case "$agent" in
     claude) payload+="@${p} " ;;
-    codex) payload+="${p} " ;;
+    codex | pi) payload+="${p} " ;;
     # シェルなど: コマンド引数としてそのまま使えるようクォートする
     *) payload+="$(printf '%q' "$p") " ;;
     esac

@@ -15,7 +15,7 @@ source "$(dirname "$0")/lib.sh"
 # 取得に失敗しても中断せず、シェルのペインとして扱う
 agent=$("$herdr_bin" pane get "$active_pane_id" | jq -r '.result.pane.agent // ""') || agent=""
 case "$agent" in
-claude | codex)
+claude | codex | pi)
   exec "$herdr_bin" agent prompt "$active_pane_id" /copy
   ;;
 esac

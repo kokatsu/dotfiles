@@ -52,11 +52,11 @@ in {
   # open_notification_target=prefix+o 等) を継承。
   #
   # [experimental] は日本語 IME 対策: prefix モード中の ASCII 入力ソース切替と、
-  # Claude Code/codex ペインでの IME 候補窓追従。
+  # Claude Code/codex/pi ペインでの IME 候補窓追従。
   home.file =
     {
       ".config/herdr/search-colors.json".text = builtins.toJSON (
-        lib.genAttrs ["peach" "blue" "yellow" "red" "green" "overlay1" "subtext0"]
+        lib.genAttrs ["peach" "blue" "pink" "yellow" "red" "green" "overlay1" "subtext0"]
         (name: let
           rgb = p.${name}.rgb;
         in [rgb.r rgb.g rgb.b])
@@ -124,7 +124,7 @@ in {
           # subtext0 にして dim を無効化する。
           # tab は見切れにくいよう専用の 2 行目へ置き、subtext0 + 通常にする。
           # agent はエージェント種別の識別色にする。Claude Code は peach、
-          # Codex は blue。同じ行テキストである Spaces の branch の mauve だけは
+          # Codex は blue、Pi は pink。同じ行テキストである Spaces の branch の mauve だけは
           # 避ける。現在の blue は ui.accent と同値だが、accent が塗るのは枠とナビ UI で
           # 行テキストには出てこない。
           # $cache は teal。行テキストが暖色と青だけだと緑の帯が空いて全体が
@@ -144,6 +144,12 @@ in {
             ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
             [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
             [{ token = "agent", fg = "${p.blue.hex}", bold = false, dim = false }],
+            [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
+          ]
+          pi = [
+            ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
+            [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
+            [{ token = "agent", fg = "${p.pink.hex}", bold = false, dim = false }],
             [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
           ]
 
@@ -167,7 +173,7 @@ in {
           [experimental]
           switch_ascii_input_source_in_prefix = true
           reveal_hidden_cursor_for_cjk_ime = true
-          cjk_ime_agents = ["claude", "codex"]
+          cjk_ime_agents = ["claude", "codex", "pi"]
 
           [keys]
           prefix = "ctrl+space"
@@ -379,19 +385,19 @@ in {
           description = "異常のあるサービスの Statuspage を開く"
 
           # Claude Code / Codex のキー設定はスラッシュコマンドを割り当てられないため、
-          # herdr 側から入力として送る。/clear・/exit は両エージェント共通。
+          # herdr 側から入力として送る。
           # prefix+c / prefix+q の既定 (new_tab / detach) は上で別キーへ移してあるので空いている
           [[keys.command]]
           key = "prefix+c"
           type = "shell"
-          command = "${pkgs.herdr}/bin/herdr agent prompt $HERDR_ACTIVE_PANE_ID /clear"
-          description = "エージェントに /clear を送る"
+          command = "${scriptsDir}/send-agent-command.sh new"
+          description = "エージェントの会話をリセットする (/clear, Pi は /new)"
 
           [[keys.command]]
           key = "prefix+q"
           type = "shell"
-          command = "${pkgs.herdr}/bin/herdr agent prompt $HERDR_ACTIVE_PANE_ID /exit"
-          description = "エージェントに /exit を送る"
+          command = "${scriptsDir}/send-agent-command.sh quit"
+          description = "エージェントを終了する (/exit, Pi は /quit)"
         '';
       # Claude Code / Codex の SessionStart から呼ぶ agent session 報告フック。
       # `herdr integration install` の生成物は上流の更新で上書きされるため使わない。
@@ -401,6 +407,11 @@ in {
         source = ../../../.config/herdr/hooks/report-agent-session.sh;
         executable = true;
       };
+
+      # Pi の状態とセッションを herdr に報告する拡張。`herdr integration install pi` が
+      # 書き出すものと同じファイルを、herdr をビルドしたソースから直接置くので
+      # herdr の更新に追従する。置き場所は PI_CODING_AGENT_DIR (default.nix) の extensions
+      ".config/pi/extensions/herdr-agent-state.ts".source = "${inputs.herdr-src}/src/integration/assets/pi/herdr-agent-state.ts";
 
       # ローカルの .config/herdr/plugins は home.file で配置しない:
       # plugin link が symlink を解決して plugin_root が /nix/store になり、
