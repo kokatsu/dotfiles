@@ -20,9 +20,9 @@
     sandbox_mode = "workspace-write";
     web_search = "cached";
     features = {
-      daemon_auto_start = false;
       hooks = true;
       memories = true;
+      tui_workspace = true;
     };
     history = {
       max_bytes = 104857600;
@@ -57,6 +57,7 @@
       };
     };
     tui = {
+      collapse_turn_details = true;
       copy_on_select_clear_selection = true;
       disable_paste_burst = true;
       notifications = true;

@@ -323,8 +323,6 @@ export function codexArgs(
     "shell_snapshot",
     "--disable",
     "shell_tool",
-    "--disable",
-    "daemon_auto_start",
     "--output-schema",
     schema,
     "--output-last-message",
