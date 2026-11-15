@@ -173,6 +173,7 @@ in {
         CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
         PSQLRC = "${config.xdg.configHome}/pg/.psqlrc";
         CODEX_HOME = "${config.xdg.configHome}/codex";
+        PI_CODING_AGENT_DIR = "${config.xdg.configHome}/pi";
         TAPLO_CONFIG = "${config.xdg.configHome}/taplo/taplo.toml";
         NPM_CONFIG_USERCONFIG = "${config.xdg.configHome}/npm/npmrc";
         NPM_CONFIG_GLOBALCONFIG = "${config.xdg.configHome}/npm/global-npmrc";
