@@ -2607,6 +2607,81 @@
   },
   {
     "want": "block",
+    "command": "brew install foo"
+  },
+  {
+    "want": "block",
+    "command": "brew install --cask foo"
+  },
+  {
+    "want": "block",
+    "command": "brew instal foo",
+    "label": "brew は instal を install の別名にしている"
+  },
+  {
+    "want": "block",
+    "command": "bun add -g foo"
+  },
+  {
+    "want": "block",
+    "command": "bun a --global foo"
+  },
+  {
+    "want": "block",
+    "command": "bun install -g foo"
+  },
+  {
+    "want": "block",
+    "command": "bun i -g foo"
+  },
+  {
+    "want": "block",
+    "command": "deno install -g npm:foo"
+  },
+  {
+    "want": "block",
+    "command": "deno install --global --allow-net jsr:@scope/foo"
+  },
+  {
+    "want": "block",
+    "command": "deno install -gA npm:foo",
+    "label": "短いオプションの束に入った g"
+  },
+  {
+    "want": "block",
+    "command": "deno i -g npm:foo"
+  },
+  {
+    "want": "block",
+    "command": "mise use -g node@24"
+  },
+  {
+    "want": "block",
+    "command": "mise use --global node@24"
+  },
+  {
+    "want": "block",
+    "command": "mise u -g node@24"
+  },
+  {
+    "want": "block",
+    "command": "mise -C /tmp use -g node@24",
+    "label": "サブコマンドの前の -C は値を取る"
+  },
+  {
+    "want": "block",
+    "command": "mise --env prod use -g node@24"
+  },
+  {
+    "want": "block",
+    "command": "bun --cwd=/tmp add -g foo"
+  },
+  {
+    "want": "block",
+    "command": "cargo binstall foo"
+  },
+  {
+    "want": "block",
     "command": "cd x && sh -c 'pip install foo'"
   },
   {
@@ -2740,6 +2815,62 @@
   {
     "want": "allow",
     "command": "nix-env -I nixpkgs=x -q"
+  },
+  {
+    "want": "allow",
+    "command": "brew list"
+  },
+  {
+    "want": "allow",
+    "command": "brew info foo"
+  },
+  {
+    "want": "allow",
+    "command": "brew uninstall foo"
+  },
+  {
+    "want": "allow",
+    "command": "bun add foo"
+  },
+  {
+    "want": "allow",
+    "command": "bun install"
+  },
+  {
+    "want": "allow",
+    "command": "bun run install -g"
+  },
+  {
+    "want": "allow",
+    "command": "deno install"
+  },
+  {
+    "want": "allow",
+    "command": "deno install npm:foo"
+  },
+  {
+    "want": "allow",
+    "command": "deno run -A main.ts install -g"
+  },
+  {
+    "want": "allow",
+    "command": "mise use node@24"
+  },
+  {
+    "want": "allow",
+    "command": "mise install"
+  },
+  {
+    "want": "allow",
+    "command": "mise ls"
+  },
+  {
+    "want": "allow",
+    "command": "mise -C /tmp use node@24"
+  },
+  {
+    "want": "allow",
+    "command": "cargo build"
   },
   {
     "want": "allow",

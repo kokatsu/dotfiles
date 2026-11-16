@@ -49,7 +49,7 @@ var verdictMessages = map[verdict]string{
 	"SHELL_UNCHECKED":  "Refuse a shell whose script cannot be checked: read from a pipe or a file redirect, or built from a command or process substitution. Run the commands directly, pass them in a quoted heredoc, or run a script file by path.",
 	"SHELL_C_UNPARSED": "Refuse sh -c with a command string that does not parse as shell: it cannot be checked, and the shell runs the lines before the error. Run the commands directly instead.",
 	"GLOB_EXEC":        "Refuse zsh glob qualifiers that run code (e:...: or +cmd). List the files first, then run the command on them directly.",
-	"GLOBAL_INSTALL":   "Refuse installing tools outside Nix (npm -g, pip, pipx, uv tool, cargo/go/gem install, nix profile add, nix-env -i). Add the package to home.packages in nix/home/packages.nix of the dotfiles flake and run `home-manager switch`, or use `nix shell nixpkgs#foo` / `nix run` for a one-off. For a project's virtualenv, ask the user to run the install.",
+	"GLOBAL_INSTALL":   "Refuse installing tools outside Nix (npm/bun/deno/mise -g, brew install, pip, pipx, uv tool, cargo/go/gem install, nix profile add, nix-env -i). Add the package to home.packages in nix/home/packages.nix of the dotfiles flake and run `home-manager switch`, or use `nix shell nixpkgs#foo` / `nix run` for a one-off. For a project's virtualenv, ask the user to run the install.",
 	"RG_STDIN":         "rg without a path searches stdin when stdin is readable; in a non-interactive tool call stdin can be a socket that never closes, so rg hangs. Name the directories to search, or add `< /dev/null` to search the current directory.",
 }
 
@@ -888,6 +888,7 @@ var (
 		"pip":   {"--python", "--log", "--keyring-provider", "--proxy", "--retries", "--timeout", "--exists-action", "--trusted-host", "--cert", "--client-cert", "--cache-dir", "--use-feature", "--use-deprecated"},
 		"cargo": {"--config", "-Z", "--color", "-C"},
 		"go":    {"-C"},
+		"mise":  {"-C", "--cd", "-E", "--env", "-j", "--jobs"},
 	}
 )
 
@@ -936,9 +937,26 @@ func npmGlobal(args []string) bool {
 	return global || location == "global"
 }
 
+// bun、deno、mise の -g は短いオプションの束にも入る (deno install -gA)。値を付属
+// させた束 (-estaging) にも一致するが、取りこぼすより過剰に一致させる側へ倒す。
+func hasGlobalFlag(args []string) bool {
+	return slices.ContainsFunc(args, func(a string) bool {
+		return a == "--global" || len(a) > 1 && a[0] == '-' && a[1] != '-' && strings.Contains(a, "g")
+	})
+}
+
 func installsOutsideNix(cmd string, rest []string) bool {
 	args := optsBeforeDdash(rest)
 	switch {
+	case cmd == "brew":
+		// instal は brew が install の別名にしている (Homebrew の commands.rb)。
+		return slices.Contains([]string{"install", "instal"}, firstOperand(cmd, args))
+	case cmd == "bun":
+		return slices.Contains([]string{"add", "a", "install", "i"}, firstOperand(cmd, args)) && hasGlobalFlag(args)
+	case cmd == "deno":
+		return slices.Contains([]string{"install", "i"}, firstOperand(cmd, args)) && hasGlobalFlag(args)
+	case cmd == "mise":
+		return slices.Contains([]string{"use", "u"}, firstOperand(cmd, args)) && hasGlobalFlag(args)
 	case cmd == "npm":
 		return slices.Contains(npmInstallAliases, firstOperand(cmd, args)) && npmGlobal(args)
 	case cmd == "pnpm":
@@ -964,7 +982,9 @@ func installsOutsideNix(cmd string, rest []string) bool {
 		return false
 	case cmd == "uv":
 		return hasPair(args, "pip", "install") || hasPair(args, "tool", "install")
-	case cmd == "cargo" || cmd == "go":
+	case cmd == "cargo":
+		return slices.Contains([]string{"install", "binstall"}, firstOperand(cmd, args))
+	case cmd == "go":
 		return firstOperand(cmd, args) == "install"
 	case cmd == "gem":
 		// gem は曖昧でない限りコマンドの省略を受け付け、gem i は install になる。
