@@ -57,7 +57,7 @@ function runGuard(
 
 // Mirrors resolvePath in Pi's dist/utils/paths.js (POSIX branch), which edit
 // and write use. Any input it maps differently would let a write skip the guard.
-function targetPath(input: string, cwd: string): string {
+export function targetPath(input: string, cwd: string): string {
   let p = input.replace(/[  -   　]/g, " ");
   if (p.startsWith("@")) p = p.slice(1);
   if (p === "~") p = os.homedir();
