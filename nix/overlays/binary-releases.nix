@@ -32,6 +32,41 @@ in {
     };
   };
 
+  # Pkl Language Server
+  # 0.9.0 から pkl 0.33 と同じ XDG パス (~/.cache/pkl, ~/.local/share/pkl) を使う。
+  # 公式 release は全プラットフォーム共通の jar のみ。
+  # Renovate: datasource=github-releases depName=apple/pkl-lsp
+  pkl-lsp = mkBinaryRelease rec {
+    pname = "pkl-lsp";
+    version = "0.9.0";
+    hashes = {
+      "aarch64-darwin" = "sha256-QddNkHUg0KUFGuoSixRePDlpXPg6OE5G2Yx07uLTlZI=";
+      "aarch64-linux" = "sha256-QddNkHUg0KUFGuoSixRePDlpXPg6OE5G2Yx07uLTlZI=";
+      "x86_64-linux" = "sha256-QddNkHUg0KUFGuoSixRePDlpXPg6OE5G2Yx07uLTlZI=";
+    };
+    platformMap = {
+      "aarch64-darwin" = "jar";
+      "aarch64-linux" = "jar";
+      "x86_64-linux" = "jar";
+    };
+    url = _: "https://github.com/apple/pkl-lsp/releases/download/${version}/pkl-lsp-${version}.jar";
+    extraAttrs = prev: {
+      nativeBuildInputs = [prev.makeBinaryWrapper];
+      installPhase = ''
+        runHook preInstall
+        install -D $src $out/lib/pkl-lsp/pkl-lsp.jar
+        makeWrapper ${prev.lib.getExe' prev.jdk25_headless "java"} $out/bin/pkl-lsp \
+          --add-flags "-jar $out/lib/pkl-lsp/pkl-lsp.jar"
+        runHook postInstall
+      '';
+    };
+    meta = {
+      description = "The Pkl Language Server";
+      homepage = "https://pkl-lang.org/lsp/current/index.html";
+      license = "asl20";
+    };
+  };
+
   # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = mkBinaryRelease rec {
