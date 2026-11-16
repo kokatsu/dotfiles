@@ -7,7 +7,7 @@
   openWithDefaultApp = arg: "if command -v wslview >/dev/null 2>&1; then wslview ${arg}; elif [ \"$(uname)\" = \"Darwin\" ]; then open ${arg}; else xdg-open ${arg}; fi";
 in {
   # vendored sources: kokatsu/ansi-preview 865f404,
-  # llanosrocas/githead 317d09f (patched: load と bulk-rename を購読), yazi-rs/flavors 20b47bf。更新はリポジトリのソースを更新して switch する。
+  # llanosrocas/githead 317d09f (patched: load と bulk-rename を購読)。更新はリポジトリのソースを更新して switch する。
   # ya pkg は使用しない。シェルの yi 関数は既存の functions.zsh が管理する。
   programs.yazi = {
     enable = true;

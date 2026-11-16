@@ -360,7 +360,7 @@ mods-test:
       claude plugin test "$dir" || exit $?; \
     done
 
-# Verify check failures, concurrent feed updates, and activation retries
+# Verify the feed, daily, wallpaper and Helix scripts, check failure handling, and activation retries
 # Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
 # LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
 reliability-test:

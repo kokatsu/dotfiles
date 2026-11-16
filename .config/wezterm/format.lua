@@ -74,7 +74,7 @@ local STATUS_CHECK_INTERVAL = 30 -- seconds
 
 --- *-watch のキャッシュディレクトリを末尾のセパレータ込みで返す。
 --- Windows 版 WezTerm は WSL 側から書かれた Windows プロファイル配下を読み、
---- macOS は同じマシンの ~/.cache を読む (各 bin/*-watch の get_status_dir と対)
+--- macOS は同じマシンの ~/.cache を読む (bin/status-dir と対)
 ---@param name string 'feed-watch' | 'disk-watch' | 'status-watch'
 ---@return string|nil
 local function cache_dir(name)

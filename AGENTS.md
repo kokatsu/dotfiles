@@ -11,11 +11,12 @@ Nix + Home Manager (with Flakes) で macOS/Linux のシェル・ツール設定�
 - `bin/` — ユーザースクリプト (`~/.local/bin/scripts` に symlink され PATH に入る)
 - `scripts/` — CI と `just` が使うテスト・補助スクリプト、および Nix パッケージへ埋め込むスクリプト本体
 - `tools/` — このリポジトリでビルドする自作ツールのソース (`nix/overlays/` がパッケージ化する)
+- `windows/` — WSL から操作する Windows 側の常駐ツール (IME と Slack 通知の監視) のソース
 - `.codex/rules/*.rules` — このリポジトリ専用の Codex コマンド承認ルール
 
 ## Apply Changes
 
-`--impure` は flake が `USER`/`HOSTNAME`/`PWD` を環境変数から読むため必須。
+`--impure` は flake が `builtins.currentSystem` と環境変数 (`USER`/`SUDO_USER`/`HOSTNAME`/`DOTFILES_DIR`/`PWD`、WSL の判定に `WSL_DISTRO_NAME`/`WSL_INTEROP`) を読むため必須。
 
 ```bash
 # ユーザー環境 (packages / dotfiles)。Linux/WSL と macOS 共通

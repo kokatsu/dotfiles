@@ -1,4 +1,4 @@
-// agent-guard は Claude Code と Codex の PreToolUse フック。
+// agent-guard は Claude Code と Codex の PreToolUse フックで、Pi の拡張からも呼ぶ。
 // stdin で hook payload を受け取る。gh-api 以外は、ブロックするなら理由を stderr に
 // 出して exit 2 で終わる。
 //

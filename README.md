@@ -89,7 +89,9 @@ build past the CI time limit.
 │   ├── darwin/        # macOS system and Homebrew configuration
 │   └── overlays/      # Custom packages and upstream workarounds
 ├── bin/               # User scripts, linked to ~/.local/bin/scripts and on PATH
-├── scripts/           # Test and helper scripts used by just and CI
+├── scripts/           # Test and helper scripts for just and CI, and scripts embedded in Nix packages
+├── tools/             # Sources of tools built in this repository (packaged by nix/overlays/)
+├── windows/           # Windows-side listeners driven from WSL (IME and Slack notification watchers)
 ├── karabiner-config/  # Karabiner-Elements rules written with karabiner.ts
 └── .config/           # Dotfile sources linked by Home Manager
     ├── zsh/           # Zsh shell configuration
@@ -105,8 +107,9 @@ psql, Vim, Claude Code keybindings, and the Codex base configuration from Nix.
 Edit these modules, then run `home-manager switch --flake . --impure` to apply them.
 
 Yazi plugins come from nixpkgs `yaziPlugins` where available; the remaining
-plugins and flavors are vendored under `.config/yazi/`. All are installed through
-`programs.yazi`; update them via `nix flake update` or in Git instead of using `ya pkg`.
+plugins are vendored under `.config/yazi/`, and the flavors come from the
+`yazi-flavors` flake input. All are installed through `programs.yazi`; update
+them via `nix flake update` or in Git instead of using `ya pkg`.
 Yazi's `init.lua` and `git-changes.sh` also need
 `home-manager switch --flake . --impure` after editing to apply the changes.
 Lua, shell scripts, and repository tooling configurations remain under `.config/`.

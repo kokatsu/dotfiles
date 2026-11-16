@@ -120,7 +120,7 @@ in {
       # 未読カウントには出したくないフィードはこちらへ置く
       ".config/bulletty/bulletty-only.opml".source = ../../.config/bulletty/bulletty-only.opml;
       # lazydocker is managed by nix/home/programs/lazydocker.nix
-      # bin: ユーザースクリプト (Deno/Bun/Shell)
+      # bin: ユーザースクリプト
       # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
       ".local/bin/scripts" = {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/bin";
