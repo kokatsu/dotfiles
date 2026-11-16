@@ -29,6 +29,8 @@ var verdictMessages = map[verdict]string{
 	"CHMOD_777_ROOT":   "Refuse chmod 777 /. Scope the path.",
 	"GREP_R":           "Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.config/ripgrep/ripgreprc glob excludes.",
 	"FORCE_PUSH":       "Refuse git push -f/--force. Use --force-with-lease or run manually.",
+	"GIT_PUSH":         "Pi cannot request approval for git commands that send data or read credentials (push, send-pack, subtree, send-email, credential). Ask the user to run it.",
+	"GIT_SUBCOMMAND":   "git: aliases, external commands and commands run through xargs cannot be checked in Pi. Use the built-in command an alias expands to, or ask the user to run it.",
 	"GIT_CLEAN":        "Refuse git clean -fd/-fx (destructive). Inspect untracked files first.",
 	"GIT_RESET_HARD":   "Refuse git reset --hard to anything but HEAD. Confirm intent and run manually.",
 	"SHALLOW":          "Refuse shallow git fetch/pull (--depth/--shallow-*) because it makes the existing repository shallow. Use a temporary shallow clone (git clone --depth), or fetch normally. --deepen/--unshallow remain allowed.",
@@ -36,7 +38,12 @@ var verdictMessages = map[verdict]string{
 	"GIT_IDENTITY":     "Don't set or override Git identity. ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes Git fail loudly where no entry matches. Ask the user instead of choosing a value.",
 	"HERDR_INPUT":      herdrInputMessage,
 	"GH_API_METHOD":    "gh api: give exactly one literal HTTP method (-X GET for a read) and put expanded endpoints after `--` or behind a literal prefix; if this is not a gh call, quote the words.",
-	"GH_API_GET":       "gh api -X GET runs outside the Codex sandbox without asking, so it must stay a read on github.com: drop --input, -F/--field and --hostname, and give an endpoint path instead of a full URL. Use another method if Codex should ask.",
+	"GH_API_GET":       "gh api -X GET runs without approval, so it must stay a read on github.com: drop --input, -F/--field and --hostname, and give an endpoint path instead of a full URL. For anything else, use another method so Codex asks for approval; Pi cannot ask, so ask the user to run it.",
+	"GH_FLAGS_API":     "gh api: place api immediately after gh, as a command of its own, so its arguments can be checked.",
+	"GH_API_SCRIPT":    "gh api inside a shell script string or heredoc cannot be approved in Pi. Run gh api -X GET directly, or ask the user to run it.",
+	"GH_SUBCOMMAND":    "gh: aliases, extensions and commands run through xargs cannot be checked. Use the built-in command an alias expands to (gh pr checkout, not gh co), and ask the user to run extensions.",
+	"GH_AUTH":          "gh auth: Pi cannot touch gh credentials (auth status -t and auth token print the token). Ask the user to run it.",
+	"GH_WRITE":         "gh: Pi cannot request approval, and this gh command may change GitHub or local gh state. Use a read-only gh command, or ask the user to run it.",
 	"FIND_DELETE":      "Refuse find -delete. Use find ... -exec gomi {} + instead, so the files stay recoverable.",
 	"NPM_BIOME":        "Refuse running the npm package named biome (npx, bunx, pnpm dlx, npm exec): it is an unrelated env-var manager, not the Biome formatter. Run biome from PATH (Nix) directly.",
 	"SHELL_UNCHECKED":  "Refuse a shell whose script cannot be checked: read from a pipe or a file redirect, or built from a command or process substitution. Run the commands directly, pass them in a quoted heredoc, or run a script file by path.",
@@ -737,6 +744,10 @@ func commandVerdict(words, scripts []string, infos []wordInfo, fed bool) []verdi
 	if len(args) > 0 && (args[0] == "find" || args[0] == "fd") {
 		return out
 	}
+	out = append(out, piGhVerdicts(words, infos)...)
+	if v := piGitVerdict(words, infos); v != "" {
+		out = append(out, v)
+	}
 	if v := ghAPIVerdict(words, infos); v != "" {
 		return append(out, v)
 	}
@@ -747,7 +758,7 @@ func commandVerdict(words, scripts []string, infos []wordInfo, fed bool) []verdi
 }
 
 func callVerdicts(words, scripts []string, infos []wordInfo, fed bool) []verdict {
-	args, viaXargs := unwrap(words)
+	args, viaXargs, _ := unwrap(words)
 	if len(args) == 0 {
 		return nil
 	}
@@ -771,7 +782,7 @@ func callVerdicts(words, scripts []string, infos []wordInfo, fed bool) []verdict
 			if err != nil {
 				return []verdict{"SHELL_C_UNPARSED"}
 			}
-			return analyze(file, fed)
+			return scriptVerdicts(file, fed)
 		}
 		return nil
 	}
@@ -1159,7 +1170,18 @@ func documentVerdicts(words []string, doc *syntax.Word) (_ []verdict, ok bool) {
 	if err != nil {
 		return []verdict{"SHELL_C_UNPARSED"}, true
 	}
-	return analyze(file, true), true
+	return scriptVerdicts(file, true), true
+}
+
+// ghAPIDecide は外側の構文木しか歩かないので、文字列から解析し直したスクリプトの
+// gh api は Pi 向けにここで拾う。読み取りでも、外側の `sh -c 'gh api …'` を
+// 間接呼び出しとして止めるのと揃えて止める。
+func scriptVerdicts(file *syntax.File, fed bool) []verdict {
+	verdicts := analyze(file, fed)
+	if _, ok := ghAPIDecide(file, true); ok {
+		verdicts = append(verdicts, "GH_API_SCRIPT")
+	}
+	return verdicts
 }
 
 // 非対話シェルは & で起動したコマンドの標準入力を /dev/null にする。

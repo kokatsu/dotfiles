@@ -9,6 +9,7 @@
     collapseChangelog = true;
     defaultModel = "gpt-6.1-sol";
     defaultProvider = "openai-codex";
+    defaultTools = ["+grep" "+find" "+ls"];
   };
 in {
   home = {

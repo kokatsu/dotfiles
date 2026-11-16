@@ -407,12 +407,13 @@ func stripXargsOpts(args []string) (_ []string, argFile bool) {
 }
 
 func stripWrappers(args []string) []string {
-	args, _ = unwrap(args)
+	args, _, _ = unwrap(args)
 	return args
 }
 
-// viaXargs は、子の標準入力を /dev/null にする xargs を剥がしたか。
-func unwrap(args []string) (_ []string, viaXargs bool) {
+// viaXargs は、子の標準入力を /dev/null にする xargs を剥がしたか。xargs は入力元に
+// よらず剥がしたか。
+func unwrap(args []string) (_ []string, viaXargs, xargs bool) {
 	for len(args) > 0 {
 		switch commandName(args[0]) {
 		case "command":
@@ -436,7 +437,7 @@ func unwrap(args []string) (_ []string, viaXargs bool) {
 			// zsh の `foreach NAME (LIST) CMD...; end`。LIST は 1 語として届く。
 			// 本体が次の行以降にあれば、それは別の CallExpr として判定される。
 			if len(args) < 3 || !strings.HasPrefix(args[2], "(") {
-				return args, viaXargs
+				return args, viaXargs, xargs
 			}
 			args = args[3:]
 		case "nohup", "setsid":
@@ -452,13 +453,14 @@ func unwrap(args []string) (_ []string, viaXargs bool) {
 			var argFile bool
 			args, argFile = stripXargsOpts(args[1:])
 			viaXargs = viaXargs || !argFile
+			xargs = true
 		case "stdbuf":
 			args = stripOpts(args[1:], "ioe", []string{"--input", "--output", "--error"})
 		case "caffeinate":
 			args = stripOpts(args[1:], "tw", nil)
 		default:
-			return append([]string{commandName(args[0])}, args[1:]...), viaXargs
+			return append([]string{commandName(args[0])}, args[1:]...), viaXargs, xargs
 		}
 	}
-	return args, viaXargs
+	return args, viaXargs, xargs
 }
