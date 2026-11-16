@@ -12,6 +12,21 @@
     rgb = parseHex hex;
   };
 
+  toHex2 = n: lib.fixedWidthString 2 "0" (lib.toLower (lib.toHexString n));
+
+  # ratio は 0-100 (fg の比率)。結果は palette の色と同じ形 ({hex, rgb})。
+  blend = fg: bg: ratio: let
+    mix = c: (fg.rgb.${c} * ratio + bg.rgb.${c} * (100 - ratio)) / 100;
+    rgb = {
+      r = mix "r";
+      g = mix "g";
+      b = mix "b";
+    };
+  in {
+    inherit rgb;
+    hex = "#${toHex2 rgb.r}${toHex2 rgb.g}${toHex2 rgb.b}";
+  };
+
   capitalize = s:
     (lib.strings.toUpper (builtins.substring 0 1 s))
     + (builtins.substring 1 (builtins.stringLength s - 1) s);
@@ -20,6 +35,21 @@ in {
     type = lib.types.attrs;
     readOnly = true;
     default = {
+      inherit blend;
+
+      # diff の行背景に混ぜる fg の比率。GUI (デスクトップアプリ) の Catppuccin
+      # コードテーマの実測値。
+      diffRatio = flavor:
+        if flavor == "latte"
+        then {
+          line = 11;
+          dim = 6;
+        }
+        else {
+          line = 18;
+          dim = 10;
+        };
+
       flavorNames = flavor: {
         spaced = "Catppuccin ${capitalize flavor}";
         kebab = "catppuccin-${flavor}";
