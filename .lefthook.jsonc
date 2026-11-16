@@ -2,9 +2,9 @@
   "$schema": "https://raw.githubusercontent.com/evilmartians/lefthook/refs/heads/master/schema.json",
   "pre-commit": {
     "commands": {
-      // リポジトリの .ts/.tsx は全て Deno 管理 (.biome.jsonc で除外) なので biome は JSON だけ見る
+      // リポジトリの .ts/.tsx は全て Deno 管理 (.biome.jsonc で除外) なので biome は JSON と .cjs だけ見る
       "biome": {
-        "glob": ["*.{json,jsonc}"],
+        "glob": ["*.{json,jsonc,cjs}"],
         "run": "biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files} && git update-index --again"
       },
       // Deno 管理の TypeScript (justfile の deno_dirs / deno_files) を検査する。
@@ -110,7 +110,7 @@
   "pre-push": {
     "commands": {
       "biome": {
-        "glob": ["*.{json,jsonc}"],
+        "glob": ["*.{json,jsonc,cjs}"],
         "run": "biome check --no-errors-on-unmatched --files-ignore-unknown=true {push_files}"
       },
       "deno-format": {
