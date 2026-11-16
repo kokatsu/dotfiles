@@ -86,6 +86,8 @@
     defaultModel = "gpt-6.1-sol";
     defaultProvider = "openai-codex";
     defaultTools = ["+grep" "+find" "+ls"];
+    editorPaddingX = 1;
+    showHardwareCursor = true;
     theme = themeName;
   };
 in {

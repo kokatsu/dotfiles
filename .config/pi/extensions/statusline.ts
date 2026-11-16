@@ -310,7 +310,10 @@ export default async function (pi: ExtensionAPI) {
             ? [quota(true), quota(false)]
             : [];
 
-          return [line(where, [who], max, p), line(stats, rights, max, p)];
+          const padding = max >= 2 ? " " : "";
+          const width = max - padding.length * 2;
+          return [line(where, [who], width, p), line(stats, rights, width, p)]
+            .map((text) => padding + text + padding);
         },
       };
     });
