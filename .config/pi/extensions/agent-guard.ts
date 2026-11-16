@@ -66,13 +66,15 @@ function targetPath(input: string, cwd: string): string {
   return path.resolve(cwd, p);
 }
 
-// Tools that only read. Any other tool, such as powershell or one a project
-// enables with a `+name` defaultTools entry, may run commands this guard never sees.
-const readOnlyTools = new Set(["read", "grep", "find", "ls"]);
+// Tools that only read, plus subagent, whose child `pi` loads this extension
+// and checks its own tool calls. Any other tool, such as powershell or one a
+// project enables with a `+name` defaultTools entry, may run commands this
+// guard never sees.
+const passThroughTools = new Set(["read", "grep", "find", "ls", "subagent"]);
 
 export default function (pi: ExtensionAPI) {
   pi.on("tool_call", async (event, ctx) => {
-    if (readOnlyTools.has(event.toolName)) return undefined;
+    if (passThroughTools.has(event.toolName)) return undefined;
     let reason: string | undefined;
     if (event.toolName === "bash") {
       reason = await runGuard("pi", {
