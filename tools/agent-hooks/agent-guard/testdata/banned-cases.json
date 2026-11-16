@@ -2873,6 +2873,47 @@
     "command": "cargo build"
   },
   {
+    "want": "block",
+    "command": "nix develop -c rm -rf /tmp/x",
+    "label": "nix develop の -c の後ろはコマンドになる"
+  },
+  {
+    "want": "block",
+    "command": "nix develop .#ci --command rm -rf /tmp/x"
+  },
+  {
+    "want": "block",
+    "command": "nix shell nixpkgs#git -c git push --force"
+  },
+  {
+    "want": "block",
+    "command": "nix shell nixpkgs#nodejs --command npm install -g foo"
+  },
+  {
+    "want": "block",
+    "command": "nix develop --command bash -c 'rm -rf /tmp/x'"
+  },
+  {
+    "want": "block",
+    "command": "nix --extra-experimental-features 'nix-command flakes' develop -c rm -rf /tmp/x"
+  },
+  {
+    "want": "allow",
+    "command": "nix develop -c just check"
+  },
+  {
+    "want": "allow",
+    "command": "nix shell nixpkgs#hello --command hello"
+  },
+  {
+    "want": "allow",
+    "command": "nix develop"
+  },
+  {
+    "want": "allow",
+    "command": "nix build -L .#rm"
+  },
+  {
     "want": "allow",
     "command": "git commit -m 'pip install のメモ'"
   },

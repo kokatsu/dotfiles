@@ -406,6 +406,24 @@ func stripXargsOpts(args []string) (_ []string, argFile bool) {
 	return args, argFile
 }
 
+// nix develop と nix shell は -c / --command の後ろをコマンドとして実行する。nix の
+// オプションは値をいくつ取るかがまちまちなので、サブコマンドの位置は決めずに探す。
+func nixCommand(args []string) []string {
+	if commandName(args[0]) != "nix" {
+		return nil
+	}
+	sub := false
+	for i, a := range args[1:] {
+		switch {
+		case a == "develop" || a == "shell":
+			sub = true
+		case sub && (a == "-c" || a == "--command"):
+			return args[i+2:]
+		}
+	}
+	return nil
+}
+
 func stripWrappers(args []string) []string {
 	args, _, _ = unwrap(args)
 	return args
@@ -415,6 +433,10 @@ func stripWrappers(args []string) []string {
 // よらず剥がしたか。
 func unwrap(args []string) (_ []string, viaXargs, xargs bool) {
 	for len(args) > 0 {
+		if inner := nixCommand(args); inner != nil {
+			args = inner
+			continue
+		}
 		switch commandName(args[0]) {
 		case "command":
 			args = stripCommandOpts(args[1:])
