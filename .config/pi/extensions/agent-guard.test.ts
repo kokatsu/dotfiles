@@ -90,10 +90,10 @@ test("Pi guard checks tool calls with the real agent-guard", async () => {
       undefined,
     );
   }
-  for (const toolName of ["read", "grep", "find", "ls"]) {
+  for (const toolName of ["read", "grep", "find", "ls", "subagent"]) {
     assert.equal(await handler({ toolName, input: {} }, ctx), undefined);
   }
-  for (const toolName of ["powershell", "mcp", "Bash", ""]) {
+  for (const toolName of ["powershell", "mcp", "Bash", "Subagent", ""]) {
     const result = await handler({ toolName, input: { command: "ls" } }, ctx);
     assert.equal(result?.block, true, toolName);
     assert.ok(result?.reason, toolName);

@@ -15,7 +15,7 @@ check: (_run-all "check-static nix-eval")
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test dc-agent-test herdr-cache-token-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test pi-statusline-test pi-guard-test"
+test_recipes := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test dc-agent-test herdr-cache-token-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test nvim-test wezterm-links-test pi-statusline-test pi-guard-test pi-ai-writing-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -276,6 +276,10 @@ pi-statusline-test:
 # Verify Pi tool-call adaptation and fail-closed guard behavior
 pi-guard-test:
     bash scripts/test-pi-guard.sh
+
+# Verify the Pi edit/write results carry the AI writing check's report
+pi-ai-writing-test:
+    node --test .config/pi/extensions/ai-writing.test.ts
 
 # Verify update-hashes.ts rewrites each overlay hash in place, and the detect script against fixtures
 # Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で

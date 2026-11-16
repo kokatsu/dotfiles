@@ -80,6 +80,10 @@
       infoBg = "surface0";
     };
   };
+  # Pi imports an extension from its symlink target, so a relative import such
+  # as ai-writing.ts → ./agent-guard.ts resolves only when every file comes
+  # from the same store directory.
+  extensions = ../../../.config/pi/extensions;
   baseSettings = (pkgs.formats.json {}).generate "pi-settings.json" {
     "$schema" = "https://pi.dev/schemas/settings.schema.json";
     collapseChangelog = true;
@@ -95,8 +99,9 @@ in {
     file = {
       ".config/pi/themes/${themeName}.json".text = builtins.toJSON theme;
       ".config/pi/AGENTS.md".source = ../../../.config/pi/.AGENTS.md;
-      ".config/pi/extensions/agent-guard.ts".source = ../../../.config/pi/extensions/agent-guard.ts;
-      ".config/pi/extensions/statusline.ts".source = ../../../.config/pi/extensions/statusline.ts;
+      ".config/pi/extensions/agent-guard.ts".source = "${extensions}/agent-guard.ts";
+      ".config/pi/extensions/ai-writing.ts".source = "${extensions}/ai-writing.ts";
+      ".config/pi/extensions/statusline.ts".source = "${extensions}/statusline.ts";
 
       # herdr-peer は Claude と Codex の組を前提にするので共有しない。
       ".config/pi/skills/browser-research".source = ../../../.config/claude/skills/browser-research;
