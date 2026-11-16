@@ -247,6 +247,7 @@
       customOverlays.mermaid-ascii
       customOverlays.peek-nvim
       customOverlays.pkl
+      customOverlays.pkl-lsp
       customOverlays.pkl-neovim
       # customOverlays.qo
       customOverlays.ruby-lsp
