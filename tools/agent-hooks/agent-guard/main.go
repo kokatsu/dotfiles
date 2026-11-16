@@ -4,7 +4,7 @@
 //
 //	agent-guard banned         Claude Code の Bash と Monitor 用。Herdr 入力ガードと禁止コマンド
 //	agent-guard codex          Codex の Bash 用。Herdr 入力ガードと禁止コマンド (GREP_R を除く)
-//	agent-guard pi             Pi の Bash 用。禁止コマンドと、読み取り以外の gh api と gh のエイリアス・拡張を止める
+//	agent-guard pi             Pi の Bash 用。禁止コマンドと、GitHub への書き込み (gh、git push) と gh の認証・エイリアス・拡張を止める
 //	agent-guard managed-paths  Claude Code の Edit/Write 用。Home Manager の管理下を守る
 //	agent-guard gh-api         Claude Code の `gh api` 用。読み取りだけを自動で許可する
 //
@@ -46,12 +46,12 @@ func refuse(format string, args ...any) {
 
 // codexSkipped は Codex では使わない判定。GREP_R は破壊を防ぐ判定ではなく
 // 検索ツールの好みなので、Codex には押し付けない。
-var codexSkipped = []verdict{"GREP_R", "GH_FLAGS_API", "GH_SUBCOMMAND", "GH_API_SCRIPT"}
+var codexSkipped = []verdict{"GREP_R", "GH_FLAGS_API", "GH_SUBCOMMAND", "GH_AUTH", "GH_WRITE", "GH_API_SCRIPT", "GIT_PUSH", "GIT_SUBCOMMAND"}
 
 // bannedSkipped は Claude Code では使わない判定。Claude Code の gh api は
 // gh-api モードが見る。GIT_OUTPUT は Codex のサンドボックスを守る判定で、
 // Claude Code の書き込みは権限設定が見る。
-var bannedSkipped = []verdict{"GH_API_METHOD", "GH_API_GET", "GIT_OUTPUT", "GH_FLAGS_API", "GH_SUBCOMMAND", "GH_API_SCRIPT"}
+var bannedSkipped = []verdict{"GH_API_METHOD", "GH_API_GET", "GIT_OUTPUT", "GH_FLAGS_API", "GH_SUBCOMMAND", "GH_AUTH", "GH_WRITE", "GH_API_SCRIPT", "GIT_PUSH", "GIT_SUBCOMMAND"}
 
 // piSkipped は Pi では使わない判定。gh api のメソッドは ghAPIDecide が見る。
 // GIT_OUTPUT は Codex のサンドボックスを守る判定で、Pi の Bash はリダイレクトでも
