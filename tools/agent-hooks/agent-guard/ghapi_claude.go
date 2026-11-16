@@ -593,7 +593,7 @@ func ghAPIOnlySafe(file *syntax.File, ghCalls map[*syntax.CallExpr]bool) bool {
 	return safe
 }
 
-func ghAPIDecide(file *syntax.File) (ghAPIDecision, bool) {
+func ghAPIDecide(file *syntax.File, requireReadOnly bool) (ghAPIDecision, bool) {
 	seen := false
 	mayBeAPI := false
 	reason := ""
@@ -636,7 +636,20 @@ func ghAPIDecide(file *syntax.File) (ghAPIDecision, bool) {
 			}
 		}
 
-		isGh := len(stripped) > 0 && stripped[0] == "gh"
+		isGh := len(stripped) > 0 && (stripped[0] == "gh" || requireReadOnly && commandName(stripped[0]) == "gh")
+		// gh は api より前に置いた API 用のフラグも受け付ける。
+		if requireReadOnly && isGh && len(stripped) > 1 && strings.HasPrefix(stripped[1], "-") {
+			switch sub, ok := ghSubcommandAfterFlags(words[offset+1:]); {
+			case !ok:
+				mayBeAPI = true
+				setReason(ghAPIUnreadableReason)
+				return true
+			case sub == "api":
+				mayBeAPI = true
+				setReason("gh api: place api immediately after gh so its arguments can be checked")
+				return true
+			}
+		}
 		// サブコマンドの位置が展開なら gh api になりうる。`gh a${P}i r -X DELETE`。
 		if sub := offset + 1; isGh && sub >= 0 && sub < len(words) && words[sub].literal == nil {
 			setReason(ghAPIUnreadableReason)
@@ -671,8 +684,50 @@ func ghAPIDecide(file *syntax.File) (ghAPIDecision, bool) {
 	// 並ぶ部分を証明できない読み取りは判定を出さず、通常の確認に任せる。
 	case seen && ghAPIOnlySafe(file, ghCalls):
 		return ghAPIDecision{"allow", ghAPIAllowReason}, true
+	case seen && requireReadOnly:
+		return ghAPIDecision{"ask", "gh api: accompanying operations are not proven read-only"}, true
 	}
 	return ghAPIDecision{}, false
+}
+
+// ghSubcommandAfterFlags は cobra の stripFlags と同じく、= を含まない値付きフラグの
+// 次の語を値として飛ばし、最初の非フラグ語をサブコマンドとする。フラグかサブコマンドに
+// なりうる語が読めないか、値が複数語へ割れうるなら ok を偽にする。
+func ghSubcommandAfterFlags(words []ghAPIWord) (string, bool) {
+	i, ok := ghSubcommandIndex(words)
+	if !ok || i < 0 {
+		return "", ok
+	}
+	return *words[i].literal, true
+}
+
+// ghSubcommandIndex はサブコマンドの位置を返す。無ければ -1。
+func ghSubcommandIndex(words []ghAPIWord) (int, bool) {
+	for i := 0; i < len(words); i++ {
+		if words[i].literal == nil {
+			return -1, false
+		}
+		word := *words[i].literal
+		switch {
+		case word == "--":
+			if i+1 < len(words) && words[i+1].literal == nil {
+				return -1, false
+			}
+			if i+1 < len(words) {
+				return i + 1, true
+			}
+			return -1, true
+		case !strings.HasPrefix(word, "-") || word == "-":
+			return i, true
+		case strings.Contains(word, "="), word == "--help", word == "--version", word == "-h":
+		case strings.HasPrefix(word, "--"), len(word) == 2:
+			if i+1 < len(words) && words[i+1].splittable {
+				return -1, false
+			}
+			i++
+		}
+	}
+	return -1, true
 }
 
 // checkGhAPI は判定を返す。判定を出さないなら false。
@@ -686,5 +741,5 @@ func checkGhAPI(command string) (ghAPIDecision, bool) {
 		}
 		return ghAPIDecision{}, false
 	}
-	return ghAPIDecide(file)
+	return ghAPIDecide(file, false)
 }

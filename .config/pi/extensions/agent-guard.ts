@@ -66,11 +66,16 @@ function targetPath(input: string, cwd: string): string {
   return path.resolve(cwd, p);
 }
 
+// Tools that only read. Any other tool, such as powershell or one a project
+// enables with a `+name` defaultTools entry, may run commands this guard never sees.
+const readOnlyTools = new Set(["read", "grep", "find", "ls"]);
+
 export default function (pi: ExtensionAPI) {
   pi.on("tool_call", async (event, ctx) => {
+    if (readOnlyTools.has(event.toolName)) return undefined;
     let reason: string | undefined;
     if (event.toolName === "bash") {
-      reason = await runGuard("banned", {
+      reason = await runGuard("pi", {
         tool_name: "Bash",
         tool_input: { command: event.input.command },
       }, ctx.cwd);
@@ -82,6 +87,9 @@ export default function (pi: ExtensionAPI) {
         tool_name: "Write",
         tool_input: { file_path: filePath },
       }, ctx.cwd);
+    } else {
+      reason =
+        `agent-guard has no check for the ${event.toolName} tool; run it yourself if intended`;
     }
     return reason === undefined ? undefined : { block: true, reason };
   });

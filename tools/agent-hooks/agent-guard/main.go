@@ -4,6 +4,7 @@
 //
 //	agent-guard banned         Claude Code の Bash と Monitor 用。Herdr 入力ガードと禁止コマンド
 //	agent-guard codex          Codex の Bash 用。Herdr 入力ガードと禁止コマンド (GREP_R を除く)
+//	agent-guard pi             Pi の Bash 用。禁止コマンドと、読み取り以外の gh api と gh のエイリアス・拡張を止める
 //	agent-guard managed-paths  Claude Code の Edit/Write 用。Home Manager の管理下を守る
 //	agent-guard gh-api         Claude Code の `gh api` 用。読み取りだけを自動で許可する
 //
@@ -45,12 +46,17 @@ func refuse(format string, args ...any) {
 
 // codexSkipped は Codex では使わない判定。GREP_R は破壊を防ぐ判定ではなく
 // 検索ツールの好みなので、Codex には押し付けない。
-var codexSkipped = []verdict{"GREP_R"}
+var codexSkipped = []verdict{"GREP_R", "GH_FLAGS_API", "GH_SUBCOMMAND", "GH_API_SCRIPT"}
 
 // bannedSkipped は Claude Code では使わない判定。Claude Code の gh api は
 // gh-api モードが見る。GIT_OUTPUT は Codex のサンドボックスを守る判定で、
 // Claude Code の書き込みは権限設定が見る。
-var bannedSkipped = []verdict{"GH_API_METHOD", "GH_API_GET", "GIT_OUTPUT"}
+var bannedSkipped = []verdict{"GH_API_METHOD", "GH_API_GET", "GIT_OUTPUT", "GH_FLAGS_API", "GH_SUBCOMMAND", "GH_API_SCRIPT"}
+
+// piSkipped は Pi では使わない判定。gh api のメソッドは ghAPIDecide が見る。
+// GIT_OUTPUT は Codex のサンドボックスを守る判定で、Pi の Bash はリダイレクトでも
+// 書き込み先を確かめずに書けるので、守りにならない。
+var piSkipped = []verdict{"GH_API_METHOD", "GIT_OUTPUT"}
 
 type toolCall struct {
 	name    string // 文字列の tool_name がなければ空
@@ -114,14 +120,30 @@ func parseAs(command string, lang syntax.LangVariant) (*syntax.File, error) {
 // checkBanned はブロックするならその理由を、通すなら "" を返す。skip に挙げた
 // 判定は飛ばし、残りの先頭を使う。
 func checkBanned(command string, ruleSet []rules.Rule, skip ...verdict) string {
-	verdicts, err := commandVerdicts(command)
+	return bannedMessage(command, parseOrNil(command), ruleSet, skip)
+}
+
+func parseOrNil(command string) *syntax.File {
+	file, err := parse(command)
+	if err != nil {
+		return nil
+	}
+	return file
+}
+
+// bannedMessage は解析に失敗した command を file == nil で受ける。
+func bannedMessage(command string, file *syntax.File, ruleSet []rules.Rule, skip []verdict) string {
+	var verdicts []verdict
+	if file != nil {
+		verdicts = analyze(file, false)
+	}
 	if herdrInputCommand(command, verdicts) {
 		return herdrInputMessage
 	}
 	if message, ok := rules.Match(command, ruleSet); ok {
 		return message
 	}
-	if err != nil {
+	if file == nil {
 		return parseFailure
 	}
 	for _, v := range verdicts {
@@ -132,7 +154,8 @@ func checkBanned(command string, ruleSet []rules.Rule, skip ...verdict) string {
 	return ""
 }
 
-func checkCommand(command string, present bool, skip ...verdict) {
+// checkCommand は通したコマンドの構文木を返す。
+func checkCommand(command string, present bool, skip ...verdict) *syntax.File {
 	if !present {
 		refuse("received no tool_input.command string")
 	}
@@ -140,9 +163,11 @@ func checkCommand(command string, present bool, skip ...verdict) {
 	if err != nil {
 		refuse("cannot load its rules (%v)", err)
 	}
-	if message := checkBanned(command, ruleSet, skip...); message != "" {
+	file := parseOrNil(command)
+	if message := bannedMessage(command, file, ruleSet, skip); message != "" {
 		block(message)
 	}
+	return file
 }
 
 // 端末が stdin なら Claude Code からの呼び出しではない。読むとハングする。
@@ -219,6 +244,12 @@ func run(mode string) {
 			return
 		}
 		checkCommand(value, present, bannedSkipped...)
+	case "pi":
+		file := checkCommand(value, present, piSkipped...)
+		// Pi は ask をユーザーに確認する仕組みがないため、allow 以外は止める。
+		if decision, ok := ghAPIDecide(file, true); ok && decision.decision != "allow" {
+			block("Pi cannot request approval; run this command yourself if intended. " + decision.reason)
+		}
 	}
 }
 
@@ -241,9 +272,9 @@ func guard(mode string, body func()) {
 }
 
 func main() {
-	modes := []string{"banned", "codex", "managed-paths", "gh-api"}
+	modes := []string{"banned", "codex", "pi", "managed-paths", "gh-api"}
 	if len(os.Args) != 2 || !slices.Contains(modes, os.Args[1]) {
-		refuse("usage: agent-guard {banned|codex|managed-paths|gh-api}")
+		refuse("usage: agent-guard {banned|codex|pi|managed-paths|gh-api}")
 	}
 	mode := os.Args[1]
 

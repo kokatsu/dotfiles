@@ -36,7 +36,10 @@ var verdictMessages = map[verdict]string{
 	"GIT_IDENTITY":     "Don't set or override Git identity. ~/.config/git/config.local resolves it per directory via includeIf, and user.useConfigOnly makes Git fail loudly where no entry matches. Ask the user instead of choosing a value.",
 	"HERDR_INPUT":      herdrInputMessage,
 	"GH_API_METHOD":    "gh api: give exactly one literal HTTP method (-X GET for a read) and put expanded endpoints after `--` or behind a literal prefix; if this is not a gh call, quote the words.",
-	"GH_API_GET":       "gh api -X GET runs outside the Codex sandbox without asking, so it must stay a read on github.com: drop --input, -F/--field and --hostname, and give an endpoint path instead of a full URL. Use another method if Codex should ask.",
+	"GH_API_GET":       "gh api -X GET runs without approval, so it must stay a read on github.com: drop --input, -F/--field and --hostname, and give an endpoint path instead of a full URL. For anything else, use another method so Codex asks for approval; Pi cannot ask, so ask the user to run it.",
+	"GH_FLAGS_API":     "gh api: place api immediately after gh, as a command of its own, so its arguments can be checked.",
+	"GH_API_SCRIPT":    "gh api inside a shell script string or heredoc cannot be approved in Pi. Run gh api -X GET directly, or ask the user to run it.",
+	"GH_SUBCOMMAND":    "gh: aliases and extensions cannot be checked. Use the built-in command an alias expands to (gh pr checkout, not gh co), and ask the user to run extensions.",
 	"FIND_DELETE":      "Refuse find -delete. Use find ... -exec gomi {} + instead, so the files stay recoverable.",
 	"NPM_BIOME":        "Refuse running the npm package named biome (npx, bunx, pnpm dlx, npm exec): it is an unrelated env-var manager, not the Biome formatter. Run biome from PATH (Nix) directly.",
 	"SHELL_UNCHECKED":  "Refuse a shell whose script cannot be checked: read from a pipe or a file redirect, or built from a command or process substitution. Run the commands directly, pass them in a quoted heredoc, or run a script file by path.",
@@ -737,6 +740,7 @@ func commandVerdict(words, scripts []string, infos []wordInfo, fed bool) []verdi
 	if len(args) > 0 && (args[0] == "find" || args[0] == "fd") {
 		return out
 	}
+	out = append(out, piGhVerdicts(words, infos)...)
 	if v := ghAPIVerdict(words, infos); v != "" {
 		return append(out, v)
 	}
@@ -771,7 +775,7 @@ func callVerdicts(words, scripts []string, infos []wordInfo, fed bool) []verdict
 			if err != nil {
 				return []verdict{"SHELL_C_UNPARSED"}
 			}
-			return analyze(file, fed)
+			return scriptVerdicts(file, fed)
 		}
 		return nil
 	}
@@ -1159,7 +1163,18 @@ func documentVerdicts(words []string, doc *syntax.Word) (_ []verdict, ok bool) {
 	if err != nil {
 		return []verdict{"SHELL_C_UNPARSED"}, true
 	}
-	return analyze(file, true), true
+	return scriptVerdicts(file, true), true
+}
+
+// ghAPIDecide は外側の構文木しか歩かないので、文字列から解析し直したスクリプトの
+// gh api は Pi 向けにここで拾う。読み取りでも、外側の `sh -c 'gh api …'` を
+// 間接呼び出しとして止めるのと揃えて止める。
+func scriptVerdicts(file *syntax.File, fed bool) []verdict {
+	verdicts := analyze(file, fed)
+	if _, ok := ghAPIDecide(file, true); ok {
+		verdicts = append(verdicts, "GH_API_SCRIPT")
+	}
+	return verdicts
 }
 
 // 非対話シェルは & で起動したコマンドの標準入力を /dev/null にする。
