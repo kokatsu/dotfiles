@@ -791,6 +791,22 @@ func callVerdicts(words, scripts []string, infos []wordInfo, fed bool) []verdict
 	if (cmd == "source" || cmd == ".") && len(rest) > 0 && restInfos[0].subst {
 		return []verdict{"SHELL_UNCHECKED"}
 	}
+	// nix-shell の --run と --command は、値の文字列を bash で実行する。
+	if cmd == "nix-shell" {
+		for i := 0; i+1 < len(rest); i++ {
+			if rest[i] != "--run" && rest[i] != "--command" {
+				continue
+			}
+			if restInfos[i+1].subst {
+				return []verdict{"SHELL_UNCHECKED"}
+			}
+			file, err := parseAs(restScripts[i+1], syntax.LangBash)
+			if err != nil {
+				return []verdict{"SHELL_C_UNPARSED"}
+			}
+			return scriptVerdicts(file, fed)
+		}
+	}
 
 	// 引数として受け取ったコマンドを同じ判定にかける。
 	if cmd == "find" || cmd == "fd" {

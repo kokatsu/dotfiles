@@ -132,6 +132,7 @@ func TestPiGhHiddenSubcommand(t *testing.T) {
 		"git -C . push --delete origin b",
 		"sh -c 'git push'",
 		"nix develop -c git push",
+		"nix-shell -p git --run 'git push'",
 		"git po",
 		"git -c alias.publish=push publish origin main",
 		"git -c alias.x='!git push' x",
