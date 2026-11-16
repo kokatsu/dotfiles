@@ -226,41 +226,12 @@
       });
 
     # 共通オーバーレイ (全プラットフォーム)
-    commonOverlays = [
-      # upstream overlay (pkgs.moonbit-bin.* を生やす)
-      inputs.moonbit-overlay.overlays.default
-      customOverlays.cc-statusline
-      customOverlays.agent-hooks
-      customOverlays.claude-code
-      customOverlays.codex
-      customOverlays.cssmodules-language-server
-      customOverlays.dcd
-      customOverlays.deck-slides
-      customOverlays.fff-nvim-libgit2
-      customOverlays.git-graph-fork
-      customOverlays.herdr
-      customOverlays.herdr-nvim
-      customOverlays.jactionlint-skip-runner-label-goldens
-      customOverlays.kakehashi
-      customOverlays.karabiner-config
-      customOverlays.lazy-nvim
-      customOverlays.mermaid-ascii
-      customOverlays.peek-nvim
-      customOverlays.pkl
-      customOverlays.pkl-lsp
-      customOverlays.pkl-neovim
-      # customOverlays.qo
-      customOverlays.ruby-lsp
-      customOverlays.textlint-rule-preset-ai-writing
-      customOverlays.textlint-with-rules
-      customOverlays.treesitter-nvim
-      # customOverlays.unocss-language-server
-      customOverlays.upmd
-      customOverlays.vite-plus
-      customOverlays.vue-language-server-pin
-      customOverlays.x-api-playground
-      customOverlays.zeno-zsh
-    ];
+    commonOverlays =
+      [
+        # upstream overlay (pkgs.moonbit-bin.* を生やす)
+        inputs.moonbit-overlay.overlays.default
+      ]
+      ++ builtins.attrValues customOverlays;
 
     # Home Manager 構成の共通ビルダー (CI と実ユーザーの両方が使う)。
     # system は必ず引数で受け取り、内部で builtins.currentSystem を参照しない。
