@@ -15,9 +15,9 @@
       deps = with pkgs; [bash coreutils gawk jq];
     };
     feed-watch = {
-      subject = "Check GitHub feeds";
-      purpose = "for new commits";
-      deps = with pkgs; [bash deno gh jq curl yq-go coreutils gnused gnugrep util-linux];
+      subject = "Check Atom and RSS feeds";
+      purpose = "for the WezTerm status bar";
+      deps = with pkgs; [bash deno gh jq curl yq-go coreutils util-linux];
       service.TimeoutStartSec = "10min";
     };
     status-watch = {
