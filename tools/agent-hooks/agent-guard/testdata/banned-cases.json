@@ -785,6 +785,15 @@
   },
   {
     "want": "block",
+    "command": "git --attr-source HEAD reset --hard origin/main",
+    "label": "--attr-source は値を取るグローバルオプション"
+  },
+  {
+    "want": "allow",
+    "command": "git --attr-source HEAD status"
+  },
+  {
+    "want": "block",
     "command": "git reset --hard HEAD~1",
     "label": "git reset --hard HEAD~1"
   },

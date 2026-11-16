@@ -289,6 +289,8 @@ var ghReadOnly = map[string]bool{
 // Pi が走らせてよい git のサブコマンド。git 2.56.0 の `git --list-cmds=main` から
 // gitSends を除いた同梱コマンドの固定の一覧。一覧に無い名前は alias か外部コマンドで、
 // 何が走るかを読めない。git を更新して増えたコマンドは、ここに足すまで止まる。
+// pack-redundant と whatchanged は入れない。git はこの 2 つに限って alias での上書きを
+// 許すので、同じ名前でも何が走るかを読めない (2.56.0 で全件を確認)。
 var gitCommands = wordSet(`
 add am annotate apply archimport archive backfill bisect blame branch bugreport bundle
 cat-file check-attr check-ignore check-mailmap check-ref-format checkout checkout--worker
@@ -302,14 +304,14 @@ http-backend http-fetch index-pack init init-db instaweb interpret-trailers last
 log ls-files ls-remote ls-tree mailinfo mailsplit maintenance merge merge-base merge-file
 merge-index merge-octopus merge-one-file merge-ours merge-recursive merge-recursive-ours
 merge-recursive-theirs merge-resolve merge-subtree merge-tree mergetool mktag mktree
-multi-pack-index mv name-rev notes p4 pack-objects pack-redundant pack-refs patch-id
+multi-pack-index mv name-rev notes p4 pack-objects pack-refs patch-id
 pickaxe prune prune-packed pull quiltimport range-diff read-tree rebase receive-pack
 reflog refs remote repack replace replay repo request-pull rerere reset restore rev-list
 rev-parse revert rm sh-i18n--envsubst shell shortlog show show-branch show-index show-ref
 sparse-checkout stage stash status stripspace submodule submodule--helper switch
 symbolic-ref tag unpack-file unpack-objects update-index update-ref update-server-info
 upload-archive upload-archive--writer upload-pack url-parse var verify-commit verify-pack
-verify-tag version web--browse whatchanged worktree write-tree
+verify-tag version web--browse worktree write-tree
 `)
 
 // 手元の内容を remote やメールで送るか、認証情報を読む git の同梱コマンド。

@@ -70,12 +70,13 @@ func hasFlag(args, flags []string) bool {
 }
 
 var gitGlobalValueOpts = map[string]bool{
-	"-C":           true,
-	"-c":           true,
-	"--git-dir":    true,
-	"--work-tree":  true,
-	"--namespace":  true,
-	"--config-env": true,
+	"-C":            true,
+	"-c":            true,
+	"--git-dir":     true,
+	"--work-tree":   true,
+	"--namespace":   true,
+	"--config-env":  true,
+	"--attr-source": true,
 }
 
 func skipGitGlobals(args []string) []string {

@@ -136,6 +136,8 @@ func TestPiGhHiddenSubcommand(t *testing.T) {
 		"git po",
 		"git -c alias.publish=push publish origin main",
 		"git -c alias.x='!git push' x",
+		"git -c alias.whatchanged=push whatchanged origin main",
+		"git --attr-source status push origin main",
 		"git subtree push --prefix d origin b",
 		"git send-pack origin main",
 		"git credential fill",
