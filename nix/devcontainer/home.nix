@@ -5,17 +5,24 @@
   dotfilesDir,
   ...
 }: {
-  # .devcontainer の Claude Code と Codex にホストと同じ設定とフックを渡す最小構成。
+  # .devcontainer のエージェントにホストと同じ設定とフックを渡す最小構成。
   # 設定を生成する module はホストと共有し、ホストの他の module は読まない
   imports = [
     ../home/ai-writing.nix
     ../home/catppuccin-palette.nix
     ../home/programs/claude-code.nix
     ../home/programs/codex.nix
+    ../home/programs/pi.nix
     ../home/themes/claude-code.nix
   ];
 
   _module.args.validDotfilesDir = dotfilesDir;
+
+  catppuccin = {
+    autoEnable = false;
+    flavor = "mocha";
+    accent = "blue";
+  };
 
   manual.manpages.enable = false;
 
@@ -24,13 +31,14 @@
     homeDirectory = "/home/vscode";
     stateVersion = "24.11";
 
-    # settings.json と hooks.json が呼ぶコマンド
+    # settings.json と hooks.json が呼ぶコマンドと、Pi 本体
     packages = with pkgs; [
       agent-hooks
       cc-statusline
       codex
       fd
       jq
+      pi-coding-agent
       textlint-with-rules
     ];
 

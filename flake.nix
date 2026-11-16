@@ -288,7 +288,7 @@
         };
       };
 
-    # .devcontainer で Claude Code と Codex の設定を配置する構成 (nix/devcontainer/home.nix)
+    # .devcontainer でエージェントの設定を配置する構成 (nix/devcontainer/home.nix)
     mkDevcontainerHome = {
       system,
       dotfilesDir,
@@ -299,7 +299,10 @@
           config.allowUnfree = true;
           overlays = commonOverlays;
         };
-        modules = [./nix/devcontainer/home.nix];
+        modules = [
+          ./nix/devcontainer/home.nix
+          catppuccin.homeModules.catppuccin
+        ];
         extraSpecialArgs = {
           inherit inputs dotfilesDir;
           isDevcontainer = true;
