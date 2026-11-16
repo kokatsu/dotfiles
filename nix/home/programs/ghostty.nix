@@ -27,13 +27,11 @@
       window-save-state = "always";
       window-inherit-working-directory = true;
       window-inherit-font-size = true;
-      confirm-close-surface = false;
       quick-terminal-position = "top";
       quick-terminal-screen = "mouse";
       quick-terminal-animation-duration = 0.1;
       shell-integration = "detect";
       shell-integration-features = "cursor,sudo,title";
-      scrollback-limit = 10000;
       mouse-hide-while-typing = true;
       copy-on-select = true;
       # 残った選択が次の Ctrl+c もコピーに変え、SIGINT が届かなくなる
