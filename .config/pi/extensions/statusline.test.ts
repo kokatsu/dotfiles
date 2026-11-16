@@ -96,7 +96,7 @@ const cases = [
 for (const c of cases) {
   test(`footer fits the terminal: ${c.name}`, async () => {
     const render = await setup(c);
-    for (const width of [20, 40, 80, 81, 120]) {
+    for (const width of [0, 1, 2, 3, 20, 40, 80, 81, 120]) {
       for (const line of render(width)) {
         assert.ok(
           visibleWidth(line) <= width,
@@ -117,4 +117,14 @@ test("themed status keeps its escape sequences whole", async () => {
   assert.match(line.replace(/\x1b\[[0-9;]*m/g, ""), /\| Ready /);
   // deno-lint-ignore no-control-regex
   assert.doesNotMatch(line, /(?<!\x1b)\[[0-9;]*m/);
+});
+
+test("footer has one column of padding on both sides", async () => {
+  const render = await setup({ cwd: "/tmp/project" });
+  for (const width of [2, 3, 20, 80, 120]) {
+    for (const line of render(width)) {
+      assert.ok(line.startsWith(" "));
+      assert.ok(line.endsWith(" "));
+    }
+  }
 });

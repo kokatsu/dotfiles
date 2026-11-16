@@ -10,25 +10,13 @@
       if flavor == "latte"
       then "light"
       else "dark";
-    # ratio は 0-100 (foreground の比率)
     # Claude Code は `rgb(r,g,b)` / `#rrggbb` / `ansi256(n)` / `ansi:<name>` を受理する
     # diff 系は行背景・単語背景ともに override が効く (2.1.246 で修正)
     # diffAddedWord/diffRemovedWord は前景色ではなく変更単語の「背景色」。
-    #
-    # 行背景は GUI (デスクトップアプリ) の Catppuccin コードテーマの実測値 (dark 18 / light 11)。
     blend = fg: bg: ratio: let
-      mix = a: b: (a * ratio + b * (100 - ratio)) / 100;
-    in "rgb(${toString (mix fg.rgb.r bg.rgb.r)},${toString (mix fg.rgb.g bg.rgb.g)},${toString (mix fg.rgb.b bg.rgb.b)})";
-    diffRatio =
-      if themeBase == "light"
-      then {
-        line = 11;
-        dim = 6;
-      }
-      else {
-        line = 18;
-        dim = 10;
-      };
+      c = (config.catppuccinLib.blend fg bg ratio).rgb;
+    in "rgb(${toString c.r},${toString c.g},${toString c.b})";
+    diffRatio = config.catppuccinLib.diffRatio flavor;
     # dark の単語背景は base ブレンドを使わない。ブレンドは彩度を 10% 前後まで
     # 落として灰色に寄せるため、単語帯の文字と分離せず「白地に白文字」に見える。
     # なお単語帯の文字色はシンタックスハイライタ側の #f8f8f2 固定で、

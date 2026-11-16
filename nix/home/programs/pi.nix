@@ -4,16 +4,96 @@
   config,
   ...
 }: let
+  flavor = config.catppuccin.flavor;
+  themeName = (config.catppuccinLib.flavorNames flavor).kebab;
+  p = config.catppuccinLib.palettes.${flavor};
+  tint = color: (config.catppuccinLib.blend p.${color} p.base (config.catppuccinLib.diffRatio flavor).line).hex;
+  theme = {
+    "$schema" = "https://pi.dev/schemas/theme.schema.json";
+    name = themeName;
+    appearance =
+      if flavor == "latte"
+      then "light"
+      else "dark";
+    vars = builtins.mapAttrs (_: color: color.hex) p;
+    colors = {
+      accent = config.catppuccin.accent;
+      border = "overlay0";
+      borderAccent = config.catppuccin.accent;
+      borderMuted = "surface1";
+      success = "green";
+      error = "red";
+      warning = "yellow";
+      muted = "subtext0";
+      dim = "overlay1";
+      text = "text";
+      thinkingText = "subtext0";
+      scrollbarTrack = "surface1";
+      scrollbarThumb = "overlay2";
+      selectedBg = "surface1";
+      searchMatchBg = "yellow";
+      searchMatchText = "base";
+      userMessageBg = "surface0";
+      userMessageText = "text";
+      customMessageBg = "mantle";
+      customMessageText = "text";
+      customMessageLabel = "mauve";
+      toolPendingBg = "mantle";
+      toolSuccessBg = tint "green";
+      toolErrorBg = tint "red";
+      toolTitle = config.catppuccin.accent;
+      toolOutput = "text";
+      mdHeading = "mauve";
+      mdLink = "blue";
+      mdLinkUrl = "subtext0";
+      mdCode = "peach";
+      mdCodeBlock = "text";
+      mdCodeBlockBorder = "overlay0";
+      mdQuote = "subtext1";
+      mdQuoteBorder = "surface2";
+      mdHr = "surface2";
+      mdListBullet = "teal";
+      toolDiffAdded = "green";
+      toolDiffRemoved = "red";
+      toolDiffContext = "subtext0";
+      syntaxComment = "overlay2";
+      syntaxKeyword = "mauve";
+      syntaxFunction = "blue";
+      syntaxVariable = "text";
+      syntaxString = "green";
+      syntaxNumber = "peach";
+      syntaxType = "yellow";
+      syntaxOperator = "sky";
+      syntaxPunctuation = "overlay2";
+      thinkingOff = "overlay0";
+      thinkingMinimal = "subtext0";
+      thinkingLow = "blue";
+      thinkingMedium = "teal";
+      thinkingHigh = "mauve";
+      thinkingXhigh = "pink";
+      thinkingMax = "red";
+      bashMode = "peach";
+    };
+    export = {
+      pageBg = "base";
+      cardBg = "mantle";
+      infoBg = "surface0";
+    };
+  };
   baseSettings = (pkgs.formats.json {}).generate "pi-settings.json" {
     "$schema" = "https://pi.dev/schemas/settings.schema.json";
     collapseChangelog = true;
     defaultModel = "gpt-6.1-sol";
     defaultProvider = "openai-codex";
     defaultTools = ["+grep" "+find" "+ls"];
+    editorPaddingX = 1;
+    showHardwareCursor = true;
+    theme = themeName;
   };
 in {
   home = {
     file = {
+      ".config/pi/themes/${themeName}.json".text = builtins.toJSON theme;
       ".config/pi/AGENTS.md".source = ../../../.config/pi/.AGENTS.md;
       ".config/pi/extensions/agent-guard.ts".source = ../../../.config/pi/extensions/agent-guard.ts;
       ".config/pi/extensions/statusline.ts".source = ../../../.config/pi/extensions/statusline.ts;
