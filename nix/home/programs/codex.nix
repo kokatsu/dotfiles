@@ -20,6 +20,7 @@
     sandbox_mode = "workspace-write";
     web_search = "cached";
     features = {
+      daemon_auto_start = false;
       hooks = true;
       memories = true;
       tui_workspace = true;
