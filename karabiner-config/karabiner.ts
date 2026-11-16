@@ -90,7 +90,7 @@ const keyList = [
 ] as const;
 
 writeToProfile(
-  "Default",
+  Deno.args.includes("--dry-run") ? "--dry-run" : "Default",
   [
     // Terminal apps: Convert Command+key to Control+key
     // This restores physical Ctrl behavior in terminal apps

@@ -9,6 +9,8 @@
       lockfile = ../../karabiner-config/deno.lock;
       hash = denoDepsHash;
     };
+    stub = ''{"profiles":[{"name":"Default","selected":true}]}'';
+    run = "deno run --config deno.json --vendor --cached-only --frozen-lockfile --node-modules-dir=manual --allow-env --allow-read --allow-write --allow-sys=homedir ./karabiner.ts";
   in {
     karabiner-config = prev.stdenvNoCC.mkDerivation {
       pname = "karabiner-config";
@@ -20,6 +22,10 @@
       checkPhase = ''
         runHook preCheck
         bash ${../../scripts/test-karabiner-profile.sh} "$PWD/profile.json" ${../../scripts/apply-karabiner-profile.sh}
+        # --dry-run は karabiner.json を書き換えない
+        echo '${stub}' > "$HOME/.config/karabiner/karabiner.json"
+        ${run} --dry-run > /dev/null
+        echo '${stub}' | cmp - "$HOME/.config/karabiner/karabiner.json"
         runHook postCheck
       '';
       buildPhase = ''
@@ -27,11 +33,10 @@
         export HOME=$TMPDIR/home
         export DENO_DIR=$TMPDIR/deno-cache
         mkdir -p "$HOME/.config/karabiner"
-        echo '{"profiles":[{"name":"Default","selected":true}]}' > "$HOME/.config/karabiner/karabiner.json"
+        echo '${stub}' > "$HOME/.config/karabiner/karabiner.json"
         cp -R ${dependencies}/vendor ${dependencies}/node_modules .
         jq '.nodeModulesDir = "manual" | .vendor = true' ${dependencies}/config.json > deno.json
-        deno run --config deno.json --vendor --cached-only --frozen-lockfile --node-modules-dir=manual \
-          --allow-env --allow-read --allow-write --allow-sys=homedir ./karabiner.ts
+        ${run}
         jq '.profiles[0] | del(.name, .selected)' "$HOME/.config/karabiner/karabiner.json" > profile.json
         runHook postBuild
       '';
