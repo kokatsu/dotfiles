@@ -31,14 +31,17 @@
     homeDirectory = "/home/vscode";
     stateVersion = "24.11";
 
-    # settings.json と hooks.json が呼ぶコマンドと、Pi 本体
+    # settings.json と hooks.json が呼ぶコマンド、agent-guard が代わりに使うよう案内する
+    # gomi と rg、エージェント本体
     packages = with pkgs; [
       agent-hooks
       cc-statusline
       codex
       fd
+      gomi
       jq
       pi-coding-agent
+      ripgrep
       textlint-with-rules
     ];
 
