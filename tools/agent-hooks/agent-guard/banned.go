@@ -10,6 +10,7 @@ package main
 import (
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	"mvdan.cc/sh/v3/syntax"
@@ -23,6 +24,7 @@ var verdictMessages = map[verdict]string{
 	"SHRED":            "Refuse shred. Confirm intent and run manually.",
 	"PKILL_F":          "Refuse pkill -f: it pattern-matches every command line, including this harness and its live servers. Kill by a recorded PID or use the tool's own stop command.",
 	"KILLALL":          "Refuse killall. Kill by a recorded PID or use the tool's own stop command.",
+	"KILL_ALL":         "Refuse kill with pid -1: it signals every process the user can signal, including this harness. Kill by a recorded PID.",
 	"MKFS":             "Refuse mkfs. Run manually if intentional.",
 	"DD_DEV":           "Refuse dd writing to a device. Run manually if intentional.",
 	"CHMOD_R_777":      "Refuse chmod -R 777. Use a tighter mode.",
@@ -835,6 +837,8 @@ func singleVerdict(cmd string, rest []string) verdict {
 		return "PKILL_F"
 	case cmd == "killall":
 		return "KILLALL"
+	case cmd == "kill" && killsEveryProcess(rest):
+		return "KILL_ALL"
 	case strings.HasPrefix(cmd, "mkfs."):
 		return "MKFS"
 	case cmd == "dd" && slices.ContainsFunc(rest, func(a string) bool { return strings.HasPrefix(a, "of=/dev/") }):
@@ -942,6 +946,22 @@ func npmGlobal(args []string) bool {
 func hasGlobalFlag(args []string) bool {
 	return slices.ContainsFunc(args, func(a string) bool {
 		return a == "--global" || len(a) > 1 && a[0] == '-' && a[1] != '-' && strings.Contains(a, "g")
+	})
+}
+
+// 先頭の語だけがシグナルの指定になり (-9、-KILL、-s KILL、-n 9)、残りは pid。
+// pid の -1 は、シグナルを送れるすべてのプロセスを指す。シェルは -01 も -1 と読む。
+func killsEveryProcess(args []string) bool {
+	if len(args) > 0 && args[0] != "--" && strings.HasPrefix(args[0], "-") {
+		if args[0] == "-s" || args[0] == "-n" {
+			args = drop(args, 2)
+		} else {
+			args = args[1:]
+		}
+	}
+	return slices.ContainsFunc(args, func(a string) bool {
+		pid, err := strconv.Atoi(a)
+		return err == nil && pid == -1
 	})
 }
 
