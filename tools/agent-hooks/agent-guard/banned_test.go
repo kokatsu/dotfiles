@@ -242,12 +242,12 @@ func TestHerdrInput(t *testing.T) {
 		`printf '%s\n' 'herdr pane send-text w1:p1 test'`,
 	}
 	for _, command := range blocked {
-		if verdicts, _ := commandVerdicts(command); !herdrInputCommand(command, verdicts) {
+		if checkBanned(command, loadRules(t)) != herdrInputMessage {
 			t.Errorf("should be blocked: %q", command)
 		}
 	}
 	for _, command := range allowed {
-		if verdicts, _ := commandVerdicts(command); herdrInputCommand(command, verdicts) {
+		if checkBanned(command, loadRules(t)) == herdrInputMessage {
 			t.Errorf("should be allowed: %q", command)
 		}
 	}

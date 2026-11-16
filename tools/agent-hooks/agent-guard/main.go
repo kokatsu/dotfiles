@@ -104,14 +104,6 @@ func parse(command string) (*syntax.File, error) {
 	return parseAs(command, lang)
 }
 
-func commandVerdicts(command string) ([]verdict, error) {
-	file, err := parse(command)
-	if err != nil {
-		return nil, err
-	}
-	return analyze(file, false), nil
-}
-
 func parseAs(command string, lang syntax.LangVariant) (*syntax.File, error) {
 	parser := syntax.NewParser(syntax.KeepComments(true), syntax.Variant(lang))
 	return parser.Parse(strings.NewReader(command+"\n"), "")
