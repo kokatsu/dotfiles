@@ -117,6 +117,11 @@ export default defineConfig(({ env }) => {
       snippet:
         "devcontainer exec --workspace-folder . codex login --device-auth",
     },
+    {
+      name: "devcontainer pi",
+      keyword: "dcp",
+      snippet: "dc-agent pi",
+    },
 
     // -------------------------------------------------------------------------
     // Nix
