@@ -254,7 +254,7 @@ export default async function (pi: ExtensionAPI) {
           if (cwd === home || cwd.startsWith(`${home}/`)) {
             cwd = `~${cwd.slice(home.length)}`;
           }
-          let where = `📁 ${oneLine(cwd)}`;
+          let where = `📁 ${paint(p.model, oneLine(cwd))}`;
           const branch = footerData.getGitBranch();
           if (branch) where += `${sep}🌿 ${paint(p.green, oneLine(branch))}`;
           const name = sm.getSessionName();
