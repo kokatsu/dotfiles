@@ -28,7 +28,7 @@
     enable = true;
     onActivation = {
       autoUpdate = true;
-      cleanup = "zap";
+      cleanup = "uninstall";
       # Homebrew 6.0 以降、auto_updates な cask (Chrome 等) も通常の upgrade で
       # .app ごと差し替えられる。起動中の Chrome があると新規タブが真っ白に
       # なるため、darwin-rebuild は Chrome を閉じてから実行すること。
