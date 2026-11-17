@@ -1,3 +1,7 @@
+import npmInstallFlags from "../nix/npm-locks/install-flags.json" with {
+  type: "json",
+};
+
 export const binaryFile = "nix/overlays/binary-releases.nix";
 
 type Package =
@@ -28,14 +32,14 @@ export const packages: Package[] = [
     file: "nix/overlays/npm-packages.nix",
     kind: "npm",
     dependency: "vite-plus",
-    npmFlags: ["--legacy-peer-deps"],
+    npmFlags: npmInstallFlags["vite-plus"],
   },
   {
     name: "textlint-rule-preset-ai-writing",
     file: "nix/overlays/npm-packages.nix",
     kind: "npm",
     dependency: "@textlint-ja/textlint-rule-preset-ai-writing",
-    npmFlags: [],
+    npmFlags: npmInstallFlags["textlint-rule-preset-ai-writing"],
   },
   { name: "codex", file: binaryFile, kind: "binary" },
   {

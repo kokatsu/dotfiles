@@ -1,0 +1,4 @@
+{
+  "vite-plus": ["--legacy-peer-deps"],
+  "textlint-rule-preset-ai-writing": []
+}

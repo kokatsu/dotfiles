@@ -1,4 +1,6 @@
-{
+let
+  npmInstallFlags = builtins.fromJSON (builtins.readFile ../npm-locks/install-flags.json);
+in {
   # vite-plus - Unified toolchain for the web (vp CLI)
   # vite-plus's tarball references private workspace packages in its own
   # devDependencies, so we cannot reuse its package.json directly. Instead we
@@ -15,7 +17,7 @@
       src = ../npm-locks/vite-plus;
 
       npmDepsHash = "sha256-kGZ6mtoAUrsEMRqFqIHk0D2452jCGanHlWHy/8lK54Q=";
-      npmFlags = ["--legacy-peer-deps"];
+      npmFlags = npmInstallFlags.vite-plus;
       dontNpmBuild = true;
 
       # Hoisted dependencies must not sit at lib/node_modules top level, or
@@ -82,6 +84,7 @@
   in {
     textlint-rule-preset-ai-writing = prev.buildNpmPackage {
       pname = "textlint-rule-preset-ai-writing";
+      npmFlags = npmInstallFlags.textlint-rule-preset-ai-writing;
       inherit version;
 
       src = ../npm-locks/textlint-rule-preset-ai-writing;
