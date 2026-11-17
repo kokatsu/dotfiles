@@ -37,7 +37,8 @@ command=$(
 patch_paths=$(
   printf '%s\n' "$command" | sed -n \
     -e 's/^\*\*\* Add File: //p' \
-    -e 's/^\*\*\* Update File: //p'
+    -e 's/^\*\*\* Update File: //p' \
+    -e 's/^\*\*\* Move to: //p'
 )
 
 format_file() {
@@ -46,29 +47,38 @@ format_file() {
 
   case "$file" in
   *.nix)
-    alejandra -q "$file" 2>/dev/null || true
+    alejandra -q "$file"
     ;;
   *.lua)
-    stylua "$file" 2>/dev/null || true
+    stylua "$file"
     ;;
-  *.ts)
+  *.ts | *.tsx)
     # このリポジトリの .ts は全て Deno 管理 (.biome.jsonc で除外) のため deno fmt を使う
-    deno fmt "$file" >/dev/null 2>&1 || true
+    deno fmt "$file"
     ;;
   *.js | *.json | *.jsonc)
-    biome check --write "$file" >/dev/null 2>&1 || true
+    biome check --write --no-errors-on-unmatched "$file"
     ;;
   *.yaml | *.yml)
-    yamlfmt "$file" 2>/dev/null || true
+    yamlfmt "$file"
     ;;
   esac
 }
 
-{
+failures=''
+while IFS= read -r file; do
+  if ! output=$(format_file "$file" 2>&1); then
+    failures+="$file: $output
+"
+  fi
+done < <({
   printf '%s\n' "$json_paths"
   printf '%s\n' "$patch_paths"
-} | sed '/^$/d' | sort -u | while IFS= read -r file; do
-  format_file "$file"
-done
+} | sed '/^$/d' | sort -u)
+
+if [[ -n $failures ]]; then
+  jq -n --arg message "Auto-format failed:
+$failures" '{systemMessage: $message}'
+fi
 
 exit 0
