@@ -200,7 +200,17 @@ in {
 
         # config.toml の [plugins.*] は有効化の宣言だけで、Codex が読むのは
         # plugin add が作る plugins/cache 側のコピー。
-        $DRY_RUN_CMD env CODEX_HOME="$CODEX_DIR" ${lib.getExe pkgs.codex} plugin add pstack@cursor-plugins >/dev/null
+        # 毎回は実行しない: 実行中の codex プロセスを herdr がエージェントと判定し、
+        # サイドバーに一瞬 Codex が出るため。plugin add は pstack/ を丸ごと作り直すので、
+        # スタンプは Codex が読むキャッシュの外に置く。
+        PSTACK_CACHE="$CODEX_DIR/plugins/cache/cursor-plugins/pstack"
+        PSTACK_STAMP="$CODEX_DIR/.hm-pstack-source"
+        if [ ! -d "$PSTACK_CACHE" ] || [ "$(cat "$PSTACK_STAMP" 2>/dev/null)" != "${inputs.cursor-plugins}" ]; then
+          $DRY_RUN_CMD env CODEX_HOME="$CODEX_DIR" ${lib.getExe pkgs.codex} plugin add pstack@cursor-plugins >/dev/null
+          if [ -z "$DRY_RUN_CMD" ]; then
+            echo "${inputs.cursor-plugins}" > "$PSTACK_STAMP"
+          fi
+        fi
       '';
   };
 }
