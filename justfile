@@ -40,7 +40,7 @@ fmt: lua-fmt nix-fmt biome-fmt deno-fmt go-fmt shfmt toml-fmt yaml-fmt pkl-fmt
 fmt-check: lua-fmt-check nix-fmt-check deno-fmt-check go-fmt-check shfmt-check toml-fmt-check yaml-fmt-check pkl-fmt-check
 
 # Run all linters
-lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint jactionlint zizmor deno-lint deno-check go-vet biome-ci markdownlint toml-check editorconfig gitleaks-smoke-test gitleaks-scan
+lint: nix-lint nix-dead-code lua-lint shellcheck zsh-lint jactionlint zizmor deno-lint deno-check go-vet biome-ci markdownlint ai-writing-check toml-check editorconfig gitleaks-smoke-test gitleaks-scan
 
 # List git-tracked Lua files (vendored yazi plugins are excluded)
 # lua_dirs だけだと .config/yazi/init.lua や scripts/*.lua を取りこぼすため動的に列挙する。
@@ -184,8 +184,13 @@ zizmor:
 markdownlint:
     @git ls-files -z '*.md' | xargs -0 markdownlint
 
+# Check changed documents locally, or the full commit range supplied by CI.
+ai-writing-check:
+    @if [ -n "${AI_WRITING_BASE:-}" ]; then bash scripts/check-ai-writing.sh --base "$AI_WRITING_BASE"; else bash scripts/check-ai-writing.sh --worktree; fi
+
 llm-config-test:
     bash scripts/test-format-post-tool-use.sh
+    bash scripts/test-ai-writing-documents.sh
 
 # Format TOML files
 toml-fmt:

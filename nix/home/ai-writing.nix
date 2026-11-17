@@ -5,5 +5,6 @@
       executable = true;
     };
     ".config/ai-writing/textlint-response.json".source = ../../.config/ai-writing/textlint-response.json;
+    ".config/ai-writing/rules".source = ../../.config/ai-writing/rules;
   };
 }

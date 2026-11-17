@@ -95,6 +95,10 @@
         "glob": ["*.md"],
         "run": "markdownlint {staged_files}"
       },
+      "textlint-documents": {
+        "glob": ["*.{md,markdown,html,htm}"],
+        "run": "bash scripts/check-ai-writing.sh --staged"
+      },
       "editorconfig": {
         "run": "editorconfig-checker {staged_files}"
       },

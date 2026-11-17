@@ -48,6 +48,7 @@ lint_status=0
 if lint_output=$(
   textlint \
     --config "$textlint_config" \
+    --rulesdir "${textlint_config%/*}/rules" \
     --format json \
     --no-color \
     -- "${files[@]}" 2>"$diagnostics"

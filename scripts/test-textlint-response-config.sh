@@ -42,7 +42,7 @@ expect_clean() { add_case clean '' "$1" "$2"; }
 run_cases() {
   local report status=0 i found
   # textlint は指摘があると終了コード 1 を返すので、それは失敗として扱わない
-  report=$(textlint --config "$config" --format json --no-color "${case_file[@]}") || status=$?
+  report=$(textlint --config "$config" --rulesdir "$repo_root/.config/ai-writing/rules" --format json --no-color "${case_file[@]}") || status=$?
   [ "$status" -le 1 ] || fail "textlint failed with exit status $status"
   printf '%s' "$report" |
     jq -e --argjson n "${#case_file[@]}" 'type == "array" and length == $n and all(.[]; .messages | type == "array")' >/dev/null ||
@@ -70,7 +70,7 @@ run_cases() {
   case_label=()
 }
 
-print_config=$(textlint --config "$config" --print-config)
+print_config=$(textlint --config "$config" --rulesdir "$repo_root/.config/ai-writing/rules" --print-config)
 
 # 有効なルールの集合を固定する。preset が増減すると 21 個の false 指定が追随できず、
 # 検査範囲が黙って変わるため。
@@ -82,6 +82,7 @@ expected_rules=$(
 @textlint-ja/ai-writing/no-ai-list-formatting
 ja-technical-writing/ja-no-redundant-expression
 ja-technical-writing/no-mix-dearu-desumasu
+no-prose-dash
 RULES
 )
 actual_rules=$(printf '%s' "$print_config" | jq -r '.rule[].id' | sort)
@@ -99,6 +100,22 @@ dearu_options=$(
   fail "no-mix-dearu-desumasu lost the list exemption"
 
 # japanese-writing が禁止している形式と、その代替
+expect_rule no-prose-dash '設定を確認します。補足──具体例です。' 'double dash in prose'
+expect_rule no-prose-dash '# 設定—補足' 'em dash in a heading'
+expect_rule no-prose-dash '設定–補足です。' 'en dash in prose'
+expect_rule no-prose-dash '設定――補足です。' 'horizontal bars in Japanese prose'
+expect_rule no-prose-dash '設定⸺補足です。' 'two-em dash in prose'
+expect_rule no-prose-dash '設定⸻補足です。' 'three-em dash in prose'
+expect_clean '設定を確認します。具体例です。' 'sentences without dashes'
+expect_clean '> 引用──原文です。' 'quoted dash'
+# shellcheck disable=SC2016
+expect_clean '識別子は `a—b` です。' 'inline code dash'
+# shellcheck disable=SC2016
+expect_clean '```text
+a──b
+```' 'fenced dash'
+expect_clean '[参照](https://example.com/a—b)' 'dash in a URL'
+expect_clean 'These settings—like the other defaults—remain unchanged.' 'English prose outside the Japanese rule'
 expect_rule @textlint-ja/ai-writing/no-ai-list-formatting \
   '- **用語**: 説明の本文' 'bold and colon in a list item'
 expect_clean '- **用語** は説明の本文です' 'the prescribed replacement'
@@ -149,6 +166,7 @@ run_cases
 # Also exercise the actual hook with the symlink layout Home Manager deploys.
 mkdir -p "$workdir/ai-writing"
 ln -s "$config" "$workdir/ai-writing/textlint-response.json"
+ln -s "$repo_root/.config/ai-writing/rules" "$workdir/ai-writing/rules"
 run_real_hook() {
   printf '%s\n' "$1" >"$workdir/$2"
   jq -cn --arg p "$workdir/$2" '{tool_name: "Write", tool_input: {file_path: $p}}' |
