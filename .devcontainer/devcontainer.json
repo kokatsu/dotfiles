@@ -3,9 +3,7 @@
   // コード名のタグなら Renovate は digest だけを更新し、LTS の移行は手で行う
   "image": "mcr.microsoft.com/devcontainers/base:resolute@sha256:b377a08d19467bcc08180cb95098448cac31c1a8423e287ce709a9eb09e14762",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {},
-    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
-    // エージェントの設定とフックを Home Manager で配置する (.devcontainer/apply-home.sh)
+    // エージェントとその設定、フックを Home Manager で配置する (.devcontainer/apply-home.sh)
     "ghcr.io/devcontainers/features/nix:1": {
       "extraNixConfig": "experimental-features = nix-command flakes"
     }
@@ -17,7 +15,6 @@
   "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
   "containerEnv": {
     "TZ": "${localEnv:TZ:Asia/Tokyo}",
-    "NODE_OPTIONS": "--max-old-space-size=4096",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
     // 上の設定で feature flag を取得しなくなり、入力欄に端末のカーソルを使う既定が flag から取れない
     "CLAUDE_CODE_NATIVE_CURSOR": "1",

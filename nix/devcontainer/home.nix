@@ -36,6 +36,7 @@
     packages = with pkgs; [
       agent-hooks
       cc-statusline
+      claude-code
       codex
       fd
       gomi
