@@ -425,6 +425,7 @@
             nixd # Alternative Nix LSP
             just # Task runner
             git # just の _sh-files がファイル列挙に使う
+            lefthook # Commit staging regression test
 
             # Nix
             alejandra # Nix formatter
