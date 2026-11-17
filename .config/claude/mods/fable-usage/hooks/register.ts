@@ -25,7 +25,12 @@ const SNAP_MS = 2 * 60 * 1000;
 
 // disableAllHooks keeps the child from firing the user's SessionStart/Stop
 // hooks (herdr session reports, notifications) and from loading mods, this one included.
+// With CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC (set in the devcontainer), /usage
+// prints no usage windows.
 const USAGE_ARGV = [
+  "env",
+  "-u",
+  "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
   "claude",
   "-p",
   "--no-session-persistence",
