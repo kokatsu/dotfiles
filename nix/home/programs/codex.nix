@@ -84,6 +84,11 @@
   };
 in {
   home = {
+    packages = [
+      (lib.hiPrio (pkgs.writeShellScriptBin "codex" ''
+        exec ${pkgs.bash}/bin/bash ${../../../scripts/codex-launch.sh} ${lib.getExe pkgs.codex} "$@"
+      ''))
+    ];
     file = {
       ".config/codex/AGENTS.md".source = ../../../.config/codex/.AGENTS.md;
       ".config/codex/pstack-adapter.md".source = ../../../.config/codex/pstack-adapter.md;

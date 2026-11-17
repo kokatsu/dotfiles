@@ -189,6 +189,7 @@ ai-writing-check:
     @if [ -n "${AI_WRITING_BASE:-}" ]; then bash scripts/check-ai-writing.sh --base "$AI_WRITING_BASE"; else bash scripts/check-ai-writing.sh --worktree; fi
 
 llm-config-test:
+    bash scripts/test-codex-launch.sh
     bash scripts/test-format-post-tool-use.sh
     bash scripts/test-ai-writing-documents.sh
 
