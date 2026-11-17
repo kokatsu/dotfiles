@@ -30,9 +30,16 @@
     // ホストでは Home Manager の sessionVariables が設定している
     "CC_STATUSLINE_THEME": "${localEnv:CC_STATUSLINE_THEME}",
     // Home Manager が入れるエージェントとフック
-    "PATH": "/home/vscode/.nix-profile/bin:${containerEnv:PATH}"
+    "PATH": "/home/vscode/.nix-profile/bin:${containerEnv:PATH}",
+    // 外へ出る通信は init-firewall.sh が起動する tinyproxy を通す。containerEnv にすると、tinyproxy より先に
+    // entrypoint が起動する nix-daemon にも渡る
+    "HTTPS_PROXY": "http://127.0.0.1:3128",
+    "HTTP_PROXY": "http://127.0.0.1:3128",
+    "NO_PROXY": "localhost,127.0.0.1"
   },
-  "postCreateCommand": "sudo chown vscode:vscode /home/vscode/.config /home/vscode/.config/claude /home/vscode/.config/codex /home/vscode/.config/pi && sudo apt-get update && sudo apt-get install -y iptables ipset iproute2 dnsutils jq curl aggregate && sudo install -m 0755 .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh && sudo sh -c 'echo \"vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\" > /etc/sudoers.d/vscode && chmod 0440 /etc/sudoers.d/vscode' && .devcontainer/apply-home.sh",
+  // tinyproxy は postStartCommand まで動いていないので、ここではプロキシを使わない。
+  // tinyproxy パッケージは logrotate 経由で systemd や systemd-resolved まで入れるため、本体の tinyproxy-bin だけを入れる
+  "postCreateCommand": "unset HTTPS_PROXY HTTP_PROXY NO_PROXY && sudo chown vscode:vscode /home/vscode/.config /home/vscode/.config/claude /home/vscode/.config/codex /home/vscode/.config/pi && sudo apt-get update && sudo apt-get install -y iptables iproute2 curl tinyproxy-bin && sudo useradd --system --no-create-home --shell /usr/sbin/nologin tinyproxy && sudo install -d -o tinyproxy -g tinyproxy /var/log/tinyproxy && sudo install -D -m 0644 .devcontainer/tinyproxy.conf /etc/tinyproxy/tinyproxy.conf && sudo install -m 0644 .devcontainer/tinyproxy-allow.txt /etc/tinyproxy/allow.txt && sudo install -m 0755 .devcontainer/init-firewall.sh /usr/local/bin/init-firewall.sh && sudo sh -c 'echo \"vscode ALL=(root) NOPASSWD: /usr/local/bin/init-firewall.sh\" > /etc/sudoers.d/vscode && chmod 0440 /etc/sudoers.d/vscode' && .devcontainer/apply-home.sh",
   "postStartCommand": "sudo /usr/local/bin/init-firewall.sh",
   "waitFor": "postStartCommand",
   "mounts": [

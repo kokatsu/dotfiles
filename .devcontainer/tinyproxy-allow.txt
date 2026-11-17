@@ -1,0 +1,11 @@
+# tinyproxy は CONNECT の宛先のホスト名を各行の ERE と照合する。^ と $ で固定しないと
+# github.com.example.net のような名前も通る
+^api\.anthropic\.com$
+^claude\.ai$
+^platform\.claude\.com$
+^(.*\.)?github\.com$
+^raw\.githubusercontent\.com$
+^chatgpt\.com$
+^auth\.openai\.com$
+^developers\.openai\.com$
+^pi\.dev$
