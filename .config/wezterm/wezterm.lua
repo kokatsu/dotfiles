@@ -39,6 +39,7 @@ config.use_fancy_tab_bar = false
 config.use_ime = true
 config.window_decorations = 'RESIZE'
 config.hide_tab_bar_if_only_one_tab = false
+config.window_padding = { left = '1cell', right = '1cell', top = '0.5cell', bottom = 0 }
 
 -- https://stackoverflow.com/questions/78738575/how-to-maximize-wezterm-on-startup
 wezterm.on('gui-startup', function(cmd)

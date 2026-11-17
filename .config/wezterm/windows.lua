@@ -6,8 +6,7 @@ local M = {}
 M.apply_to_config = function(config)
   config.front_end = 'WebGpu' -- GPU アクセラレーションで描画高速化
   config.window_background_opacity = 1.0
-  -- PlemolJP は UDEV Gothic より字面が大きく見えるので 10.5 から少し下げている
-  config.font_size = 10.25
+  config.font_size = 14
 
   ---@type WslDomain[]
   local wsl_domains = wezterm.default_wsl_domains()
