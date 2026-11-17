@@ -1,6 +1,7 @@
 {
   "name": "claude-code-sandbox",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  // コード名のタグなら Renovate は digest だけを更新し、LTS の移行は手で行う
+  "image": "mcr.microsoft.com/devcontainers/base:resolute@sha256:b377a08d19467bcc08180cb95098448cac31c1a8423e287ce709a9eb09e14762",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {},
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {},
