@@ -16,7 +16,7 @@ Explicit user instructions take precedence over workflow defaults. Existing auth
 - Research and review permit only the specified result artifacts to be written. Implementation permits only the user's authorized changes within the declared edit paths; choosing a template never grants permission to edit.
 - Use the same local Git worktree, with the peer's canonical `cwd` equal to its Git root. Prepare a fresh ignored result directory there, record the request and peer identity, and require the peer to save the full result before replying. Stop if these conditions cannot be established; do not change directories, permissions, or ignore rules for the peer.
 - While implementation is pending, do not edit the peer's assigned paths. Wait on all local editing when the peer's work depends on other files that would change. The peer must report a blocked or partial result rather than expand its scope.
-- Read and verify the saved result, including its task ID and terminal record. A saved file, an idle pane, or an exit code alone does not establish reply completion or task success.
+- Run `herdr-peer check-result TASK_DIRECTORY KIND`, then read the saved result. File validation, an idle pane, and exit code alone do not establish reply completion or task success.
 
 ## Default review scope
 

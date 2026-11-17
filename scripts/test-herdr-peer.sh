@@ -42,7 +42,7 @@ sent_already() {
 
 session_id() {
   case $FAKE_SCENARIO in
-  stable | marker-ok | marker-missing | marker-late | blocked-peer | read-fail | settle-reset | budget-spent | \
+  stable | marker-ok | marker-sidebar | marker-suffix | marker-missing | marker-late | blocked-peer | read-fail | settle-reset | budget-spent | \
     prompt-stalled | prompt-timeout | prompt-error-other | prompt-error-garbage | kind-changed-after-send)
     printf '%s\n' '"stable-session"'
     ;;
@@ -135,6 +135,10 @@ agent_json() {
 
 case "$1 $2" in
 "pane current")
+  if [[ $FAKE_SCENARIO == stale-current ]]; then
+    echo '{"error":{"code":"pane_not_found","message":"pane not found"}}' >&2
+    exit 1
+  fi
   jq -cn '{result: {pane: {
     pane_id: "current-pane",
     tab_id: "tab-1",
@@ -167,7 +171,7 @@ case "$1 $2" in
   bump prompt-count >/dev/null
   printf '%s' "$4" >"$FAKE_STATE/prompt-text"
   printf '%s\n' "$@" >"$FAKE_STATE/prompt-argv"
-  grep -oE 'HERDRPEEREND[0-9a-f]+' <<<"$4" | head -1 >"$FAKE_STATE/marker" || true
+  sed -nE 's/^Finish your reply.*concatenation of HERDRPEEREND and ([0-9a-f]+),.*/HERDRPEEREND\1/p' <<<"$4" >"$FAKE_STATE/marker"
   if [[ $FAKE_SCENARIO == bootstrap || $FAKE_SCENARIO == delayed-bootstrap ]]; then
     touch "$FAKE_STATE/session-created"
   fi
@@ -189,12 +193,26 @@ case "$1 $2" in
   ;;
 "agent read")
   printf '%s\n' "$@" >"$FAKE_STATE/read-argv"
+  if [[ -f $FAKE_STATE/prompt-count ]] && [[ " $* " != *' --source visible '* ]]; then
+    echo 'completion polling must not scroll the peer' >&2
+    exit 3
+  fi
   marker=''
   [[ ! -s $FAKE_STATE/marker ]] || read -r marker <"$FAKE_STATE/marker"
   # Counted for every scenario, including the failing one: the release clock keys off
   # attempts, and an attempt that dies is still an attempt.
   read_count=$(bump read-count)
   case $FAKE_SCENARIO in
+  marker-sidebar)
+    printf '  %s                  scripts/test-herdr-peer.sh +11\n' "$marker"
+    ;;
+  marker-suffix)
+    printf '%s is not a completion line\n' "$marker"
+    printf '%sx\n' "$marker"
+    printf 'Finish with %s and nothing else.\n' "$marker"
+    # Every possible character wrap of the actual request must remain harmless.
+    for width in 16 20 24 32 40; do fold -w "$width" "$FAKE_STATE/prompt-text"; done
+    ;;
   read-fail)
     printf 'fake read failure\n' >&2
     exit 3
@@ -328,6 +346,13 @@ prompt_count() {
   printf '%s' "$count"
 }
 
+if CODEX_THREAD_ID=thread-fixture run_wrapper stale-current prompt test >"$test_dir/stale-output" 2>&1; then
+  echo 'expected a stale current pane to block sending' >&2
+  exit 1
+fi
+grep -qF 'codex --no-daemon resume thread-fixture' "$test_dir/stale-output"
+[[ $(prompt_count) == 0 ]]
+
 resolve_output=$(run_wrapper uninitialized resolve)
 jq -e '
   .agent == "codex" and
@@ -338,7 +363,7 @@ jq -e '
 
 read_output=$(run_wrapper uninitialized read)
 jq -e '.result.text == "peer output"' <<<"$read_output" >/dev/null
-grep -qxF -- 'recent-unwrapped' "$test_dir/read-argv"
+grep -qxF -- 'visible' "$test_dir/read-argv"
 grep -qxF -- '120' "$test_dir/read-argv"
 
 # herdr's agent_not_idle error points at --source visible, so read passes a source
@@ -417,7 +442,11 @@ done
 # echoes the marker on a line of its own.
 reset_state
 run_wrapper marker-ok prompt --timeout 5000 'confirmed round' >"$test_dir/marker-ok.out"
-grep -qE 'HERDRPEEREND[0-9a-f]+' "$test_dir/prompt-text"
+if grep -qE 'HERDRPEEREND[0-9a-f]+' "$test_dir/prompt-text"; then
+  echo 'request must not contain the complete completion marker' >&2
+  exit 1
+fi
+grep -qE 'concatenation of HERDRPEEREND and [0-9a-f]+,' "$test_dir/prompt-text"
 grep -qF 'Finish your reply with a final line' "$test_dir/prompt-text"
 [[ $(prompt_count) == 1 ]]
 tail -n 1 "$test_dir/marker-ok.out" | jq -e '
@@ -428,6 +457,18 @@ tail -n 1 "$test_dir/marker-ok.out" | jq -e '
   .session == "initialized" and
   (.marker | startswith("HERDRPEEREND"))
 ' >/dev/null
+grep -qxF -- 'visible' "$test_dir/read-argv"
+
+reset_state
+run_wrapper marker-sidebar prompt --timeout 5000 'sidebar round' >"$test_dir/sidebar.out"
+tail -n 1 "$test_dir/sidebar.out" | jq -e '.completion == "confirmed" and .readiness == "confirmed"' >/dev/null
+
+reset_state
+if run_wrapper_release marker-suffix read-count:2 prompt --timeout 1000 'invalid marker rows' >"$test_dir/suffix.out" 2>"$test_dir/suffix.err"; then
+  echo 'expected inline and suffixed markers to remain unconfirmed' >&2
+  exit 1
+fi
+tail -n 1 "$test_dir/suffix.out" | jq -e '.completion == "unconfirmed"' >/dev/null
 
 # The case the marker exists for: the send returns while the reply is still partial,
 # the echoed request must not be mistaken for it, output continues past the marker,

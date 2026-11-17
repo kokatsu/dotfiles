@@ -23,6 +23,7 @@ Usage:
   herdr-peer resolve
   herdr-peer prompt [--timeout MILLISECONDS] [--no-marker] [--] "PROMPT"
   herdr-peer read [--lines COUNT] [--source visible|recent|recent-unwrapped|detection]
+  herdr-peer check-result TASK_DIRECTORY research|implement|review
 
 --no-marker sends the prompt unchanged and skips completion confirmation. The
 verdict then reports completion "unconfirmed"; nothing else is used to infer that
@@ -61,7 +62,12 @@ parse_session_id() {
 load_current_context() {
   local current_json current_fields
 
-  current_json=$(herdr pane current --current) || die 'failed to resolve the current pane'
+  if ! current_json=$(herdr pane current --current); then
+    if [[ -n ${CODEX_THREAD_ID:-} ]]; then
+      die "failed to resolve the current pane (HERDR_PANE_ID=${HERDR_PANE_ID:-unset}); a shared Codex server may retain an old pane environment. Resume from the intended terminal with: codex --no-daemon resume $CODEX_THREAD_ID"
+    fi
+    die 'failed to resolve the current pane'
+  fi
   current_fields=$(jq -er '
     .result.pane |
     [.pane_id, .tab_id, .workspace_id, .agent] |
@@ -167,16 +173,12 @@ generate_marker() {
   printf 'HERDRPEEREND%s' "$raw"
 }
 
-# The peer pane's live screen window. herdr caps what it returns near 1000 rows and
-# the window also holds whatever preceded the reply, so the rows a long reply gets
-# are that cap minus the earlier output, not a fixed budget.
+# History reads can inject mouse-wheel events into an idle alternate-screen app.
+# Poll only the visible snapshot so completion checks do not move the user's view.
 peer_screen() {
-  herdr agent read "$PEER_PANE_ID" --source "${2:-recent-unwrapped}" --lines "${1:-1000}"
+  herdr agent read "$PEER_PANE_ID" --source "${2:-visible}" --lines "${1:-1000}"
 }
 
-# Anchored match only. The instruction carrying the marker is echoed into the pane,
-# so an unanchored search would match the request rather than the reply.
-#
 # The screen is captured before it is searched. Piping into `grep -q` makes grep
 # stop reading at the first match, which kills the producer with SIGPIPE and, under
 # pipefail, turns a found marker into a failed pipeline.
@@ -186,7 +188,8 @@ marker_seen() {
   local screen
 
   screen=$(peer_screen 1000 2>/dev/null) || return 2
-  grep -qE "^[[:space:]]*$1[[:space:]]*$" <<<"$screen"
+  # A separate right-hand UI column can share the captured terminal row.
+  grep -qE "^[[:space:]]*$1([[:space:]]*$|[[:space:]]{2,}[^[:space:]].*$)" <<<"$screen"
 }
 
 # Identity recheck for the polling that follows delivery. The prompt is already
@@ -326,6 +329,40 @@ print_peer() {
   }' <<<"$TARGET_JSON"
 }
 
+check_result() {
+  [[ $# -eq 2 ]] || usage
+  local directory kind=$2 root result task_id field section header
+  case $kind in research | implement | review) ;; *) usage ;; esac
+  root=$(git rev-parse --show-toplevel) || die 'not in a Git worktree'
+  root=$(cd "$root" && pwd -P)
+  directory=$(cd "$1" && pwd -P) || die 'result directory does not exist'
+  case $directory in "$root/.kokatsu/herdr-peer/"*) ;; *) die 'result directory is outside .kokatsu/herdr-peer' ;; esac
+  task_id=${directory##*/}
+  result="$directory/result.md"
+  [[ -f $result && ! -L $result ]] || die 'result.md must be a regular file, not a symlink'
+  git check-ignore -q -- "$result" || die 'result.md is not ignored'
+  [[ $(head -n 1 "$result") == '# Result' ]] || die 'missing result header'
+  header=$(sed '/^## /,$d' "$result")
+  for field in task_id kind status; do
+    [[ $(grep -c "^$field:" <<<"$header") == 1 ]] || die "expected one $field field"
+  done
+  grep -qxF "task_id: $task_id" <<<"$header" || die 'task ID does not match the directory'
+  grep -qxF "kind: $kind" <<<"$header" || die 'result kind does not match'
+  grep -Eq '^status: (completed|blocked|partial)$' <<<"$header" || die 'invalid result status'
+  [[ $(tail -n 1 "$result") == "HERDRPEERRESULTEND:$task_id" ]] || die 'missing result end record'
+  for section in Outcome Verification Limitations; do
+    [[ $(grep -cxF "## $section" "$result") == 1 ]] || die "missing or duplicated $section section"
+    awk -v heading="## $section" '
+      $0 == heading { active = 1; next }
+      /^## / || /^HERDRPEERRESULTEND:/ { active = 0 }
+      active && /[^[:space:]]/ { found = 1 }
+      END { exit !found }
+    ' "$result" || die "empty $section section"
+  done
+  jq -nc --arg file "$result" --arg task_id "$task_id" --arg kind "$kind" \
+    '{file: $file, task_id: $task_id, kind: $kind, format: "valid", completion: "unverified"}'
+}
+
 main() {
   local subcommand=${1:-}
   [[ -n $subcommand ]] || usage
@@ -334,6 +371,11 @@ main() {
     usage
   }
   shift
+
+  if [[ $subcommand == check-result ]]; then
+    check_result "$@"
+    return
+  fi
 
   require_runtime
 
@@ -370,11 +412,11 @@ main() {
     sent_text=$1
     if [[ $use_marker == true ]]; then
       VERDICT_MARKER=$(generate_marker)
-      # Mid-sentence on purpose: the echoed request must not leave the marker alone
-      # on a line, or the anchored search would match the request.
+      # Do not put the complete marker in the request: a narrow pane can wrap an
+      # echoed instruction into a row that looks like the actual completion line.
       sent_text="$1
 
-Finish your reply with a final line that contains only $VERDICT_MARKER and nothing else. It is used to detect that the reply is complete."
+Finish your reply with a final line containing only the concatenation of HERDRPEEREND and ${VERDICT_MARKER#HERDRPEEREND}, with no separator, quotes, or punctuation. It is used to detect that the reply is complete."
     fi
 
     # One budget covers resolution, delivery and the polling that follows it, so the
@@ -428,7 +470,7 @@ Finish your reply with a final line that contains only $VERDICT_MARKER and nothi
     fi
     ;;
   read)
-    local line_count=120 source=recent-unwrapped
+    local line_count=120 source=visible
     while [[ $# -gt 0 ]]; do
       case $1 in
       --lines)

@@ -191,6 +191,7 @@ ai-writing-check:
 llm-config-test:
     bash scripts/test-codex-launch.sh
     bash scripts/test-format-post-tool-use.sh
+    bash scripts/test-herdr-peer-result.sh
     bash scripts/test-ai-writing-documents.sh
 
 # Format TOML files
