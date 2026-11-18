@@ -21,9 +21,9 @@ in {
       dontNpmBuild = true;
 
       # Hoisted dependencies must not sit at lib/node_modules top level, or
-      # they collide with other npm packages in Home Manager's buildEnv (e.g.
-      # estree-walker vs vue-language-server). Nest them under vite-plus's own
-      # node_modules instead; Node resolves them there first.
+      # they collide with other npm packages in Home Manager's buildEnv. Nest
+      # them under vite-plus's own node_modules instead; Node resolves them
+      # there first.
       #
       # The official global vp is a Rust binary that hands dev/build/test/run
       # to the project's own vite-plus; the npm bin/vp has no such delegation,
