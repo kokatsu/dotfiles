@@ -1,20 +1,45 @@
--- Vue 3 プロジェクト用。最新 vue-language-server。
--- Vue 2 プロジェクトは vue_ls_legacy が担当するため、ここでは attach しない。
--- init_options/settings は lua/lsp/vue_shared.lua を参照。
--- tsserver/request を typescript-tools へ転送する on_init は nvim-lspconfig 本体の
--- vue_ls 定義 (リトライ上限付き) をそのまま使う。
-local vue = require('lsp.vue_shared')
-
 ---@type vim.lsp.Config
 local vue_ls_config = {
-  -- overlay で追加した最新版 (Vue 3 専用) を使う
-  cmd = { 'vue-language-server-latest', '--stdio' },
-  init_options = vue.init_options,
-  settings = vue.settings,
-  -- Vue 2 以外（Vue 3 / 判定不能）でのみ attach
-  root_dir = vue.make_root_dir(function(major)
-    return major ~= 2
-  end),
+  root_markers = { { 'vue.config.js', 'vue.config.ts', 'nuxt.config.js', 'nuxt.config.ts', 'package.json' } },
+  init_options = {
+    vue = {
+      -- Hybrid Mode: typescript-tools が TypeScript を処理、vue_ls はテンプレート/CSS のみ
+      hybridMode = true,
+    },
+    typescript = {
+      -- プロジェクトの TypeScript を優先、なければグローバルを使用
+      tsdk = '',
+    },
+  },
+  settings = {
+    vue = {
+      complete = {
+        casing = {
+          -- コンポーネントタグ: kebab-case (例: <my-component>)
+          tags = 'kebab',
+          -- props: camelCase (例: :myProp)
+          props = 'camel',
+        },
+      },
+      autoInsert = {
+        -- .value の自動挿入 (ref)
+        dotValue = true,
+        -- 閉じタグを自動挿入
+        bracketSpacing = true,
+      },
+      inlayHints = {
+        -- インレイヒントの設定
+        missingProps = true,
+        inlineHandlerLeading = true,
+        optionsWrapper = true,
+      },
+      codeActions = {
+        -- extract 系のコードアクションを有効化
+        enabled = true,
+        savingTimeLimit = 2000,
+      },
+    },
+  },
 }
 
 return vue_ls_config
