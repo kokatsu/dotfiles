@@ -43,7 +43,7 @@ in {
   #   (WezTerm 側の OPT+矢印 SendString と Alt 系バインドは撤去済みが前提)
   # - alt+1..9 focus_agent は左右どちらの Option でも可
   #   (mac.lua で send_composed_key_* = false)
-  # - alt+shift+矢印 move_tab_* (0.8.2 で追加) はタブの並べ替え。alt+矢印 と
+  # - alt+shift+左右 move_tab_* (0.8.2 で追加) はタブの並べ替え。alt+矢印 と
   #   違い WezTerm 側に元から binding がないため無効化不要
   # 明示していないキーは herdr デフォルト (split_vertical=prefix+v,
   # split_horizontal=prefix+minus, settings=prefix+s, zoom=prefix+z,
@@ -180,6 +180,8 @@ in {
           # デタッチは押し間違えると作業中のセッションから抜けてしまうので shift 必須にする
           detach = "prefix+shift+q"
           new_tab = "prefix+t"
+          previous_tab = ["alt+shift+h", "prefix+p"]
+          next_tab = ["alt+shift+l", "prefix+n"]
           move_tab_previous = "alt+shift+left"
           move_tab_next = "alt+shift+right"
           # macOS では Karabiner が物理 Ctrl を Cmd に入れ替えているため、
@@ -197,8 +199,8 @@ in {
           focus_pane_right = "alt+right"
           last_pane = "prefix+space"
           focus_agent = "alt+1..9"
-          previous_workspace = ["alt+shift+up", "prefix+comma"]
-          next_workspace = ["alt+shift+down", "prefix+period"]
+          previous_workspace = "alt+shift+k"
+          next_workspace = "alt+shift+j"
           switch_workspace = "prefix+alt+1..9"
           # デフォルトの prefix+b を下の custom command に譲り、使用頻度の低い
           # サイドバー切替を別キーへ移す
