@@ -61,12 +61,39 @@ jobs:
           ref: ${{ inputs.ref }}
           persist-credentials: false
       - name: Audit npm lockfiles
+        # GHSA-fc5q-39xc-vjpf には修正版がないため、範囲が変わらず picomatch の latest が
+        # 4.0.7 のままの間だけ除外する。どちらかが変わったら失敗させて除外を見直す
+        env:
+          IGNORE_URL: https://github.com/advisories/GHSA-fc5q-39xc-vjpf
+          IGNORE_RANGE: "<=4.0.7"
+          IGNORE_UNTIL_LATEST: 4.0.7
         run: |
+          latest=$(npm view picomatch version)
+          if [ "$latest" != "$IGNORE_UNTIL_LATEST" ]; then
+            echo "::error::picomatch $latest is released; re-check $IGNORE_URL and drop the exclusion"
+            exit 1
+          fi
           failed=0
           for dir in nix/npm-locks/*/; do
             if [ -f "$dir/package-lock.json" ]; then
               echo "::group::Auditing $dir"
-              (cd "$dir" && npm audit --audit-level=high) || failed=1
+              # 脆弱性があっても非ゼロで終わるため、終了コードではなく JSON で判定する
+              report=$(cd "$dir" && npm audit --json) || true
+              if ! jq -e '(.vulnerabilities | type == "object") and (has("error") | not)' <<<"$report" >/dev/null; then
+                echo "$report"
+                echo "::error::npm audit did not return a report for $dir"
+                failed=1
+              else
+                remaining=$(jq -r --arg url "$IGNORE_URL" --arg range "$IGNORE_RANGE" '
+                  [.vulnerabilities[].via[] | objects
+                    | select(.severity == "high" or .severity == "critical")
+                    | select((.url == $url and .range == $range) | not)]
+                  | unique_by(.url)[] | "\(.severity) \(.name)@\(.range) \(.title) \(.url)"' <<<"$report")
+                if [ -n "$remaining" ]; then
+                  echo "$remaining"
+                  failed=1
+                fi
+              fi
               echo "::endgroup::"
             fi
           done
