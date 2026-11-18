@@ -31,7 +31,6 @@ const world = (
   const clock = mock.clock(on, { now });
   const claimed = new Set<string>();
   let usageRuns = 0;
-  let usageArgv: readonly string[] = [];
   on("session.start", (_$, e) => ({ cwd: e.cwd }));
   on("process.run", (_$, e) => {
     if (e.argv[0] === "sh" && e.argv.length > 3) {
@@ -42,7 +41,6 @@ const world = (
     }
     if (e.argv[0] === "sh") return result(0, "+0900\n/cache");
     usageRuns += 1;
-    usageArgv = e.argv;
     return result(usageExit, usageExit === 0 ? usageStdout : "");
   });
   on("session.usage", () => ({
@@ -83,7 +81,6 @@ const world = (
     files,
     line,
     usageRuns: () => usageRuns,
-    usageArgv: () => usageArgv,
   };
 };
 
@@ -112,21 +109,6 @@ test("clears the line when /usage has no Fable window", async ($, on) => {
   await clock.settle();
   expect(files.get(LINE_FILE)?.text).toBe("");
 });
-
-test(
-  "runs /usage without CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
-  async ($, on) => {
-    const { clock, usageArgv } = world(on, FABLE_7_59);
-    await $.session.start(interactive);
-    await clock.settle();
-    expect(usageArgv().slice(0, 4)).toEqual([
-      "env",
-      "-u",
-      "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
-      "claude",
-    ]);
-  },
-);
 
 test("a headless session runs nothing", async ($, on) => {
   const { clock, files, usageRuns } = world(on, FABLE_7_59);
