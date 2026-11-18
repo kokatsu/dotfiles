@@ -15,9 +15,6 @@
   "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
   "containerEnv": {
     "TZ": "${localEnv:TZ:Asia/Tokyo}",
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
-    // 上の設定で feature flag を取得しなくなり、入力欄に端末のカーソルを使う既定が flag から取れない
-    "CLAUDE_CODE_NATIVE_CURSOR": "1",
     // ホストと同じ場所に置き、ホスト向けの設定に書かれたパスをそのまま通す
     "CLAUDE_CONFIG_DIR": "/home/vscode/.config/claude",
     "CODEX_HOME": "/home/vscode/.config/codex",
