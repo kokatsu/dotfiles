@@ -169,7 +169,6 @@
   },
   "language": "japanese",
   "feedbackDrafts": "off",
-  "awaySummaryEnabled": false,
   "alwaysThinkingEnabled": true,
   "modelSettings": {
     "claude-opus-5": {
@@ -186,8 +185,10 @@
     }
   },
   "advisorModel": "fable",
+  "awaySummaryEnabled": false,
   "tui": "fullscreen",
   "theme": "custom:catppuccin-mocha",
   "preferredNotifChannel": "terminal_bell",
+  "idleCompaction": false,
   "agentPushNotifEnabled": true
 }
