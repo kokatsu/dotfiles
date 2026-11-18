@@ -804,4 +804,72 @@ if run_search; then exit 1; fi
 expect_calls 'search: snapshot failure' <<<'api snapshot'
 expect_notified 'search: snapshot failure' 'ペイン一覧の取得に失敗しました'
 
+# --- prompt-pick.sh ---
+
+cat >"$test_dir/bin/fzf" <<'EOF'
+#!/usr/bin/env bash
+grep -m1 -E -- "${FZF_PICK:-}" || true
+EOF
+chmod +x "$test_dir/bin/fzf"
+repo=$test_dir/prompt-repo
+git init -q "$repo"
+mkdir -p "$repo/.kokatsu/prompts" "$repo/sub"
+printf 'レビューして\n2 行目\n' >"$repo/.kokatsu/prompts/review.md"
+printf 'テストを書いて\n' >"$repo/.kokatsu/prompts/test.md"
+
+run_prompt() {
+  PATH="$test_dir/bin:$PATH" HERDR_ACTIVE_PANE_ID=p1 HERDR_ACTIVE_PANE_CWD=${2:-$repo/sub} \
+    FZF_PICK=$1 bash "$scripts/prompt-pick.sh"
+}
+prompt_handler() {
+  start_case <<EOF
+respond() {
+  case "\$1" in
+  "pane get p1") printf '{"result":{"pane":{"agent":${1}}}}\n' ;;
+  "agent prompt p1 "*) ${2:-:} ;;
+  *) return 1 ;;
+  esac
+}
+EOF
+}
+
+# サブディレクトリからでもリポジトリ直下の定義を読み、複数行のまま送る
+prompt_handler '"claude"'
+run_prompt review
+jq -se '.[1] == ["agent", "prompt", "p1", "レビューして\n2 行目"]' "$test_dir/calls.jsonl" >/dev/null
+expect_no_notification 'prompt: send'
+
+prompt_handler '"claude"'
+run_prompt nomatch
+expect_calls 'prompt: cancel' <<<'pane get p1'
+
+prompt_handler null
+run_prompt review
+expect_calls 'prompt: not agent' <<<'pane get p1'
+expect_notified 'prompt: not agent' 'エージェントのペインではありません'
+
+prompt_handler '"codex"'
+GIT_CEILING_DIRECTORIES=$test_dir run_prompt review "$test_dir"
+expect_calls 'prompt: outside repo' <<<'pane get p1'
+expect_notified 'prompt: outside repo' 'Git リポジトリの外です'
+
+start_case <<'EOF'
+respond() { return 1; }
+EOF
+if run_prompt review; then exit 1; fi
+expect_calls 'prompt: pane get failure' <<<'pane get p1'
+expect_notified 'prompt: pane get failure' 'ペイン情報を取得できません'
+
+# message のない JSON エラーでも本文を空にせず、出力そのものを出す
+prompt_handler '"claude"' "printf '{\"error\":{}}\n' >&2; return 1"
+if run_prompt test; then exit 1; fi
+jq -se 'any(.[]; .[0:5] == ["notification", "show", "プロンプトを送信できませんでした", "--body", "{\"error\":{}}"])' \
+  "$test_dir/calls.jsonl" >/dev/null
+
+prompt_handler '"claude"' "printf '{\"error\":{\"message\":\"agent p1 is blocked\"}}\n' >&2; return 1"
+if run_prompt test; then exit 1; fi
+expect_notified 'prompt: rejected' 'プロンプトを送信できませんでした'
+jq -se 'any(.[]; . == ["notification", "show", "プロンプトを送信できませんでした", "--body", "agent p1 is blocked", "--sound", "none"])' \
+  "$test_dir/calls.jsonl" >/dev/null
+
 printf 'herdr script tests passed\n'

@@ -352,6 +352,14 @@ in {
           height = "80%"
 
           [[keys.command]]
+          key = "prefix+m"
+          type = "popup"
+          command = "${scriptsDir}/prompt-pick.sh"
+          description = "定型プロンプトを選んで送信 (.kokatsu/prompts)"
+          width = "80%"
+          height = "80%"
+
+          [[keys.command]]
           key = "prefix+alt+v"
           type = "shell"
           command = "${scriptsDir}/paste-clipboard-image.sh"
