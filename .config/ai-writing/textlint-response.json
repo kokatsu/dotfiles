@@ -22,7 +22,7 @@
       "ja-unnatural-alphabet": false,
       "max-comma": false,
       "max-kanji-continuous-len": false,
-      "max-ten": false,
+      "max-ten": true,
       "no-double-negative-ja": false,
       "no-doubled-conjunction": false,
       "no-doubled-conjunctive-particle-ga": false,

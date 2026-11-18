@@ -72,7 +72,7 @@ run_cases() {
 
 print_config=$(textlint --config "$config" --rulesdir "$repo_root/.config/ai-writing/rules" --print-config)
 
-# 有効なルールの集合を固定する。preset が増減すると 21 個の false 指定が追随できず、
+# 有効なルールの集合を固定する。preset が増減すると 20 個の false 指定が追随できず、
 # 検査範囲が黙って変わるため。
 expected_rules=$(
   cat <<'RULES'
@@ -81,7 +81,9 @@ expected_rules=$(
 @textlint-ja/ai-writing/no-ai-hype-expressions
 @textlint-ja/ai-writing/no-ai-list-formatting
 ja-technical-writing/ja-no-redundant-expression
+ja-technical-writing/max-ten
 ja-technical-writing/no-mix-dearu-desumasu
+no-pause-comma
 no-prose-dash
 RULES
 )
@@ -148,6 +150,39 @@ expect_no_rule ja-technical-writing/sentence-length \
   'この設定ファイルは textlint のルールを制御するためのものであり、AI 文体の検出と日本語技術文書の規範のうち必要なものだけを有効にして、それ以外はすべて明示的に無効化しているという構成になっていますが、これは preset の個別ルールが NODE_PATH のトップレベルで解決できないためです。' \
   'long sentences in chat'
 
+expect_rule ja-technical-writing/max-ten \
+  'まず、設定を読み、次に、値を比べ、最後に、結果を書く。' 'four commas in a sentence'
+expect_no_rule ja-technical-writing/max-ten \
+  'まず、設定を読み、値を比べ、結果を書く。' 'three commas in a sentence'
+expect_rule no-pause-comma '設定ファイルと、スクリプトを更新する。' 'comma after a parallel と'
+expect_rule no-pause-comma 'Claude Code と、Codex を使う。' 'comma after と that follows an English noun'
+expect_clean '実行すると、ログが出る。' 'conditional と'
+expect_clean '完了したと、報告した。' 'quotative と'
+expect_clean '設定ファイルとスクリプトを更新する。' 'parallel と without a comma'
+expect_rule no-pause-comma 'レビューの指摘を、ドキュメントで確かめる。' 'comma after a short object'
+expect_clean 'レビューの指摘をドキュメントで確かめる。' 'short object without a comma'
+expect_clean '昨日の会議で決まった三つの変更点を、明日までに反映する。' 'object clause'
+expect_clean '一次資料を取得していない第三者記事の扱いを、決める。' 'long object'
+expect_clean '設定を、利用者が変える。' 'another subject after the comma'
+expect_clean '鍵を、なくした人に届けた。' 'comma that keeps the object off the next clause'
+expect_clean 'これを、明日までに直す。' 'pronoun object'
+expect_clean '設定を、ログを、順に確かめる。' 'list of objects'
+expect_rule no-pause-comma 'textlint の設定を、明日確かめる。' 'English words count as one character'
+expect_rule no-pause-comma '日本語技術文書の規範を、明日読む。' 'ten-character object'
+expect_clean '日本語技術文書の規範集を、明日読む。' 'eleven-character object'
+expect_clean '設定を、**利用者**が変える。' 'subject behind inline markup'
+expect_rule no-pause-comma '設定ファイルと、スクリプトは更新済みです。' 'coordination closed by は'
+expect_rule no-pause-comma '設定ミスと、手順漏れを報告した。' 'coordinated object of a quoting verb'
+expect_rule no-pause-comma '設定ファイルと、スクリプトは管理者が説明します。' 'coordinated topic of a quoting verb'
+expect_clean '完了と、報告した。' 'quotative と before a verb'
+# shellcheck disable=SC2016
+expect_rule no-pause-comma '`config.json` と、`settings.json` を比較する。' 'coordination of inline code'
+expect_rule no-pause-comma '設定を、保存する。ログを確認する。' 'next sentence does not make a list'
+expect_rule no-pause-comma '明日、設定を、保存する。' 'introductory comma before the object'
+expect_rule no-pause-comma '設定を、**保存する**。' 'predicate behind inline markup'
+# shellcheck disable=SC2016
+expect_rule no-pause-comma '設定を、`foo` で保存する。' 'inline code after the comma'
+
 expect_clean '> これは革命的な技術です。' 'quoted hype remains verbatim'
 expect_clean '> - **用語**: 説明の本文' 'quoted list remains verbatim'
 expect_clean '> 引用の冒頭です。
@@ -183,6 +218,21 @@ run_real_hook '<html><body>
 </body></html>' page.html |
   jq -e '.decision == "block" and (.reason | contains("line 3,"))' >/dev/null ||
   fail "hook should block hype in an HTML file at its source line"
+
+# no-pause-comma tokenizes a whole block with inline code replaced, so its
+# report must map back to the comma in the source.
+# shellcheck disable=SC2016
+printf '😀設定と、ログを確認する。\n\n**太字**の`a`と、ログを確認する。\n' >"$workdir/range.md"
+range_report=$(textlint --config "$config" --rulesdir "$repo_root/.config/ai-writing/rules" --format json "$workdir/range.md") || true
+printf '%s' "$range_report" |
+  node -e '
+    const fs = require("fs");
+    const source = fs.readFileSync(process.argv[1], "utf8");
+    const ranges = JSON.parse(fs.readFileSync(0, "utf8"))[0].messages
+      .filter((m) => m.ruleId === "no-pause-comma")
+      .map((m) => source.slice(...m.range));
+    process.exit(ranges.length === 2 && ranges.every((c) => c === "、") ? 0 : 1);
+  ' "$workdir/range.md" || fail "no-pause-comma should report the comma itself"
 
 config="$repo_root/.textlintrc-commit.json"
 expect_rule terminology 'feat: update readme' 'README spelling'
