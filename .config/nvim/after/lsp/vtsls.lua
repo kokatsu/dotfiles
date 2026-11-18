@@ -1,5 +1,5 @@
--- vue ファイルの TypeScript は typescript-tools が担当する (vue_ls は hybridMode = true で
--- テンプレート/CSS のみ) ため vtsls は vue を持たない。svelte だけ vtsls に任せる
+-- vue ファイルの TypeScript は typescript-tools が担当する (vue_ls はテンプレート/CSS のみ)
+-- ため vtsls は vue を持たない。svelte だけ vtsls に任せる
 local tsserver_filetypes = {
   'svelte',
 }
