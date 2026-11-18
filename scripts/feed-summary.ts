@@ -6,7 +6,7 @@ export const TARGETS = [
   "X Developers - Latest topics",
   "Social Media Today",
 ];
-export const MODEL = "gpt-6.1-sol";
+export const MODEL = "gpt-6.2-sol";
 export const MAX_INPUT = 128 * 1024;
 export const MAX_BODY = 48 * 1024;
 export type Confidence = "official" | "reported" | "uncertain";

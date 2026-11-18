@@ -87,7 +87,8 @@
   baseSettings = (pkgs.formats.json {}).generate "pi-settings.json" {
     "$schema" = "https://pi.dev/schemas/settings.schema.json";
     collapseChangelog = true;
-    defaultModel = "gpt-6.1-sol";
+    defaultModel = "gpt-6.2-sol";
+    defaultThinkingLevel = "medium";
     defaultProvider = "openai-codex";
     defaultTools = ["+grep" "+find" "+ls"];
     editorPaddingX = 1;
