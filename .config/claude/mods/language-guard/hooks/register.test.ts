@@ -50,6 +50,40 @@ test("ignores code, inline code and URLs", () => {
   expect(isUntranslated("~~~sh\n" + ENGLISH + "\n~~~")).toBe(false);
 });
 
+test("blocks English prose with Japanese terms mixed in", () => {
+  expect(isUntranslated(
+    "The bread rises well on all 3 shelves. In every case a 強力粉 without 砂糖 gives the 生地 (こねてから寝かせる) a soft 食感 overnight.",
+  )).toBe(true);
+  expect(isUntranslated(
+    "Merged the ブランチ into main and pushed it to origin after the checks passed.",
+  )).toBe(true);
+  expect(isUntranslated(
+    "Updated flake.lock; tests pass; nothing committed.",
+  )).toBe(true);
+  expect(isUntranslated(
+    "The fix is in register.ts and the tests pass on 3 machines (確認済み).",
+  )).toBe(true);
+});
+
+test("passes Japanese prose full of bare identifiers and commands", () => {
+  const answer = [
+    "flake.nix の inputs.nixpkgs を nixos-unstable に変更し、home-manager switch --flake . --impure を実行しました。",
+    "PreToolUse hook の agent-guard banned が grep -r を拒否したので、rg -n で justfile と scripts/ を検索しました。",
+    "register.ts と register.test.ts だけを変更し、claude plugin test .config/claude/mods/language-guard/ が通りました。",
+    "エラーは No such file or directory でした。",
+  ].join("\n");
+  expect(isUntranslated(answer)).toBe(false);
+  expect(isUntranslated(
+    "ビルド: home-manager switch --flake . --impure\nテスト: claude plugin test .config/claude/mods/language-guard/",
+  )).toBe(false);
+  expect(isUntranslated(
+    "エラーは Failed to connect to the server after the connection timed out でした。",
+  )).toBe(false);
+  expect(isUntranslated(
+    "エラーは Failed to connect to the server. The connection timed out. でした。",
+  )).toBe(false);
+});
+
 test("leaves short Latin-only answers alone", () => {
   expect(isUntranslated("OK")).toBe(false);
   expect(isUntranslated("")).toBe(false);
