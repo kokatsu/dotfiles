@@ -157,3 +157,28 @@ test("a list is drawn with colored markers, bodies through Markdown", async ($) 
   expect((await ui.find({ type: "Markdown", text: "`c`" }))?.text).toBe("`c`");
   await ui.unmount();
 });
+
+test(
+  "the reply's bullet follows the OS without running a program",
+  async ($, on) => {
+    on("process.run", () => {
+      throw new Error("aborted");
+    });
+    on("session.machine", () => ({
+      value: {
+        sysname: "Darwin",
+        release: "24.1.0",
+        machine: "arm64",
+        packageManagers: [],
+        runtimes: [],
+      },
+    }));
+    const ui = await $.ui.mount({
+      ...draw("# Title"),
+      props: { text: "# Title", isFirstOfReply: true },
+      plugin: "markdown-colors",
+    });
+    expect((await ui.find({ type: "Text", text: "⏺" }))?.text).toBe("⏺");
+    await ui.unmount();
+  },
+);

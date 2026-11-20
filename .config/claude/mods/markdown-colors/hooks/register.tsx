@@ -269,9 +269,9 @@ export const register: Register = (on) => {
         // with a block of ours draws its own, using the glyph the engine picks
         // per OS.
         if (!bullet) {
-          bullet = $.process
-            .run(["uname"])
-            .then((r) => (r.stdout.trim() === "Darwin" ? "⏺" : "●"));
+          bullet = $.session
+            .machine()
+            .then((m) => (m.sysname === "Darwin" ? "⏺" : "●"));
           bullet.catch(() => {
             bullet = undefined;
           });
