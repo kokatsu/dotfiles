@@ -1,5 +1,9 @@
+// Claude Code fixes each line of a memory index as `- [Title](file.md) — hook`.
+const MEMORY_INDEX = /\/claude\/projects\/[^/]+\/memory\/MEMORY\.md$/;
+
 module.exports = (context) => ({
   [context.Syntax.Str](node) {
+    if (MEMORY_INDEX.test(context.getFilePath() ?? '')) return;
     const text = context.getSource(node);
     if (!/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u.test(text))
       return;

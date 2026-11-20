@@ -4,11 +4,12 @@ const { tokenize } = createRequire(
   require.resolve('textlint-rule-preset-ja-technical-writing'),
 )('kuromojin');
 
-// A comma between two long modifiers is legitimate (Honda's first rule), so
-// only short noun objects are flagged. An English word counts as one
-// character so that `textlint の設定を、` is measured like `検査の設定を、`.
-const MAX_OBJECT_LENGTH = 10;
-const PRONOUN = /^(これ|それ|あれ|どれ|何|なに|誰|だれ|どこ|ここ|そこ)$/;
+// These split into a noun and 格助詞 に but read as sentence adverbs or a
+// compound particle (をもとに), like the single-token 次に and さらに.
+const ADVERBIAL_NI = /^(最初|最後|代わり|逆|一般|同様|反対|もと)$/;
+const isAdverbial = (t) =>
+  ['非自立', '副詞可能', '数'].includes(t.pos_detail_1) ||
+  ADVERBIAL_NI.test(t.surface_form);
 // Inline code stands in as one noun, so `a.json` と、`b.json` を is seen.
 const CODE_PLACEHOLDER = 'コード';
 
@@ -54,42 +55,54 @@ const isCoordinationComma = (tokens, i) => {
   );
 };
 
-const isShortObjectComma = (tokens, i) => {
-  let start = i;
-  while (start > 0 && isNounPart(tokens[start - 1])) start--;
-  const object = tokens.slice(start, i);
-  const text = object.map((t) => t.surface_form).join('');
-  const before = tokens[start - 1];
-  // A、Bを、 and Aを、Bを、 are lists; 明日、設定を、 is not.
-  const listed =
-    before?.surface_form === '、' &&
-    ((tokens[start - 2]?.pos === '名詞' &&
-      tokens[start - 2].pos_detail_1 !== '副詞可能') ||
-      is(tokens[start - 2], 'を'));
+// 設定を、 and 設定に、 are flagged whatever the length of the noun phrase.
+// The comma stays where it marks a boundary the reader needs: another subject,
+// a list, or a clause the object would otherwise attach to.
+const isCaseComma = (tokens, i) => {
+  const particle = tokens[i].surface_form;
+  const head = tokens[i - 1];
   if (
-    object.length === 0 ||
-    object[0].surface_form === 'の' ||
-    text.replace(/[A-Za-z0-9_.-]+/g, 'x').length > MAX_OBJECT_LENGTH ||
-    /[「」『』]/.test(text) ||
-    PRONOUN.test(text) ||
-    listed ||
-    // 読んだ本を、 / AとBを、
-    isPredicate(before) ||
-    before?.surface_form === '・' ||
-    before?.pos_detail_1 === '並立助詞'
+    head?.pos !== '名詞' ||
+    head.pos_detail_1 === '代名詞' ||
+    tokens[i].pos_detail_1 !== '格助詞'
   )
     return false;
+  // 読めるように、 / 失敗したときに、 / 処理の前に、 / 第一に、 / 最後に、
+  if (particle === 'に' && isAdverbial(head)) return false;
 
   const next = phraseAfter(tokens, i + 1);
+  // Only を makes a list (A、Bを、 and Aを、Bを、), and only when the phrase
+  // after the comma is closed by another comma (設定を、値を見て直す is
+  // not one). Repeated に cannot be told apart by part of speech:
+  // 画面に、縦に、 has the shape of 設定に、ログに、 with different roles.
+  if (particle === 'を') {
+    let start = i;
+    while (start > 0 && isNounPart(tokens[start - 1])) start--;
+    // 明日、設定を、 is not a list.
+    if (
+      tokens[start - 1]?.surface_form === '、' &&
+      ((tokens[start - 2]?.pos === '名詞' &&
+        tokens[start - 2].pos_detail_1 !== '副詞可能') ||
+        is(tokens[start - 2], particle))
+    )
+      return false;
+    let k = 0;
+    while (isNounPart(next[k])) k++;
+    if (
+      k > 0 &&
+      k === next.length - 1 &&
+      is(next[k], particle) &&
+      tokens[i + 3 + k]?.surface_form === '、'
+    )
+      return false;
+  }
   return !next.some(
     (t, n) =>
-      // Aを、Bを
-      is(t, 'を') ||
       // 設定を、利用者が変える
       (t.pos_detail_1 === '係助詞' && t.surface_form === 'は') ||
       (t.pos_detail_1 === '格助詞' && t.surface_form === 'が') ||
       // 鍵を、なくした人に届けた: the comma keeps the object off the clause.
-      (isPredicate(t) && next[n + 1]?.pos === '名詞'),
+      ((t.pos === '動詞' || t.pos === '助動詞') && next[n + 1]?.pos === '名詞'),
   );
 };
 
@@ -132,9 +145,11 @@ const check = async (context, node) => {
     )
       message =
         '「と」の後に読点を打たないでください。並列の「AとB」なら読点を外し、引用の「と」で読点を外すと誤読される場合は語順を入れ替えてください。';
-    else if (token.surface_form === 'を' && isShortObjectComma(tokens, i))
-      message =
-        '短い目的語の「を」の後の読点は間を作るだけなので外してください。';
+    else if (
+      (token.surface_form === 'を' || token.surface_form === 'に') &&
+      isCaseComma(tokens, i)
+    )
+      message = `「${token.surface_form}」の後の読点は間を作るだけなので外してください。掛かり先が曖昧になる場合は語順を入れ替えてください。`;
     if (!message) return;
     const plain = tokens[i + 1].offset;
     const segment = segments.findLast((s) => s.plain <= plain);

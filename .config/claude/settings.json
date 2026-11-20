@@ -99,6 +99,17 @@
         ]
       }
     ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/ai-writing/check-ai-writing.sh --mark",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
@@ -106,6 +117,15 @@
             "type": "command",
             "command": "~/.config/claude/hooks/herdr-cache-token.sh stop",
             "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.config/ai-writing/check-ai-writing.sh --stop",
+            "timeout": 30
           }
         ]
       },

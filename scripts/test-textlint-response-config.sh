@@ -161,16 +161,41 @@ expect_clean '完了したと、報告した。' 'quotative と'
 expect_clean '設定ファイルとスクリプトを更新する。' 'parallel と without a comma'
 expect_rule no-pause-comma 'レビューの指摘を、ドキュメントで確かめる。' 'comma after a short object'
 expect_clean 'レビューの指摘をドキュメントで確かめる。' 'short object without a comma'
-expect_clean '昨日の会議で決まった三つの変更点を、明日までに反映する。' 'object clause'
-expect_clean '一次資料を取得していない第三者記事の扱いを、決める。' 'long object'
+expect_rule no-pause-comma '昨日の会議で決まった三つの変更点を、明日までに反映する。' 'object clause'
+expect_rule no-pause-comma '一次資料を取得していない第三者記事の扱いを、決める。' 'long object'
+expect_rule no-pause-comma '資料への影響を、設計書に書く。' 'object behind への'
+expect_rule no-pause-comma 'サーバーに届く経路を、どちらで作るか決める。' 'object modified by a verb'
+expect_rule no-pause-comma '処理にかかる時間を、検証環境で測る。' 'object modified by a verb, adverbial noun'
+expect_rule no-pause-comma '設定とログを、明日確かめる。' 'coordinated object'
+expect_rule no-pause-comma '設定を、新しいファイルに書く。' 'adjective after the comma'
 expect_clean '設定を、利用者が変える。' 'another subject after the comma'
 expect_clean '鍵を、なくした人に届けた。' 'comma that keeps the object off the next clause'
 expect_clean 'これを、明日までに直す。' 'pronoun object'
 expect_clean '設定を、ログを、順に確かめる。' 'list of objects'
-expect_rule no-pause-comma 'textlint の設定を、明日確かめる。' 'English words count as one character'
-expect_rule no-pause-comma '日本語技術文書の規範を、明日読む。' 'ten-character object'
-expect_clean '日本語技術文書の規範集を、明日読む。' 'eleven-character object'
+expect_clean 'A を、B を、順に直す。' 'list of English objects'
+expect_rule no-pause-comma 'textlint の設定を、明日確かめる。' 'object with an English word'
 expect_clean '設定を、**利用者**が変える。' 'subject behind inline markup'
+expect_rule no-pause-comma '設定に、値を足す。' 'comma after に'
+expect_rule no-pause-comma '一覧に、新しいファイルを足した。' 'comma after に before an adjective'
+expect_rule no-pause-comma '本番環境に、設定を反映する。' 'comma after a compound noun and に'
+expect_clean '設定に、利用者が値を足す。' 'another subject after the comma after に'
+expect_rule no-pause-comma '設定に、ログに、順に書く。' 'repeated に is not taken for a list'
+expect_rule no-pause-comma '画面に、縦に、線を引く。' 'place and direction closed by a comma'
+expect_rule no-pause-comma '環境変数に、値を文字列に変換して設定する。' 'later に that is not parallel'
+expect_rule no-pause-comma '会議室に、午後三時に集合する。' 'place and time are not parallel'
+expect_rule no-pause-comma '設定に、ログに書く。' 'に phrases without a closing comma'
+expect_rule no-pause-comma '画面に、縦に線を引く。' 'place and direction are not parallel'
+expect_clean 'ここに、値を書く。' 'pronoun before に'
+expect_clean 'さらに、値を足す。' 'adverb さらに'
+expect_clean '次に、設定を直す。' 'conjunction 次に'
+expect_clean '最後に、設定を直す。' 'sentence adverbial noun and に'
+expect_clean '読めるように、順序を決める。' 'purpose clause ように'
+expect_clean '失敗したときに、やり直す。' 'time clause ときに'
+expect_clean '確かめるために、記録を残す。' 'purpose clause ために'
+expect_clean '処理の前に、状態を確かめる。' 'adverbial noun 前に'
+expect_clean '第一に、設定を直す。' 'ordinal 第一に'
+expect_clean '設定をもとに、値を決める。' 'compound particle をもとに'
+expect_clean '設定を、変更することで直す。' 'comma that keeps the object off the next verb'
 expect_rule no-pause-comma '設定ファイルと、スクリプトは更新済みです。' 'coordination closed by は'
 expect_rule no-pause-comma '設定ミスと、手順漏れを報告した。' 'coordinated object of a quoting verb'
 expect_rule no-pause-comma '設定ファイルと、スクリプトは管理者が説明します。' 'coordinated topic of a quoting verb'
@@ -223,6 +248,39 @@ run_real_hook '<html><body>
   jq -e '.decision == "block" and (.reason | contains("line 3,"))' >/dev/null ||
   fail "hook should block hype in an HTML file at its source line"
 
+# The line filters key on the path textlint reports, so run them for real.
+printf 'これは革命的な技術です。\n\n設定を確かめる。\n' >"$workdir/edit.md"
+edit_hook() {
+  jq -cn --arg p "$workdir/edit.md" --argjson start "$1" \
+    '{tool_name: "Edit", tool_input: {file_path: $p}, tool_response: {structuredPatch: [{newStart: $start, lines: $ARGS.positional}]}}' \
+    --args "${@:2}" |
+    XDG_CONFIG_HOME="$workdir" bash "$repo_root/.config/ai-writing/check-ai-writing.sh"
+}
+[ -z "$(edit_hook 3 '+設定を確かめる。')" ] || fail "hook should skip findings outside an Edit"
+edit_hook 1 '+これは革命的な技術です。' | jq -e '.decision == "block"' >/dev/null ||
+  fail "hook should block findings inside an Edit"
+
+stop_repo="$workdir/stop-repo"
+git init -q "$stop_repo"
+printf '設定を確かめる。\n' >"$stop_repo/doc.md"
+git -C "$stop_repo" add doc.md
+git -C "$stop_repo" -c user.name=t -c user.email=t@example.invalid -c commit.gpgsign=false \
+  -c core.hooksPath=/dev/null commit -q -m doc
+printf 'これは革命的な技術です。\n' >>"$stop_repo/doc.md"
+stop_hook() {
+  jq -cn --arg cwd "$stop_repo" '{session_id: "real", cwd: $cwd, stop_hook_active: false}' |
+    XDG_CONFIG_HOME="$workdir" XDG_RUNTIME_DIR="$workdir/run" bash "$repo_root/.config/ai-writing/check-ai-writing.sh" "$1"
+}
+stop_hook --mark
+sleep 1
+printf '設定に、値を足す。\n' >>"$stop_repo/doc.md"
+git -C "$stop_repo" add doc.md
+git -C "$stop_repo" -c user.name=t -c user.email=t@example.invalid -c commit.gpgsign=false \
+  -c core.hooksPath=/dev/null commit -q -m turn
+printf '設定を、直す。\n' >>"$stop_repo/doc.md"
+stop_hook --stop | jq -e '.decision == "block" and (.reason | contains("line 3,") and contains("line 4,") and (contains("line 2,") | not))' >/dev/null ||
+  fail "Stop should report the lines this turn added, committed or not, and skip earlier ones"
+
 # no-pause-comma tokenizes a whole block with inline code replaced, so its
 # report must map back to the comma in the source.
 # shellcheck disable=SC2016
@@ -237,6 +295,27 @@ printf '%s' "$range_report" |
       .map((m) => source.slice(...m.range));
     process.exit(ranges.length === 2 && ranges.every((c) => c === "、") ? 0 : 1);
   ' "$workdir/range.md" || fail "no-pause-comma should report the comma itself"
+
+# Claude Code の記憶の索引は 1 行が `- [題](ファイル) — 説明` と決まっている
+memory_index="$workdir/claude/projects/-home-user-repo/memory/MEMORY.md"
+mkdir -p "${memory_index%/*}"
+printf -- '- [設定の場所](setting.md) — 説明です\n' | tee "$memory_index" >"$workdir/memory-like.md"
+memory_report=$(textlint --config "$config" --rulesdir "$repo_root/.config/ai-writing/rules" --format json "$memory_index" "$workdir/memory-like.md") || true
+printf '%s' "$memory_report" | jq -e --arg index "$memory_index" '
+  (.[] | select(.filePath == $index) | .messages | all(.ruleId != "no-prose-dash")) and
+  (.[] | select(.filePath != $index) | .messages | any(.ruleId == "no-prose-dash"))' >/dev/null ||
+  fail "no-prose-dash should skip only the memory index"
+
+# The command line reports through the exit status.
+cli_status=0
+printf '設定に、値を足す。\n' |
+  XDG_CONFIG_HOME="$workdir" bash "$repo_root/.config/ai-writing/check-ai-writing.sh" --stdin >"$workdir/cli-out" || cli_status=$?
+[ "$cli_status" = 1 ] || fail "--stdin should exit 1 with findings"
+grep -q '^stdin.md: line 1, .*(no-pause-comma)$' "$workdir/cli-out" ||
+  fail "--stdin should report no-pause-comma"
+printf '設定に値を足す。\n' |
+  XDG_CONFIG_HOME="$workdir" bash "$repo_root/.config/ai-writing/check-ai-writing.sh" --stdin ||
+  fail "--stdin should exit 0 for clean text"
 
 config="$repo_root/.textlintrc-commit.json"
 expect_rule terminology 'feat: update readme' 'README spelling'
