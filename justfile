@@ -93,7 +93,7 @@ nix-eval:
 
 # Format JSON with biome (リポジトリの .ts/.tsx は全て Deno 管理で biome の対象外)
 biome-fmt:
-    biome format --write .
+    biome check --write --linter-enabled=false .
 
 # Check formatting, lint, and assists with biome (lefthook の `biome check` と同じ範囲)
 biome-ci:
