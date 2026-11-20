@@ -158,7 +158,7 @@ findings_at() {
 # $2 is the hunk's newStart, the rest are its lines.
 edit_payload() {
   jq -cn --arg p "$1" --argjson start "$2" '{tool_name: "Edit", tool_input: {file_path: $p},
-    tool_response: {structuredPatch: [{newStart: $start, lines: $ARGS.positional}]}}' --args "${@:3}"
+    tool_response: {structuredPatch: [{newStart: $start, lines: $ARGS.positional}]}}' --args -- "${@:3}"
 }
 printf '同じ文です。\n二行目です。\n同じ文です。\n四行目です。\n' >"$md_file"
 out=$(run_hook 1 "$(findings_at "$md_file" 1 3 4)" "$(edit_payload "$md_file" 2 ' 二行目です。' '-古い文です。' '+同じ文です。' '+四行目です。')")
