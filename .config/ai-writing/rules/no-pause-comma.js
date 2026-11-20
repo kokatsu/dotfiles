@@ -37,6 +37,8 @@ const phraseAfter = (tokens, comma) => {
 // A second noun phrase must follow, so 完了と、報告した is left alone.
 // Quotative と before a noun (原因は設定ミスと、担当者が報告した) has the
 // same shape and is flagged too, so the message also covers rewording it.
+// A phrase without a predicate (Aと、Bまでの案内の設計, a table cell or a
+// title) can only be the second item of the list.
 const isCoordinationComma = (tokens, i) => {
   if (tokens[i - 1]?.pos !== '名詞') return false;
   const next = phraseAfter(tokens, i + 1);
@@ -45,9 +47,10 @@ const isCoordinationComma = (tokens, i) => {
   const particle = next[k];
   return (
     k > 0 &&
-    particle?.pos === '助詞' &&
-    particle.pos_detail_2 !== '引用' &&
-    ['格助詞', '並立助詞', '係助詞'].includes(particle.pos_detail_1)
+    ((particle?.pos === '助詞' &&
+      particle.pos_detail_2 !== '引用' &&
+      ['格助詞', '並立助詞', '係助詞'].includes(particle.pos_detail_1)) ||
+      !next.some(isPredicate))
   );
 };
 

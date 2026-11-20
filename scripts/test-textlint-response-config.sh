@@ -175,6 +175,10 @@ expect_rule no-pause-comma '設定ファイルと、スクリプトは更新済�
 expect_rule no-pause-comma '設定ミスと、手順漏れを報告した。' 'coordinated object of a quoting verb'
 expect_rule no-pause-comma '設定ファイルと、スクリプトは管理者が説明します。' 'coordinated topic of a quoting verb'
 expect_clean '完了と、報告した。' 'quotative と before a verb'
+expect_rule no-pause-comma '設定の読み込みと、ログの出力' 'title ending in a noun'
+expect_rule no-pause-comma 'エラーの表示と、復旧までの手順' 'title with まで after the comma'
+expect_rule no-pause-comma 'データの保存と、画面での表示' 'title with での after the comma'
+expect_clean '設定の読み込みとログの出力' 'title without the comma'
 # shellcheck disable=SC2016
 expect_rule no-pause-comma '`config.json` と、`settings.json` を比較する。' 'coordination of inline code'
 expect_rule no-pause-comma '設定を、保存する。ログを確認する。' 'next sentence does not make a list'
