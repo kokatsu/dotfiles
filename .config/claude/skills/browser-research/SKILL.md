@@ -105,11 +105,11 @@ Most research finishes with the steps above. Read [reference.md](reference.md) w
 ## Critical Rules
 
 - **Prefer `read` for text retrieval**. Open a browser directly when interaction or JavaScript rendering is already known to be necessary.
-- **Always close a session you opened** — every `open` must have a matching `close`.
-- **Read-only by default** — never submit forms or enter data. Clicking is allowed only for passive navigation: dismissing cookie/consent banners, following links, expanding collapsed sections, or switching tabs. Do not click buttons that trigger writes, purchases, or state changes.
-- **No guessing** — do not fabricate or assume page content; only report what `read`/`snapshot`/`get`/`eval` return.
-- **Authentication pages** — do not attempt to authenticate as part of research. Report the inaccessible source and use relevant public sources if sufficient; ask for accessible source material when the answer depends on the protected page.
-- **Minimize tokens** — prefer `read` (or `read --filter`) over full-page extraction, and use `--max-output` for large pages.
+- **Always close a session you opened.** Every `open` must have a matching `close`.
+- **Read-only by default.** Never submit forms or enter data. Clicking is allowed only for passive navigation: dismissing cookie/consent banners, following links, expanding collapsed sections, or switching tabs. Do not click buttons that trigger writes, purchases, or state changes.
+- **No guessing.** Do not fabricate or assume page content; only report what `read`/`snapshot`/`get`/`eval` return.
+- **Authentication pages.** Do not attempt to authenticate as part of research. Report the inaccessible source and use relevant public sources if sufficient; ask for accessible source material when the answer depends on the protected page.
+- **Minimize tokens.** Prefer `read` (or `read --filter`) over full-page extraction, and use `--max-output` for large pages.
 
 ## Output
 
