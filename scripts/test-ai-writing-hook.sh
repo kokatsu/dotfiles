@@ -7,7 +7,8 @@ set -euo pipefail
 repo_root=$(git rev-parse --show-toplevel)
 hook="$repo_root/.config/ai-writing/check-ai-writing.sh"
 
-workdir=$(mktemp -d)
+# git rev-parse --show-toplevel resolves symlinks such as macOS's /var.
+workdir=$(cd "$(mktemp -d)" && pwd -P)
 trap 'rm -rf "$workdir"' EXIT
 
 stub_dir="$workdir/bin"
