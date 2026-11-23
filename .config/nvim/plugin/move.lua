@@ -1,4 +1,4 @@
--- Move lines/selections with Alt+hjkl (replaces mini.move)
+-- Move lines/selections with Alt+hjkl
 
 vim.keymap.set('n', '<M-j>', '<cmd>silent! m .+1<CR>==', { desc = 'Move line down' })
 vim.keymap.set('n', '<M-k>', '<cmd>silent! m .-2<CR>==', { desc = 'Move line up' })

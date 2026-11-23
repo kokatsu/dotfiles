@@ -40,7 +40,7 @@ function textOf(value: unknown): string {
   return typeof content === "string" ? content.trim() : "";
 }
 
-// href 属性。旧実装は属性値をそのまま使っていたので trim しない。
+// href 属性。id の無い entry では link が ID になり、保存済みの ID と照合するので trim しない。
 function hrefOf(value: unknown): string {
   const obj = rec(value);
   if (obj === null) return "";
@@ -95,8 +95,7 @@ function collectEntries(value: unknown, out: unknown[]): void {
     if (!isElement(key)) continue;
     const isEntry = ENTRY_NAMES.has(localName(key));
     for (const child of Array.isArray(raw) ? raw : [raw]) {
-      // root.iter() は entry 自身を返したうえで中も探し続けるので、入れ子の
-      // item も拾えるよう先に push してから再帰する。
+      // entry の中に入れ子の item があっても拾えるよう、push してから中も再帰する。
       if (isEntry) out.push(child);
       collectEntries(child, out);
     }

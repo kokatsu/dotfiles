@@ -1,4 +1,4 @@
--- Trailing whitespace highlight and auto-trim (replaces mini.trailspace)
+-- Trailing whitespace highlight and auto-trim
 
 local group = vim.api.nvim_create_augroup('trailspace', { clear = true })
 

@@ -57,8 +57,6 @@ const (
 	ghAPIAllowReason      = "gh api: explicit GET"
 )
 
-// 移植元の TypeScript の \s は ECMAScript の空白集合に一致する。Go の \s は
-// ASCII だけなので、同じ集合を明示する。
 var (
 	ghAPIText   = regexp.MustCompile(`\bgh[` + rules.SpaceClass + `]+api\b`)
 	apiWordText = regexp.MustCompile(`\bapi\b`)
@@ -369,7 +367,7 @@ func hidesGhAPI(texts []string) bool {
 
 // jsSlice は JavaScript の Array.prototype.slice の位置の解釈で、負の値は末尾から
 // 数える。env -S は語を分割して増やすので、剥がした後の語数が元より多くなり、
-// 下の offset が負になる。移植元はその負の位置で argv を切っており、判定は
+// 下の offset が負になる。その負の位置で argv を切った結果を
 // ghapi_claude_cases_test.go の M 群が固定している。
 func jsSlice(n, i int) int {
 	if i < 0 {

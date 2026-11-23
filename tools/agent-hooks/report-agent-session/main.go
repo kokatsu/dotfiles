@@ -20,7 +20,7 @@ import (
 	"time"
 )
 
-// 旧 Python フックのソケットのタイムアウト。ローカルの報告は 10ms ほどで返る。
+// ローカルの報告は 10ms ほどで返る。
 // pane の確認 (process-info と ps) と報告をまとめてこの期限に収める。
 // 期限を過ぎたら CommandContext の既定どおり SIGKILL する。SIGTERM を無視する
 // herdr を待ってセッション開始を遅らせないため。
@@ -108,8 +108,7 @@ func reportArgs(action, agent, pane string, input []byte, seq int64) []string {
 		"pane", "report-agent-session", pane,
 		"--source", prof.source,
 		"--agent", agent,
-		// 旧フックの time.time_ns() と同じ epoch nanoseconds。再起動をまたいでも
-		// 両者の順序が正しく並ぶ。
+		// epoch nanoseconds。再起動をまたいでも順序が正しく並ぶ。
 		"--seq", strconv.FormatInt(seq, 10),
 		"--agent-session-id", sessionID,
 	}

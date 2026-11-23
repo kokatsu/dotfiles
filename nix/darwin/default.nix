@@ -19,7 +19,7 @@
     allowUnfree = true;
   };
 
-  # プライマリユーザー設定 (nix-darwin 最新版で必要)
+  # homebrew と system.defaults の適用先。どちらも primaryUser が無いと assertion で落ちる
   system.primaryUser = username;
 
   # Homebrew (Nixで管理できないGUIアプリ用)

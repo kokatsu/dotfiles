@@ -13,7 +13,6 @@
     # git 自身の色付きの差分をそのまま通す。settings 経由だと mkForce が
     # iniContent まで届かない
     iniContent.interactive.diffFilter = lib.mkForce "cat";
-    # config.local を先に読み、共通設定が後から上書きする既存の優先順位を維持。
     settings = {
       alias = {
         a = "add";
@@ -128,11 +127,6 @@
       init = {
         defaultBranch = "main";
       };
-      # mergiraf.nix が diff3 に固定する。mergiraf をやめる場合はコメント解除。
-      # merge = {
-      #   # 共通祖先も表示し、両側で一致する行は競合領域の外に出す。
-      #   conflictStyle = "zdiff3";
-      # };
       pull = {
         # マージではなくリベースする (rebase.autoStash / updateRefs も有効になる)。
         rebase = true;
@@ -195,6 +189,7 @@
     ];
   };
 
+  # config.local を先に読み、共通設定が後から上書きする。
   xdg.configFile."git/config".text = lib.mkBefore (lib.generators.toGitINI {
     include.path = "./config.local";
   });

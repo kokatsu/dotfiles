@@ -178,7 +178,7 @@ func TestStopExpiryBoundary(t *testing.T) {
 	}{
 		// 残りが安全マージンちょうどなら clear。cursor は進み、watermark は消える。
 		{"remaining equals margin", time.Date(2026, 10, 10, 0, 4, 58, 0, time.UTC), `{"cursor_mid":"m1"}`, clearArgs},
-		// 1ms 残りは浮動小数点の誤差で 0 に切り捨てられる。旧実装と同じ式なので結果も同じ。
+		// 1ms 残りは浮動小数点の誤差で 0 に切り捨てられる。
 		{"two milliseconds left", time.Date(2026, 10, 10, 0, 4, 57, 998e6, time.UTC), `{"cursor_mid":"m1"}`, token("~09:05", 2)},
 		{"expired", time.Date(2026, 10, 10, 1, 0, 0, 0, time.UTC), `{"cursor_mid":"m1"}`, clearArgs},
 	}

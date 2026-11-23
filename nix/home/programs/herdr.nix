@@ -43,7 +43,7 @@ in {
   #   (WezTerm 側の OPT+矢印 SendString と Alt 系バインドは撤去済みが前提)
   # - alt+1..9 focus_agent は左右どちらの Option でも可
   #   (mac.lua で send_composed_key_* = false)
-  # - alt+shift+左右 move_tab_* (0.8.2 で追加) はタブの並べ替え。alt+矢印 と
+  # - alt+shift+左右 move_tab_* はタブの並べ替え。alt+矢印 と
   #   違い WezTerm 側に元から binding がないため無効化不要
   # 明示していないキーは herdr デフォルト (split_vertical=prefix+v,
   # split_horizontal=prefix+minus, settings=prefix+s, zoom=prefix+z,

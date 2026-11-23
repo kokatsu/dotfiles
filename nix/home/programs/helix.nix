@@ -230,7 +230,7 @@ in {
         biome-lsp-proxy.required-root-patterns = ["biome.json" "biome.jsonc" ".biome.json" ".biome.jsonc"];
         vscode-eslint-language-server.required-root-patterns = [".eslintrc*" "eslint.config.*"];
 
-        # nixd の設定は after/lsp/nixd.lua から移植。flake の nixpkgs と
+        # nixd の設定は Neovim の after/lsp/nixd.lua と同じ内容 (手動同期)。flake の nixpkgs と
         # home-manager のオプションを補完候補に出すための expr。
         nixd.config.nixd = {
           nixpkgs.expr = ''import (builtins.getFlake ("git+file://" + toString ./.)).inputs.nixpkgs {}'';

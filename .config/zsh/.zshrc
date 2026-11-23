@@ -185,15 +185,6 @@ fi
 zsh-defer -a +1 +2 -c '[ -e "$ZSH_EVALCACHE_DIR/completions/_delta" ] || { mkdir -p "$ZSH_EVALCACHE_DIR/completions" && delta --generate-completion zsh >"$ZSH_EVALCACHE_DIR/completions/_delta"; }'
 
 # ------------------------------------------------------------------------------
-# Lazygit (https://github.com/jesseduffield/lazygit)
-# ------------------------------------------------------------------------------
-
-# lazygit の設定とテーマは catppuccin/nix + programs.lazygit で管理
-# LG_CONFIG_FILE は home.sessionVariables 経由で設定される
-# (WSL 固有設定も programs.lazygit 側に統合済み。対話シェル以外の起動経路
-#  — herdr のコマンドペイン等 — でも確実に効かせるため)
-
-# ------------------------------------------------------------------------------
 # ls
 # ------------------------------------------------------------------------------
 

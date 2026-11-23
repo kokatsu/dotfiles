@@ -63,9 +63,9 @@ func (o obj) sidechain() bool {
 	return ok && string(raw) != "false"
 }
 
-// epoch は RFC 3339 のタイムスタンプをミリ秒精度の epoch 秒にする。旧実装の
-// Date.parse と同じ精度に揃え、stale_after との比較結果を変えないため。
-// Date.parse が受け付ける RFC 3339 以外の形は、transcript に現れないので扱わない。
+// epoch は RFC 3339 のタイムスタンプをミリ秒精度の epoch 秒にする。epochNow が
+// 書く stale_after と比べるので、同じ精度に揃える。
+// RFC 3339 以外の形は transcript に現れないので扱わない。
 func (o obj) epoch(key string) (float64, bool) {
 	t, err := time.Parse(time.RFC3339, o.str(key))
 	if err != nil {

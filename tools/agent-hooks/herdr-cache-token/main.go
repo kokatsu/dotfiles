@@ -59,7 +59,7 @@ type hook struct {
 	report func(args ...string)
 }
 
-// epochNow は旧実装の Date.now() / 1000 と同じミリ秒精度の epoch 秒。
+// epochNow はミリ秒精度の epoch 秒。transcript の epoch と同じ精度にする。
 func (h *hook) epochNow() float64 {
 	return float64(h.now().UnixMilli()) / 1000
 }
@@ -262,7 +262,6 @@ func run(args []string, stdin io.Reader) {
 	}
 	h.report = herdr(pane, h.now)
 
-	// 旧実装は TextDecoder で読んでいたので、先頭の BOM を受け付けていた。
 	input, _ := io.ReadAll(stdin)
 	payload := parseObj(bytes.TrimPrefix(input, []byte("\xef\xbb\xbf")))
 
@@ -283,8 +282,7 @@ func run(args []string, stdin io.Reader) {
 	if !ok {
 		return
 	}
-	// 旧ランチャーは Deno の許可リストを $HOME から組んでいたので、HOME がないと
-	// transcript も状態も読み書きできず、結果は clear だけだった。
+	// 状態ファイルの場所は $HOME から決まるので、HOME がなければ clear だけして終わる。
 	home := os.Getenv("HOME")
 	if home == "" {
 		h.clear()
