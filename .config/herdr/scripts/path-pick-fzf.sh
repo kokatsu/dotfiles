@@ -1,5 +1,5 @@
 #!/bin/bash
-# Alt-c で fzf を起動し、選択したパスを起動元ペイン (Claude Code / Codex CLI / シェル) に送信する
+# prefix+alt+c で fzf を起動し、選択したパスを起動元ペイン (Claude Code / Codex CLI / シェル) に送信する
 # ファイルとディレクトリを fuzzy に絞り込めるほか、Ctrl-l で選択中のディレクトリへ潜り、
 # Ctrl-h で親へ上がれる。複数選択 (Tab) 対応、プレビュー付き
 

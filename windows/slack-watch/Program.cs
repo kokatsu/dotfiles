@@ -505,11 +505,6 @@ internal static class Program
         return true;
     }
 
-    /// クリア要求を処理する。
-    ///
-    /// 要求は rename で自分のものにしてから処理する。時刻を比べて消す方式だと、
-    /// 比較と削除の間に置かれた新しい要求を巻き込む。rename なら要求の受け取りが不可分になり、
-    /// 処理中に置かれた要求は次の巡回に残る。失敗しても作業ファイルが残るので再試行される。
     /// 常駐はファイル監視で即座に反応する。書いている最中のファイルを消されないよう、
     /// 別名で作ってから rename で置く
     private static void WriteMarker(string path)
@@ -519,6 +514,12 @@ internal static class Program
         File.Move(temp, path, overwrite: true);
     }
 
+    /// クリア要求を処理する。
+    ///
+    /// 要求は rename で自分のものにしてから処理する。時刻を比べて消す方式だと、
+    /// 比較と削除の間に置かれた新しい要求を巻き込む。rename なら要求の受け取りが不可分になり、
+    /// 処理中に置かれた要求は次の巡回に残る。失敗しても作業ファイルが残るので再試行される。
+    ///
     /// 処理したら真。呼び出し側はそのとき status.json を即座に更新する
     private static bool HandleClearRequest()
     {

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Alt-g で broot を起動。選択方法:
+# prefix+alt+g で broot を起動。選択方法:
 #   - ファイル上で Enter: 単一ファイル選択
 #   - Ctrl+p: カレント選択 (ファイル/ディレクトリ両対応) を単一で確定
 #   - Space: staging 切替 (複数選択)

@@ -2,6 +2,9 @@ lua_dirs := ".config/nvim .config/wezterm"
 deno_dirs := "karabiner-config scripts"
 # deno_dirs の外にある .ts/.tsx は全て単体の Deno スクリプトか mod なので、手書きせず git から列挙する
 deno_files := `git ls-files '*.ts' '*.tsx' | grep -vE '^(karabiner-config|scripts)/' | tr '\n' ' '`
+# Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
+# LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
+without_ld_env := "env -u LD_LIBRARY_PATH -u LD_DYLD_PATH"
 
 # List available recipes
 default:
@@ -291,11 +294,9 @@ pi-ai-writing-test:
     node --test .config/pi/extensions/ai-writing.test.ts
 
 # Verify update-hashes.ts rewrites each overlay hash in place, and the detect script against fixtures
-# Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
-# LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
 hash-patterns-test:
-    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH bash scripts/test-hash-patterns.sh
-    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH bash scripts/test-detect-hash-updates.sh
+    {{ without_ld_env }} bash scripts/test-hash-patterns.sh
+    {{ without_ld_env }} bash scripts/test-detect-hash-updates.sh
 
 # Verify the banned-commands hook (agent-guard) verdicts and its fail-closed behavior
 banned-commands-test:
@@ -370,13 +371,11 @@ mods-test:
     done
 
 # Verify the feed, daily, wallpaper and Helix scripts, check failure handling, and activation retries
-# Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
-# LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
 reliability-test:
-    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-read --allow-write --allow-run scripts/test-helix-copy-codeblock.ts
-    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-read --allow-write --allow-run --allow-env scripts/test-feed-summarize.ts
-    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-entries.ts -- "$(command -v yq)" "$(command -v deno)"
-    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-opml.ts -- "$(command -v yq)" "$(command -v deno)"
+    {{ without_ld_env }} deno test --no-prompt --allow-read --allow-write --allow-run scripts/test-helix-copy-codeblock.ts
+    {{ without_ld_env }} deno test --no-prompt --allow-read --allow-write --allow-run --allow-env scripts/test-feed-summarize.ts
+    {{ without_ld_env }} deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-entries.ts -- "$(command -v yq)" "$(command -v deno)"
+    {{ without_ld_env }} deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-opml.ts -- "$(command -v yq)" "$(command -v deno)"
     bash scripts/test-check-failures.sh
     bash scripts/test-codex-config-activation.sh
     bash scripts/test-feed-status.sh
@@ -386,10 +385,8 @@ reliability-test:
     bash scripts/test-sync-flake-inputs.sh
 
 # Verify Renovate regex patterns match overlay files
-# Deno は LD_* があると対象を限定した --allow-run での子プロセス起動を拒否する。Home Manager が Linux で
-# LD_LIBRARY_PATH を、nix develop が macOS で LD_DYLD_PATH を設定する
 renovate-patterns-test:
-    env -u LD_LIBRARY_PATH -u LD_DYLD_PATH deno run --allow-read --allow-run=git scripts/test-renovate-patterns.ts
+    {{ without_ld_env }} deno run --allow-read --allow-run=git scripts/test-renovate-patterns.ts
 
 # Build karabiner.json from karabiner.ts
 karabiner-build:

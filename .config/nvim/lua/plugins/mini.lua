@@ -65,7 +65,7 @@ return {
       -- 終了時の保存は下の VimLeavePre で cwd 名のセッションに行う
       -- (mini の autowrite は v:this_session が設定済みのときしか書かない)
       directory = vim.fn.stdpath('data') .. '/sessions',
-      -- セッションファイル名の形式
+      -- cwd 直下のローカルセッション (Session.vim) は使わない
       file = '',
     })
 

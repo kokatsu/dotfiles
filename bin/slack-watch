@@ -172,7 +172,7 @@ cmd_stop() {
   fi
 
   # dotnet ホスト経由なので PID を辿らず、停止マーカーで抜けさせる。
-  # 完了の判断はマーカーの消滅ではなく status.json が止まったこと
+  # 完了の判断はマーカーの消滅ではなく、常駐プロセスが終了したこと
   mkdir -p "$STATUS_DIR"
   write_marker "$STOP_REQUEST"
 

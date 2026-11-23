@@ -19,7 +19,7 @@ STATUS_FILE="$status_dir/status.json"
 
 [[ ! -f "$STATUS_FILE" ]] && echo "No feed-watch data found" && read -r && exit 0
 
-# 未読のあるフィードを "url<TAB>表示ラベル" で列挙
+# 未読のあるフィードを "url<TAB>種別<TAB>名前<TAB>未読数" で列挙
 entries=$(jq -r '.feeds | to_entries[]
   | select(.value.unread_count > 0 and .value.url != null)
   | [.value.url, .value.type // "rss", .key, (.value.unread_count | tostring)]

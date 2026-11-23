@@ -1,6 +1,6 @@
 #!/bin/bash
 # Yazi を一時ペインで開く (herdr版)
-# Alt-y で起動。アクティブペインの cwd から開き、ファイルは opener 設定
+# prefix+alt+y で起動。アクティブペインの cwd から開き、ファイルは opener 設定
 # (nvim, block) でそのまま編集できる
 
 set -euo pipefail

@@ -261,7 +261,7 @@ vim.api.nvim_create_autocmd('FocusLost', {
   end,
 })
 
--- ターミナルバッファでは重い表示系を無効化して描画を軽くする
+-- ターミナルバッファでは scrolloff を切って再描画を軽くする
 vim.api.nvim_create_autocmd('TermOpen', {
   group = vim.api.nvim_create_augroup('terminal_light_ui', { clear = true }),
   callback = function()

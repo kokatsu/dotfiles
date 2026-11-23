@@ -1,4 +1,4 @@
-// Helpers shared by test-feed-entries.ts and test-feed-opml.ts.
+// Helpers shared by the Deno test scripts, not only the feed ones.
 
 export function equal(actual: unknown, expected: unknown) {
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
