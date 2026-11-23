@@ -126,8 +126,6 @@ in {
           value = overridePort name;
         })
         whiskersPorts);
-    # git の delta 連携は difftastic 移行で無効化中 (programs/git.nix 参照)
-    delta.enable = false;
     # 手動管理 or カスタムテンプレートで管理
     nvim.enable = false;
     ghostty.enable = false;

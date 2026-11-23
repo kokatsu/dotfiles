@@ -70,12 +70,15 @@ in {
           }
           {
             name = "delta";
-            # 明暗は catppuccin flavor から導出 (latte だけ light)
-            command = "delta ${
+            # 明暗は catppuccin flavor から導出 (latte だけ light)。
+            # git config の side-by-side は 1 列あたり 80 桁を割ると折り返しだらけに
+            # なるので、狭い欄では外す。--features=-side-by-side は features を丸ごと
+            # 置き換えて catppuccin の配色まで外すため、追加指定の DELTA_FEATURES を使う
+            command = "{{if lt .width 160}}DELTA_FEATURES=+-side-by-side {{end}}delta ${
               if config.catppuccin.flavor == "latte"
               then "--light"
               else "--dark"
-            } --paging=never";
+            } --paging=never --width={{width}}";
           }
           # pager なしの素の git diff
           {

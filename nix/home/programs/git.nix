@@ -7,6 +7,12 @@
   programs.git = {
     enable = true;
     signing.format = null;
+    # delta の Git 連携が `git add -p` に入れる `delta --color-only` を上書きする。
+    # delta は max-line-length を超えた部分を切り詰めるため、ステージする変更の
+    # 箇所が見えないまま確認が出る。上限を外すと長い行で極端に遅くなるので、
+    # git 自身の色付きの差分をそのまま通す。settings 経由だと mkForce が
+    # iniContent まで届かない
+    iniContent.interactive.diffFilter = lib.mkForce "cat";
     # config.local を先に読み、共通設定が後から上書きする既存の優先順位を維持。
     settings = {
       alias = {
@@ -20,12 +26,8 @@
         co = "checkout";
         cp = "cherry-pick";
         d = "-c diff.external=difft diff";
-        # difftastic 使用時は delta 連携 alias を無効化 (戻す場合はコメント解除)。
-        # dd = ''!f() { git diff "$@" | delta --side-by-side --paging=never; }; f'';
         ds = "-c diff.external=difft diff --staged";
-        # dsd = ''!f() { git diff --staged "$@" | delta --side-by-side --paging=never; }; f'';
         d1 = "-c diff.external=difft diff HEAD^";
-        # d1d = ''!f() { git diff HEAD^ "$@" | delta --side-by-side --paging=never; }; f'';
         f = "fetch origin";
         fd = "!git branch --format='%(refname:short)' | fzf --preview 'git log -1 --color=always --stat {-1}' --preview-window=right,60% | xargs git checkout";
         l = "log --date=format-local:'%Y/%m/%d %a %H:%M' --pretty=format:'%C(yellow)%h %C(bold blue)(%ad)%C(auto)%d %C(reset)%s %C(bold magenta)<%an>' --graph";
@@ -108,15 +110,7 @@
         fsmonitor = pkgs.stdenv.hostPlatform.isDarwin;
         # デフォルトのページャーを less に設定する場合はコメント解除。
         # pager = "less -+X -+F -+S --quit-if-one-screen -+G --no-init --raw-control-chars -K";
-        # difftastic 使用時は delta を無効化 (戻す場合はコメント解除)。
-        # pager = "delta";
       };
-      # delta = {
-      #   features = "catppuccin-mocha";
-      #   navigate = true;
-      #   dark = true;
-      #   pager = "less --quiet";
-      # };
       diff = {
         # 差分を表示する際、差分アルゴリズムを histogram に設定する。
         algorithm = "histogram";
@@ -147,8 +141,6 @@
         # git init 時のデフォルトのブランチ名を main に設定する。
         defaultBranch = "main";
       };
-      # difftastic はフィルタ非対応。delta に戻す場合はコメント解除。
-      # interactive.diffFilter = "delta";
       # mergiraf.nix が diff3 に固定する。mergiraf をやめる場合はコメント解除。
       # merge = {
       #   # 共通祖先も表示し、両側で一致する行は競合領域の外に出す。
@@ -224,9 +216,26 @@
     include.path = "./config.local";
   });
 
-  # lazygit の diffRenderers が delta を呼ぶ (git 側は difftastic)。
+  # git の pager を delta にする。difftastic は
+  # alias (d/ds/d1) と lazygit から使い、その出力は delta をそのまま通過する。
+  # 参考: https://speakerdeck.com/pipepasta/env-for-diff
   programs.delta = {
     enable = true;
-    enableGitIntegration = false;
+    enableGitIntegration = true;
+    options = {
+      side-by-side = true;
+      line-numbers = true;
+      navigate = true;
+      # 既定 (折り返し 2 行、3000 文字で切り詰め) では長い行の後半の変更が
+      # 見えない。一方で無制限にすると行内の差分計算が行長の 2 乗程度で重くなり、
+      # 100KB の 1 行で 2 分以上かかる。切り詰めた行も変更行として色が付き、
+      # 行末に → が出る。wrap-max-lines が有限なら side-by-side の切り詰め位置は
+      # 表示幅から決まり、max-line-length は unified 表示 (lazygit の狭い欄) に効く
+      wrap-max-lines = 50;
+      max-line-length = 10000;
+      # 日本語は空白で区切られないため、既定の \w+ だと句読点までが 1 語になる。
+      # 漢字・かなは 1 文字ずつ、英数字は単語単位で比較する
+      word-diff-regex = "[\\p{Han}\\p{Hiragana}\\p{Katakana}]|[A-Za-z0-9_]+";
+    };
   };
 }
