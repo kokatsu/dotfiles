@@ -35,8 +35,6 @@ require('lazy').setup({
     require('plugins.typescript-tools'),
     require('plugins.which-key'),
   },
-  -- colorscheme that will be used when installing plugins.
   install = { colorscheme = { 'catppuccin-' .. palette.flavor() } },
-  -- automatically check for plugin updates
   checker = { enabled = true },
 })

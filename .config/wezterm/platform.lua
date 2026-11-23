@@ -32,7 +32,6 @@ end)()
 -- WSL判定（動的：ペインごとに判定）
 -- ==============================================================================
 
---- WSLドメインかどうかを判定
 ---@param pane table WezTermのペインオブジェクト
 ---@return boolean WSLドメインの場合はtrue
 function M.is_wsl_domain(pane)

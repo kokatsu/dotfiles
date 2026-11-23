@@ -71,7 +71,6 @@ function updateFeed(status: Status, update: Update): void {
   }
 
   if (prevId === latestId) {
-    // 変更なし (url, category は常に最新化)
     existing!.url = update.url;
     existing!.category = update.category;
     return;

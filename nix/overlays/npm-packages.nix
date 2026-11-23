@@ -1,7 +1,6 @@
 let
   npmInstallFlags = builtins.fromJSON (builtins.readFile ../npm-locks/install-flags.json);
 in {
-  # vite-plus - Unified toolchain for the web (vp CLI)
   # vite-plus's tarball references private workspace packages in its own
   # devDependencies, so we cannot reuse its package.json directly. Instead we
   # vendor a minimal wrapper package.json + package-lock.json that depends on
@@ -72,7 +71,6 @@ in {
     };
   };
 
-  # textlint-rule-preset-ai-writing - AI が生成した文章パターンを検出する textlint プリセット。
   # nixpkgs 未収録。旧名 `textlint-rule-preset-ai-writing` は npm 1.1.0 で凍結され、現行は
   # スコープ付き `@textlint-ja/textlint-rule-preset-ai-writing` で配布されている。vite-plus と
   # 同じく wrapper package.json で npm tarball を取り込み、prebuilt な lib/ をそのまま使う

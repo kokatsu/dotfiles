@@ -21,7 +21,6 @@ run_daily() {
   (cd "$tmp" && "$daily" --no-edit "$@" 2>/dev/null)
 }
 
-# パスの形式と見出し
 path=$(run_daily)
 base=$(basename "$path" .md)
 # bash の =~ は後方参照を持たないので、ディレクトリと日付を別々に照合する
@@ -43,7 +42,6 @@ else
   fail "--offset 0 differs from the default"
 fi
 
-# 前後 1 日は別ファイルで、日付順に並ぶ
 yesterday=$(basename "$(run_daily --offset -1)" .md)
 tomorrow=$(basename "$(run_daily --offset=+1)" .md)
 if [[ "$yesterday" < "$base" && "$base" < "$tomorrow" ]]; then

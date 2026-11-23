@@ -3,13 +3,11 @@ local M = {}
 
 local BOOKMARKS_FILE = '.bookmarks'
 
---- プロジェクトルートを取得
 ---@return string
 local function get_root()
   return vim.fs.root(0, '.git') or vim.uv.cwd()
 end
 
---- .bookmarks ファイルからエントリを読み込む
 ---@param root string
 ---@return snacks.picker.finder.Item[]
 local function load_bookmarks(root)

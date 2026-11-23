@@ -63,7 +63,6 @@ else
   fail "fzf input: $(tr '\n' ' ' <"$tmp/fzf-input")"
 fi
 
-# herdr の中では WezTerm のタブへ移り、フォルダを絶対パスで渡す
 if run_wallpaper env WALLPAPER_DIR="$walls" TERM_PROGRAM=herdr &&
   [[ ! -e "$tmp/fzf-input" ]] &&
   [[ "$(cat "$tmp/wezterm-args")" == $'cli\nspawn\n--\n/usr/bin/env\nWALLPAPER_SPAWNED=1\nWALLPAPER_DIR='"$walls"$'\n/bin/zsh\n-l\n-c\nwallpaper' ]]; then
@@ -79,7 +78,6 @@ else
   fail "spawned tab spawned again or changed the preview format"
 fi
 
-# WezTerm へ移れなければ、herdr の中でもプレビューを文字で描く
 run_wallpaper env WALLPAPER_DIR="$walls" STUB_FZF_RC=130 TERM_PROGRAM=herdr STUB_WEZTERM_RC=1 || true
 if grep -qF -- 'chafa --format=symbols --size=' "$tmp/fzf-args"; then
   pass "falls back to chafa symbols output when the spawn fails"
@@ -110,7 +108,6 @@ else
   fail "fzf error returned $rc"
 fi
 
-# 画像がない / フォルダがない
 mkdir -p "$tmp/empty"
 for d in "$tmp/empty" "$tmp/missing"; do
   rc=0

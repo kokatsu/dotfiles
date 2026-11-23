@@ -1,7 +1,6 @@
 let
   inherit (import ./lib.nix) guardEqual;
 in {
-  # cssmodules-language-server - CSS Modules LSP
   # Renovate: datasource=npm depName=cssmodules-language-server
   cssmodules-language-server = _final: prev: {
     cssmodules-language-server = prev.buildNpmPackage rec {
@@ -50,7 +49,6 @@ in {
     };
   };
 
-  # xdevplatform/playground - X API v2 simulator for testing
   # Renovate: datasource=github-releases depName=xdevplatform/playground
   x-api-playground = _final: prev: {
     x-api-playground = prev.buildGoModule rec {

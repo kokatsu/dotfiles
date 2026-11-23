@@ -6,7 +6,6 @@ return {
   opts = {
     preset = 'helix',
     spec = {
-      -- Leader groups
       { '<leader>b', group = 'buffer' },
       { '<leader>c', group = 'code/lsp' },
       { '<leader>g', group = 'git' },
@@ -16,7 +15,6 @@ return {
       { '<leader>t', group = 'toggle' },
       { '<leader>x', group = 'todo' },
       { '<leader>y', group = 'yank' },
-      -- Navigation groups
       { '[', group = 'prev' },
       { ']', group = 'next' },
       { 's', group = 'surround' },

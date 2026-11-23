@@ -100,7 +100,6 @@ wezterm.on('open-uri', function(window, pane, uri)
       end
     end
 
-    -- ファイルパスと行番号を分離
     local file, line = path:match('^(.-):(%d+):%d+$')
     if not file then
       file, line = path:match('^(.-):(%d+)$')
@@ -126,7 +125,6 @@ wezterm.on('open-uri', function(window, pane, uri)
       return args
     end
 
-    -- HTML はブラウザで開く
     if file:match('%.html?$') then
       if in_herdr and not file:match('^/') then
         local ok, stdout, stderr = wezterm.run_child_process(herdr_script_args(pane, { '--resolve-only', file }))

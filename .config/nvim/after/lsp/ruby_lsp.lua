@@ -61,7 +61,6 @@ local ruby_lsp_config = {
   end,
 
   on_attach = function(client, bufnr)
-    -- CodeLens自動更新
     if client:supports_method('textDocument/codeLens', bufnr) then
       vim.lsp.codelens.enable(true, { bufnr = bufnr })
     end

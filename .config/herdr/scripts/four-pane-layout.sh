@@ -54,6 +54,5 @@ fi
 
 right_pane_id=$(split_pane "$active_pane_id" right 0.5)
 
-# 元の左ペインは上 3:下 1、右ペインは上 1:下 1 に分割する。
 split_pane "$active_pane_id" down 0.75 >/dev/null
 split_pane "$right_pane_id" down 0.5 >/dev/null

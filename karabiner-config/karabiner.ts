@@ -51,7 +51,6 @@ const keyList = [
   "x",
   "y",
   "z",
-  // Common special keys
   "spacebar",
   "return_or_enter",
   "escape",
@@ -87,7 +86,6 @@ const keyList = [
 writeToProfile(
   Deno.args.includes("--dry-run") ? "--dry-run" : "Default",
   [
-    // This restores physical Ctrl behavior in terminal apps
     rule("Terminal: Command to Control (for CLI apps)", terminalApps)
       .manipulators([
         ...keyList.map((key) => map(key, "command").to(key, "control")),
@@ -105,7 +103,6 @@ writeToProfile(
           ),
       ]),
 
-    // Chrome: Command+Tab to Control+Tab (tab switching)
     rule("Chrome: Command+Tab to Control+Tab", chromeApp).manipulators([
       map("tab", "command").to("tab", "control"),
       map("tab", ["command", "shift"]).to("tab", ["control", "shift"]),

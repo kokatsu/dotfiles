@@ -71,7 +71,6 @@ return {
       'svelte',
       'tailwindcss',
       'taplo',
-      -- 'unocss',
       'vtsls',
       'vue_ls',
       'yamlls',

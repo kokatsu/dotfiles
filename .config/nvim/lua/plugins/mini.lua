@@ -61,7 +61,6 @@ return {
     })
 
     require('mini.sessions').setup({
-      -- 自動的に読み込むかどうか（最後に使用したセッションを自動読み込み）
       autoread = false,
       -- 終了時の保存は下の VimLeavePre で cwd 名のセッションに行う
       -- (mini の autowrite は v:this_session が設定済みのときしか書かない)
@@ -70,7 +69,6 @@ return {
       file = '',
     })
 
-    -- カレントディレクトリベースの自動セッション保存（VimLeavePre時）
     vim.api.nvim_create_autocmd('VimLeavePre', {
       group = vim.api.nvim_create_augroup('auto_save_session', { clear = true }),
       callback = function()

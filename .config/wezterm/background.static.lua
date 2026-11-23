@@ -11,7 +11,6 @@ local colors = require('colors')
 ---@diagnostic disable-next-line: duplicate-doc-field
 ---@field label? string InputSelectorで表示するラベル（省略時はファイル名）
 
--- backgrounds.lua が存在しない場合は空のテーブルを使用
 ---@type BackgroundConfig[]
 local background_config
 local ok, loaded = pcall(require, 'backgrounds')
@@ -91,7 +90,6 @@ for _, config in ipairs(background_config) do
   end
 end
 
--- 現在の状態
 local current_image_index = nil ---@type number|nil
 local image_opacity = DEFAULT_OPACITY ---@type number
 local opacity_step = 0.05 ---@type number
@@ -186,7 +184,6 @@ local function refresh_background(window)
   })
 end
 
--- 背景を適用する共通関数
 ---@param window any
 ---@param index number|nil nil の場合はデフォルト背景
 local function apply_background(window, index)
@@ -202,7 +199,6 @@ local function apply_background(window, index)
   refresh_background(window)
 end
 
--- opacity を変更する共通関数
 -- 画像選択中は画像レイヤー、未選択時は base レイヤーの opacity を動かす
 ---@param window any
 ---@param delta number
@@ -223,7 +219,6 @@ local function adjust_opacity(window, delta)
   refresh_background(window)
 end
 
--- InputSelector 方式
 M.apply_to_keys = function(keys, background_modifier, opacity_modifier)
   table.insert(keys, {
     key = 'b',

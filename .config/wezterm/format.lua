@@ -20,17 +20,14 @@ local default_color = colors.palette.accent
 local nf = wezterm.nerdfonts --[[@as table]]
 
 local process_icons = {
-  -- Editors
   ['nvim'] = { icon = nf.linux_neovim, color = colors.palette.green },
   ['vim'] = { icon = nf.dev_vim, color = colors.palette.green },
   ['vi'] = { icon = nf.linux_neovim, color = colors.palette.green },
-  -- Containers
   ['docker'] = { icon = nf.md_docker, color = colors.palette.blue },
   ['docker-compose'] = { icon = nf.md_docker, color = colors.palette.blue },
   ['lazydocker'] = { icon = nf.md_docker, color = colors.palette.blue },
   ['lzd'] = { icon = nf.md_docker, color = colors.palette.blue },
   ['kubectl'] = { icon = nf.md_kubernetes, color = colors.palette.blue },
-  -- Languages & Runtimes
   ['python'] = { icon = nf.dev_python, color = colors.palette.yellow },
   ['python3'] = { icon = nf.dev_python, color = colors.palette.yellow },
   ['node'] = { icon = nf.md_nodejs, color = colors.palette.green },
@@ -41,25 +38,20 @@ local process_icons = {
   ['cargo'] = { icon = nf.dev_rust, color = colors.palette.peach },
   ['rustc'] = { icon = nf.dev_rust, color = colors.palette.peach },
   ['go'] = { icon = nf.md_language_go, color = colors.palette.sky },
-  -- Git
   ['git'] = { icon = nf.dev_git, color = colors.palette.peach },
   ['lazygit'] = { icon = nf.dev_git, color = colors.palette.peach },
   ['lg'] = { icon = nf.dev_git, color = colors.palette.peach },
   ['git-graph'] = { icon = nf.dev_git, color = colors.palette.peach },
   ['gg'] = { icon = nf.dev_git, color = colors.palette.peach },
   ['gh'] = { icon = nf.dev_github_badge, color = colors.palette.lavender },
-  -- CLI Tools
   ['bat'] = { icon = nf.md_file_document, color = colors.palette.yellow },
   ['bag'] = { icon = nf.md_file_document, color = colors.palette.yellow },
   ['eza'] = { icon = nf.md_folder, color = colors.palette.blue },
   ['fd'] = { icon = nf.md_file_search, color = colors.palette.mauve },
-  -- Build & System
   ['make'] = { icon = nf.seti_makefile, color = colors.palette.peach },
   ['nix'] = { icon = nf.linux_nixos, color = colors.palette.sky },
   ['ssh'] = { icon = nf.md_ssh, color = colors.palette.mauve },
-  -- AI
   ['claude'] = { icon = nf.md_robot_happy, color = colors.palette.peach },
-  -- Shells
   ['zsh'] = { icon = nf.dev_terminal, color = colors.palette.text },
   ['bash'] = { icon = nf.dev_terminal, color = colors.palette.text },
   ['fish'] = { icon = nf.dev_terminal, color = colors.palette.text },
@@ -150,7 +142,6 @@ local feed_kind_icons = {
   Status = nf.md_pulse,
 }
 
---- URL をホストとパスに分解する
 ---@param url string?
 ---@return string? host
 ---@return string path
@@ -197,7 +188,6 @@ local function format_feed_status()
   end
 
   local elements = {}
-  -- ソートされた順序で表示
   local names = {}
   for name, _ in pairs(data.feeds) do
     table.insert(names, name)
@@ -478,7 +468,6 @@ local function get_process_name(pane, use_method)
   return name:gsub('%.exe$', '')
 end
 
---- 指定したパターンにマッチするプロセスかどうかを判定する
 ---@param pane any
 ---@param pattern string
 ---@param use_method boolean? メソッド呼び出しを使うか
@@ -488,7 +477,6 @@ local function is_process(pane, pattern, use_method)
   return name:find(pattern) ~= nil
 end
 
---- プロセス名からアイコンと色を取得する
 ---@param pane any
 ---@return { icon: string, color: string }
 local function get_process_icon(pane)
@@ -530,7 +518,6 @@ M.apply = function()
     local g = wezterm.GLOBAL or {}
     if g.status_message and g.status_expire then
       if os.time() >= g.status_expire then
-        -- タイムアウト: メッセージをクリア
         wezterm.GLOBAL.status_message = nil
         wezterm.GLOBAL.status_expire = nil
         window:set_right_status(wezterm.format({}))
@@ -585,12 +572,11 @@ M.apply = function()
     if tab.is_active then
       bg_color = default_color
       fg_color = colors.palette.crust
-      icon_color = colors.palette.crust -- アクティブ時はアイコンも同じ色
+      icon_color = colors.palette.crust
     else
-      -- 非アクティブタブ（薄い色）
       bg_color = hover and colors.palette.surface1 or colors.palette.mantle
       fg_color = hover and colors.palette.text or colors.palette.subtext0
-      icon_color = icon_info.color -- 非アクティブ時はプロセスの色
+      icon_color = icon_info.color
     end
 
     return {

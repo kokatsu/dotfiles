@@ -175,7 +175,6 @@ return {
       end,
       desc = 'Profiler Scratch',
     },
-    -- Call Hierarchy
     {
       '<leader>ci',
       function()

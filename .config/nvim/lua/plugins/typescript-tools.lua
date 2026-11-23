@@ -21,12 +21,10 @@ local function glob_first(prefix, pattern)
   return nil
 end
 
--- vtsls にバンドルされた tsserver.js を検出
 local function find_tsserver_path()
   return glob_first(nix_store_prefix('vtsls'), 'lib/**/typescript/lib/tsserver.js')
 end
 
--- vue-language-server にバンドルされた @vue/typescript-plugin を検出
 local function find_vue_typescript_plugin()
   return glob_first(nix_store_prefix('vue-language-server'), 'lib/**/@vue/typescript-plugin')
 end

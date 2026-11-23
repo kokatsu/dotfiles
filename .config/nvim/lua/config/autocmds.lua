@@ -85,7 +85,6 @@ do
         end
       end
 
-      -- lazy.nvim の全プラグインと突き合わせ
       local plugins = require('lazy').plugins()
       local unused = {}
       for _, plugin in ipairs(plugins) do
@@ -142,7 +141,6 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
--- FocusGained時に外部クリップボードを取り込む
 vim.api.nvim_create_autocmd('FocusGained', {
   group = vim.api.nvim_create_augroup('clipboard_to_unnamed', { clear = true }),
   callback = function()
@@ -153,7 +151,6 @@ vim.api.nvim_create_autocmd('FocusGained', {
   end,
 })
 
--- ファイル再オープン時に前回のカーソル位置へ移動
 vim.api.nvim_create_autocmd('BufReadPost', {
   group = vim.api.nvim_create_augroup('restore_cursor', { clear = true }),
   callback = function()
@@ -221,7 +218,6 @@ vim.api.nvim_create_autocmd('FileChangedShellPost', {
   end,
 })
 
--- WSLの場合はInsertモードから離れる時にzenhanを実行
 local group = vim.api.nvim_create_augroup('ime_off_on_insert_leave', {})
 -- `!zenhan 0` は同期実行でWindowsプロセスの起動を待つため、ESCの度に
 -- 実測212msブロックする。IMEを戻す動作は維持したまま非同期に投げる。

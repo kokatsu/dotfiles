@@ -103,7 +103,6 @@ local function ft_sort_by_mru(types)
   return vim.list_extend(recent, rest)
 end
 
--- Grep (filtered by rg file type) action
 function M.grep_ft_action()
   local out = vim.system({ 'rg', '--type-list' }, { text = true }):wait()
   if out.code ~= 0 then

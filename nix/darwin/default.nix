@@ -68,7 +68,6 @@
   };
 
   system = {
-    # defaults writeの代わり
     defaults = {
       NSGlobalDomain = {
         AppleShowAllExtensions = true;
@@ -114,12 +113,10 @@
       };
     };
 
-    # システムバージョン (変更時にnix-darwinを再適用)
     stateVersion = 5;
   };
 
   security = {
-    # Touch ID for sudo
     # reattach は herdr / tmux などの端末マルチプレクサ内でも Touch ID を使うため
     pam.services.sudo_local = {
       touchIdAuth = true;

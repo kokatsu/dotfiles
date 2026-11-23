@@ -2,7 +2,6 @@
 # Claude Code (https://github.com/anthropics/claude-code)
 # ------------------------------------------------------------------------------
 
-# WezTerm User Variable を設定（OSC 1337）
 # 注: 同じ OSC 1337 構築を .config/claude/hooks/notify.sh が複製（手動同期）
 function _wezterm_set_user_var() {
   printf "\033]1337;SetUserVar=%s=%s\007" "$1" "$(printf '%s' "$2" | base64)"
@@ -181,7 +180,6 @@ function _pkl_convert() {
     return 2
   fi
 
-  # 出力指定フラグがあれば pkl eval にそのまま渡す
   local arg
   for arg in "$@"; do
     case $arg in
@@ -192,7 +190,6 @@ function _pkl_convert() {
     esac
   done
 
-  # デフォルト: 各入力の隣に <basename>.<fmt> を生成 (.pkl は除去)
   local f out rc=0
   for f in "$@"; do
     if [[ ! -f $f ]]; then

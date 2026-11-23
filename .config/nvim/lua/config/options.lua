@@ -3,8 +3,7 @@ local is_wsl = vim.fn.has('wsl') == 1
 -- 行末の1文字先までカーソルを移動できる
 vim.o.virtualedit = 'onemore'
 
--- Window分割時のパディング設定
-vim.o.fillchars = 'vert:│,fold: ,eob: ' -- 垂直分割線の文字を設定
+vim.o.fillchars = 'vert:│,fold: ,eob: '
 vim.o.winbar = '%=%m %f'
 
 vim.opt.mouse = 'a'
@@ -31,7 +30,6 @@ if is_wsl and vim.fn.executable('xsel') == 1 then
   }
 end
 
--- WSL環境でgxコマンドでWindowsブラウザを開く
 if is_wsl then
   vim.keymap.set('n', 'gx', function()
     require('utils.windows').open_url(vim.fn.expand('<cfile>'))
@@ -58,7 +56,6 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 
 vim.opt.ignorecase = true
--- 検索時に大文字が含まれている場合、ignorecaseを無効化
 vim.opt.smartcase = true
 
 vim.opt.swapfile = false
@@ -68,7 +65,6 @@ vim.opt.undofile = true
 -- 診断サインでレイアウトシフト防止
 vim.opt.signcolumn = 'yes'
 
--- スクロール時の余白
 vim.opt.scrolloff = 8
 vim.opt.sidescrolloff = 8
 

@@ -8,7 +8,6 @@ let
     "x86_64-linux" = "x86_64-unknown-linux-gnu";
   };
 in {
-  # Pkl - configuration as code language
   # nixpkgs の更新から独立して、セキュリティ修正を含む最新 patch release を使用する。
   # Renovate: datasource=github-releases depName=apple/pkl
   pkl = mkBinaryRelease rec {
@@ -131,7 +130,6 @@ in {
     };
   };
 
-  # kakehashi - Tree-sitter Language Server
   # Renovate: datasource=github-releases depName=atusy/kakehashi
   kakehashi = mkBinaryRelease rec {
     pname = "kakehashi";
@@ -194,7 +192,6 @@ in {
     };
   };
 
-  # k1LoW/deck - Markdown to Google Slides
   # darwin は zip、linux は tar.gz と配布形式が異なるため format をプラットフォーム別に指定する。
   # アーカイブ内のバイナリ名は deck だが deck-slides として公開する (binPath/binName で改名)。
   # Renovate: datasource=github-releases depName=k1LoW/deck

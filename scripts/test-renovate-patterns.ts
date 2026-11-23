@@ -139,8 +139,6 @@ function findRenovateComments(content: string): RenovateComment[] {
   }));
 }
 
-// --- Main ---
-
 const managers = extractRegexManagers();
 console.log(
   `Loaded ${managers.length} regex managers from ${RENOVATE_CONFIG}`,

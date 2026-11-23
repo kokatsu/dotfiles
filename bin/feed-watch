@@ -24,7 +24,6 @@ STATUS_DIR=${FEED_WATCH_STATUS_DIR:-$("$(dirname "$script_path")/status-dir" fee
 }
 STATUS_FILE="$STATUS_DIR/status.json"
 
-# --- フィードからエントリ ID を取得 (Atom/RSS 自動判別) ---
 fetch_feed_ids() {
   local url="$1"
   local content
@@ -39,7 +38,6 @@ fetch_feed_ids() {
     feed_run deno run --no-prompt "$HELPER" feed-ids
 }
 
-# --- check サブコマンド ---
 cmd_check() (
   # check 同士は通信も含め直列化し、古い取得結果による巻き戻しを防ぐ。
   mkdir -p "$STATUS_DIR"
@@ -76,7 +74,6 @@ cmd_check() (
     html_url=$(printf '%s' "$entry" | jq -r '.htmlUrl')
     local ids type
 
-    # GitHub フィード: gh api でコミットSHA を取得
     if [[ "$xml_url" =~ ^https://github\.com/([^/]+/[^/]+)/commits\.atom$ ]]; then
       local repo="${BASH_REMATCH[1]}"
       ids=$(feed_run gh api "repos/$repo/commits?per_page=100" --jq '.[].sha' 2>/dev/null) || {
@@ -113,7 +110,6 @@ apply_check_results() {
     feed_run deno run --no-prompt "$HELPER" apply-check-results
 }
 
-# --- read サブコマンド ---
 cmd_read() {
   local target="${1:-}"
   local status
@@ -121,10 +117,8 @@ cmd_read() {
 
   local names
   if [[ "$target" == "--all" ]]; then
-    # 全フィード既読
     names=null
   elif [[ -z "$target" ]]; then
-    # fzf で対話的に選択
     if ! command -v fzf >/dev/null 2>&1; then
       echo "fzf not found" >&2
       exit 1
@@ -153,7 +147,6 @@ cmd_read() {
 
     names=$(printf '%s\n' "$selected" | cut -f2 | jq -R . | jq -s .)
   else
-    # 部分一致で検索
     local matched
     matched=$(echo "$status" | jq -r --arg t "$target" \
       '[.feeds | keys[] | select(contains($t))] | .[0] // ""')
@@ -169,7 +162,6 @@ cmd_read() {
   feed_status_update feed_status_mark_read "$names"
 }
 
-# --- メイン ---
 case "${1:-}" in
 check) cmd_check ;;
 read) cmd_read "${2:-}" ;;

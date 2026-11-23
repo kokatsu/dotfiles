@@ -1,4 +1,3 @@
--- Toggle markdown checkbox: - [ ] <-> - [x]
 local function toggle_checkbox()
   local line = vim.api.nvim_get_current_line()
   if line:match('%- %[x%]') then

@@ -38,7 +38,6 @@ vim.keymap.set('n', '<leader>ch', function()
   vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
 end, { desc = 'Toggle Inlay Hints' })
 
--- Signature help (insert mode)
 vim.keymap.set('i', '<C-h>', vim.lsp.buf.signature_help, { desc = 'Signature help' })
 
 -- Neovim 0.11+ デフォルトの <C-s> → signature_help を無効化 (Ghostty の ctrl+s と競合)

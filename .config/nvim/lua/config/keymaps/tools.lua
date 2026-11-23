@@ -1,5 +1,3 @@
--- 補助系キーマップ (translate / SQL helpers / yank path / diagnostic copy / memo / daily)
-
 -- メモ作成: <leader>m は Snacks の Bookmarks が使用中のため <leader>M に置く
 -- local メモは <leader>ML だと <leader>M と timeoutlen 待ちで衝突するため <leader>L に分離
 vim.keymap.set('n', '<leader>M', function()
@@ -9,12 +7,10 @@ vim.keymap.set('n', '<leader>L', function()
   require('utils.memo').open({ local_memo = true })
 end, { noremap = true, desc = 'Create timestamped local memo' })
 
--- 日記
 vim.keymap.set('n', '<leader>D', function()
   require('utils.daily').open()
 end, { noremap = true, desc = 'Open today diary' })
 
--- 翻訳: <leader>R は normal/visual 共通
 vim.keymap.set('n', '<leader>R', function()
   require('utils.translate').translate_comment()
 end, { desc = 'Translate comment under cursor' })
@@ -53,12 +49,10 @@ vim.keymap.set('n', '<leader>yg', function()
   require('utils.sql').current_query_to_copy_stdout_csv()
 end, { noremap = true, desc = 'Yank current query as COPY ... TO STDOUT \\g CSV command' })
 
--- カーソル位置の fenced code block から fence を除いた中身をそのままコピー
 vim.keymap.set('n', '<leader>yb', function()
   require('utils.codeblock').yank_current()
 end, { noremap = true, desc = 'Yank current code block contents' })
 
--- カレントファイルパス (cwd 相対) をクリップボードへ
 vim.keymap.set('n', '<leader>yp', function()
   local absolute_path = vim.fn.expand('%:p')
   local relative_path = vim.fn.fnamemodify(absolute_path, ':.')
@@ -66,7 +60,6 @@ vim.keymap.set('n', '<leader>yp', function()
   vim.notify('Copied "' .. relative_path .. '" to the clipboard!')
 end, { noremap = true, desc = 'Copy current file path to clipboard (relative to cwd)' })
 
--- カレントファイルのディレクトリパス (cwd 相対) をクリップボードへ
 vim.keymap.set('n', '<leader>yP', function()
   local absolute_dir = vim.fn.expand('%:p:h')
   local relative_dir = vim.fn.fnamemodify(absolute_dir, ':.')
@@ -74,7 +67,6 @@ vim.keymap.set('n', '<leader>yP', function()
   vim.notify('Copied "' .. relative_dir .. '" to the clipboard!')
 end, { noremap = true, desc = 'Copy current directory path to clipboard (relative to cwd)' })
 
--- カーソル位置の診断メッセージをクリップボードへ
 vim.keymap.set('n', '<leader>yd', function()
   local diagnostics = vim.diagnostic.get(0)
   local cursor_line = vim.fn.line('.')
@@ -96,7 +88,6 @@ vim.keymap.set('n', '<leader>yd', function()
   end
 end, { noremap = true, desc = 'Copy diagnostic at cursor' })
 
--- バッファ内全診断メッセージをクリップボードへ
 vim.keymap.set('n', '<leader>yD', function()
   local diagnostics = vim.diagnostic.get(0)
   if #diagnostics == 0 then

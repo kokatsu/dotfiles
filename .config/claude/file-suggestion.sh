@@ -27,7 +27,6 @@ fd_opts=(
   --color never
 )
 
-# If query is an existing directory, list its contents (directories first).
 # Empty pattern lists every entry under the search path regardless of name.
 if [[ -d "$query" ]]; then
   {

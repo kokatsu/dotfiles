@@ -39,7 +39,6 @@ local function double_press_action(key_name, action, timeout_sec, message)
   end)
 end
 
---- キーテーブルをマージする
 ---@param ... table[] マージするキーテーブル
 ---@return table マージされたキーテーブル
 local function merge_keys(...)
@@ -52,13 +51,11 @@ local function merge_keys(...)
   return result
 end
 
--- 共通キーバインド（プラットフォーム非依存）
 -- ペイン/タブ/レイアウト管理は herdr に全面委譲したため、
 -- WezTerm は GUI シェル (コピペ・フォント・QuickSelect 等) に徹する。
 local common_keys = {
   -- https://zenn.dev/glaucus03/articles/070589323cb450
   { key = 'Enter', mods = 'SHIFT', action = act.SendString('\n') },
-  -- `Ctrl + q` で WezTerm を終了（2度押しで確認）
   -- herdr セッションはサーバ側に残るため、次回起動時にそのまま復帰する
   {
     key = 'q',
@@ -119,16 +116,13 @@ local unified_keys = {
   -- `Ctrl + 右矢印` で次の単語に移動 (Esc+f)
   -- selene: allow(bad_string_escape)
   { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1bf') },
-  -- `Ctrl + Shift + L` でデバッグオーバーレイを表示
   { key = 'L', mods = 'CTRL', action = act.ShowDebugOverlay },
   { key = ';', mods = 'CTRL', action = act.IncreaseFontSize },
   { key = '-', mods = 'CTRL', action = act.DecreaseFontSize },
   { key = ':', mods = 'CTRL', action = act.ResetFontSize },
   -- `Ctrl + Backspace` で単語を削除
   { key = 'Backspace', mods = 'CTRL', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
-  -- `Ctrl + Shift + X` でコピーモードをアクティブにする
   { key = 'X', mods = 'CTRL', action = act.ActivateCopyMode },
-  -- `Ctrl + Shift + q` で QuickSelect モード
   { key = 'Q', mods = 'CTRL', action = act.QuickSelect },
   -- `Ctrl + Shift + r` で claude / codex の再開コマンドを選んでコピー
   {
@@ -244,7 +238,6 @@ local windows_specific_keys = {
       window:perform_action(act.SendKey({ key = 'Space', mods = 'CTRL' }), pane)
     end),
   },
-  -- `Ctrl + Shift + e` で新しいタブで PowerShell を起動
   {
     key = 'E',
     mods = 'CTRL',
@@ -294,54 +287,42 @@ local darwin_specific_keys = {
   { key = 'raw:93', mods = 'ALT', action = act.SendString('\\') },
 }
 
--- コピーモードのキーテーブル（Vim風操作）
 local copy_mode = {
-  -- 移動
   { key = 'h', mods = 'NONE', action = act.CopyMode('MoveLeft') },
   { key = 'j', mods = 'NONE', action = act.CopyMode('MoveDown') },
   { key = 'k', mods = 'NONE', action = act.CopyMode('MoveUp') },
   { key = 'l', mods = 'NONE', action = act.CopyMode('MoveRight') },
-  -- 行頭・行末に移動
   { key = '^', mods = 'NONE', action = act.CopyMode('MoveToStartOfLineContent') },
   { key = '$', mods = 'NONE', action = act.CopyMode('MoveToEndOfLineContent') },
   { key = '0', mods = 'NONE', action = act.CopyMode('MoveToStartOfLine') },
-  -- 選択範囲の端に移動
   { key = 'o', mods = 'NONE', action = act.CopyMode('MoveToSelectionOtherEnd') },
   { key = 'O', mods = 'NONE', action = act.CopyMode('MoveToSelectionOtherEndHoriz') },
   ---@diagnostic disable-next-line: param-type-mismatch
   { key = ';', mods = 'NONE', action = act.CopyMode('JumpAgain') },
-  -- 単語ごと移動
   { key = 'w', mods = 'NONE', action = act.CopyMode('MoveForwardWord') },
   { key = 'b', mods = 'NONE', action = act.CopyMode('MoveBackwardWord') },
   { key = 'e', mods = 'NONE', action = act.CopyMode('MoveForwardWordEnd') },
-  -- ジャンプ機能 t f
   { key = 't', mods = 'NONE', action = act.CopyMode({ JumpForward = { prev_char = true } }) },
   { key = 'f', mods = 'NONE', action = act.CopyMode({ JumpForward = { prev_char = false } }) },
   { key = 'T', mods = 'NONE', action = act.CopyMode({ JumpBackward = { prev_char = true } }) },
   { key = 'F', mods = 'NONE', action = act.CopyMode({ JumpBackward = { prev_char = false } }) },
-  -- 一番下・一番上へ
   { key = 'G', mods = 'NONE', action = act.CopyMode('MoveToScrollbackBottom') },
   { key = 'g', mods = 'NONE', action = act.CopyMode('MoveToScrollbackTop') },
-  -- Viewport内移動
   { key = 'H', mods = 'NONE', action = act.CopyMode('MoveToViewportTop') },
   { key = 'L', mods = 'NONE', action = act.CopyMode('MoveToViewportBottom') },
   { key = 'M', mods = 'NONE', action = act.CopyMode('MoveToViewportMiddle') },
-  -- スクロール
   { key = 'b', mods = 'CTRL', action = act.CopyMode('PageUp') },
   { key = 'f', mods = 'CTRL', action = act.CopyMode('PageDown') },
   { key = 'd', mods = 'CTRL', action = act.CopyMode({ MoveByPage = 0.5 }) },
   { key = 'u', mods = 'CTRL', action = act.CopyMode({ MoveByPage = -0.5 }) },
-  -- 範囲選択モード
   { key = 'v', mods = 'NONE', action = act.CopyMode({ SetSelectionMode = 'Cell' }) },
   { key = 'v', mods = 'CTRL', action = act.CopyMode({ SetSelectionMode = 'Block' }) },
   { key = 'V', mods = 'NONE', action = act.CopyMode({ SetSelectionMode = 'Line' }) },
   { key = 'y', mods = 'NONE', action = act.CopyTo('Clipboard') },
-  -- 検索
   { key = '/', mods = 'NONE', action = act.Search({ CaseSensitiveString = '' }) },
   { key = '?', mods = 'NONE', action = act.Search({ CaseSensitiveString = '' }) },
   { key = 'n', mods = 'NONE', action = act.CopyMode('NextMatch') },
   { key = 'N', mods = 'NONE', action = act.CopyMode('PriorMatch') },
-  -- コピーモードを終了
   {
     key = 'Enter',
     mods = 'NONE',
@@ -364,8 +345,6 @@ local search_mode = {
 
 return {
   windows_keys = merge_keys(common_keys, unified_keys, windows_specific_keys),
-  -- Karabiner でターミナルアプリ以外でのみ Ctrl↔Cmd 入替のため、
-  -- 物理 Ctrl = Ctrl として届く。
   -- 注意: OPT+矢印 を SendString で潰すと herdr の focus_pane (alt+矢印) に
   -- キーが届かなくなるため、単語移動は Ctrl+矢印 に一本化している
   darwin_keys = merge_keys(common_keys, unified_keys, darwin_specific_keys),

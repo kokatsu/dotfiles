@@ -14,10 +14,8 @@ vim.filetype.add({
           return
         end
 
-        -- 後で使いやすいように整形
         shebang = shebang:gsub('%s+', ' ')
 
-        -- 実行ファイルが`/usr/bin/env`の場合は、続く引数を確認
         local idx_space = shebang:find(' ')
         local path = string.sub(shebang, 3, idx_space and idx_space - 1 or nil)
         if path == '/usr/bin/env' then

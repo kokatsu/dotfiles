@@ -1,4 +1,3 @@
--- 挿入モードで ESC: stopinsert + 自動保存
 vim.keymap.set('i', '<ESC>', function()
   vim.cmd('stopinsert')
   if
@@ -19,7 +18,6 @@ end, {
   silent = true,
 })
 
--- 日付時刻挿入
 vim.keymap.set('n', '<C-k>', "\"=strftime('%Y-%m-%d %H:%M:%S')<CR>p", {
   desc = 'Insert current date and time',
   noremap = true,
@@ -44,6 +42,5 @@ vim.keymap.set('n', '[C', function()
   require('nvim-treesitter-textobjects.move').goto_previous_start('@class.outer', 'textobjects')
 end, { desc = 'Previous class' })
 
--- Quickfix リスト内移動
 vim.keymap.set('n', ']q', '<cmd>cnext<cr>zz', { desc = 'Next quickfix item' })
 vim.keymap.set('n', '[q', '<cmd>cprevious<cr>zz', { desc = 'Previous quickfix item' })

@@ -24,7 +24,6 @@ sedi() {
   fi
 }
 
-# fixture リポジトリ: 実際の overlay / flake.nix / karabiner-config を base として commit
 mkdir -p "$tmp/nix/overlays" "$tmp/karabiner-config" "$tmp/tools/agent-hooks"
 cp "$repo_root"/nix/overlays/*.nix "$tmp/nix/overlays/"
 cp "$repo_root/tools/agent-hooks/go.sum" "$tmp/tools/agent-hooks/go.sum"

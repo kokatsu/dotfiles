@@ -44,7 +44,6 @@ if ! grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then
 fi
 
 # 祖先をたどって Claude Code 本体を見つけ、その pts デバイスを得る。
-# Stop hook の $PPID は中間 shell でその fd/1 は pipe（再オープン不可）。
 claude_tty=''
 pid=$PPID
 for _ in 1 2 3 4 5 6 7 8; do
@@ -67,7 +66,6 @@ case "$claude_tty" in
 esac
 [ -w "$claude_tty" ] || exit 0
 
-# permission は固定文言・即時寄り、stop は transcript 由来・再描画待ち。
 # transcript の jq 抽出は stop かつ pts 確定後にのみ走らせ、同期パスの fork を省く。
 case "$event" in
 permission)

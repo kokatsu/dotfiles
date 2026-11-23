@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-IFS=$'\n\t' # Stricter word splitting
+IFS=$'\n\t'
 
 # 外へ出られるのは tinyproxy のユーザーだけで、tinyproxy が許可リスト (/etc/tinyproxy/allow.txt) のドメインへ
 # CONNECT を中継する。IP で許可すると、同じ CDN の IP に載った別のサイトにも繋がり、CDN の IP が変わると切れる
@@ -9,7 +9,6 @@ PROXY=http://127.0.0.1:3128
 # 1. Extract Docker DNS info BEFORE any flushing
 DOCKER_DNS_RULES=$(iptables-save -t nat | grep "127\.0\.0\.11" || true)
 
-# Flush existing rules
 # vscode は sudo でこのスクリプトを再実行できる。組み立て直す間に一度でも ACCEPT にすると、その隙に任意の宛先へ
 # 繋いだ接続が ESTABLISHED の許可で残るため、方針は最初から DROP にしておき、必要な通信だけを先に許可する。
 iptables -P INPUT DROP

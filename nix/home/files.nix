@@ -10,7 +10,6 @@
   p = config.catppuccinLib.palettes.${flavor};
   names = config.catppuccinLib.flavorNames flavor;
 in {
-  # .config へのシンボリックリンク
   home.file =
     {
       # nvim: mkOutOfStoreSymlinkでdotfilesリポジトリを直接リンク
@@ -19,7 +18,6 @@ in {
         source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/nvim";
         force = true;
       };
-      # fastfetch is managed by nix/home/programs/fastfetch.nix
       ".config/git-graph/models/catppuccin-${flavor}.toml".text =
         # toml
         ''
@@ -119,7 +117,6 @@ in {
       # feeds*.opml だけを bin/feed-watch が読む。bulletty へ import したいが
       # 未読カウントには出したくないフィードはこちらへ置く
       ".config/bulletty/bulletty-only.opml".source = ../../.config/bulletty/bulletty-only.opml;
-      # lazydocker is managed by nix/home/programs/lazydocker.nix
       # bin: ユーザースクリプト
       # mkOutOfStoreSymlink で直接リンクし、スクリプト編集がリポジトリに反映される
       ".local/bin/scripts" = {

@@ -68,16 +68,6 @@
       flake = false;
     };
 
-    # # UnoCSS LSP (上流の flake を使う)
-    # # https://github.com/xna00/unocss-language-server
-    # # nixpkgs.follows は付けない: package.nix が pnpm.fetchDeps の offline store を
-    # # 上流 pin の pnpm バージョンに密結合しており、別 nixpkgs だと
-    # # ERR_PNPM_NO_OFFLINE_TARBALL でビルドが壊れるため。
-    # # Renovate: datasource=github-releases depName=xna00/unocss-language-server
-    # unocss-language-server = {
-    #   url = "github:xna00/unocss-language-server/v0.1.9";
-    # };
-
     # Helix (25.07.1 以降リリースが無く、master をそのまま使う)
     # https://github.com/helix-editor/helix
     # nixpkgs.follows は付けない: 上流 CI (.github/workflows/cachix.yml) が master の
@@ -182,13 +172,11 @@
       then dotfilesDirOverride
       else workingDirectory;
 
-    # サポートするシステム
     # x86_64-darwin (Intel Mac) は不使用のため除外
     darwinSystems = ["aarch64-darwin"];
     linuxSystems = ["x86_64-linux" "aarch64-linux"];
     allSystems = darwinSystems ++ linuxSystems;
 
-    # フォールバック: SUDO_USER > USER > "user"
     finalUsername =
       if sudoUser != ""
       then sudoUser
@@ -203,7 +191,6 @@
     # 現在のシステムを検出 (--impure 必須)
     inherit (builtins) currentSystem;
 
-    # システムごとにpkgsを取得するヘルパー
     inherit (nixpkgs) lib;
     forAllSystems = lib.genAttrs allSystems;
 

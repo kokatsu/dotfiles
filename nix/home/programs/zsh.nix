@@ -117,7 +117,6 @@ in {
               export PATH="${config.home.profileDirectory}/bin:$PATH"
             fi
 
-            # Home Manager session variables
             # 親シェルから継承された場合にスキップされるのを防ぐため、ガード変数をリセット
             # (standalone Home Manager のみ使うため /etc/profiles/per-user は見ない)
             unset __HM_SESS_VARS_SOURCED
@@ -127,7 +126,6 @@ in {
             # XDG_CONFIG_HOME / ZDOTDIR は hm-session-vars.sh と ~/.zshenv が設定する
           '';
 
-        # ~/.zshenv - ZDOTDIRの設定と $ZDOTDIR/.zshenv の読み込み
         # 新しいターミナルでは ZDOTDIR が未設定のため ~/.zshenv が読み込まれる
         # zsh は zshenv を一度しか読み込まないため、ここで $ZDOTDIR/.zshenv を source する
         ".zshenv".text =

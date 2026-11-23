@@ -92,7 +92,6 @@ jobs:
         id: sync-flake
         run: bash scripts/sync-flake-inputs.sh "$GITHUB_OUTPUT"
 
-      # === karabiner-config deno.lock regeneration ===
       # Renovate's Deno manager appends new-version hashes to deno.lock without
       # removing the old ones, leaving stale entries that pile up on every bump.
       # Regenerate the lockfile here so it can be committed in the same push as

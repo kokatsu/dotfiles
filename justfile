@@ -1,5 +1,3 @@
-# Dotfiles task runner
-
 lua_dirs := ".config/nvim .config/wezterm"
 deno_dirs := "karabiner-config scripts"
 # deno_dirs の外にある .ts/.tsx は全て単体の Deno スクリプトか mod なので、手書きせず git から列挙する

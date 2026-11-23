@@ -24,7 +24,6 @@
     then "/Users/${username}"
     else "/home/${username}";
 in {
-  # dotfiles の実パスと実行環境を各ツールの module に共有する。
   _module.args = {
     inherit validDotfilesDir;
   };
@@ -146,7 +145,6 @@ in {
     stateVersion = "24.11";
     preferXdgDirectories = true;
 
-    # PATH に追加 (ユーザースクリプト)
     sessionPath = [
       "${config.home.homeDirectory}/.local/bin/scripts"
       "${config.home.homeDirectory}/.local/share/pnpm/bin" # pnpm グローバルバイナリ (v11+ は bin/ サブディレクトリ)

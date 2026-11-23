@@ -10,7 +10,6 @@ return {
     -- コードフェンスの言語エイリアス (````md → markdown パーサーを使用)
     vim.treesitter.language.register('markdown', 'md')
 
-    -- Treesitterハイライトを全ファイルタイプで有効化
     vim.api.nvim_create_autocmd('FileType', {
       group = vim.api.nvim_create_augroup('treesitter_start', { clear = true }),
       callback = function(args)

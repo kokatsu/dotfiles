@@ -100,7 +100,6 @@ in {
       };
     };
 
-    # WSLからWindows側へ設定を再帰コピーする。
     activation.copyWezTermConfig = lib.mkIf isWSL (lib.hm.dag.entryAfter ["linkGeneration"]
       # bash
       ''

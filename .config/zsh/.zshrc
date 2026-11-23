@@ -32,7 +32,6 @@ source ${ZSH_PLUGIN_DIR}/evalcache/evalcache.plugin.zsh
 # 自前生成の補完 (delta など)。プラグインディレクトリは Nix store を指し書き込めない
 fpath=(${ZSH_EVALCACHE_DIR}/completions ${fpath})
 source ${ZSH_PLUGIN_DIR}/environment/init.zsh
-# Emacs キーバインドを使用（vi モードを無効化）
 # EDITOR=nvim だと main が viins になり、input の bindkey が emacs に届かないため先に切り替える
 bindkey -e
 source ${ZSH_PLUGIN_DIR}/input/init.zsh
@@ -118,18 +117,15 @@ done
 # _evalcache はキャッシュ済みでも md5sum 計算で fork するため、直接 source する
 zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-mise-*.sh(Nom[1])); [[ -n $f ]] && source $f || { command -v mise &>/dev/null && _evalcache mise activate zsh; }; }'
 
-# History
 export HISTFILE="$ZDOTDIR/.zsh_history"
 export HISTSIZE=50000
 export SAVEHIST=50000
-# 先頭にスペースを付けたコマンドは履歴に残さない
 setopt hist_ignore_space
 setopt hist_ignore_all_dups
 setopt hist_reduce_blanks
 setopt share_history
 # 履歴に実行時刻と所要時間を記録する (fc -li で参照可能)
 setopt extended_history
-# 保存時にも重複を除去する
 setopt hist_save_no_dups
 # history / fc コマンド自体は履歴に残さない
 setopt hist_no_store
@@ -142,8 +138,6 @@ setopt no_beep
 
 # GEM_HOME (hm-session-vars.sh の PATH 設定が WezTerm WSL ドメインで反映されない問題の回避)
 [[ -d "$XDG_DATA_HOME/gem/bin" ]] && [[ ":$PATH:" != *":$XDG_DATA_HOME/gem/bin:"* ]] && export PATH="$XDG_DATA_HOME/gem/bin:$PATH"
-
-# EDITOR は home.sessionVariables で管理
 
 # ------------------------------------------------------------------------------
 # Carapace (https://github.com/carapace-sh/carapace-bin)
@@ -164,7 +158,6 @@ zsh-defer -a +1 +2 -c '_evalcache carapace _carapace zsh'
 # Claude Code (https://docs.anthropic.com/ja/docs/claude-code/overview)
 # ------------------------------------------------------------------------------
 
-# CLAUDE_CONFIG_DIR は home.sessionVariables で管理
 export CLAUDE_CODE_TERMINAL=0
 
 # Claude Code は TERM_PROGRAM の許可リストでしか OSC 8 リンクを出さず、herdr は未掲載
@@ -179,7 +172,6 @@ export CLAUDE_CODE_TERMINAL=0
 export TERM_PROGRAM="${TERM_PROGRAM:-unknown}"
 export CURSOR_TERMINAL="${CURSOR_TERMINAL:-0}"
 
-# Cursor / VS Code 環境でのみ追加設定を適用
 # (CURSOR_TERMINAL は上で "0" に初期化するため、空判定ではなく値で比較する)
 if [[ "$TERM_PROGRAM" == "vscode" ]] || [[ "$CURSOR_TERMINAL" == 1 ]]; then
   # Shell integrationを無効化（競合回避）
@@ -191,16 +183,6 @@ fi
 # ------------------------------------------------------------------------------
 
 zsh-defer -a +1 +2 -c '[ -e "$ZSH_EVALCACHE_DIR/completions/_delta" ] || { mkdir -p "$ZSH_EVALCACHE_DIR/completions" && delta --generate-completion zsh >"$ZSH_EVALCACHE_DIR/completions/_delta"; }'
-
-# fastfetch は home.file で管理
-
-# ------------------------------------------------------------------------------
-# fzf (https://github.com/junegunn/fzf)
-# ------------------------------------------------------------------------------
-
-# fzf colors は FZF_DEFAULT_OPTS_FILE (themes/catppuccin-env.nix) で管理
-# FZF_DEFAULT_OPTS は home.sessionVariables 経由で設定される
-# fzf key bindings は zeno.zsh セクションで読み込み（Tab の優先順位制御のため）
 
 # ------------------------------------------------------------------------------
 # Lazygit (https://github.com/jesseduffield/lazygit)
@@ -221,8 +203,6 @@ if [[ ! -s "$ZSH_EVALCACHE_DIR/ls_colors_cache" ]]; then
   vivid generate ${CATPPUCCIN_VIVID_THEME:-catppuccin-mocha} >| "$ZSH_EVALCACHE_DIR/ls_colors_cache"
 fi
 export LS_COLORS="$(< $ZSH_EVALCACHE_DIR/ls_colors_cache)"
-
-# PSQLRC, RIPGREP_CONFIG_PATH, TAPLO_CONFIG は home.sessionVariables で管理
 
 # ------------------------------------------------------------------------------
 # Starship (https://github.com/starship/starship)

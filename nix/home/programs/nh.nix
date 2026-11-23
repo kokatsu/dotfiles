@@ -4,7 +4,6 @@
 in {
   programs.nh = {
     enable = true;
-    # 不要なNixストアを自動削除 (週1回、直近30日と各profileの最新1世代は残す)
     clean = {
       enable = true;
       dates = "weekly";

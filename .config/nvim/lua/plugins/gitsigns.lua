@@ -27,7 +27,6 @@ return {
           vim.keymap.set(mode, l, r, opts)
         end
 
-        -- Navigation
         map('n', ']g', function()
           if vim.wo.diff then
             return vim.cmd.normal({ ']c', bang = true })
@@ -49,7 +48,6 @@ return {
           gitsigns.nav_hunk('first')
         end, { desc = 'First Git Hunk' })
 
-        -- Actions
         map('n', '<leader>B', function()
           gitsigns.blame_line({ full = true })
         end, { desc = 'Git Blame Line' })

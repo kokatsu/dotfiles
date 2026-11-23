@@ -63,7 +63,6 @@ fetch_status() (
   trap - EXIT
 )
 
-# --- check サブコマンド ---
 cmd_check() {
   local status_dir
   local failed=0
@@ -81,7 +80,6 @@ cmd_check() {
   return "$failed"
 }
 
-# --- メイン ---
 case "${1:-check}" in
 check) cmd_check ;;
 *)

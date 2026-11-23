@@ -18,7 +18,6 @@
     "biome-lsp-proxy"
     "cssmodules"
     "tailwindcss-ls"
-    # "unocss"
   ];
   clipboardCommand =
     if pkgs.stdenv.hostPlatform.isDarwin
@@ -226,11 +225,6 @@ in {
       language-server = {
         cssmodules.command = "cssmodules-language-server";
 
-        # unocss = {
-        #   command = "unocss-language-server";
-        #   args = ["--stdio"];
-        # };
-
         # biome / eslint はプロジェクトに設定ファイルがあるときだけ起動させる
         # (Neovim 側は root_markers / root_dir で同じ制御をしている)。
         biome-lsp-proxy.required-root-patterns = ["biome.json" "biome.jsonc" ".biome.json" ".biome.jsonc"];
@@ -262,7 +256,6 @@ in {
               "vscode-eslint-language-server"
               "biome-lsp-proxy"
               "tailwindcss-ls"
-              # "unocss"
             ];
           }
           {

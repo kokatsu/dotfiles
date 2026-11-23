@@ -32,7 +32,6 @@ return {
         FloatBorder = { fg = colors.surface2 },
         Pmenu = { bg = colors.mantle },
         PmenuSel = { bg = colors.surface0 },
-        -- Window 分割の境界線 / 行番号 (flavor に追従)
         WinSeparator = { fg = colors.overlay0, bg = 'NONE' },
         LineNr = { fg = colors.overlay0, bg = 'NONE' },
         ['@markup.raw.markdown_inline'] = { fg = colors.subtext0, bg = colors.surface0 },

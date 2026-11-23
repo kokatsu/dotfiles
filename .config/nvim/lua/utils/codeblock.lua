@@ -1,5 +1,3 @@
--- Markdown fenced code block helpers
-
 local M = {}
 
 local function opening_fence_marker(line)

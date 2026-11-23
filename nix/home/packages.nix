@@ -397,38 +397,4 @@ in {
       # https://github.com/googlefonts/noto-cjk
       noto-fonts-cjk-sans # 日本語フォント
     ];
-
-  # 使用停止中のパッケージ
-  # https://github.com/o2sh/onefetch
-  # onefetch # Git リポジトリ情報表示
-  # https://github.com/lunarmodules/luacheck
-  # luaPackages.luacheck # Lua linter (.luacheckrc 用)
-  # https://github.com/mfontanini/presenterm
-  # presenterm # ターミナルプレゼンテーション
-  # https://github.com/karlstav/cava
-  # cava # 音声ビジュアライザ
-  # https://github.com/cacalabs/libcaca
-  # libcaca # テキストグラフィックス
-  # https://github.com/dominikwilkowski/cfonts
-  # cfonts # ASCIIアート
-  # https://github.com/boyter/scc
-  # scc # コード統計
-  # https://github.com/xampprocky/tokei
-  # tokei # コード統計ツール (行数カウント)
-  # https://github.com/Epistates/treemd
-  # treemd # Markdown navigator TUI
-  # https://github.com/kiki-ki/go-qo
-  # qo # JSON/CSV を SQL で問い合わせる TUI
-  # https://github.com/brevity1swos/rgx
-  # rgx # ターミナル正規表現テスター (regex101 の TUI 版)
-  # https://github.com/cslarsen/jp2a
-  # jp2a # JPG→ASCII変換
-  # https://github.com/eddieantonio/imgcat
-  # imgcat # 画像表示
-  # https://github.com/contentauth/c2pa-rs
-  # c2patool # C2PA マニフェストの表示・署名・検証 CLI
-  # https://github.com/nicholasHuang/bento4
-  # bento4 # MP4 解析/操作ツールキット (mp4dump, mp4info 等)
-  # https://github.com/xna00/unocss-language-server
-  # unocss-language-server # UnoCSS LSP (flake.nix の input と overlay も併せて戻す)
 }

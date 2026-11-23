@@ -104,21 +104,16 @@
         untrackedCache = true;
         # WSL の /mnt/c (NTFS) では fsmonitor デーモンの Unix ソケットが作れない。
         fsmonitor = pkgs.stdenv.hostPlatform.isDarwin;
-        # デフォルトのページャーを less に設定する場合はコメント解除。
-        # pager = "less -+X -+F -+S --quit-if-one-screen -+G --no-init --raw-control-chars -K";
       };
       diff = {
         algorithm = "histogram";
-        # コードの移動を検出し、色付けして表示する。
         colorMoved = "plain";
         # インデントだけ変えたブロックも移動として扱う。
         colorMovedWS = "allow-indentation-change";
-        # 差分表示のプレフィックスをわかりやすくする。
         mnemonicPrefix = true;
         renames = true;
       };
       fetch = {
-        # フェッチする時に、不要なブランチを削除する。
         prune = true;
         # ローカル専用・他リモート由来のタグを fetch で消さない。
         pruneTags = false;
@@ -145,9 +140,7 @@
       push = {
         # 現在のブランチを同名の追跡先ブランチへプッシュする。
         default = "simple";
-        # 新しいブランチの初回プッシュ時に追跡先を設定する。
         autoSetupRemote = true;
-        # プッシュ時に、関連するタグも一緒にプッシュする。
         followTags = true;
         # --force-with-lease 時に、リモートの更新をローカルへ取り込み済みかも検査する。
         useForceIfIncludes = true;
@@ -155,11 +148,9 @@
       rebase = {
         # インタラクティブリベースで fixup! や squash! を自動的に適切な位置へ移す。
         autoSquash = true;
-        # 作業中の変更をリベース前に一時的にスタッシュし、終了後に復元する。
         autoStash = true;
         # todo の行が消えていたら停止する (意図的に落とす場合は drop を使う)。
         missingCommitsCheck = "error";
-        # リベース時に、関連するブランチの参照も更新する。
         updateRefs = true;
       };
       rerere = {

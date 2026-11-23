@@ -12,7 +12,6 @@ local function check_deno_shebang(bufnr)
     return true
   end
 
-  -- Check direct path to deno
   local idx_space = shebang:find(' ')
   local path = string.sub(shebang, 3, idx_space and idx_space - 1 or nil)
   local cmd = vim.fs.basename(path)

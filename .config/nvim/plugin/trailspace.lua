@@ -68,7 +68,6 @@ vim.api.nvim_create_autocmd({ 'BufWinEnter', 'BufEnter', 'FileType' }, {
   end,
 })
 
--- Trim trailing whitespace on save
 vim.api.nvim_create_autocmd('BufWritePre', {
   group = group,
   callback = function()
