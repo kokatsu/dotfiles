@@ -57,14 +57,6 @@ in {
     });
   };
 
-  # golden が GitHub の runner label 一覧を固定しており、2026-11-02 の macos-14 廃止で
-  # TestLinterLintError が落ちる。2.5.0 で修正 (nixpkgs#585974)
-  jactionlint-skip-runner-label-goldens = _final: prev: {
-    jactionlint = guardedOverride "jactionlint" "2.4.0" prev.jactionlint (old: {
-      checkFlags = [(builtins.head old.checkFlags + "|^TestLinterLintError$")];
-    });
-  };
-
   # # Fix jp2a build on darwin (marked as broken)
   # jp2a-darwin-fix = _final: prev: {
   #   jp2a = guardedOverride "jp2a" "1.3.3" prev.jp2a (old: {

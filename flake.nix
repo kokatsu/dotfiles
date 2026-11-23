@@ -221,7 +221,6 @@
           # Pkl の format と eval の結果を Home Manager の pkl と揃える
           customOverlays.pkl
           customOverlays.claude-code
-          customOverlays.jactionlint-skip-runner-label-goldens
         ];
       });
 
