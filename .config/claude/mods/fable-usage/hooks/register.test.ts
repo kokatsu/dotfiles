@@ -5,6 +5,9 @@ const NOW = Date.UTC(2026, 10, 10, 6, 0); // 2026-11-10 15:00 +0900
 const WEEKLY_RESET = "2026-11-16T23:00:00.000Z"; // 11/17 08:00 +0900
 const FABLE_7_59 =
   "Current week (Fable): 2% used · resets Nov 17, 7:59am (Asia/Tokyo)\n";
+// The same instant as FABLE_7_59, printed by a machine at +0800.
+const FABLE_6_59 =
+  "Current week (Fable): 2% used · resets Nov 17, 6:59am (Asia/Taipei)\n";
 const LINE_FILE = "/cache/claude-fable-usage";
 const READING_FILE = `${LINE_FILE}.json`;
 const MINUTE = 60 * 1000;
@@ -26,20 +29,26 @@ const result = (exitCode: number, stdout: string) => ({
 const world = (
   on: On,
   usageStdout: string,
-  { now = NOW, files = new Map<string, File>(), usageExit = 0 } = {},
+  {
+    now = NOW,
+    files = new Map<string, File>(),
+    usageExit = 0,
+    zone = "+0900",
+  } = {},
 ) => {
   const clock = mock.clock(on, { now });
   const claimed = new Set<string>();
   let usageRuns = 0;
   on("session.start", (_$, e) => ({ cwd: e.cwd }));
   on("process.run", (_$, e) => {
+    if (e.argv[0] === "date") return result(0, `${zone}\n`);
     if (e.argv[0] === "sh" && e.argv.length > 3) {
       const slot = e.argv.at(-1) ?? "";
       if (claimed.has(slot)) return result(1, "");
       claimed.add(slot);
       return result(0, "");
     }
-    if (e.argv[0] === "sh") return result(0, "+0900\n/cache");
+    if (e.argv[0] === "sh") return result(0, "/cache");
     usageRuns += 1;
     return result(usageExit, usageExit === 0 ? usageStdout : "");
   });
@@ -81,6 +90,10 @@ const world = (
     files,
     line,
     usageRuns: () => usageRuns,
+    relocate: (z: string, stdout: string) => {
+      zone = z;
+      usageStdout = stdout;
+    },
   };
 };
 
@@ -204,4 +217,22 @@ test("sessions started together run /usage once", async ($, on) => {
 
   await clock.advance(5 * MINUTE);
   expect(usageRuns()).toBe(2);
+});
+
+test("follows a time zone change during the session", async ($, on) => {
+  const { clock, line, usageRuns, relocate } = world(on, FABLE_6_59, {
+    zone: "+0800",
+  });
+  await $.session.start(interactive);
+  await clock.settle();
+  expect(line()).toBe("🦋 Fable 2% 6d 17h 11/17 07:00");
+
+  relocate("+0900", FABLE_7_59);
+  await clock.advance(MINUTE);
+  expect(usageRuns()).toBe(1);
+  expect(line()).toBe("🦋 Fable 2% 6d 16h 11/17 08:00");
+
+  await clock.advance(4 * MINUTE);
+  expect(usageRuns()).toBe(2);
+  expect(line()).toBe("🦋 Fable 2% 6d 16h 11/17 08:00");
 });

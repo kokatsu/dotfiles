@@ -37,11 +37,12 @@ const USAGE_ARGV = [
 // the directory for the current slot is the only one to run /usage in it.
 const CLAIM_SCRIPT = 'mkdir -p "$1" && mkdir "$1/$2" && ' +
   'find "$1" -mindepth 1 -maxdepth 1 ! -name "$2" -exec rmdir {} +';
-const ENV_ARGV = [
+const CACHE_DIR_ARGV = [
   "sh",
   "-c",
-  'date +%z; printf %s "${XDG_CACHE_HOME:-$HOME/.cache}"',
+  'printf %s "${XDG_CACHE_HOME:-$HOME/.cache}"',
 ];
+const OFFSET_ARGV = ["date", "+%z"];
 
 // cc-statusline's default (Catppuccin Mocha) colors and thresholds, so this line
 // matches the 7d line the statusLine command prints above it.
@@ -117,9 +118,8 @@ export const register: Register = (on) => {
     const started = await next(e);
     if (!e.isInteractive) return started;
 
-    const env = (await $.process.run(ENV_ARGV)).stdout.split("\n");
-    const offsetMs = parseOffsetMs(env[0] ?? "");
-    const lineFile = `${env[1]}/claude-fable-usage`;
+    const cacheDir = (await $.process.run(CACHE_DIR_ARGV)).stdout;
+    const lineFile = `${cacheDir}/claude-fable-usage`;
     const readingFile = `${lineFile}.json`;
     const slotsDir = `${lineFile}.slots`;
 
@@ -128,7 +128,7 @@ export const register: Register = (on) => {
       const argv = ["sh", "-c", CLAIM_SCRIPT, "sh", slotsDir, slot];
       return (await $.process.run(argv)).exitCode === 0;
     };
-    const fetch = async () => {
+    const fetch = async (offsetMs: number) => {
       const { exitCode, stdout, stderr } = await $.process.run(USAGE_ARGV, {
         timeoutMs: 30_000,
       });
@@ -153,7 +153,7 @@ export const register: Register = (on) => {
         : null;
       await $.fs.write(readingFile, JSON.stringify(reading));
     };
-    const render = async () => {
+    const render = async (offsetMs: number) => {
       const reading = JSON.parse(await $.fs.read(readingFile)) as
         | Reading
         | null;
@@ -163,8 +163,13 @@ export const register: Register = (on) => {
       await $.fs.write(lineFile, text);
     };
     const tick = async () => {
-      if (await claim()) await fetch();
-      await render();
+      // The machine's zone can change while the session lives, and /usage
+      // prints the reset in the zone current when it runs.
+      const offsetMs = parseOffsetMs(
+        (await $.process.run(OFFSET_ARGV)).stdout,
+      );
+      if (await claim()) await fetch(offsetMs);
+      await render(offsetMs);
     };
     const logged = () =>
       tick().catch((err) =>
