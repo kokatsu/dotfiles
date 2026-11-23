@@ -56,7 +56,6 @@ end
 -- ペイン/タブ/レイアウト管理は herdr に全面委譲したため、
 -- WezTerm は GUI シェル (コピペ・フォント・QuickSelect 等) に徹する。
 local common_keys = {
-  -- `Shift + Enter` で 改行を送信
   -- https://zenn.dev/glaucus03/articles/070589323cb450
   { key = 'Enter', mods = 'SHIFT', action = act.SendString('\n') },
   -- `Ctrl + q` で WezTerm を終了（2度押しで確認）
@@ -93,7 +92,6 @@ local unified_keys = {
   },
   -- `Ctrl + Shift + c` でキャンセル (SIGINT)
   { key = 'C', mods = 'CTRL', action = act.SendKey({ key = 'c', mods = 'CTRL' }) },
-  -- `Ctrl + v` でクリップボードからペースト
   { key = 'v', mods = 'CTRL', action = act.PasteFrom('Clipboard') },
   -- `Ctrl + Shift + n` で新しいウィンドウを作成 (herdr 外の生シェル escape hatch)
   { key = 'N', mods = 'CTRL', action = act.SpawnWindow },
@@ -123,11 +121,8 @@ local unified_keys = {
   { key = 'RightArrow', mods = 'CTRL', action = act.SendString('\x1bf') },
   -- `Ctrl + Shift + L` でデバッグオーバーレイを表示
   { key = 'L', mods = 'CTRL', action = act.ShowDebugOverlay },
-  -- `Ctrl + ;` でフォントを大きくする
   { key = ';', mods = 'CTRL', action = act.IncreaseFontSize },
-  -- `Ctrl + -` でフォントを小さくする
   { key = '-', mods = 'CTRL', action = act.DecreaseFontSize },
-  -- `Ctrl + :` でフォントをリセット
   { key = ':', mods = 'CTRL', action = act.ResetFontSize },
   -- `Ctrl + Backspace` で単語を削除
   { key = 'Backspace', mods = 'CTRL', action = act.SendKey({ key = 'w', mods = 'CTRL' }) },
@@ -160,7 +155,6 @@ local unified_keys = {
       window:perform_action(act.Search('CurrentSelectionOrEmptyString'), pane)
     end),
   },
-  -- コマンドパレット
   { key = 'p', mods = 'CTRL|SHIFT', action = act.ActivateCommandPalette },
 }
 
@@ -203,7 +197,6 @@ local function request_ime_off(pane)
   return tostring(rename_err)
 end
 
--- Windows 固有キーバインド
 local windows_specific_keys = {
   -- `Ctrl + Shift + u` で Slack の未読バッジをクリアする。
   -- 常駐リスナー (windows/slack-watch) がこのマーカーを見つけて通知センターから
@@ -294,7 +287,6 @@ local windows_specific_keys = {
   },
 }
 
--- macOS 固有キーバインド
 local darwin_specific_keys = {
   -- ABC 入力ソースの JIS 配列で "\" を出せるのは Option+¥ だけで、Karabiner が
   -- ABC 時の ¥ をこれに変換している。send_composed_key_* = false だと Alt+¥ として
@@ -316,7 +308,6 @@ local copy_mode = {
   -- 選択範囲の端に移動
   { key = 'o', mods = 'NONE', action = act.CopyMode('MoveToSelectionOtherEnd') },
   { key = 'O', mods = 'NONE', action = act.CopyMode('MoveToSelectionOtherEndHoriz') },
-  -- ジャンプを繰り返す
   ---@diagnostic disable-next-line: param-type-mismatch
   { key = ';', mods = 'NONE', action = act.CopyMode('JumpAgain') },
   -- 単語ごと移動
@@ -344,7 +335,6 @@ local copy_mode = {
   { key = 'v', mods = 'NONE', action = act.CopyMode({ SetSelectionMode = 'Cell' }) },
   { key = 'v', mods = 'CTRL', action = act.CopyMode({ SetSelectionMode = 'Block' }) },
   { key = 'V', mods = 'NONE', action = act.CopyMode({ SetSelectionMode = 'Line' }) },
-  -- コピー
   { key = 'y', mods = 'NONE', action = act.CopyTo('Clipboard') },
   -- 検索
   { key = '/', mods = 'NONE', action = act.Search({ CaseSensitiveString = '' }) },
@@ -363,7 +353,6 @@ local copy_mode = {
   { key = 'q', mods = 'NONE', action = act.CopyMode('Close') },
 }
 
--- 検索モードのキーテーブル
 local search_mode = {
   { key = 'Enter', mods = 'NONE', action = act.CopyMode('PriorMatch') },
   { key = 'Escape', mods = 'NONE', action = act.CopyMode('Close') },

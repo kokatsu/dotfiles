@@ -1,4 +1,3 @@
-# GitHub CLI (gh) configuration
 {
   isWSL,
   pkgs,
@@ -7,7 +6,6 @@
   programs.gh = {
     enable = true;
     extensions = [pkgs.gh-stack];
-    # 旧 git/config の source 配置では自動生成 helper は使われていなかった。
     # 認証は引き続き git/config.local で管理する。
     gitCredentialHelper.enable = false;
     settings = {

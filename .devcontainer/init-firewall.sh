@@ -1,6 +1,6 @@
 #!/bin/bash
-set -euo pipefail # Exit on error, undefined vars, and pipeline failures
-IFS=$'\n\t'       # Stricter word splitting
+set -euo pipefail
+IFS=$'\n\t' # Stricter word splitting
 
 # 外へ出られるのは tinyproxy のユーザーだけで、tinyproxy が許可リスト (/etc/tinyproxy/allow.txt) のドメインへ
 # CONNECT を中継する。IP で許可すると、同じ CDN の IP に載った別のサイトにも繋がり、CDN の IP が変わると切れる
@@ -40,7 +40,6 @@ while read -r resolver; do
   iptables -A OUTPUT -d "$resolver" -p udp --dport 53 -j ACCEPT
   iptables -A OUTPUT -d "$resolver" -p tcp --dport 53 -j ACCEPT
 done < <(awk '/^nameserver/ && $2 ~ /^[0-9.]+$/ {print $2}' /etc/resolv.conf)
-# Allow localhost
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
 
@@ -49,7 +48,6 @@ iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 iptables -A OUTPUT -m owner --uid-owner tinyproxy -p tcp --dport 443 -j ACCEPT
 
-# Get host IP from default route
 HOST_IP=$(ip route | grep default | cut -d" " -f3)
 if [ -z "$HOST_IP" ]; then
   echo "ERROR: Failed to detect host IP"

@@ -56,11 +56,4 @@ in {
       }));
     });
   };
-
-  # # Fix jp2a build on darwin (marked as broken)
-  # jp2a-darwin-fix = _final: prev: {
-  #   jp2a = guardedOverride "jp2a" "1.3.3" prev.jp2a (old: {
-  #     meta = old.meta // {broken = false;};
-  #   });
-  # };
 }

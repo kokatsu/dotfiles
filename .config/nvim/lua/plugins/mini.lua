@@ -29,7 +29,6 @@ return {
     ai.setup({
       n_lines = 500,
       custom_textobjects = {
-        -- Treesitterベースのテキストオブジェクト
         f = gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }),
         c = gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }),
         -- 'a' は built-in の argument textobject と競合するため 'p' (parameter) を使用
@@ -66,7 +65,6 @@ return {
       autoread = false,
       -- 終了時の保存は下の VimLeavePre で cwd 名のセッションに行う
       -- (mini の autowrite は v:this_session が設定済みのときしか書かない)
-      -- セッションの保存先ディレクトリ
       directory = vim.fn.stdpath('data') .. '/sessions',
       -- セッションファイル名の形式
       file = '',
@@ -76,7 +74,6 @@ return {
     vim.api.nvim_create_autocmd('VimLeavePre', {
       group = vim.api.nvim_create_augroup('auto_save_session', { clear = true }),
       callback = function()
-        -- バッファが開かれている場合のみ保存
         local bufs = vim.fn.getbufinfo({ buflisted = 1 })
         if #bufs > 0 then
           require('mini.sessions').write(require('utils.session').name(), { force = true })

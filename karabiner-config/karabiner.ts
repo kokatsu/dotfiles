@@ -12,7 +12,6 @@ import { ifApp, ifInputSource, map, rule, writeToProfile } from "karabiner.ts";
 // deno-lint-ignore no-explicit-any
 (globalThis as any).require = createRequire(import.meta.url);
 
-// Terminal applications bundle identifiers
 const terminalApps = ifApp([
   "^com\\.github\\.wez\\.wezterm$",
   "^com\\.mitchellh\\.ghostty$",
@@ -20,14 +19,12 @@ const terminalApps = ifApp([
   "^com\\.googlecode\\.iterm2$",
 ]);
 
-// Chrome bundle identifier
 const chromeApp = ifApp("^com\\.google\\.Chrome$");
 
 // Generate Command+key to Control+key mappings for terminal apps
 // Since simple_modifications swaps Ctrl↔Cmd globally,
 // we need to convert Command (physical Ctrl) back to Control in terminal apps
 const keyList = [
-  // Alphabet keys
   "a",
   "b",
   "c",
@@ -71,12 +68,10 @@ const keyList = [
   "slash",
   "hyphen",
   "equal_sign",
-  // Arrow keys
   "up_arrow",
   "down_arrow",
   "left_arrow",
   "right_arrow",
-  // Number keys
   "1",
   "2",
   "3",
@@ -92,13 +87,10 @@ const keyList = [
 writeToProfile(
   Deno.args.includes("--dry-run") ? "--dry-run" : "Default",
   [
-    // Terminal apps: Convert Command+key to Control+key
     // This restores physical Ctrl behavior in terminal apps
     rule("Terminal: Command to Control (for CLI apps)", terminalApps)
       .manipulators([
-        // Basic Command+key → Control+key
         ...keyList.map((key) => map(key, "command").to(key, "control")),
-        // Command+Shift+key → Control+Shift+key
         ...keyList.map((key) =>
           map(key, ["command", "shift"]).to(key, ["control", "shift"])
         ),
@@ -119,7 +111,6 @@ writeToProfile(
       map("tab", ["command", "shift"]).to("tab", ["control", "shift"]),
     ]),
 
-    // Disable Command+Tab app switcher globally
     rule("Disable Command+Tab app switcher").manipulators([
       map("tab", "command").toVar("__disabled__", 1),
       map("tab", ["command", "shift"]).toVar("__disabled__", 1),
@@ -134,7 +125,6 @@ writeToProfile(
       map("international3").to("international3", "option"),
     ]),
 
-    // Option+Tab to Raycast Switch Windows
     rule("Option+Tab to Raycast Switch Windows").manipulators([
       map("tab", "option").to$(
         "open raycast://extensions/raycast/navigation/switch-windows",
@@ -143,7 +133,6 @@ writeToProfile(
   ],
   {},
   {
-    // Swap left_control and left_command using simple_modifications
     // This provides Cmd-like experience with physical Ctrl in non-terminal apps
     simple_modifications: [
       map("left_control").to("left_command"),

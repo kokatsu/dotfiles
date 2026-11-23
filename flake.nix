@@ -207,7 +207,6 @@
     inherit (nixpkgs) lib;
     forAllSystems = lib.genAttrs allSystems;
 
-    # カスタムオーバーレイ
     customOverlays = import ./nix/overlays {inherit inputs;};
     devPkgs = forAllSystems (system:
       import nixpkgs {
@@ -224,7 +223,6 @@
         ];
       });
 
-    # 共通オーバーレイ (全プラットフォーム)
     commonOverlays =
       [
         # upstream overlay (pkgs.moonbit-bin.* を生やす)
@@ -246,7 +244,7 @@
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
-          overlays = commonOverlays ++ lib.optionals (builtins.elem system darwinSystems) darwinOnlyOverlays;
+          overlays = commonOverlays;
         };
         modules = [
           ./nix/home
@@ -280,7 +278,6 @@
         };
       };
 
-    # CI用ヘルパー
     mkCIConfig = {
       system,
       isWSL ? false,
@@ -324,11 +321,6 @@
           inherit inputs username;
         };
       };
-
-    # Darwin専用オーバーレイ (ビルド修正)
-    darwinOnlyOverlays = [
-      # customOverlays.jp2a-darwin-fix
-    ];
 
     # CI の hash 検証用マニフェスト。
     # binary-releases.nix の mkBinaryRelease 製パッケージを attrNames で自動収集し、
@@ -409,7 +401,6 @@
         darwin = (mkDarwinConfig "ci").system;
       });
 
-    # 開発シェル
     devShells = forAllSystems (system: let
       pkgs = devPkgs.${system};
     in {
@@ -475,7 +466,6 @@
       };
     });
 
-    # フォーマッター
     formatter = forAllSystems (system: devPkgs.${system}.alejandra);
 
     # CIのhash検証用データ。標準のlib出力配下に置き、flake checkの

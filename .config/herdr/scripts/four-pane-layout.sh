@@ -52,7 +52,6 @@ if ((pane_count != 1)); then
   exit 0
 fi
 
-# 左右を 1:1 に分割し、作成された右ペインの ID を保持する。
 right_pane_id=$(split_pane "$active_pane_id" right 0.5)
 
 # 元の左ペインは上 3:下 1、右ペインは上 1:下 1 に分割する。

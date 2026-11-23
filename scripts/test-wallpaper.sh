@@ -50,7 +50,6 @@ run_wallpaper() {
   return "$rc"
 }
 
-# 選んだ画像を絶対パスで渡す
 if run_wallpaper env WALLPAPER_DIR="$walls" STUB_FZF_PICK=b.png &&
   [[ "$(cat "$tmp/desktoppr-args")" == "$walls/b.png" ]]; then
   pass "passes the chosen image to desktoppr as an absolute path"
@@ -58,7 +57,6 @@ else
   fail "desktoppr args: $(cat "$tmp/desktoppr-args" 2>/dev/null || echo '<not called>')"
 fi
 
-# 画像以外は候補に出さず、拡張子の大文字小文字は区別しない
 if [[ "$(cat "$tmp/fzf-input")" == $'a.JPG\nb.png\nc.heic' ]]; then
   pass "lists only images, sorted, case-insensitive extensions"
 else
@@ -74,7 +72,6 @@ else
   fail "herdr hand-off: $(tr '\n' ' ' <"$tmp/wezterm-args" 2>/dev/null || echo '<not called>')"
 fi
 
-# 移った先のタブでは移り直さない
 if run_wallpaper env WALLPAPER_DIR="$walls" STUB_FZF_RC=130 TERM_PROGRAM=herdr WALLPAPER_SPAWNED=1 &&
   [[ ! -e "$tmp/wezterm-args" ]] && grep -qF -- 'chafa --size=' "$tmp/fzf-args"; then
   pass "does not spawn again from the spawned tab"
@@ -105,7 +102,6 @@ for rc in 130 1; do
   fi
 done
 
-# fzf 自体のエラーはそのまま返す
 rc=0
 run_wallpaper env WALLPAPER_DIR="$walls" STUB_FZF_RC=2 || rc=$?
 if [[ $rc -eq 2 && ! -e "$tmp/desktoppr-args" ]]; then

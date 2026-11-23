@@ -72,7 +72,6 @@ in {
         '';
     };
 
-    # 既存のzsh設定をシンボリックリンク
     file =
       lib.mapAttrs' (name: source: lib.nameValuePair "${pluginDir}/${name}" {inherit source;}) plugins
       // {
@@ -109,7 +108,6 @@ in {
             export NOSYSZSHRC=1
             skip_global_compinit=1
 
-            # Nix
             if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
               . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
             fi

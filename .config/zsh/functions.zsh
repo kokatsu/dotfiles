@@ -8,7 +8,6 @@ function _wezterm_set_user_var() {
   printf "\033]1337;SetUserVar=%s=%s\007" "$1" "$(printf '%s' "$2" | base64)"
 }
 
-# Claude Code を起動
 # IS_CLAUDE user varでWezTermのマウス動作を切り替え
 # (herdr 配下ではマウスは herdr が処理するため実質 no-op、生シェルでは従来通り)
 function claude() {

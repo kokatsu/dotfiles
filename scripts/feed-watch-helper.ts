@@ -92,7 +92,6 @@ function updateFeed(status: Status, update: Update): void {
     url: update.url,
     category: update.category,
   };
-  // 既存の last_summarized_id を保持 (上書きしない)
   const summarized = str(existing?.last_summarized_id);
   if (summarized !== "") feed.last_summarized_id = summarized;
   status.feeds[update.name] = feed;

@@ -66,7 +66,6 @@ local function resolve_image_path(file)
     return nil
   end
 
-  -- 拡張子なしの場合は .jpg, .png を試す
   local extensions = { '.jpg', '.png', '.jpeg', '.webp', '.gif' }
   for _, ext in ipairs(extensions) do
     local path = backgrounds_dir .. '/' .. file .. ext
@@ -81,7 +80,6 @@ end
 ---@type { path: string, opacity: number, label: string }[]
 local background_images = {}
 
--- 存在する画像ファイルのみを設定
 for _, config in ipairs(background_config) do
   local path = resolve_image_path(config.file)
   if path then
@@ -251,7 +249,6 @@ M.apply_to_keys = function(keys, background_modifier, opacity_modifier)
     end),
   })
 
-  -- opacity 変更も直接処理（イベント経由をやめる）
   table.insert(keys, {
     key = 'UpArrow',
     mods = opacity_modifier,

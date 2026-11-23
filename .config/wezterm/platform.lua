@@ -1,4 +1,3 @@
---- プラットフォーム判定ユーティリティ
 --- OS判定（静的）とWSL判定（動的）を提供
 ---@diagnostic disable-next-line: assign-type-mismatch
 local wezterm = require('wezterm') ---@type Wezterm
@@ -9,13 +8,10 @@ local M = {}
 -- OS判定（静的：起動時に決定）
 -- ==============================================================================
 
---- Windowsかどうか
 M.is_windows = wezterm.target_triple == 'x86_64-pc-windows-msvc'
 
---- macOSかどうか
 M.is_mac = wezterm.target_triple == 'x86_64-apple-darwin' or wezterm.target_triple == 'aarch64-apple-darwin'
 
---- Linuxかどうか
 M.is_linux = wezterm.target_triple:find('linux') ~= nil
 
 --- WezTerm 自身が WSL ホスト内で動いているか（/proc/version の microsoft 文字列で判定）

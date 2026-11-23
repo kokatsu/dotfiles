@@ -25,7 +25,6 @@ trap 'rm -f "$CLAUDE_PATH_PICK_FILE" "$OUTCMD_FILE"' EXIT
 
 broot --outcmd "$OUTCMD_FILE"
 
-# outcmd を source して verb のシェルコマンドを実行
 if [[ -s "$OUTCMD_FILE" ]]; then
   # shellcheck disable=SC1090
   . "$OUTCMD_FILE"

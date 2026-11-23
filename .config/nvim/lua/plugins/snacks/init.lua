@@ -44,7 +44,6 @@ return {
     indent = indent.opts,
   },
   keys = {
-    -- Profiler
     {
       '<leader>pp',
       function()
@@ -191,7 +190,6 @@ return {
       end,
       desc = 'Outgoing Calls',
     },
-    -- Notifier
     {
       '<leader>n',
       function()
@@ -199,7 +197,6 @@ return {
       end,
       desc = 'Notification History',
     },
-    -- Words
     {
       ']]',
       function()
@@ -214,7 +211,6 @@ return {
       end,
       desc = 'Prev Reference',
     },
-    -- Bufdelete
     {
       '<leader>bd',
       function()

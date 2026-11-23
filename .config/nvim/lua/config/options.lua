@@ -1,5 +1,3 @@
--- Neovim オプション設定
-
 local is_wsl = vim.fn.has('wsl') == 1
 
 -- 行末の1文字先までカーソルを移動できる
@@ -7,9 +5,8 @@ vim.o.virtualedit = 'onemore'
 
 -- Window分割時のパディング設定
 vim.o.fillchars = 'vert:│,fold: ,eob: ' -- 垂直分割線の文字を設定
-vim.o.winbar = '%=%m %f' -- ウィンドウバーの表示設定
+vim.o.winbar = '%=%m %f'
 
--- マウスを有効
 vim.opt.mouse = 'a'
 -- クリップボードはyank時のみ同期（autocmds.luaで制御）
 vim.opt.clipboard = ''
@@ -49,31 +46,23 @@ end
 -- 行頭行末の左右移動で行をまたぐ
 vim.opt.whichwrap = 'b,s,h,l,<,>,[,],~'
 
--- tabをスペースに変換
 vim.opt.expandtab = true
 
 -- https://zenn.dev/vim_jp/articles/511d7982a64967
--- カーソル行をハイライト
 vim.opt.cursorline = true
--- フローティングウィンドウの境界線の透明度
 vim.opt.pumblend = 30
 -- 背景色 (APPEARANCE 環境変数で dark/light を切替; シェルが OS 設定から検出)
 vim.opt.background = vim.env.APPEARANCE == 'light' and 'light' or 'dark'
 
--- 行番号の表示
 vim.opt.number = true
--- 相対行番号の表示
 vim.opt.relativenumber = true
 
--- 検索時に大文字小文字を無視
 vim.opt.ignorecase = true
 -- 検索時に大文字が含まれている場合、ignorecaseを無効化
 vim.opt.smartcase = true
 
--- スワップファイルを作成しない
 vim.opt.swapfile = false
 
--- 永続的なundo履歴
 vim.opt.undofile = true
 
 -- 診断サインでレイアウトシフト防止

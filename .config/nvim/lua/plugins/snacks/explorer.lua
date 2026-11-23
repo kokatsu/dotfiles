@@ -1,7 +1,5 @@
--- Explorer設定
 local M = {}
 
--- 共通の exclude 設定
 local ok, common_exclude = pcall(require, 'plugins.snacks.exclude')
 if not ok then
   common_exclude = {}
@@ -12,7 +10,6 @@ if not ok then
 end
 M.common_exclude = common_exclude
 
--- Explorer共通設定
 local side_preview_min_columns = 140
 
 local function side_preview_layout()
@@ -144,10 +141,8 @@ M.config = {
   },
 }
 
--- Explorer opts
 M.opts = {}
 
--- Explorer action
 function M.action()
   Snacks.picker.explorer(M.config)
 end

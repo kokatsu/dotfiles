@@ -8,7 +8,6 @@ local function check_deno_shebang(bufnr)
 
   shebang = shebang:gsub('%s+', ' ')
 
-  -- Check for deno in shebang
   if vim.startswith(shebang, '#!/usr/bin/env deno') or vim.startswith(shebang, '#!/usr/bin/env -S deno') then
     return true
   end

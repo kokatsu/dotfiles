@@ -1,5 +1,3 @@
--- 基本編集キーマップ
-
 -- 挿入モードで ESC: stopinsert + 自動保存
 vim.keymap.set('i', '<ESC>', function()
   vim.cmd('stopinsert')

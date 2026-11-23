@@ -43,7 +43,6 @@ vim.g.clipboard = {
   },
 }
 
--- Resolve plugin directory from repo root
 local plugin_dir = vim.fn.getcwd() .. '/.config/nvim/plugin'
 if vim.fn.isdirectory(plugin_dir) == 0 then
   -- selene: allow(incorrect_standard_library_use)
@@ -117,7 +116,6 @@ end)
 
 print('')
 
--- All plugin/ files load without error
 for _, file in ipairs(plugin_files) do
   local name = vim.fn.fnamemodify(file, ':t')
   test('plugin/' .. name .. ' loads without error', function()
@@ -583,7 +581,6 @@ test('kakehashi keeps Tree-sitter as the Markdown highlighter', function()
   end)
 end)
 
--- Results
 print('')
 local total = pass_count + #errors
 print(string.format('=== Results: %d tests, %d passed, %d failed ===', total, pass_count, #errors))

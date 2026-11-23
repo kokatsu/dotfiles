@@ -16,7 +16,6 @@ end
 
 local default_color = colors.palette.accent
 
--- プロセス名に応じたアイコンと色の定義
 -- https://zenn.dev/gsy0911/articles/a7347e1a2d8d31
 local nf = wezterm.nerdfonts --[[@as table]]
 
@@ -469,8 +468,6 @@ local function get_process_name(pane, use_method)
     wezterm_prog = pane.user_vars and pane.user_vars.WEZTERM_PROG or ''
   end
 
-  -- WSL上のプロセスはwslhost.exeとして見える
-  -- WEZTERM_PROGが設定されていればそれを使用
   if process_name:find('wslhost.exe') and wezterm_prog ~= '' then
     -- WEZTERM_PROGからコマンド名のみを取得（引数を除去）
     return wezterm_prog:match('^(%S+)') or wezterm_prog
@@ -566,13 +563,11 @@ M.apply = function()
     end
   end)
 
-  -- タブのタイトルを変更
   wezterm.on('format-tab-title', function(tab, _, _, _, hover, max_width)
     local pane = tab.active_pane
 
     local title = tab.active_pane.title
 
-    -- プロセスに応じたアイコンと色を取得
     local icon_info = get_process_icon(pane)
     local left_edge = nf.ple_left_half_circle_thick
     local right_edge = nf.ple_right_half_circle_thick
@@ -584,12 +579,10 @@ M.apply = function()
       title = title_width > 0 and (wezterm.truncate_right(title, title_width - 1) .. '…') or ''
     end
 
-    -- アクティブ/非アクティブに応じて背景色を変更
     local bg_color
     local fg_color
     local icon_color
     if tab.is_active then
-      -- アクティブタブ
       bg_color = default_color
       fg_color = colors.palette.crust
       icon_color = colors.palette.crust -- アクティブ時はアイコンも同じ色

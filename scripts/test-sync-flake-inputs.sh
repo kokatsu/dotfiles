@@ -37,7 +37,6 @@ chmod +x "$test_dir/bin/"*
 export PATH="$test_dir/bin:$PATH" SYNC_TEST_DIR="$test_dir"
 cd "$test_dir/work"
 
-# 解析の失敗は同期スクリプトの失敗として伝わらなければならない
 touch "$test_dir/deno-fail"
 if bash "$repo_root/scripts/sync-flake-inputs.sh" "$test_dir/out-fail" 2>/dev/null; then
   echo "sync must fail when the flake parser fails" >&2

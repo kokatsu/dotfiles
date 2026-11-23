@@ -107,7 +107,6 @@ for conf in "$ZDOTDIR/config.d/"*.zsh(N); do
   source "${conf}"
 done
 
-# カスタム関数を読み込む
 for func in "$ZDOTDIR/functions.d/"*.zsh(N); do
   source "${func}"
 done
@@ -120,19 +119,13 @@ done
 zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-mise-*.sh(Nom[1])); [[ -n $f ]] && source $f || { command -v mise &>/dev/null && _evalcache mise activate zsh; }; }'
 
 # History
-# History file
 export HISTFILE="$ZDOTDIR/.zsh_history"
-# History size
 export HISTSIZE=50000
-# Save history
 export SAVEHIST=50000
 # 先頭にスペースを付けたコマンドは履歴に残さない
 setopt hist_ignore_space
-# Ignore all duplicate commands
 setopt hist_ignore_all_dups
-# Reduce duplicate commands
 setopt hist_reduce_blanks
-# Share history
 setopt share_history
 # 履歴に実行時刻と所要時間を記録する (fc -li で参照可能)
 setopt extended_history
@@ -143,10 +136,8 @@ setopt hist_no_store
 # 履歴ファイルの読み書きを fcntl でロックする
 # share_history + herdr の多ペイン同時書き込みでの破損を防ぐ
 setopt hist_fcntl_lock
-# Disable beep
 setopt no_beep
 
-# Functions
 . $ZDOTDIR/functions.zsh
 
 # GEM_HOME (hm-session-vars.sh の PATH 設定が WezTerm WSL ドメインで反映されない問題の回避)

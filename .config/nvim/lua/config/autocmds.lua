@@ -1,5 +1,3 @@
--- Autocmd設定
-
 -- プラグインロードをログに記録し、未使用プラグインを通知
 -- ログ: ~/.local/share/nvim/lazy-load.log
 do
@@ -8,7 +6,6 @@ do
   local unused_days_threshold = 30
   local log_retention_days = 90
 
-  -- lazy-load イベントをログに記録
   vim.api.nvim_create_autocmd('User', {
     group = vim.api.nvim_create_augroup('lazy_load_log', { clear = true }),
     pattern = 'LazyLoad',
@@ -21,7 +18,6 @@ do
     end,
   })
 
-  -- 起動時に未使用プラグインを検出して通知
   vim.api.nvim_create_autocmd('User', {
     group = vim.api.nvim_create_augroup('unused_plugin_report', { clear = true }),
     pattern = 'VeryLazy',
@@ -66,7 +62,6 @@ do
       end
       local threshold_date = os.date('%Y-%m-%d', os.time() - unused_days_threshold * seconds_per_day)
       if oldest_date and oldest_date > threshold_date then
-        -- ログ収集開始から unused_days_threshold 日未満なので通知しない
         return
       end
 

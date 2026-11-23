@@ -362,12 +362,10 @@ in {
       plemoljp-nf # PlemolJP + Nerd Fonts (WezTerm の主フォント)
     ]
     ++ lib.optionals isDarwin [
-      # macOS専用
       # https://github.com/scriptingosx/desktoppr
       desktoppr # 壁紙設定 CLI (bin/wallpaper が使う)
     ]
     ++ lib.optionals (!isDarwin) [
-      # Linux/WSL専用
       util-linux # feed-watch / feed-summarize の flock
       # https://github.com/containers/bubblewrap
       bubblewrap # サンドボックスツール (Codex CLI 用)

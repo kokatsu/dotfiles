@@ -1,6 +1,5 @@
 -- ハイライト設定 (flavor 非依存のもの; flavor 連動は catppuccin.nvim の custom_highlights へ)
 
--- SnacksPicker系
 vim.api.nvim_set_hl(0, 'SnacksPicker', { bg = 'NONE' })
 vim.api.nvim_set_hl(0, 'SnacksPickerBorder', { bg = 'NONE' })
 vim.api.nvim_set_hl(0, 'SnacksPickerInput', { bg = 'NONE' })

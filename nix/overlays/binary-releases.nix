@@ -32,7 +32,6 @@ in {
     };
   };
 
-  # Pkl Language Server
   # 0.9.0 から pkl 0.33 と同じ XDG パス (~/.cache/pkl, ~/.local/share/pkl) を使う。
   # 公式 release は全プラットフォーム共通の jar のみ。
   # Renovate: datasource=github-releases depName=apple/pkl-lsp
@@ -67,7 +66,6 @@ in {
     };
   };
 
-  # Claude Code - agentic coding tool
   # Renovate: datasource=custom.claude-code depName=claude-code
   claude-code = mkBinaryRelease rec {
     pname = "claude-code";
@@ -94,7 +92,6 @@ in {
     };
   };
 
-  # Codex - OpenAI Codex CLI
   # Renovate: datasource=github-releases depName=openai/codex
   codex = mkBinaryRelease rec {
     pname = "codex";
@@ -135,7 +132,6 @@ in {
   };
 
   # kakehashi - Tree-sitter Language Server
-  # Uses pre-built binaries from GitHub releases
   # Renovate: datasource=github-releases depName=atusy/kakehashi
   kakehashi = mkBinaryRelease rec {
     pname = "kakehashi";
@@ -231,7 +227,6 @@ in {
     };
   };
 
-  # upmd - Run tasks and workflows from Markdown
   # Renovate: datasource=github-releases depName=rezigned/upmd
   upmd = mkBinaryRelease rec {
     pname = "upmd";
@@ -250,28 +245,4 @@ in {
       license = "mit";
     };
   };
-
-  # # qo - Interactive TUI to query JSON and CSV with SQL
-  # # Renovate: datasource=github-releases depName=kiki-ki/go-qo
-  # qo = mkBinaryRelease rec {
-  #   pname = "qo";
-  #   version = "0.5.1";
-  #   hashes = {
-  #     "aarch64-darwin" = "sha256-CHNhJcxvY6bWesgZkt6Sxbga8Aru8Tu6DIaX3V3puMU=";
-  #     "aarch64-linux" = "sha256-ZqUB26ngjWEGDkh9hfq4++3XGxTdGNBgFIOWDhP5UoY=";
-  #     "x86_64-linux" = "sha256-ned1TYemI0C80sol93IgWBmwpDh7pk/Vr3zqAPmNjG4=";
-  #   };
-  #   platformMap = {
-  #     "aarch64-darwin" = "darwin_arm64";
-  #     "aarch64-linux" = "linux_arm64";
-  #     "x86_64-linux" = "linux_amd64";
-  #   };
-  #   url = platform: "https://github.com/kiki-ki/go-qo/releases/download/v${version}/qo_${version}_${platform}.tar.gz";
-  #   format = "tar";
-  #   extraAttrs = {sourceRoot = ".";};
-  #   meta = {
-  #     description = "Interactive TUI to query JSON and CSV using SQL";
-  #     homepage = "https://github.com/kiki-ki/go-qo";
-  #   };
-  # };
 }

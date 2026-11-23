@@ -44,7 +44,6 @@ fail() {
   printf "${RED}  FAIL${NC} %s\n" "$1"
 }
 
-# フックに渡す JSON を生成
 make_input() {
   jq -n --arg cmd "$1" '{"tool_input": {"command": $cmd}}'
 }
@@ -68,7 +67,6 @@ assert_raw_blocked() {
   fi
 }
 
-# コマンドがブロックされることを検証 (厳密に exit 2)
 assert_blocked() {
   local cmd="$1"
   local label="${2:-$cmd}"
@@ -81,7 +79,6 @@ assert_blocked() {
   fi
 }
 
-# コマンドがパスすることを検証 (厳密に exit 0)
 assert_allowed() {
   local cmd="$1"
   local label="${2:-$cmd}"

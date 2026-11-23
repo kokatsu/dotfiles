@@ -32,7 +32,6 @@ function isElement(key: string): boolean {
   return !key.startsWith(ATTR_PREFIX);
 }
 
-// 子要素のテキスト。`(child.text or "").strip()` に対応する。
 function textOf(value: unknown): string {
   if (typeof value === "string") return value.trim();
   const obj = rec(value);

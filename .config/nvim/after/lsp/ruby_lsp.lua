@@ -1,4 +1,3 @@
--- Ruby LSP 設定
 -- https://shopify.github.io/ruby-lsp/editors.html
 
 ---@type vim.lsp.Config
@@ -17,13 +16,10 @@ local ruby_lsp_config = {
     -- フォーマッタ設定 ('auto', 'rubocop', 'standard', 'syntax_tree')
     formatter = 'auto',
 
-    -- リンター設定
     linters = { 'rubocop' },
 
-    -- 実験的機能を有効化
     experimentalFeaturesEnabled = true,
 
-    -- 有効にする機能
     enabledFeatures = {
       codeActions = true,
       codeLens = true, -- テスト実行、ファイルジャンプ等
@@ -44,7 +40,6 @@ local ruby_lsp_config = {
       workspaceSymbol = true,
     },
 
-    -- Inlay Hint詳細設定
     featuresConfiguration = {
       inlayHint = {
         implicitHashValue = true, -- { key: } → { key: key }
@@ -52,7 +47,6 @@ local ruby_lsp_config = {
       },
     },
 
-    -- Rails用アドオン設定
     addonSettings = {
       ['Ruby LSP Rails'] = {
         enablePendingMigrationsPrompt = true,
@@ -66,7 +60,6 @@ local ruby_lsp_config = {
     return client.name == config.name and client.config.root_dir == config.root_dir
   end,
 
-  -- LSPアタッチ時のコールバック
   on_attach = function(client, bufnr)
     -- CodeLens自動更新
     if client:supports_method('textDocument/codeLens', bufnr) then

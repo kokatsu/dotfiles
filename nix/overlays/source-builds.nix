@@ -2,7 +2,6 @@ let
   inherit (import ./lib.nix) guardEqual;
 in {
   # cssmodules-language-server - CSS Modules LSP
-  # Uses buildNpmPackage from GitHub source
   # Renovate: datasource=npm depName=cssmodules-language-server
   cssmodules-language-server = _final: prev: {
     cssmodules-language-server = prev.buildNpmPackage rec {
@@ -27,7 +26,6 @@ in {
     };
   };
 
-  # mermaid-ascii - Render Mermaid graphs as ASCII/Unicode text
   # Renovate: datasource=github-releases depName=AlexanderGrooff/mermaid-ascii
   mermaid-ascii = _final: prev: {
     mermaid-ascii = prev.buildGoModule rec {

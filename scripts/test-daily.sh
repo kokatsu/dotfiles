@@ -37,7 +37,6 @@ else
   fail "heading does not match: $(head -n 1 "$path")"
 fi
 
-# --offset 0 は既定と同じ
 if [[ "$(run_daily --offset 0)" == "$path" ]]; then
   pass "--offset 0 equals the default"
 else
@@ -53,7 +52,6 @@ else
   fail "offset ordering broken: $yesterday $base $tomorrow"
 fi
 
-# 既存ファイルを切り詰めない
 printf 'body\n' >>"$path"
 run_daily >/dev/null
 if [[ "$(wc -l <"$path" | tr -d ' ')" == 2 ]]; then
@@ -62,7 +60,6 @@ else
   fail "existing diary was rewritten"
 fi
 
-# 不正な offset は失敗する
 if run_daily --offset x >/dev/null; then
   fail "--offset x should fail"
 else

@@ -351,7 +351,6 @@ internal static class Program
         }
         catch
         {
-            // 握りつぶす
         }
     }
 

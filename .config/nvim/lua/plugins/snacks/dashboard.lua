@@ -1,4 +1,3 @@
--- Dashboard設定
 local M = {}
 
 local palette = require('utils.palette')

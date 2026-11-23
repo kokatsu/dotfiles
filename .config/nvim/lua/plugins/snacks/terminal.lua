@@ -1,4 +1,3 @@
--- Terminal設定
 local M = {}
 
 M.opts = {

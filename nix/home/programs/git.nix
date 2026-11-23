@@ -80,7 +80,6 @@
         wip = "commit -am 'chore(wip): :construction: work in progress'";
       };
       branch = {
-        # ブランチを表示する際、最新のコミット日時順にソートする。
         sort = "-committerdate";
       };
       color = {
@@ -96,15 +95,12 @@
         ui = "auto";
       };
       commit = {
-        # コミットメッセージを詳細に表示する。
         verbose = true;
       };
       core = {
-        # Git の操作で使用するエディタを Neovim に設定する。
         editor = "nvim";
         # 日本語ファイル名をエスケープせずそのまま表示する。
         quotepath = false;
-        # 未追跡ファイルのキャッシュを有効にする。
         untrackedCache = true;
         # WSL の /mnt/c (NTFS) では fsmonitor デーモンの Unix ソケットが作れない。
         fsmonitor = pkgs.stdenv.hostPlatform.isDarwin;
@@ -112,7 +108,6 @@
         # pager = "less -+X -+F -+S --quit-if-one-screen -+G --no-init --raw-control-chars -K";
       };
       diff = {
-        # 差分を表示する際、差分アルゴリズムを histogram に設定する。
         algorithm = "histogram";
         # コードの移動を検出し、色付けして表示する。
         colorMoved = "plain";
@@ -120,7 +115,6 @@
         colorMovedWS = "allow-indentation-change";
         # 差分表示のプレフィックスをわかりやすくする。
         mnemonicPrefix = true;
-        # 差分表示の際にファイル名の変更を検出する。
         renames = true;
       };
       fetch = {
@@ -128,7 +122,6 @@
         prune = true;
         # ローカル専用・他リモート由来のタグを fetch で消さない。
         pruneTags = false;
-        # フェッチする時に、すべてのリモートから取得する。
         all = true;
         # pack を受け取るたびに commit-graph を更新し、log --graph などを速くする。
         writeCommitGraph = true;
@@ -138,7 +131,6 @@
         autocorrect = "prompt";
       };
       init = {
-        # git init 時のデフォルトのブランチ名を main に設定する。
         defaultBranch = "main";
       };
       # mergiraf.nix が diff3 に固定する。mergiraf をやめる場合はコメント解除。

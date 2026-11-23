@@ -15,7 +15,6 @@
     extra-trusted-public-keys = kokatsu.cachix.org-1:womBGQiv46ieMIq9Lll7fa06bN0CMKMjIEDIjvp8+rI= helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs=
   '';
 
-  # nixpkgsの設定
   nixpkgs.config = {
     allowUnfree = true;
   };
@@ -68,7 +67,6 @@
     ];
   };
 
-  # macOS設定
   system = {
     # defaults writeの代わり
     defaults = {
@@ -135,7 +133,6 @@
     '';
   };
 
-  # ユーザー設定
   users.users.${username} = {
     name = username;
     home = "/Users/${username}";

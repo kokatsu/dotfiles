@@ -93,7 +93,6 @@ wezterm.on('open-uri', function(window, pane, uri)
       local cwd_uri = pane:get_current_working_dir()
       if cwd_uri and cwd_uri.file_path then
         local cwd = cwd_uri.file_path --[[@as string]]
-        -- 末尾にスラッシュがなければ追加
         if not cwd:match('/$') then
           cwd = cwd .. '/'
         end

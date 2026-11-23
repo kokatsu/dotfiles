@@ -1,12 +1,9 @@
--- Picker設定
 local M = {}
 
 local explorer = require('plugins.snacks.explorer')
 local common_exclude = explorer.common_exclude
 
--- Picker opts
 M.opts = {
-  -- ESCキーで即座に閉じる設定
   win = {
     input = {
       keys = {
@@ -48,7 +45,6 @@ M.opts = {
   },
 }
 
--- Smart find action
 function M.smart_action()
   Snacks.picker.smart({
     hidden = true,
@@ -57,7 +53,6 @@ function M.smart_action()
   })
 end
 
--- Grep action
 function M.grep_action()
   Snacks.picker.grep({
     cmd = 'rg',

@@ -19,11 +19,8 @@ return {
       -- Navigation groups
       { '[', group = 'prev' },
       { ']', group = 'next' },
-      -- Surround group
       { 's', group = 'surround' },
-      -- FFF group
       { '<leader>F', group = 'fff' },
-      -- Go to group
       { 'g', group = 'goto' },
       -- mini.surround descriptions
       { 'sa', desc = 'Add surrounding', mode = { 'n', 'x' } },

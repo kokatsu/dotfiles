@@ -14,11 +14,8 @@
 
       -- 罫線を内側のみ表示 (0=なし, 2=外枠も)
       \pset border 1
-      -- 罫線に Unicode 文字を使う
       \pset linestyle unicode
-      -- NULL を [NULL] と表示
       \pset null '[NULL]'
-      -- ページャを無効化し結果を一括出力
       \pset pager off
 
       -- ---------- 入力補完・履歴の設定 ----------
@@ -29,7 +26,6 @@
       \set HISTCONTROL ignoredups
       -- 履歴ファイルを接続データベースごとに分ける
       \set HISTFILE ${config.xdg.stateHome}/psql/history- :DBNAME
-      -- コマンド履歴の保存件数
       \set HISTSIZE 10000
 
       -- ---------- プロンプトの設定 ----------
@@ -41,9 +37,7 @@
 
       -- ---------- その他の設定 ----------
 
-      -- エラーを詳細表示
       \set VERBOSITY verbose
-      -- クエリの実行時間を表示
       \timing
       -- 行が広いとき自動で拡張表示に切り替え
       \x auto
