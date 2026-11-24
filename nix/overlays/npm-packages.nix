@@ -7,7 +7,7 @@ in {
   # vite-plus@<version>, then expose a wrapper around node_modules/vite-plus/bin/vp as $out/bin/vp.
   # Renovate: datasource=npm depName=vite-plus
   vite-plus = _final: prev: let
-    version = "1.6.0";
+    version = "1.7.0";
   in {
     vite-plus = prev.buildNpmPackage {
       pname = "vite-plus";
