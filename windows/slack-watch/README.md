@@ -48,10 +48,12 @@ Slack Desktop --(トースト通知)--> Windows 通知センター
 WSL 側から次を実行する。
 
 ```bash
-slack-watch install   # Windows 側へ publish し、ログオン時に起動するタスクを登録
+slack-watch install   # Windows 側へ publish し、ログオン時に起動する設定を入れる
 slack-watch start     # 起動
 slack-watch status    # status.json を表示して動作確認
 ```
+
+同じツールの `install` は一度に 1 つだけ実行する。作業用ディレクトリを共有するため、重なると互いの出力を消しうる。
 
 WezTerm 側のバッジと `Ctrl + Shift + u` は `.config/wezterm/*.lua` を Windows へコピーしてから有効になるので、初回は `home-manager switch --flake . --impure` も実行する。
 
@@ -72,7 +74,7 @@ WezTerm から `Ctrl + Shift + u`。`%USERPROFILE%\.cache\slack-watch\clear.requ
 | `watch` | 常駐。既定 30 秒ごとに `status.json` を更新する。要求マーカーはファイル監視で拾うので即座に反応する |
 | `once` | 1 回だけ収集して `status.json` を書く |
 | `clear` | 通知センターから Slack のトーストを消す |
-| `running` | 常駐が生きていれば終了コード 0、いなければ 1 |
+| `running` | 何も出力せず、常駐が生きていれば終了コード 0、いなければ 1 |
 | `probe` | 動作確認。件数と binding の形だけを出す (本文は出さない) |
 | `titles` | Slack トーストのタイトル行だけを出す。メンションと通常投稿を判別できるかの確認用 |
 
@@ -80,7 +82,7 @@ WezTerm から `Ctrl + Shift + u`。`%USERPROFILE%\.cache\slack-watch\clear.requ
 
 常駐がいるかどうかは、ロックが取れないことではなく `daemon.pid` の PID が生きているかで判断する。ロックが取れないだけの相手 (短命な `once` や直接実行の `clear`) に要求を委譲すると、誰も処理しないまま残るため。常駐がいれば `once` は何もせず終了し、`clear` は要求マーカーを置いて任せる。いなければどちらもロックを取って自分で処理する。
 
-`bin/slack-watch` の `start` / `stop` も同じ PID を見る。`stop` は加えて `status.json` の更新が止まったことも確認してから完了とする。
+`bin/slack-watch` の `start` / `stop` も同じ PID を見る。`stop` は停止マーカーを置いた後、その PID のプロセスが終了したことを確認してから完了とする。
 
 ## 環境変数
 

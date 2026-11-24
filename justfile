@@ -374,7 +374,7 @@ mods-test:
       claude plugin test "$dir" || exit $?; \
     done
 
-# Verify the feed, status, daily, wallpaper and Helix scripts, check failure handling, and activation retries
+# Verify the feed, status, Windows watcher, daily, wallpaper and Helix scripts, check failure handling, and activation retries
 reliability-test:
     {{ without_ld_env }} deno test --no-prompt --allow-read --allow-write --allow-run scripts/test-helix-copy-codeblock.ts
     {{ without_ld_env }} deno test --no-prompt --allow-read --allow-write --allow-run --allow-env scripts/test-feed-summarize.ts
@@ -385,6 +385,7 @@ reliability-test:
     bash scripts/test-feed-status.sh
     bash scripts/test-feed-watch.sh
     bash scripts/test-status-dir.sh
+    bash scripts/test-windows-watch-install.sh
     bash scripts/test-status-watch.sh
     bash scripts/test-daily.sh
     bash scripts/test-wallpaper.sh

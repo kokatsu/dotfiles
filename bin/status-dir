@@ -11,6 +11,8 @@ set -euo pipefail
 # 固定パスで揃えるため
 
 name=${1:?usage: status-dir <name>}
+# shellcheck source=scripts/windows-profile.sh
+source "$(dirname "$(readlink -f "$0")")/../scripts/windows-profile.sh"
 
 if [[ $(uname -s) == Darwin ]]; then
   echo "$HOME/.cache/$name"
@@ -23,12 +25,7 @@ WSLPATH=${STATUS_DIR_WSLPATH:-/usr/bin/wslpath}
 USERS_DIR=${STATUS_DIR_USERS_DIR:-/mnt/c/Users}
 
 # systemd user unit 内では WSL interop が無効で cmd.exe が使えないことがある
-# echo %USERPROFILE% だと、値に含まれる & を cmd.exe がコマンドの区切りとして解釈する
-vars=$("$CMD_EXE" /C "set USERPROFILE" 2>/dev/null | tr -d '\r') || vars=""
-# set は USERPROFILE で始まる変数をすべて出力する
-profile=${vars:+$'\n'$vars}
-profile=${profile#*$'\n'USERPROFILE=}
-profile=${profile%%$'\n'*}
+profile=$(read_userprofile "$CMD_EXE")
 if [[ -n "$profile" ]]; then
   profile_dir=$("$WSLPATH" -u "$profile" 2>/dev/null) || profile_dir=""
   if [[ -n "$profile_dir" && -d "$profile_dir" ]]; then

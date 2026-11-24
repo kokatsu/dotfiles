@@ -65,6 +65,8 @@ ime-watch off       # 常駐を介さず IME を閉じてみる (動作確認)
 ime-watch status    # status.json を表示する
 ```
 
+同じツールの `install` は一度に 1 つだけ実行する。作業用ディレクトリを共有するため、重なると互いの出力を消しうる。
+
 WezTerm 側のキーバインドは `.config/wezterm/*.lua` を Windows へコピーしてから有効になるので、初回は `home-manager switch --flake . --impure` も実行する。
 
 ## モード
@@ -73,7 +75,7 @@ WezTerm 側のキーバインドは `.config/wezterm/*.lua` を Windows へコ�
 | --- | --- |
 | `watch` | 常駐。`off.request` をファイル監視で待つ |
 | `off` | その場で前景ウィンドウの IME を閉じる |
-| `running` | 常駐が生きていれば終了コード 0、いなければ 1 |
+| `running` | 何も出力せず、常駐が生きていれば終了コード 0、いなければ 1 |
 
 常駐は名前付き Mutex (`Local\ime-watch`) で 1 プロセスに限っている。2 つ目の `watch` はその場で終了する。
 
