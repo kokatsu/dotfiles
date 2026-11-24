@@ -179,6 +179,8 @@ in {
       pi-coding-agent # Pi コーディングエージェント CLI (pi)
       # https://github.com/devcontainers/cli
       devcontainer # Dev Container CLI (devcontainer.json から環境構築・コンテナ内で claude 等を実行)
+      # https://github.com/nolabs-ai/nono
+      nono # AI エージェント向けサンドボックス (Linux: Landlock, macOS: Seatbelt)
       # https://github.com/gitleaks/gitleaks
       gitleaks # シークレット検出
       # https://github.com/getsops/sops

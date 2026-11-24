@@ -58,6 +58,7 @@ in {
     ./programs/nh.nix
     ./programs/neovim.nix
     ./programs/nix-index.nix
+    ./programs/nono.nix
     ./programs/ov.nix
     ./programs/pi.nix
     ./programs/psql.nix

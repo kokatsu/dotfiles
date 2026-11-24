@@ -4,9 +4,11 @@
   config,
   inputs,
   validDotfilesDir,
+  isDevcontainer,
   ...
 }: let
-  baseConfig = (pkgs.formats.toml {}).generate "codex-config.toml" {
+  mkConfig = (pkgs.formats.toml {}).generate "codex-config.toml";
+  settings = {
     approval_policy = "on-request";
     check_for_update_on_startup = false;
     file_opener = "none";
@@ -82,6 +84,14 @@
       };
     };
   };
+
+  # nono-agent は会話やログイン情報を分けるため、専用の CODEX_HOME を使う。
+  # 隔離の中から書けるディレクトリで、外から plugin add を実行しないため plugin は外す
+  codexConfigs =
+    {"${config.xdg.configHome}/codex" = mkConfig settings;}
+    // lib.optionalAttrs (!isDevcontainer) {
+      "${config.xdg.dataHome}/nono-agent/codex" = mkConfig (removeAttrs settings ["marketplaces" "plugins"]);
+    };
 in {
   home = {
     packages = [
@@ -167,42 +177,45 @@ in {
       lib.hm.dag.entryAfter ["linkGeneration"]
       # bash
       ''
-        CODEX_DIR="$HOME/.config/codex"
-        BASE="${baseConfig}"
-        TARGET="$CODEX_DIR/config.toml"
-        $DRY_RUN_CMD mkdir -p "$CODEX_DIR"
-        if [ -f "$TARGET" ]; then
-          # セクション順に依存せず、Codexが管理するローカル状態だけを抽出する。
-          LOCAL_STATE=$(${pkgs.gawk}/bin/awk '
-            /^\[\[?/ {
-              keep = 0
-              if ($0 ~ /^\[\[?projects(\.|\])/) keep = 1
-              if ($0 ~ /^\[\[?tui\.model_availability_nux\]\]?$/) keep = 1
-              if ($0 ~ /^\[\[?notice(\.|\])/) keep = 1
-              if ($0 ~ /^\[\[?hooks\.state(\.|\])/) keep = 1
-            }
-            keep { print }
-          ' "$TARGET")
-          TMP="$TARGET.tmp"
-          $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TMP"
-          if [ -n "$LOCAL_STATE" ]; then
-            if [ -n "$DRY_RUN_CMD" ]; then
-              echo "Preserving Codex local state in $TARGET"
-            else
-              printf '\n%s\n' "$LOCAL_STATE" >> "$TMP"
+        mergeCodexConfig() {
+          CODEX_DIR=$1
+          BASE=$2
+          TARGET="$CODEX_DIR/config.toml"
+          $DRY_RUN_CMD mkdir -p "$CODEX_DIR"
+          if [ -f "$TARGET" ]; then
+            # セクション順に依存せず、Codexが管理するローカル状態だけを抽出する。
+            LOCAL_STATE=$(${pkgs.gawk}/bin/awk '
+              /^\[\[?/ {
+                keep = 0
+                if ($0 ~ /^\[\[?projects(\.|\])/) keep = 1
+                if ($0 ~ /^\[\[?tui\.model_availability_nux\]\]?$/) keep = 1
+                if ($0 ~ /^\[\[?notice(\.|\])/) keep = 1
+                if ($0 ~ /^\[\[?hooks\.state(\.|\])/) keep = 1
+              }
+              keep { print }
+            ' "$TARGET")
+            TMP="$TARGET.tmp"
+            $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TMP"
+            if [ -n "$LOCAL_STATE" ]; then
+              if [ -n "$DRY_RUN_CMD" ]; then
+                echo "Preserving Codex local state in $TARGET"
+              else
+                printf '\n%s\n' "$LOCAL_STATE" >> "$TMP"
+              fi
             fi
+            $DRY_RUN_CMD ${pkgs.coreutils}/bin/mv -f "$TMP" "$TARGET"
+          else
+            $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TARGET"
           fi
-          $DRY_RUN_CMD ${pkgs.coreutils}/bin/mv -f "$TMP" "$TARGET"
-        else
-          $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TARGET"
-        fi
 
-        RULES_DIR="$CODEX_DIR/rules"
-        RULES_BASE="${validDotfilesDir}/.config/codex/rules/managed.rules"
-        RULES_TARGET="$RULES_DIR/managed.rules"
-        $DRY_RUN_CMD mkdir -p "$RULES_DIR"
-        $DRY_RUN_CMD cp "$RULES_BASE" "$RULES_TARGET"
-
+          RULES_DIR="$CODEX_DIR/rules"
+          RULES_BASE="${validDotfilesDir}/.config/codex/rules/managed.rules"
+          RULES_TARGET="$RULES_DIR/managed.rules"
+          $DRY_RUN_CMD mkdir -p "$RULES_DIR"
+          $DRY_RUN_CMD cp "$RULES_BASE" "$RULES_TARGET"
+        }
+        ${lib.concatLines (lib.mapAttrsToList (dir: base: ''mergeCodexConfig ${lib.escapeShellArgs [dir base]}'') codexConfigs)}
+        CODEX_DIR="${config.xdg.configHome}/codex"
         # config.toml の [plugins.*] は有効化の宣言だけで、Codex が読むのは
         # plugin add が作る plugins/cache 側のコピー。
         # 毎回は実行しない: 実行中の codex プロセスを herdr がエージェントと判定し、

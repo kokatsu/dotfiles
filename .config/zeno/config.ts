@@ -124,6 +124,17 @@ export default defineConfig(({ env }) => {
     },
 
     // -------------------------------------------------------------------------
+    // nono
+    // -------------------------------------------------------------------------
+    { name: "nono claude", keyword: "noc", snippet: "nono-agent claude" },
+    { name: "nono codex", keyword: "nox", snippet: "nono-agent codex" },
+    {
+      name: "nono codex login (device auth)",
+      keyword: "noxl",
+      snippet: "nono-agent codex login --device-auth",
+    },
+
+    // -------------------------------------------------------------------------
     // Nix
     // -------------------------------------------------------------------------
     {

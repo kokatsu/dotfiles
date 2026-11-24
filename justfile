@@ -16,7 +16,7 @@ check: (_run-all "check-static nix-eval")
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test dc-agent-test herdr-cache-token-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test llm-config-test nvim-test wezterm-links-test pi-statusline-test pi-guard-test pi-ai-writing-test"
+test_recipes := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test dc-agent-test nono-agent-test herdr-cache-token-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test llm-config-test nvim-test wezterm-links-test pi-statusline-test pi-guard-test pi-ai-writing-test"
 
 # Run every test recipe
 test: (_run-all test_recipes)
@@ -352,6 +352,10 @@ herdr-scripts-test:
 # Verify dc-agent marks the pane as a devcontainer agent, clears the mark on exit and keeps the exit status
 dc-agent-test:
     bash scripts/test-dc-agent.sh
+
+# Verify nono-agent refuses unsafe directories, protects what runs outside the sandbox and cleans up
+nono-agent-test:
+    bash scripts/test-nono-agent.sh
 
 # Verify the cache token selection and state transitions and the hook entry point that launches them
 herdr-cache-token-test:

@@ -10,7 +10,7 @@ trap 'rm -rf "$test_dir"' EXIT
 
 # Exercise the actual activation branch with a read-only generated base.
 # shellcheck disable=SC2016
-awk '/        if \[ -f "\$TARGET" \]; then/ {active=1} /        RULES_DIR=/ {active=0} active' \
+awk '/^ *if \[ -f "\$TARGET" \]; then/ {active=1} /^ *RULES_DIR=/ {active=0} active' \
   "$repo_root/nix/home/programs/codex.nix" |
   sed -e 's|${pkgs.gawk}/bin/awk|awk|g' \
     -e 's|${pkgs.coreutils}/bin/install|install|g' \
