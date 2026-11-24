@@ -5,18 +5,36 @@ set -euo pipefail
 # 偽の dotnet、cmd.exe、reg.exe、tasklist.exe、wslpath で確かめる。
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-test_dir=$(mktemp -d)
-trap 'rm -rf "$test_dir"' EXIT
+test_root=$(mktemp -d)
+ime_pid=''
+slack_pid=''
+cleanup() {
+  local pid log
+  trap '' INT TERM
+  for pid in "$ime_pid" "$slack_pid"; do
+    if [[ -n "$pid" ]]; then kill -TERM -- "-$pid" 2>/dev/null || true; fi
+  done
+  for pid in "$ime_pid" "$slack_pid"; do
+    if [[ -n "$pid" ]]; then wait "$pid" 2>/dev/null || true; fi
+  done
+  if [[ -n "$ime_pid$slack_pid" ]]; then
+    for log in "$test_root"/*.log; do
+      if [[ -f "$log" ]]; then cat "$log" >&2; fi
+    done
+  fi
+  rm -rf "$test_root"
+}
+trap cleanup EXIT
 
 failures=0
 # shellcheck source=scripts/test-lib.sh
 source "$(dirname "${BASH_SOURCE[0]}")/test-lib.sh"
 
-bin="$test_dir/bin"
+bin="$test_root/bin"
 mkdir -p "$bin"
 REAL_MV=$(command -v mv)
 REAL_SLEEP=$(command -v sleep)
-export TEST_DIR="$test_dir" REAL_MV REAL_SLEEP
+export REAL_MV REAL_SLEEP
 export IME_WATCH_DOTNET="$bin/dotnet" SLACK_WATCH_DOTNET="$bin/dotnet"
 export SLACK_WATCH_INTERVAL=1
 export WINDOWS_WATCH_CMD_EXE="$bin/cmd.exe"
@@ -94,10 +112,11 @@ running)
 watch)
   # 実物の Mutex と同じく、前のプロセスが残っていれば起動しない
   [[ ! -f "$TEST_DIR/daemon" ]] || exit 0
-  cp "$dll" "$TEST_DIR/daemon"
+  cp "$dll" "$TEST_DIR/daemon.new"
   mkdir -p "$state"
   echo "$$" >"$TEST_DIR/pid"
   echo "$$:1" >"$state/daemon.pid"
+  "$REAL_MV" "$TEST_DIR/daemon.new" "$TEST_DIR/daemon"
   ;;
 esac
 MOCK
@@ -121,8 +140,10 @@ esac
 exec "$REAL_MV" "$@"
 MOCK
 cat >"$bin/sleep" <<'MOCK'
-#!/usr/bin/env bash
-exec "$REAL_SLEEP" 0.05
+#!/bin/sh
+# tasklist.exe advances the mocked shutdown on each poll. Only startup
+# needs to yield to the background watcher.
+[ -f "$TEST_DIR/daemon" ] || exec "$REAL_SLEEP" 0.05
 MOCK
 cat >"$bin/setsid" <<'MOCK'
 #!/usr/bin/env bash
@@ -137,6 +158,7 @@ check() {
     pass "$TEST_NAME: $name"
   else
     fail "$TEST_NAME: $name"
+    if [[ -s "$test_dir/log" ]]; then cat "$test_dir/log" >&2; fi
   fi
 }
 
@@ -166,8 +188,17 @@ reset() {
 # 版 1 を配備して起動した状態を作り、以後の install は版 2 を作る
 running_v1() {
   reset
-  TEST_VERSION=1 run install
-  run start
+  # The mock watcher exits after writing its files. Reuse that initial
+  # state so failure cases exercise the update without reinstalling v1.
+  local snapshot="$test_dir/running-v1"
+  if [[ -d "$snapshot" ]]; then
+    cp -R "$snapshot/." "$test_dir/"
+  else
+    TEST_VERSION=1 run install
+    run start
+    mkdir "$snapshot"
+    cp -R "$test_dir/Taro & Co" "$test_dir/daemon" "$test_dir/pid" "$snapshot/"
+  fi
   # 配備の失敗時に Run キーが書き直されないことを見るため、実際の登録値と区別できる値にする
   echo before >"$test_dir/run-key"
   cp "$test_dir/run-key" "$test_dir/run-key.before"
@@ -197,8 +228,15 @@ check_retry() {
   check "$1: retry leaves nothing behind" no_leftovers
 }
 
-for pair in ime-watch:ImeWatch slack-watch:SlackWatch; do
-  export TEST_NAME=${pair%:*} TEST_ASSEMBLY=${pair#*:}
+test_watcher() {
+  set +m
+  local test_dir="$test_root/$1"
+  mkdir -p "$test_dir"
+  export TEST_NAME="$1" TEST_ASSEMBLY="$2" TEST_DIR="$test_dir"
+  trap 'if (( $? != 0 )); then
+    echo "$TEST_NAME: suite failed ($failures failed assertions)" >&2
+    if [[ -s "$TEST_DIR/log" ]]; then cat "$TEST_DIR/log" >&2; fi
+  fi' EXIT
   install_dir="$test_dir/Taro & Co/AppData/Local/$TEST_NAME"
   state_dir="$test_dir/Taro & Co/.cache/$TEST_NAME"
 
@@ -320,10 +358,27 @@ for pair in ime-watch:ImeWatch slack-watch:SlackWatch; do
   running_v1
   rm "$install_dir/bin/$TEST_ASSEMBLY.dll"
   check "PID file without the DLL: install fails" install_fails
-done
+  ((failures == 0))
+}
 
-if [[ $failures -gt 0 ]]; then
-  echo "windows-watch install tests: $failures failure(s)" >&2
-  exit 1
-fi
+# Defer shutdown until both group IDs are known, even if interrupted during launch.
+interrupted=0
+trap 'interrupted=130' INT
+trap 'interrupted=143' TERM
+set -m
+test_watcher ime-watch ImeWatch >"$test_root/ime.log" &
+ime_pid=$!
+test_watcher slack-watch SlackWatch >"$test_root/slack.log" &
+slack_pid=$!
+set +m
+trap 'exit 130' INT
+trap 'exit 143' TERM
+((interrupted == 0)) || exit "$interrupted"
+result=0
+wait "$ime_pid" || result=1
+ime_pid=''
+wait "$slack_pid" || result=1
+slack_pid=''
+cat "$test_root/ime.log" "$test_root/slack.log"
+((result == 0)) || exit 1
 echo "windows-watch install tests passed"
