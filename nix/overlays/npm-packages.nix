@@ -15,7 +15,7 @@ in {
 
       src = ../npm-locks/vite-plus;
 
-      npmDepsHash = "sha256-PxM3XNddxWz8s3cVm4adecTOBB9UZBD7aKSOJ5qx0wk=";
+      npmDepsHash = "sha256-NkHp4rdhTM65YoNKEDQwUtwijcnGNcRnByF8sLfoj7w=";
       npmFlags = npmInstallFlags.vite-plus;
       dontNpmBuild = true;
 
