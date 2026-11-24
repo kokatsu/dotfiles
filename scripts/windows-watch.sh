@@ -104,6 +104,13 @@ cmd_install() {
   dotnet_win=$("$WSLPATH" -w "$DOTNET") && [[ -n "$dotnet_win" ]] ||
     die "dotnet のパスを Windows 形式へ変換できません: $DOTNET"
 
+  mkdir -p "$INSTALL_DIR"
+  # 復旧と切り替えは同じ bin.old / bin.new を使う。ロックファイルは削除せず、
+  # install が終了して FD が閉じるまで同じ inode をロックする。
+  exec 9<>"$INSTALL_DIR/install.lock"
+  perl -MFcntl=:flock -e 'flock(STDIN, LOCK_EX | LOCK_NB) or die "$!\n"' <&9 ||
+    die "install のロックを取得できません"
+
   # 前回の中断の残り。bin.old を残すと、次の rename がその中への移動になる
   if [[ -d "$old" ]]; then
     if [[ -d "$bin" ]]; then
@@ -151,7 +158,7 @@ cmd_install() {
 
 abort_swap() {
   if (($1 == 0)); then
-    (cmd_start) || echo "$NAME: 旧版を再起動できません" >&2
+    (cmd_start) 9>&- || echo "$NAME: 旧版を再起動できません" >&2
   fi
   die "配備先を切り替えられません"
 }

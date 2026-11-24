@@ -103,6 +103,13 @@ esac
 MOCK
 cat >"$bin/mv" <<'MOCK'
 #!/usr/bin/env bash
+if [[ -n ${TEST_OVERLAP:-} && $1 == */bin.new ]]; then
+  if TEST_OVERLAP='' TEST_VERSION=3 "$TEST_OVERLAP" install >"$TEST_DIR/second-install.log" 2>&1; then
+    echo "second install succeeded" >>"$TEST_DIR/events"
+  else
+    echo "second install refused" >>"$TEST_DIR/events"
+  fi
+fi
 if [[ -n "${TEST_MV_FAIL:-}" && $1 == */"$TEST_MV_FAIL" ]]; then
   echo "mv: refused" >&2
   exit 1
@@ -204,6 +211,11 @@ for pair in ime-watch:ImeWatch slack-watch:SlackWatch; do
   check "first install starts nothing" no_daemon
   check "start succeeds" run start
   check "start runs the deployed version" daemon_is 1
+
+  TEST_VERSION=2 TEST_OVERLAP="$repo_root/bin/$TEST_NAME" check "overlapping installs: first succeeds" run install
+  check "overlapping installs: second is refused during the swap" grep -qxF "second install refused" "$test_dir/events"
+  check "overlapping installs: first version is deployed in bin" deployed_is 2
+  check "overlapping installs: no nested staging directory" test ! -e "$install_dir/bin/bin.new"
 
   running_v1
   check "update succeeds" run install
