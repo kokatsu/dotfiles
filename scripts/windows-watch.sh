@@ -126,7 +126,7 @@ cmd_install() {
 
   # dotnet.exe は Windows のパスしか解釈しないので、出力先も Windows 形式で渡す
   echo "publishing to $new ..."
-  (cd "$INSTALL_DIR/src" && "$DOTNET" publish -c Release -o "$WIN_INSTALL_DIR\\bin.new" --nologo)
+  (cd "$INSTALL_DIR/src" && "$DOTNET" publish -c Release -o "$WIN_INSTALL_DIR\\bin.new" --nologo) 9>&-
   [[ -f "$new/$ASSEMBLY.dll" ]] || die "publish しましたが $ASSEMBLY.dll がありません"
 
   daemon_state || state=$?

@@ -92,6 +92,10 @@ cat >"$bin/dotnet" <<'MOCK'
 #!/usr/bin/env bash
 to_path() { wslpath -u "$1"; }
 if [[ $1 == publish ]]; then
+  if { : >&9; } 2>/dev/null; then
+    echo 'publish inherited the install lock descriptor' >&2
+    exit 1
+  fi
   [[ -z "${TEST_PUBLISH_FAIL:-}" ]] || exit 1
   out=$(to_path "$5")
   mkdir -p "$out"
@@ -252,6 +256,7 @@ test_watcher() {
 
   TEST_VERSION=2 TEST_OVERLAP="$repo_root/bin/$TEST_NAME" check "overlapping installs: first succeeds" run install
   check "overlapping installs: second is refused during the swap" grep -qxF "second install refused" "$test_dir/events"
+  check "overlapping installs: refusal reports lock contention" grep -Fxq "$TEST_NAME: install のロックを取得できません" "$test_dir/second-install.log"
   check "overlapping installs: first version is deployed in bin" deployed_is 2
   check "overlapping installs: no nested staging directory" test ! -e "$install_dir/bin/bin.new"
 
