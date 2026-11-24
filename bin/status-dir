@@ -4,7 +4,7 @@ set -euo pipefail
 # status-dir: WezTerm のステータスバーが読むキャッシュディレクトリを解決して出力する
 #
 # Usage:
-#   status-dir <name>   例: status-dir feed-watch → /mnt/c/Users/<user>/.cache/feed-watch
+#   status-dir <name>   例: status-dir feed-watch → <Windows プロファイル>/.cache/feed-watch
 #
 # WezTerm は Windows 側で動くため WSL では Windows プロファイル配下を使い、macOS は
 # 同じマシンの ~/.cache を使う。XDG_CACHE_HOME は見ない: 読み手 (format.lua) と
@@ -17,18 +17,31 @@ if [[ $(uname -s) == Darwin ]]; then
   exit 0
 fi
 
+CMD_EXE=${STATUS_DIR_CMD_EXE:-/mnt/c/Windows/System32/cmd.exe}
+# systemd user unit の PATH は Nix のパッケージだけで、/usr/bin を含まない
+WSLPATH=${STATUS_DIR_WSLPATH:-/usr/bin/wslpath}
+USERS_DIR=${STATUS_DIR_USERS_DIR:-/mnt/c/Users}
+
 # systemd user unit 内では WSL interop が無効で cmd.exe が使えないことがある
-winuser=$(/mnt/c/Windows/System32/cmd.exe /C "echo %USERNAME%" 2>/dev/null | tr -d '\r') || true
-if [[ -n "$winuser" && -d "/mnt/c/Users/$winuser" ]]; then
-  echo "/mnt/c/Users/$winuser/.cache/$name"
-  exit 0
+# echo %USERPROFILE% だと、値に含まれる & を cmd.exe がコマンドの区切りとして解釈する
+vars=$("$CMD_EXE" /C "set USERPROFILE" 2>/dev/null | tr -d '\r') || vars=""
+# set は USERPROFILE で始まる変数をすべて出力する
+profile=${vars:+$'\n'$vars}
+profile=${profile#*$'\n'USERPROFILE=}
+profile=${profile%%$'\n'*}
+if [[ -n "$profile" ]]; then
+  profile_dir=$("$WSLPATH" -u "$profile" 2>/dev/null) || profile_dir=""
+  if [[ -n "$profile_dir" && -d "$profile_dir" ]]; then
+    echo "$profile_dir/.cache/$name"
+    exit 0
+  fi
 fi
 
-# cmd.exe が使えないときは、linux.zsh の USERPROFILE と同じ前提 (Windows ユーザー名 =
-# WSL ユーザー名) で同名プロファイルだけを候補にする。/mnt/c/Users/* の先頭を拾う
-# 推測はしない: 非システムのプロファイルが複数あるホストでは別ユーザーへ書き込みうる
-if [[ -d "/mnt/c/Users/$USER" ]]; then
-  echo "/mnt/c/Users/$USER/.cache/$name"
+# Windows のプロファイルを解決できないときは、WSL のユーザーと同名のプロファイルだけを
+# 候補にする。/mnt/c/Users/* の先頭を拾う推測はしない: 非システムのプロファイルが
+# 複数あるホストでは別ユーザーへ書き込みうる
+if [[ -d "$USERS_DIR/$USER" ]]; then
+  echo "$USERS_DIR/$USER/.cache/$name"
   exit 0
 fi
 

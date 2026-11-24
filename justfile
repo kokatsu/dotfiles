@@ -384,6 +384,7 @@ reliability-test:
     bash scripts/test-codex-config-activation.sh
     bash scripts/test-feed-status.sh
     bash scripts/test-feed-watch.sh
+    bash scripts/test-status-dir.sh
     bash scripts/test-status-watch.sh
     bash scripts/test-daily.sh
     bash scripts/test-wallpaper.sh
