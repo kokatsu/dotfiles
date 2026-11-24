@@ -35,8 +35,13 @@ fetch_status() (
   # scheduled_maintenances は載せない。summary には来週の予定 (status=scheduled) も
   # 混ざるうえ、バーは「今おかしいか」を出す場所であり、影響のある実施中の
   # メンテナンスは component が under_maintenance になれば components 側で拾える
-  payload=$(jq -c --argjson ts "$(date +%s)" '
-    {
+  # 空入力では filter が一度も評価されず成功扱いになるため、-s で読んで件数も確かめる
+  payload=$(jq -sc --argjson ts "$(date +%s)" '
+    if length == 1 and (.[0].status.indicator | type == "string" and . != "")
+    then .[0]
+    else error("expected one object with a non-empty .status.indicator")
+    end
+    | {
       indicator: .status.indicator,
       description: .status.description,
       components: [
@@ -48,7 +53,7 @@ fetch_status() (
       last_updated: $ts,
     }
   ' <<<"$summary") || {
-    echo "Failed to parse the status summary" >&2
+    echo "Failed to parse the status summary from $summary_url" >&2
     return 1
   }
 
