@@ -18,10 +18,10 @@ fpath=(
   ${ZSH_PLUGIN_DIR}/zsh-completions
   ${fpath}
 )
-autoload -Uz -- git-alias-lookup git-branch-current git-branch-delete-interactive \
-  git-branch-remote-tracking git-dir git-ignore-add git-root \
-  git-stash-clear-interactive git-stash-recover git-submodule-move \
-  git-submodule-remove mkcd mkpw
+autoload -Uz -- git-alias-lookup git-branch-current git-branch-default \
+  git-branch-delete-interactive git-branch-remote-tracking git-dir \
+  git-edit-unmerged git-ignore-add git-root git-stash-clear-interactive \
+  git-stash-recover git-submodule-move git-submodule-remove git-sync mkcd mkpw
 
 # 即座に読み込み（プロンプト表示に必須）
 source ${ZSH_PLUGIN_DIR}/zsh-defer/zsh-defer.plugin.zsh
