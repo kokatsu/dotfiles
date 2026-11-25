@@ -202,7 +202,7 @@ stop() {
   snapshot="$mark_dir/$session"
   [ -n "$session" ] && [ -f "$snapshot.mark" ] || return
   # The cwd may have moved to another repository since the mark.
-  { read -r root && read -r head; } <"$snapshot.mark" || return
+  { IFS= read -r root && read -r head; } <"$snapshot.mark" || return
   head_copy=$(mktemp) || return
 
   while IFS= read -r -d '' file; do

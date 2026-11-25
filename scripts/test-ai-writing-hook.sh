@@ -267,7 +267,8 @@ $repo/reverted.md
 $repo/tracked.md" ] || fail "expected only documents changed after the mark: Stop"
 expect_silent 1 "$(finding "$repo/tracked.md")" "$(stop_payload true)" "Stop already continuing" --stop
 
-fresh="$workdir/fresh"
+# 末尾の空白もパスの一部として扱う
+fresh="$workdir/fresh "
 git init -q "$fresh"
 mark_turn "$fresh"
 printf '新しい文書です。\n' >"$fresh/first.md"
