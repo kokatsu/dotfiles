@@ -25,14 +25,7 @@ in {
       # https://github.com/pnpm/pnpm
       pnpm # 高速 Node.js パッケージマネージャ
       # https://github.com/python/cpython
-      # optuna を使うのは macOS と WSL だけ。aarch64-linux 向けは公式キャッシュに無い
-      # ことがあり、CI が依存の科学計算ライブラリ (duckdb、scikit-learn など) を
-      # ビルドして時間切れになる。
-      (python3.withPackages (ps:
-        lib.optionals (system != "aarch64-linux") [
-          # https://github.com/optuna/optuna
-          ps.optuna # ハイパーパラメータ最適化フレームワーク
-        ]))
+      python3
       # https://github.com/ruby/ruby
       ruby
       ruby-lsp
