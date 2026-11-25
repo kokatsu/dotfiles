@@ -7,7 +7,6 @@ local gitbrowse = require('plugins.snacks.gitbrowse')
 local indent = require('plugins.snacks.indent')
 local lazygit = require('plugins.snacks.lazygit')
 local picker = require('plugins.snacks.picker')
-local scroll = require('plugins.snacks.scroll')
 local terminal = require('plugins.snacks.terminal')
 
 return {
@@ -27,8 +26,6 @@ return {
     notifier = {},
     ---@class snacks.quickfile.Config
     quickfile = {},
-    ---@class snacks.scroll.Config
-    scroll = scroll.opts,
     ---@class snacks.words.Config
     words = {},
     ---@class snacks.explorer.Config
