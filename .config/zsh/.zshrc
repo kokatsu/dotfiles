@@ -158,8 +158,6 @@ zsh-defer -a +1 +2 -c '_evalcache carapace _carapace zsh'
 # Claude Code (https://docs.anthropic.com/ja/docs/claude-code/overview)
 # ------------------------------------------------------------------------------
 
-export CLAUDE_CODE_TERMINAL=0
-
 # Claude Code は TERM_PROGRAM の許可リストでしか OSC 8 リンクを出さず、herdr は未掲載
 # https://github.com/herdrdev/herdr/issues/4748
 [[ "$TERM_PROGRAM" == herdr ]] && export FORCE_HYPERLINK=1

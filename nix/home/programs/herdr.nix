@@ -96,8 +96,8 @@ in {
 
           # タブ行の右端に Claude Code のコストを出す。ペインごとの statusline に
           # 同じ数字を並べる代わりに、ウィンドウ全体で 1 箇所に集約する
-          # (.config/claude/settings.json は statusLine.command に
-          # CC_STATUSLINE_SHOW_COST=0 を前置してペイン側の行を落としている)。
+          # (.config/claude/statusline.sh は CC_STATUSLINE_SHOW_COST=0 を
+          # 渡してペイン側の行を落としている)。
           #
           # cc-statusline は stdin が空でもコスト行を出し、かつその場合は
           # 1 行しか出さない。herdr はコマンド出力の最終行だけを採用するため、
