@@ -29,7 +29,7 @@ in {
   mermaid-ascii = _final: prev: {
     mermaid-ascii = prev.buildGoModule rec {
       pname = "mermaid-ascii";
-      version = "1.6.1";
+      version = "1.6.2";
 
       src = prev.fetchFromGitHub {
         owner = "AlexanderGrooff";
