@@ -129,10 +129,6 @@ in {
       # https://github.com/tesseract-ocr/tesseract
       # 既定は全言語 (100 超) の traineddata を同梱し 1GB を超えるため、使用言語のみに絞る
       (tesseract.override {enableLanguages = ["eng" "jpn" "jpn_vert" "osd"];}) # OCR
-      # https://github.com/jstkdng/ueberzugpp
-      ueberzugpp # 画像表示 (Sixel/Kitty/X11)
-      # https://github.com/libvips/libvips
-      vips # 画像処理ライブラリ
 
       #--- ドキュメント ---#
       # https://ghostscript.com/
