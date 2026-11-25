@@ -8,7 +8,7 @@ set -euo pipefail
 repo_root=$(git rev-parse --show-toplevel)
 config="$repo_root/.config/ai-writing/textlint-response.json"
 
-workdir=$(mktemp -d)
+workdir=$(cd "$(mktemp -d)" && pwd -P)
 trap 'rm -rf "$workdir"' EXIT
 mkdir -p "$workdir/cases"
 
@@ -40,15 +40,16 @@ expect_no_rule() { add_case no_rule "$1" "$2" "$3"; }
 expect_clean() { add_case clean '' "$1" "$2"; }
 
 run_cases() {
-  local report status=0 i found
+  local report=$1 status=0 i found
+  shift
   # textlint は指摘があると終了コード 1 を返すので、それは失敗として扱わない
-  report=$(textlint --config "$config" --rulesdir "$repo_root/.config/ai-writing/rules" --format json --no-color "${case_file[@]}") || status=$?
+  textlint --config "$config" --rulesdir "$repo_root/.config/ai-writing/rules" --format json --no-color "${case_file[@]}" "$@" >"$report" || status=$?
   [ "$status" -le 1 ] || fail "textlint failed with exit status $status"
-  printf '%s' "$report" |
-    jq -e --argjson n "${#case_file[@]}" 'type == "array" and length == $n and all(.[]; .messages | type == "array")' >/dev/null ||
+  jq -e '([.[].filePath] | sort) == ($ARGS.positional | sort) and all(.[]; .messages | type == "array")' \
+    --args "${case_file[@]}" "$@" <"$report" >/dev/null ||
     fail "textlint did not return one report per case"
   for i in "${!case_file[@]}"; do
-    found=$(printf '%s' "$report" | jq -r --arg f "${case_file[i]}" '.[] | select(.filePath == $f) | .messages[].ruleId' | sort -u)
+    found=$(jq -r --arg f "${case_file[i]}" '.[] | select(.filePath == $f) | .messages[].ruleId' "$report" | sort -u)
     case ${case_kind[i]} in
     rule)
       printf '%s\n' "$found" | grep -qx -- "${case_rule[i]}" ||
@@ -225,7 +226,28 @@ expect_clean '必要に応じて設定します。' 'advice does not block a res
 expect_clean '```text
 これは革命的な技術です。
 ```' 'code remains verbatim'
-run_cases
+# no-pause-comma tokenizes a whole block with inline code replaced, so its
+# report must map back to the comma in the source.
+# shellcheck disable=SC2016
+printf '😀設定と、ログを確認する。\n\n**太字**の`a`と、ログを確認する。\n' >"$workdir/range.md"
+# Claude Code の記憶の索引は 1 行が `- [題](ファイル) — 説明` と決まっている
+memory_index="$workdir/claude/projects/-home-user-repo/memory/MEMORY.md"
+mkdir -p "${memory_index%/*}"
+printf -- '- [設定の場所](setting.md) — 説明です\n' | tee "$memory_index" >"$workdir/memory-like.md"
+response_report="$workdir/response.json"
+run_cases "$response_report" "$workdir/range.md" "$memory_index" "$workdir/memory-like.md"
+node -e '
+    const fs = require("fs");
+    const source = fs.readFileSync(process.argv[1], "utf8");
+    const ranges = JSON.parse(fs.readFileSync(0, "utf8")).find((r) => r.filePath === process.argv[1]).messages
+      .filter((m) => m.ruleId === "no-pause-comma")
+      .map((m) => source.slice(...m.range));
+    process.exit(ranges.length === 2 && ranges.every((c) => c === "、") ? 0 : 1);
+  ' "$workdir/range.md" <"$response_report" || fail "no-pause-comma should report the comma itself"
+jq -e --arg index "$memory_index" --arg other "$workdir/memory-like.md" '
+  (.[] | select(.filePath == $index) | .messages | all(.ruleId != "no-prose-dash")) and
+  (.[] | select(.filePath == $other) | .messages | any(.ruleId == "no-prose-dash"))' "$response_report" >/dev/null ||
+  fail "no-prose-dash should skip only the memory index"
 
 # Also exercise the actual hook with the symlink layout Home Manager deploys.
 mkdir -p "$workdir/ai-writing"
@@ -281,31 +303,6 @@ printf '設定を、直す。\n' >>"$stop_repo/doc.md"
 stop_hook --stop | jq -e '.decision == "block" and (.reason | contains("line 3,") and contains("line 4,") and (contains("line 2,") | not))' >/dev/null ||
   fail "Stop should report the lines this turn added, committed or not, and skip earlier ones"
 
-# no-pause-comma tokenizes a whole block with inline code replaced, so its
-# report must map back to the comma in the source.
-# shellcheck disable=SC2016
-printf '😀設定と、ログを確認する。\n\n**太字**の`a`と、ログを確認する。\n' >"$workdir/range.md"
-range_report=$(textlint --config "$config" --rulesdir "$repo_root/.config/ai-writing/rules" --format json "$workdir/range.md") || true
-printf '%s' "$range_report" |
-  node -e '
-    const fs = require("fs");
-    const source = fs.readFileSync(process.argv[1], "utf8");
-    const ranges = JSON.parse(fs.readFileSync(0, "utf8"))[0].messages
-      .filter((m) => m.ruleId === "no-pause-comma")
-      .map((m) => source.slice(...m.range));
-    process.exit(ranges.length === 2 && ranges.every((c) => c === "、") ? 0 : 1);
-  ' "$workdir/range.md" || fail "no-pause-comma should report the comma itself"
-
-# Claude Code の記憶の索引は 1 行が `- [題](ファイル) — 説明` と決まっている
-memory_index="$workdir/claude/projects/-home-user-repo/memory/MEMORY.md"
-mkdir -p "${memory_index%/*}"
-printf -- '- [設定の場所](setting.md) — 説明です\n' | tee "$memory_index" >"$workdir/memory-like.md"
-memory_report=$(textlint --config "$config" --rulesdir "$repo_root/.config/ai-writing/rules" --format json "$memory_index" "$workdir/memory-like.md") || true
-printf '%s' "$memory_report" | jq -e --arg index "$memory_index" '
-  (.[] | select(.filePath == $index) | .messages | all(.ruleId != "no-prose-dash")) and
-  (.[] | select(.filePath != $index) | .messages | any(.ruleId == "no-prose-dash"))' >/dev/null ||
-  fail "no-prose-dash should skip only the memory index"
-
 # The command line reports through the exit status.
 cli_status=0
 printf '設定に、値を足す。\n' |
@@ -321,6 +318,6 @@ config="$repo_root/.textlintrc-commit.json"
 expect_rule terminology 'feat: update readme' 'README spelling'
 expect_rule terminology 'feat: update readmes' 'READMEs spelling'
 expect_clean 'feat: update README and READMEs' 'canonical README spelling'
-run_cases
+run_cases "$workdir/commit.json"
 
 printf 'textlint configs: rule set, response and commit cases, and real hook verified\n'

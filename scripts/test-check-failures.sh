@@ -12,7 +12,7 @@ cat >"$test_dir/selene" <<'MOCK'
 MOCK
 cat >"$test_dir/deno" <<'MOCK'
 #!/usr/bin/env bash
-if [[ $PWD == */karabiner-config || "$*" == *karabiner-config* || "$*" == *zeno/config.ts* ]]; then
+if [[ "$PWD $*" == *"$DENO_FAIL_TARGET"* ]]; then
   exit 23
 fi
 MOCK
@@ -35,15 +35,18 @@ for mode in error diff; do
   if GOFMT_TEST_MODE=$mode just go-fmt-check >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
 done
 GOFMT_TEST_MODE=clean just go-fmt-check
+export DENO_FAIL_TARGET=karabiner-config
 for recipe in lua-lint deno-lint deno-fmt-check deno-check; do
   if just "$recipe" >"$test_dir/output" 2>&1; then
     echo "Expected failure from $recipe" >&2
     exit 1
   fi
 done
-# Exercise the second loop (explicit files) after all directory checks pass.
-if just --set deno_dirs scripts deno-check >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
-if just --set deno_dirs scripts deno-lint >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
+# Only an explicit file can trigger this failure.
+export DENO_FAIL_TARGET=zeno/config.ts
+if just deno-check >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
+if just deno-fmt-check >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
+if just deno-lint >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
 # A failed recipe must not stop the ones after it, and only it is reported.
 if just _run-all "typos nvim-test" >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
 grep -Fqx 'failed: typos' "$test_dir/output"

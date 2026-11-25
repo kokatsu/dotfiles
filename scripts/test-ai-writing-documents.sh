@@ -19,41 +19,70 @@ printf '以前の文書──変更対象外です。\n' >legacy.md
 git add .
 git commit -qm fixture
 base=$(git rev-parse HEAD)
-expect_failure() {
-  if bash "$checker" "$@" >"$workdir/report" 2>&1; then
-    echo "expected a document violation: $*" >&2
-    exit 1
-  fi
-  grep -q 'no-prose-dash' "$workdir/report"
+status=0
+bash "$checker" --base missing-ref >"$workdir/report" 2>&1 || status=$?
+[[ $status == 1 ]]
+grep -Eq '^legacy\.md:.*no-prose-dash' "$workdir/report"
+
+mkdir "$workdir/bin"
+cat >"$workdir/bin/textlint" <<'STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+while [[ $1 != -- ]]; do shift; done
+shift
+(( $# > 0 )) || exit 99
+for file do
+  printf '%s=' "${file#*/files/}"
+  cat "$file"
+done >>"$SNAPSHOT"
+exit "$LINT_STATUS"
+STUB
+chmod +x "$workdir/bin/textlint"
+export PATH="$workdir/bin:$PATH" SNAPSHOT="$workdir/snapshot"
+
+# Each fixture document has one line. Compare both its selected path and its contents.
+check_snapshot() {
+  local expected_status=$1 actual_status=0
+  shift
+  : >"$SNAPSHOT"
+  LINT_STATUS=$expected_status bash "$checker" "$@" >"$workdir/report" 2>&1 || actual_status=$?
+  [[ $actual_status == "$expected_status" ]]
+  diff -u - <(LC_ALL=C sort "$SNAPSHOT")
 }
-expect_failure --base missing-ref
-printf '確認します──補足です。\n' >generated.md
-expect_failure --worktree
+
+printf 'generated\n' >generated.md
+check_snapshot 23 --worktree <<<'generated.md=generated'
 mv generated.md "$workdir/generated.saved"
-printf '設定を確認しました。\n' >note.md
+printf 'staged\n' >note.md
 git add note.md
-printf '確認します──補足です。\n' >note.md
-bash "$checker" --staged
-expect_failure --worktree
-git add note.md
-printf '確認しました。\n' >note.md
-expect_failure --staged
-git commit -qm 'bad document fixture'
-expect_failure --base "$base"
+printf 'edited\n' >note.md
+check_snapshot 0 --staged <<<'note.md=staged'
+check_snapshot 23 --staged <<<'note.md=staged'
+check_snapshot 0 --worktree <<<'note.md=edited'
+git commit -qm 'staged document fixture'
+check_snapshot 23 --base "$base" <<<'note.md=staged'
 git add note.md
 git mv 'old name.md' 'new name.md'
 git rm -q removed.md
-git commit -qm 'clean document fixture'
-bash "$checker" --base "$base"
-bash "$checker" --worktree
+git commit -qm 'rename and deletion fixture'
+check_snapshot 0 --base "$base" <<'FILES'
+new name.md=確認しました。
+note.md=edited
+FILES
+check_snapshot 0 --worktree </dev/null
 other_history=$(git commit-tree 'HEAD^{tree}' -m unrelated)
 for unavailable in 0000000000000000000000000000000000000000 missing-ref "$other_history"; do
-  bash "$checker" --base "$unavailable" >"$workdir/fallback" 2>&1
-  grep -q 'checking only the HEAD commit' "$workdir/fallback"
+  check_snapshot 0 --base "$unavailable" <<'FILES'
+new name.md=確認しました。
+note.md=edited
+FILES
+  grep -q 'checking only the HEAD commit' "$workdir/report"
 done
-printf '確認します──補足です。\n' >note.md
+printf 'fallback\n' >note.md
 git add note.md
-git commit -qm 'bad fallback document fixture'
-expect_failure --base 0000000000000000000000000000000000000000
-expect_failure --base missing-ref
+git commit -qm 'fallback document fixture'
+for unavailable in 0000000000000000000000000000000000000000 missing-ref; do
+  check_snapshot 23 --base "$unavailable" <<<'note.md=fallback'
+done
+check_snapshot 0 --staged </dev/null
 printf 'documents: generated files, index snapshots, base range, rename and deletion passed\n'

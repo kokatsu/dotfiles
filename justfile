@@ -1,4 +1,5 @@
 lua_dirs := ".config/nvim .config/wezterm"
+# ディレクトリ追加時は deno_files の除外と fmt / lint の設定別グループも更新する。
 deno_dirs := "karabiner-config scripts"
 # deno_dirs の外にある .ts/.tsx は全て単体の Deno スクリプトか mod なので、手書きせず git から列挙する
 deno_files := `git ls-files '*.ts' '*.tsx' | grep -vE '^(karabiner-config|scripts)/' | tr '\n' ' '`
@@ -100,17 +101,6 @@ biome-fmt:
 biome-ci:
     biome ci .
 
-# Run a deno subcommand over all configured Deno dirs and files
-_deno-each cmd:
-    @for dir in {{ deno_dirs }}; do \
-      echo "deno {{ cmd }}: $dir"; \
-      deno {{ cmd }} "$dir" || exit $?; \
-    done
-    @for file in {{ deno_files }}; do \
-      echo "deno {{ cmd }}: $file"; \
-      deno {{ cmd }} "$file" || exit $?; \
-    done
-
 # Format Go files
 go-fmt:
     gofmt -w tools
@@ -123,17 +113,21 @@ go-fmt-check:
 go-vet:
     cd tools/agent-hooks && go vet ./...
 
+# Deno selects the config from the first input. Keep the Karabiner project separate.
 # Format Deno TypeScript files
 deno-fmt:
-    @just _deno-each fmt
+    deno fmt karabiner-config
+    deno fmt scripts {{ deno_files }}
 
 # Check Deno TypeScript formatting (no write)
 deno-fmt-check:
-    @just _deno-each "fmt --check"
+    deno fmt --check karabiner-config
+    deno fmt --check scripts {{ deno_files }}
 
 # Lint TypeScript with deno
 deno-lint:
-    @just _deno-each lint
+    deno lint karabiner-config
+    deno lint scripts {{ deno_files }}
 
 # Type-check Deno TypeScript files (git 管理下のものだけ。find だと untracked も拾う)
 # mod は Claude Code 内でしか解決しない "claude-code" を import するため除き、`claude plugin test` で見る
