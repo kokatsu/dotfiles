@@ -222,8 +222,8 @@ zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-wezterm-*.sh(Nom[1]
 export _ZO_FZF_OPTS="--no-sort --height 75% --reverse --margin=0,1 --exit-0 --select-1 --prompt=\"❯ \" --preview \"([[ -e {2..}/README.md ]] && bat --color=always --style=numbers --line-range=:50 {2..}/README.md) || eza --color=always --group-directories-first --oneline {2..}\""
 zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-zoxide-*.sh(Nom[1])); [[ -n $f ]] && source $f || _evalcache zoxide init zsh; }'
 
-# 全遅延タスク完了後に1回だけpromptを再描画
-zsh-defer -c 'zle reset-prompt'
+# 全遅延タスク完了後に1回だけ precmd フックの実行と prompt の再描画を行う (zsh-defer の既定動作)
+zsh-defer -c ':'
 
 # ------------------------------------------------------------------------------
 # Zsh Profiling
