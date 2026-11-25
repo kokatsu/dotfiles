@@ -23,9 +23,11 @@ alias sg='ast-grep'
 if (( _IS_WSL )); then
   export BROWSER="wsl-open"
 
-  # PowerShell Constrained Language Mode で Claude Code の /copy が初回失敗するため除外
-  path=(${path:#*/WindowsPowerShell/*})
-  export USERPROFILE="/mnt/c/Users/$(whoami)"
+  # /mnt/c は 9p 経由で遅く、PATH に並ぶと zsh のコマンドハッシュと mise hook-env
+  # (プロンプトごとに実行) がそれぞれ 100ms 前後かかるため、使うものだけ残す。
+  # PowerShell は Constrained Language Mode で Claude Code の /copy が初回失敗するため足さない
+  path=(${path:#/mnt/c/*} /mnt/c/Windows/System32 /mnt/c/Windows "/mnt/c/Program Files/WezTerm")
+  export USERPROFILE="/mnt/c/Users/$USERNAME"
   export WEZTERM_HOSTNAME="$(< /proc/sys/kernel/hostname)"
 
   # fzf: Ctrl+Y で選択行を Windows クリップボードへコピー

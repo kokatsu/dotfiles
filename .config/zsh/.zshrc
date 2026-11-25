@@ -18,10 +18,10 @@ fpath=(
   ${ZSH_PLUGIN_DIR}/zsh-completions
   ${fpath}
 )
-autoload -Uz -- git-alias-lookup git-branch-current git-branch-delete-interactive \
-  git-branch-remote-tracking git-dir git-ignore-add git-root \
-  git-stash-clear-interactive git-stash-recover git-submodule-move \
-  git-submodule-remove mkcd mkpw
+autoload -Uz -- git-alias-lookup git-branch-current git-branch-default \
+  git-branch-delete-interactive git-branch-remote-tracking git-dir \
+  git-edit-unmerged git-ignore-add git-root git-stash-clear-interactive \
+  git-stash-recover git-submodule-move git-submodule-remove git-sync mkcd mkpw
 
 # 即座に読み込み（プロンプト表示に必須）
 source ${ZSH_PLUGIN_DIR}/zsh-defer/zsh-defer.plugin.zsh
@@ -222,8 +222,8 @@ zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-wezterm-*.sh(Nom[1]
 export _ZO_FZF_OPTS="--no-sort --height 75% --reverse --margin=0,1 --exit-0 --select-1 --prompt=\"❯ \" --preview \"([[ -e {2..}/README.md ]] && bat --color=always --style=numbers --line-range=:50 {2..}/README.md) || eza --color=always --group-directories-first --oneline {2..}\""
 zsh-defer -a +1 +2 -c '() { local f=($ZSH_EVALCACHE_DIR/init-zoxide-*.sh(Nom[1])); [[ -n $f ]] && source $f || _evalcache zoxide init zsh; }'
 
-# 全遅延タスク完了後に1回だけpromptを再描画
-zsh-defer -c 'zle reset-prompt'
+# 全遅延タスク完了後に1回だけ precmd フックの実行と prompt の再描画を行う (zsh-defer の既定動作)
+zsh-defer -c ':'
 
 # ------------------------------------------------------------------------------
 # Zsh Profiling
