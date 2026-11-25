@@ -5,14 +5,6 @@
   ...
 }: let
   inherit (pkgs.stdenv.hostPlatform) isDarwin system;
-
-  cargo-with-openssl = pkgs.writeShellScriptBin "cargo-with-openssl" ''
-    export PATH="${lib.makeBinPath [pkgs.pkg-config]}:$PATH"
-    export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
-    export OPENSSL_INCLUDE_DIR="${pkgs.openssl.dev}/include"
-    export OPENSSL_LIB_DIR="${pkgs.openssl.out}/lib"
-    exec cargo "$@"
-  '';
 in {
   # bin/ のユーザースクリプト (feed-watch, memo, daily 等) は files.nix が
   # ~/.local/bin/scripts に symlink し、sessionPath で PATH に入る
@@ -33,20 +25,12 @@ in {
       # https://github.com/pnpm/pnpm
       pnpm # 高速 Node.js パッケージマネージャ
       # https://github.com/python/cpython
-      # optuna を使うのは macOS と WSL だけ。aarch64-linux 向けは公式キャッシュに無い
-      # ことがあり、CI が依存の科学計算ライブラリ (duckdb、scikit-learn など) を
-      # ビルドして時間切れになる。
-      (python3.withPackages (ps:
-        lib.optionals (system != "aarch64-linux") [
-          # https://github.com/optuna/optuna
-          ps.optuna # ハイパーパラメータ最適化フレームワーク
-        ]))
+      python3
       # https://github.com/ruby/ruby
       ruby
       ruby-lsp
       # https://github.com/rust-lang/rustup
       rustup # Rust ツールチェーンマネージャ
-      cargo-with-openssl # openssl-sys が必要な Cargo コマンド用 wrapper
 
       #####################################
       # CLIツール
@@ -117,8 +101,6 @@ in {
       termshot # ターミナルスクリーンショット (PNG)
       # https://gitlab.com/OldManProgrammer/unix-tree
       tree # ディレクトリツリー表示
-      # https://github.com/tree-sitter/tree-sitter
-      tree-sitter # Treesitter CLI (nvim-treesitter パーサービルド用)
       # https://github.com/soimort/translate-shell
       translate-shell # 多言語翻訳 CLI (trans)
       # https://github.com/sharkdp/vivid
@@ -137,15 +119,9 @@ in {
       exiftool # 画像/動画メタデータ編集
       # https://github.com/ImageMagick/ImageMagick
       imagemagick # 画像処理ツールキット
-      # https://potrace.sourceforge.net/
-      potrace # ビットマップ→ベクター変換
       # https://github.com/tesseract-ocr/tesseract
       # 既定は全言語 (100 超) の traineddata を同梱し 1GB を超えるため、使用言語のみに絞る
       (tesseract.override {enableLanguages = ["eng" "jpn" "jpn_vert" "osd"];}) # OCR
-      # https://github.com/jstkdng/ueberzugpp
-      ueberzugpp # 画像表示 (Sixel/Kitty/X11)
-      # https://github.com/libvips/libvips
-      vips # 画像処理ライブラリ
 
       #--- ドキュメント ---#
       # https://ghostscript.com/
@@ -187,8 +163,6 @@ in {
       sops # シークレットファイル暗号化 (YAML/JSON/ENV 等の値のみ暗号化)
       # https://github.com/FiloSottile/age
       age # シンプルなファイル暗号化 (sops のバックエンド)
-      # https://github.com/pypa/pipx
-      pipx # Python CLI管理
       # https://github.com/kamadorueda/alejandra
       alejandra # Nix formatter
       # https://github.com/nerdypepper/statix
@@ -201,8 +175,6 @@ in {
       selene # Lua linter
       # https://github.com/textlint/textlint
       textlint-with-rules # 日本語校正 (overlay)
-      # https://github.com/Redocly/redocly-cli
-      redocly # OpenAPI プレビュー / lint
       # https://github.com/crate-ci/typos
       typos # タイポ検出
       # https://github.com/koalaman/shellcheck
@@ -287,10 +259,6 @@ in {
       # https://github.com/antonk52/cssmodules-language-server
       cssmodules-language-server # CSS Modules LSP
 
-      #--- X API v2 シミュレーター (overlay) ---#
-      # https://github.com/xdevplatform/playground
-      x-api-playground # X API v2 ローカルサーバー
-
       # https://github.com/jdx/mise
       mise # タスクランナー + プロジェクトごとのツールバージョン管理
       # https://github.com/rezigned/upmd
@@ -353,8 +321,6 @@ in {
 
       #--- フォント (Nerd Fonts) ---#
       # https://github.com/ryanoasis/nerd-fonts
-      nerd-fonts.fira-code
-      nerd-fonts.hack
       nerd-fonts.symbols-only
       # https://github.com/yuru7/udev-gothic
       udev-gothic-nf # UDEV Gothic + Nerd Fonts (35NFLG等、日本語対応)
@@ -371,8 +337,6 @@ in {
       util-linux # feed-watch / feed-summarize の flock
       # https://github.com/containers/bubblewrap
       bubblewrap # サンドボックスツール (Codex CLI 用)
-      # https://github.com/inotify-tools/inotify-tools
-      inotify-tools # ファイルシステムイベント監視
       # https://github.com/kfish/xsel
       # WSLg が X クリップボードと Windows クリップボードを双方向同期するため、
       # WSL でも win32yank.exe (Windows プロセス起動で実測 462ms) の代わりに使える (実測 9ms)
@@ -386,8 +350,6 @@ in {
       })
       # https://github.com/strace/strace
       strace # システムコールトレーサ
-      # https://valgrind.org
-      valgrind # メモリデバッグ・プロファイリング
       # https://sourceware.org/gdb/
       gdb # デバッガ・カバレッジ計測 (cc-statusline)
       # https://github.com/docker/buildx

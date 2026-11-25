@@ -94,7 +94,7 @@ printf '\n# touched\n' >>"$tmp/flake.nix"
 out=$(run_detect)
 expect_line "lock/flake" "$out" "has_karabinerts_deno_lock=true"
 expect_line "lock/flake" "$out" "has_flake_nix=true"
-expect_absent "lock/flake" "$out" '^has_(vite|textlint|codex|claude|cssmodules|x_api|agent_hooks)'
+expect_absent "lock/flake" "$out" '^has_(vite|textlint|codex|claude|cssmodules|mermaid|agent_hooks)'
 reset_tree
 
 # 5. agent-hooks の go.sum (vendorHash はこのファイルで決まる)
@@ -145,7 +145,7 @@ git -C "$tmp" -c user.name=test -c user.email=test@example.com commit -q -m 'bas
 cp "$repo_root/nix/overlays/source-builds.nix" "$tmp/nix/overlays/source-builds.nix"
 out=$(run_detect)
 expect_line "new source file" "$out" 'has_cssmodules_language_server=true'
-expect_line "new source file" "$out" 'has_x_api_playground=true'
+expect_line "new source file" "$out" 'has_mermaid_ascii=true'
 expect_absent "new source file" "$out" '^has_(vite|textlint|codex|claude|agent_hooks)'
 
 if [[ $failures -gt 0 ]]; then
