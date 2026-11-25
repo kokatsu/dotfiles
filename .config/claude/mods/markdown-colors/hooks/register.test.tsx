@@ -93,7 +93,7 @@ test("lists and lone strong lines split out", () => {
     {
       runs: [
         { text: "Note", isStrong: true },
-        { text: ": x", isStrong: false },
+        { text: ": x" },
       ],
     },
     { markdown: "tail" },
@@ -126,16 +126,42 @@ test("strong lines that are not whole paragraphs stay with the engine", () => {
   }
 });
 
-test("only lines whose sole markdown is ** pairs become runs", () => {
+test("only lines whose sole markdown is ** pairs and code become runs", () => {
   expect(strongRuns("これは**強調**です")).toEqual([
-    { text: "これは", isStrong: false },
+    { text: "これは" },
     { text: "強調", isStrong: true },
-    { text: "です", isStrong: false },
+    { text: "です" },
+  ]);
+  expect(strongRuns("**修正**: `~/.x_y` と `` a`**b** ``")).toEqual([
+    { text: "修正", isStrong: true },
+    { text: ": " },
+    { text: "~/.x_y", isCode: true },
+    { text: " と " },
+    { text: "a`**b**", isCode: true },
+  ]);
+  expect(strongRuns("、**`x`**: `` \u00a0 ``")).toEqual([
+    { text: "、" },
+    { text: "x", isCode: true, isStrong: true },
+    { text: ": " },
+    { text: "\u00a0", isCode: true },
+  ]);
+  expect(strongRuns("**a `b`** c")).toEqual([
+    { text: "a ", isStrong: true },
+    { text: "b", isCode: true, isStrong: true },
+    { text: " c" },
   ]);
   for (
     const line of [
       "plain",
-      "**a** `b`",
+      "`b`",
+      "`**b**`",
+      "**a** `b",
+      "prefix**`x`**",
+      "**`x`**です",
+      "prefix**!`x`**",
+      "**`x`!**suffix",
+      "**「強調」**です",
+      "**a** \\`b`",
       "**a** [b](c)",
       "**a** https://x.y",
       "**a** *b*",
