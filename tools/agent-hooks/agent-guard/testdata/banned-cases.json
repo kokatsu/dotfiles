@@ -936,9 +936,39 @@
     "label": "chmod 777 (非再帰・非ルート)"
   },
   {
-    "want": "allow",
+    "want": "block",
     "command": "git push --force-with-lease origin main",
     "label": "git push --force-with-lease"
+  },
+  {
+    "want": "block",
+    "command": "git push --force-with-lease=main:abc123 origin main",
+    "label": "git push --force-with-lease=<ref>:<expect>"
+  },
+  {
+    "want": "block",
+    "command": "git push --force-w origin main",
+    "label": "git push --force-w (--force-with-lease の省略形)"
+  },
+  {
+    "want": "allow",
+    "command": "git push --push-opt --force-with-lease origin main",
+    "label": "git push --push-opt --force-with-lease (省略形の値)"
+  },
+  {
+    "want": "block",
+    "command": "git push --push-opt -- --force origin main",
+    "label": "git push --push-opt -- --force (-- は省略形の値)"
+  },
+  {
+    "want": "block",
+    "command": "git push --push-opt=x --force-with-lease origin main",
+    "label": "git push --push-opt=x --force-with-lease (付属値は次の語を取らない)"
+  },
+  {
+    "want": "allow",
+    "command": "git push --follow-tags origin main",
+    "label": "git push --follow-tags"
   },
   {
     "want": "allow",
