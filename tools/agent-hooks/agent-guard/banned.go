@@ -30,7 +30,7 @@ var verdictMessages = map[verdict]string{
 	"CHMOD_R_777":      "Refuse chmod -R 777. Use a tighter mode.",
 	"CHMOD_777_ROOT":   "Refuse chmod 777 /. Scope the path.",
 	"GREP_R":           "Use rg instead of grep -r/-R (recursive grep). rg respects .gitignore and ~/.config/ripgrep/ripgreprc glob excludes.",
-	"FORCE_PUSH":       "Refuse git push -f/--force. Use --force-with-lease or run manually.",
+	"FORCE_PUSH":       "Refuse force pushes, including --force-with-lease. Keep the published commits: add a commit or merge the base branch, or ask the user.",
 	"GIT_PUSH":         "Pi cannot request approval for git commands that send data or read credentials (push, send-pack, subtree, send-email, credential). Ask the user to run it.",
 	"GIT_SUBCOMMAND":   "git: aliases, external commands and commands run through xargs cannot be checked in Pi. Use the built-in command an alias expands to, or ask the user to run it.",
 	"GIT_CLEAN":        "Refuse git clean -fd/-fx (destructive). Inspect untracked files first.",
@@ -113,7 +113,9 @@ func gitOpts(args, valOpts []string, argChars string) (out, tail []string) {
 	for len(args) > 0 {
 		head := args[0]
 		switch {
-		case slices.Contains(valOpts, head),
+		case slices.ContainsFunc(valOpts, func(o string) bool {
+			return head == o || len(head) > 2 && strings.HasPrefix(head, "--") && strings.HasPrefix(o, head)
+		}),
 			shortOpt.MatchString(head) && clusterEats(head[1:], argChars):
 			out = append(out, head)
 			args = drop(args, 2)
@@ -417,7 +419,7 @@ func gitVerdict(args []string) verdict {
 	// 先頭が + の refspec はその ref だけを強制更新し、--mirror は remote の ref を
 	// ローカルに合わせて上書き・削除する。
 	if sub == "push" && (slices.ContainsFunc(opts, func(a string) bool {
-		return a == "--force" || isAbbrevOf(a, "--mirror", 4) ||
+		return isAbbrevOf(a, "--force-with-lease", 7) || isAbbrevOf(a, "--mirror", 4) ||
 			(shortOpt.MatchString(a) && strings.Contains(clusterFlags(a[1:], "o"), "f")) ||
 			strings.HasPrefix(a, "+")
 	}) || slices.ContainsFunc(tail, func(a string) bool { return strings.HasPrefix(a, "+") })) {
