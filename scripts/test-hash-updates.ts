@@ -459,7 +459,7 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
       const name of [
         "cssmodules-language-server",
         "textlint-rule-preset-ai-writing",
-        "x-api-playground",
+        "mermaid-ascii",
       ]
     ) {
       const pkg = packages.find((pkg) => pkg.name === name)!;
@@ -485,7 +485,7 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
       [newHash, newHash],
     );
     equal(
-      section(source, "x-api-playground")!.match(/sha256-[A-Za-z0-9+/]{43}=/g),
+      section(source, "mermaid-ascii")!.match(/sha256-[A-Za-z0-9+/]{43}=/g),
       [newHash, newHash],
     );
     for (const name of goModules) {
@@ -520,7 +520,7 @@ Deno.test("update stages npm locks and binary hashes, preserves unrelated files,
       calls.some((c) =>
         c.command === "nix-prefetch-url" && c.args.includes("--unpack") &&
         c.args.at(-1) ===
-          "https://github.com/xdevplatform/playground/archive/refs/tags/v9.9.9.tar.gz"
+          "https://github.com/AlexanderGrooff/mermaid-ascii/archive/refs/tags/9.9.9.tar.gz"
       ),
       true,
     );

@@ -43,13 +43,6 @@ export const packages: Package[] = [
   },
   { name: "codex", file: binaryFile, kind: "binary" },
   {
-    name: "x-api-playground",
-    file: "nix/overlays/source-builds.nix",
-    kind: "source-go",
-    repository: "xdevplatform/playground",
-    tagPrefix: "v",
-  },
-  {
     name: "mermaid-ascii",
     file: "nix/overlays/source-builds.nix",
     kind: "source-go",

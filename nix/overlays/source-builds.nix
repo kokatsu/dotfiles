@@ -1,6 +1,4 @@
-let
-  inherit (import ./lib.nix) guardEqual;
-in {
+{
   # Renovate: datasource=npm depName=cssmodules-language-server
   cssmodules-language-server = _final: prev: {
     cssmodules-language-server = prev.buildNpmPackage rec {
@@ -45,40 +43,6 @@ in {
         homepage = "https://github.com/AlexanderGrooff/mermaid-ascii";
         license = licenses.mit;
         mainProgram = "mermaid-ascii";
-      };
-    };
-  };
-
-  # Renovate: datasource=github-releases depName=xdevplatform/playground
-  x-api-playground = _final: prev: {
-    x-api-playground = prev.buildGoModule rec {
-      pname = "x-api-playground";
-      version = "1.2.1";
-
-      src = prev.fetchFromGitHub {
-        owner = "xdevplatform";
-        repo = "playground";
-        rev = "v${version}";
-        hash = "sha256-x80q79BytD1iN3P1X8NW+2OUXBRsBsjNDZvSABSHkV8=";
-      };
-
-      vendorHash = "sha256-sjhUfE6bysaSDQb8EkqL5wptdxgtcxt9+K+7Dic3le0=";
-
-      # v1.2.1のTestFormatSingleValidationErrorはvalidator依存の変化に追従できず、
-      # expected messageに対してnilを返して失敗する。他のGo testは維持する。
-      # version更新時はskipを外して再確認すること。
-      checkFlags =
-        guardEqual
-        "x-api-playground version"
-        "1.2.1"
-        version
-        ["-skip=TestFormatSingleValidationError"];
-
-      meta = with prev.lib; {
-        description = "Local HTTP server that simulates X API v2 for testing";
-        homepage = "https://github.com/xdevplatform/playground";
-        license = licenses.mit;
-        mainProgram = "playground";
       };
     };
   };

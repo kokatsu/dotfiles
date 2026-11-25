@@ -270,10 +270,6 @@ in {
       # https://github.com/antonk52/cssmodules-language-server
       cssmodules-language-server # CSS Modules LSP
 
-      #--- X API v2 シミュレーター (overlay) ---#
-      # https://github.com/xdevplatform/playground
-      x-api-playground # X API v2 ローカルサーバー
-
       # https://github.com/jdx/mise
       mise # タスクランナー + プロジェクトごとのツールバージョン管理
       # https://github.com/rezigned/upmd
@@ -352,8 +348,6 @@ in {
       util-linux # feed-watch / feed-summarize の flock
       # https://github.com/containers/bubblewrap
       bubblewrap # サンドボックスツール (Codex CLI 用)
-      # https://github.com/inotify-tools/inotify-tools
-      inotify-tools # ファイルシステムイベント監視
       # https://github.com/kfish/xsel
       # WSLg が X クリップボードと Windows クリップボードを双方向同期するため、
       # WSL でも win32yank.exe (Windows プロセス起動で実測 462ms) の代わりに使える (実測 9ms)
