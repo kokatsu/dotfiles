@@ -4,15 +4,15 @@ Nix + Home Manager (with Flakes) で macOS/Linux のシェル・ツール設定�
 
 ## Layout
 
-- `nix/home/` — Home Manager 設定 (packages.nix が packages、files.nix と programs/*.nix が dotfile symlinks の source of truth)
-- `nix/darwin/` — nix-darwin 設定 (macOS のみ)
-- `nix/overlays/` — カスタムパッケージ・ビルド修正
-- `.config/` — 各ツールの設定ファイル (Home Manager が symlink で配置)
-- `bin/` — ユーザースクリプト (`~/.local/bin/scripts` に symlink され PATH に入る)
-- `scripts/` — CI と `just` が使うテスト・補助スクリプト、および Nix パッケージへ埋め込むスクリプト本体
-- `tools/` — このリポジトリでビルドする自作ツールのソース (`nix/overlays/` がパッケージ化する)
-- `windows/` — WSL から操作する Windows 側の常駐ツール (IME と Slack 通知の監視) のソース
-- `.codex/rules/*.rules` — このリポジトリ専用の Codex コマンド承認ルール
+- `nix/home/` は Home Manager 設定 (packages.nix が packages、files.nix と programs/*.nix が dotfile symlinks の source of truth)
+- `nix/darwin/` は nix-darwin 設定 (macOS のみ)
+- `nix/overlays/` はカスタムパッケージ・ビルド修正
+- `.config/` は各ツールの設定ファイル (Home Manager が symlink で配置)
+- `bin/` はユーザースクリプト (`~/.local/bin/scripts` に symlink され PATH に入る)
+- `scripts/` は CI と `just` が使うテスト・補助スクリプト、および Nix パッケージへ埋め込むスクリプト本体
+- `tools/` はこのリポジトリでビルドする自作ツールのソース (`nix/overlays/` がパッケージ化する)
+- `windows/` は WSL から操作する Windows 側の常駐ツール (IME と Slack 通知の監視) のソース
+- `.codex/rules/*.rules` はこのリポジトリ専用の Codex コマンド承認ルール
 
 ## Apply Changes
 

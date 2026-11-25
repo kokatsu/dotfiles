@@ -36,9 +36,9 @@ Project-specific guidelines:
 
 ## Critical Rules
 
-- **Only commit staged changes** — never `git add` unstaged changes without explicit permission
-- **Commit messages must be in English** — both subject and body
-- **Use HEREDOC format to pass messages** — avoids shell escaping issues
-- **Never use `--no-verify`** — if a hook fails, investigate and fix the root cause
-- **Get user approval for each commit** — show the final subject and body, wait for an explicit go, and commit only that one. Agreeing on a split plan, or approving one message, authorizes nothing beyond that single commit
+- Only commit staged changes; never `git add` unstaged changes without explicit permission
+- Write commit messages in English, both subject and body
+- Use HEREDOC format to pass messages, which avoids shell escaping issues
+- Never use `--no-verify`; if a hook fails, investigate and fix the root cause
+- Get user approval for each commit: show the final subject and body, wait for an explicit go, and commit only that one. Agreeing on a split plan, or approving one message, authorizes nothing beyond that single commit
 - **Only amend when the user explicitly requests it**

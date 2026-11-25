@@ -267,7 +267,8 @@ $repo/reverted.md
 $repo/tracked.md" ] || fail "expected only documents changed after the mark: Stop"
 expect_silent 1 "$(finding "$repo/tracked.md")" "$(stop_payload true)" "Stop already continuing" --stop
 
-fresh="$workdir/fresh"
+# 末尾の空白もパスの一部として扱う
+fresh="$workdir/fresh "
 git init -q "$fresh"
 mark_turn "$fresh"
 printf '新しい文書です。\n' >"$fresh/first.md"
@@ -275,4 +276,22 @@ out=$(run_hook 1 "$(finding "$fresh/first.md")" "$(stop_payload false "$fresh")"
 printf '%s' "$out" | jq -e --arg f "$fresh/first.md" '.decision == "block" and (.reason | contains($f))' >/dev/null ||
   fail "expected a new document in a repository without commits: Stop"
 
-printf 'ai-writing hook: 37 cases passed\n'
+# ターン中に cwd がリポジトリの外や別のリポジトリから移っても、前からの文書を新規とみなさない
+outside="$workdir/outside"
+mkdir "$outside"
+mark_turn "$outside"
+expect_silent 1 "$(finding "$repo/tracked.md")" "$(stop_payload)" "Stop in a repository after a mark outside one" --stop
+other="$workdir/other"
+git init -q "$other"
+printf '前からの文です。\n' >"$other/old.md"
+git -C "$other" add .
+git_commit "$other" -m docs
+mark_turn "$other"
+expect_silent 1 "$(finding "$repo/tracked.md")" "$(stop_payload)" "Stop in another repository than the mark" --stop
+printf '足した文です。\n' >>"$other/old.md"
+out=$(run_hook 1 "$(findings_at "$other/old.md" 1 2)" "$(stop_payload)" "" --stop)
+printf '%s' "$out" | jq -e --arg f "$other/old.md" '
+  .decision == "block" and (.reason | contains("\($f): line 2,") and (contains("\($f): line 1,") | not))' >/dev/null ||
+  fail "expected the lines added to the marked repository: Stop after the cwd moved"
+
+printf 'ai-writing hook: 40 cases passed\n'
