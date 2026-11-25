@@ -53,7 +53,6 @@ in {
       flavorNames = flavor: {
         spaced = "Catppuccin ${capitalize flavor}";
         kebab = "catppuccin-${flavor}";
-        snake = "catppuccin_${flavor}";
       };
 
       palettes = {

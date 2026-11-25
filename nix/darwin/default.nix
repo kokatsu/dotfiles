@@ -11,8 +11,8 @@
   # (nix/home/nix.nix の Linux 向け設定と同じキャッシュ)。
   environment.etc."nix/nix.custom.conf".text = ''
     use-xdg-base-directories = true
-    extra-substituters = https://kokatsu.cachix.org https://helix.cachix.org
-    extra-trusted-public-keys = kokatsu.cachix.org-1:womBGQiv46ieMIq9Lll7fa06bN0CMKMjIEDIjvp8+rI= helix.cachix.org-1:ejp9KQpR1FBI2onstMQ34yogDm4OgU2ru6lIwPvuCVs=
+    extra-substituters = https://kokatsu.cachix.org
+    extra-trusted-public-keys = kokatsu.cachix.org-1:womBGQiv46ieMIq9Lll7fa06bN0CMKMjIEDIjvp8+rI=
   '';
 
   nixpkgs.config = {
