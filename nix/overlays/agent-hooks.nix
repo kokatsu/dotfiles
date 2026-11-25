@@ -1,7 +1,6 @@
 # Claude Code / Codex のフック。ソースは tools/agent-hooks (1 つの Go モジュール)。
 # - agent-guard: PreToolUse で禁止コマンドと Herdr 入力、Home Manager 管理下パスの編集を止め、
 #   Claude Code の読み取り専用の gh api を自動許可する
-# - herdr-cache-token: Stop / SessionStart / PostCompact で prompt cache の失効時刻を Herdr に報告する
 # - report-agent-session: SessionStart でセッション ID を Herdr に報告する
 # checkPhase で go test が走るので、`nix flake check` の home ビルドがテストを兼ねる
 {
@@ -22,7 +21,7 @@
       # report-agent-session は Codex の pane 確認で ps を PATH から探し、そのテストも実際に ps を走らせる
       nativeCheckInputs = [prev.ps];
 
-      meta.description = "Claude Code and Codex hooks: command guard, Codex thread naming, and Herdr session and cache reports";
+      meta.description = "Claude Code and Codex hooks: command guard and Herdr session reports";
     };
   };
 }

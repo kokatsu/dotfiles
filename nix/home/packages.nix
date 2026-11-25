@@ -267,7 +267,7 @@ in {
       # https://github.com/biomejs/biome
       biome # Web ツールチェーン (formatter + linter)
 
-      agent-hooks # Claude Code / Codex のフック: agent-guard, herdr-cache-token, report-agent-session (tools/agent-hooks)
+      agent-hooks # Claude Code / Codex のフック: agent-guard, report-agent-session (tools/agent-hooks)
     ]
     ++ lib.optionals (builtins.elem system ["x86_64-linux" "aarch64-darwin"]) [
       # https://github.com/moonbit-community/moonbit-overlay
