@@ -8,7 +8,7 @@ const LIST = /^( *)([-*+]|\d{1,9}[.)])[ \t]+(\S.*)$/;
 // underlines, indented code and HTML.
 const BLOCK = /^(?: {4}|\t| {0,3}(?:[>|<=]|[-*_](?:[ \t]*[-*_]){2,}[ \t]*$))/;
 
-type Run = { text: string; isStrong: boolean };
+type Run = { text: string; isStrong?: true; isCode?: true };
 type Item = { indent: number; marker: string; text: string };
 type Part =
   | { markdown: string }
@@ -145,26 +145,73 @@ function listAt(
   }
 }
 
-// The line split at `**` pairs, or undefined when it holds any other markdown
-// the engine would draw: a Text cannot draw it, so the engine keeps the line.
-export function strongRuns(line: string): Run[] | undefined {
-  if (/[`[\]<>~_\\|]|&#?\w+;|:\/\/|www\./.test(line)) return undefined;
-  const runs: Run[] = [];
-  let at = 0;
-  for (const m of line.matchAll(/\*\*([^*\s](?:[^*]*[^*\s])?)\*\*/g)) {
-    runs.push({ text: line.slice(at, m.index), isStrong: false });
-    runs.push({ text: m[1] ?? "", isStrong: true });
-    at = m.index + m[0].length;
-  }
-  runs.push({ text: line.slice(at), isStrong: false });
-  const rest = runs.filter((r) => !r.isStrong).map((r) => r.text);
-  if (runs.length === 1 || rest.some((t) => t.includes("*"))) return undefined;
-  return runs.filter((r) => r.text);
-}
-
 // CommonMark: a code span closes on a backtick run of the same length as the
 // one that opened it.
 const CODE_SPAN = /(?<!`)(`+)(?!`)(.*?[^`])\1(?!`)/g;
+
+function unpad(code: string): string {
+  const isPadded = /^ .*[^ ].* $/.test(code);
+  return isPadded ? code.slice(1, -1) : code;
+}
+
+// Stands in for a code span, so that its content is not read as markdown.
+const MASK = "\0";
+
+// CommonMark: `**` with punctuation on its inner side is a delimiter only when
+// whitespace, punctuation or the line's edge is on its outer side. A masked
+// code span counts as punctuation, for its backticks.
+function isDelimiter(inner = "", outer = ""): boolean {
+  const isPunctuation = (c: string) => c === MASK || /[\p{P}\p{S}]/u.test(c);
+  return !isPunctuation(inner) || !outer.trim() || isPunctuation(outer);
+}
+
+// The line split at `**` pairs and code spans, or undefined when it has no
+// `**` pair or holds any other markdown the engine would draw: a Text cannot
+// draw it, so the engine keeps the line.
+export function strongRuns(line: string): Run[] | undefined {
+  const codes: string[] = [];
+  const masked = line.replace(CODE_SPAN, (_span, _ticks, code: string) => {
+    codes.push(unpad(code));
+    return MASK;
+  });
+  if (/[`[\]<>~_\\|]|&#?\w+;|:\/\/|www\./.test(masked)) return undefined;
+
+  const runs: Run[] = [];
+  const add = (text: string, isStrong?: true) => {
+    text.split(MASK).forEach((prose, i) => {
+      if (i > 0) {
+        runs.push({
+          text: codes.shift() ?? "",
+          isCode: true,
+          ...(isStrong && { isStrong }),
+        });
+      }
+      if (prose) runs.push({ text: prose, ...(isStrong && { isStrong }) });
+    });
+  };
+  let at = 0;
+  let rest = "";
+  for (const m of masked.matchAll(/\*\*([^*\s](?:[^*]*[^*\s])?)\*\*/g)) {
+    const [pair, strong = ""] = m;
+    const end = m.index + pair.length;
+    const before = masked.slice(at, m.index);
+    const last = (text: string) => text.match(/.$/u)?.[0];
+    const [first] = strong;
+    const [next] = masked.slice(end);
+    if (
+      !isDelimiter(first, last(masked.slice(0, m.index))) ||
+      !isDelimiter(last(strong), next)
+    ) return undefined;
+    rest += before;
+    add(before);
+    add(strong, true);
+    at = end;
+  }
+  const tail = masked.slice(at);
+  add(tail);
+  if (at === 0 || (rest + tail).includes("*")) return undefined;
+  return runs;
+}
 
 // A Text draws no markdown, so the heading's inline marks would show as written.
 function plain(title: string): string {
@@ -172,9 +219,7 @@ function plain(title: string): string {
   let at = 0;
   for (const m of title.matchAll(CODE_SPAN)) {
     const [span, , code = ""] = m;
-    const isPadded = code.startsWith(" ") && code.endsWith(" ") && code.trim();
-    out += unmark(title.slice(at, m.index)) +
-      (isPadded ? code.slice(1, -1) : code);
+    out += unmark(title.slice(at, m.index)) + unpad(code);
     at = m.index + span.length;
   }
   return out + unmark(title.slice(at));
@@ -193,6 +238,7 @@ const COLORS: Record<number, Color> = {
   3: "success",
 };
 const STRONG: Color = "merged";
+const CODE: Color = "permission";
 const MARKER: Color = "planMode";
 
 export const register: Register = (on) => {
@@ -206,9 +252,9 @@ export const register: Register = (on) => {
     const strong = (runs: Run[]) => (
       <Text>
         {runs.map((r) =>
-          r.isStrong
+          r.isStrong || r.isCode
             ? (
-              <Text color={STRONG} bold>
+              <Text color={r.isCode ? CODE : STRONG} bold={!!r.isStrong}>
                 {r.text}
               </Text>
             )
