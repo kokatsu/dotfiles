@@ -166,7 +166,7 @@ changed_documents() {
   )
 }
 
-# Records HEAD and snapshots the documents that differ from it, so that
+# Records the repository and HEAD and snapshots the documents that differ from it, so that
 # --stop can tell the lines this turn added from earlier ones, even after a
 # commit in the turn. The snapshot copies uncommitted work, so only the user
 # may read it.
@@ -177,9 +177,10 @@ mark() {
   session=$(session_mark "$payload")
   [ -n "$session" ] || return
   snapshot="$mark_dir/$session"
-  rm -rf "$snapshot" && mkdir -p "$snapshot/files" "$snapshot/deleted" && : >"$snapshot.mark" || return
+  rm -rf "$snapshot" "$snapshot.mark" && mkdir -p "$snapshot/files" "$snapshot/deleted" || return
   root=$(repo_root "$payload") || return
-  head=$(git -C "$root" rev-parse --verify -q HEAD) && printf '%s\n' "$head" >"$snapshot.mark"
+  head=$(git -C "$root" rev-parse --verify -q HEAD)
+  printf '%s\n' "$root" "$head" >"$snapshot.mark"
   # A deleted document is recorded in its own tree, since its path may now be
   # a directory of documents. Restoring it counts as adding every line.
   while IFS= read -r -d '' file; do
@@ -200,8 +201,8 @@ stop() {
   session=$(session_mark "$payload")
   snapshot="$mark_dir/$session"
   [ -n "$session" ] && [ -f "$snapshot.mark" ] || return
-  root=$(repo_root "$payload") || return
-  head=$(cat "$snapshot.mark")
+  # The cwd may have moved to another repository since the mark.
+  { read -r root && read -r head; } <"$snapshot.mark" || return
   head_copy=$(mktemp) || return
 
   while IFS= read -r -d '' file; do
