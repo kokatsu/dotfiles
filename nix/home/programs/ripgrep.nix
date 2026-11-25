@@ -4,7 +4,7 @@
 in {
   programs.ripgrep = {
     enable = true;
-    # --sort は単一スレッドになるのでここでは指定しない。目視用の並び替えは rgs 関数で行う。
+    # --sort は単一スレッドになるのでここでは指定しない。
     arguments = [
       "--hidden"
       "--glob=!.anyenv"
