@@ -127,17 +127,11 @@ in {
           # Codex は blue、Pi は pink。同じ行テキストである Spaces の branch の mauve だけは
           # 避ける。現在の blue は ui.accent と同値だが、accent が塗るのは枠とナビ UI で
           # 行テキストには出てこない。
-          # $cache は teal。行テキストが暖色と青だけだと緑の帯が空いて全体が
-          # 単調になるので、state_icon と同じ緑側から取る。state_icon は 1 行目の
-          # グリフで $cache は 3 行目のテキストなうえ、status_indicators =
-          # "symbols" なので状態は色ではなく形が担っている
           # 番号と workspace は主情報として Spaces / Agents の両方で太字に揃える
           claude = [
             ["state_icon", { token = "$wsnum", fg = "${p.subtext0.hex}", bold = true, dim = false }, "workspace"],
             [{ token = "tab", fg = "${p.subtext0.hex}", bold = false, dim = false }],
-            # $cache は herdr-cache-token (tools/agent-hooks/herdr-cache-token) が報告する prompt cache の失効時刻。
-            # --ttl-ms で失効と同時に消えるため、無表示 = キャッシュ切れを意味する
-            [{ token = "agent", fg = "${p.peach.hex}", bold = false, dim = false }, { token = "$cache", fg = "${p.teal.hex}", bold = false, dim = false }],
+            [{ token = "agent", fg = "${p.peach.hex}", bold = false, dim = false }],
             [{ token = "terminal_title_stripped", fg = "${p.subtext0.hex}", bold = false, dim = false }],
           ]
           codex = [

@@ -48,10 +48,6 @@ in {
       source = ../../../.config/claude/statusline.sh;
       executable = true;
     };
-    ".config/claude/hooks/herdr-cache-token.sh" = {
-      source = ../../../.config/claude/hooks/herdr-cache-token.sh;
-      executable = true;
-    };
     ".config/claude/hooks/notify.sh" = {
       source = ../../../.config/claude/hooks/notify.sh;
       executable = true;
