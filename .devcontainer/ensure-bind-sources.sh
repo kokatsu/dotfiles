@@ -4,6 +4,11 @@
 set -eu
 cd "$(dirname "$0")/.."
 
+if [ -f .git ]; then
+  echo 'ensure-bind-sources: open the devcontainer from a checkout with a .git directory. A .git file cannot provide the read-only Git mounts.' >&2
+  exit 1
+fi
+
 file() {
   if [ -L "$1" ] && [ ! -e "$1" ]; then
     echo "ensure-bind-sources: $1 is a broken symlink" >&2

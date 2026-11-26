@@ -67,6 +67,8 @@ just               # List all recipes
 
 Lefthook runs a subset of these on commit and push (formatters, linters, gitleaks, commitlint); the script tests and flake evaluation only run through `just check` and CI.
 
+Open the devcontainer from a checkout with a `.git` directory so it can mount `.git/hooks` and `.git/config` read-only.
+
 CI builds the flake checks on Linux x86_64, Linux ARM64, and macOS ARM64.
 Linux checks also build a WSL Home Manager configuration and verify its generated
 watch services, timers, and command paths. They do not start WSL or activate the
