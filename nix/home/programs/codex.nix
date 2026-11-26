@@ -7,6 +7,7 @@
   isDevcontainer,
   ...
 }: let
+  palette = config.catppuccinLib.palettes.${config.catppuccin.flavor};
   mkConfig = (pkgs.formats.toml {}).generate "codex-config.toml";
   settings = {
     approval_policy = "on-request";
@@ -25,6 +26,7 @@
       daemon_auto_start = false;
       hooks = true;
       memories = true;
+      tui_extensions_statusline = true;
       tui_workspace = true;
     };
     history = {
@@ -35,6 +37,36 @@
       source = "${inputs.cursor-plugins}";
     };
     mcp_servers = {
+      dotfiles-statusline = {
+        command = lib.getExe pkgs.bun;
+        args = [
+          "--no-env-file"
+          "--no-install"
+          "${../../../scripts/codex-statusline.ts}"
+          (lib.getExe pkgs.git)
+          (lib.getExe pkgs.gh)
+        ];
+        env.CODEX_STATUSLINE_COLORS = builtins.toJSON {
+          model-with-reasoning = palette.blue.hex;
+          current-dir = palette.teal.hex;
+          git-branch = palette.mauve.hex;
+          pull-request-number = palette.sky.hex;
+          branch-changes = palette.subtext0.hex;
+          branch-additions = palette.green.hex;
+          branch-deletions = palette.red.hex;
+          context-remaining = palette.lavender.hex;
+          context-used = palette.lavender.hex;
+          context-window-size = palette.subtext0.hex;
+          weekly-limit = palette.yellow.hex;
+          codex-version = palette.subtext0.hex;
+        };
+        env.CODEX_STATUSLINE_ICONS = builtins.toJSON {
+          model-with-reasoning = "🤖";
+          current-dir = "📁";
+          context-remaining = "🧠";
+          weekly-limit = "📅";
+        };
+      };
       openaiDeveloperDocs = {
         url = "https://developers.openai.com/mcp";
       };
@@ -73,10 +105,21 @@
         "model-with-reasoning"
         "current-dir"
         "git-branch"
-        "five-hour-limit"
+        "pull-request-number"
+        "branch-changes"
+        "context-remaining"
+        "context-used"
+        "context-window-size"
+        # "used-tokens"
+        # "total-input-tokens"
+        # "total-output-tokens"
         "weekly-limit"
         "codex-version"
       ];
+      status_line_provider = {
+        server = "dotfiles-statusline";
+        tool = "statusline";
+      };
       keymap.global = {
         open_transcript = "ctrl-o";
         copy = [];
