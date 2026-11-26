@@ -181,7 +181,19 @@ markdownlint:
 
 # Check changed documents locally, or the full commit range supplied by CI.
 ai-writing-check:
-    @if [ -n "${AI_WRITING_BASE:-}" ]; then bash scripts/check-ai-writing.sh --base "$AI_WRITING_BASE"; else bash scripts/check-ai-writing.sh --worktree; fi
+    #!/usr/bin/env bash
+    if [[ -n ${AI_WRITING_BASE:-} ]]; then
+      mode=--base
+      if [[ ${GITHUB_EVENT_NAME:-} == push ]]; then
+        mode=--push-base
+      fi
+      bash scripts/check-ai-writing.sh "$mode" "$AI_WRITING_BASE"
+    elif [[ ${GITHUB_ACTIONS:-} == true ]]; then
+      echo 'AI_WRITING_BASE is required in GitHub Actions.' >&2
+      exit 1
+    else
+      bash scripts/check-ai-writing.sh --worktree
+    fi
 
 llm-config-test:
     bash scripts/test-codex-launch.sh

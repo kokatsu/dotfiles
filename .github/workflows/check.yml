@@ -42,7 +42,7 @@ jobs:
           name: kokatsu
       - name: Run all static checks
         env:
-          AI_WRITING_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          AI_WRITING_BASE: ${{ github.event_name == 'pull_request' && 'HEAD^1' || github.event.before }}
         # Backstop for the lefthook pre-commit/pre-push gate, which can be bypassed
         # with --no-verify, and for errors that otherwise surface only when the hooks
         # run at session runtime. Runs the justfile recipe inside the devShell, so the
