@@ -98,8 +98,15 @@ die_unknown() {
   die "常駐の状態を確認できません。プロセスがいなければ $PID_FILE と $STOPPING_FILE を削除してください"
 }
 
+# ログオン時の自動起動には管理者権限が不要な HKCU の Run キーを使う
+register_autostart() {
+  echo "registering autostart ..."
+  "$REG_EXE" add "$RUN_KEY" /v "$NAME" /t REG_SZ /f \
+    /d "\"$1\" \"$WIN_DLL\" watch" >/dev/null
+}
+
 cmd_install() {
-  local dotnet_win state=0 bin="$INSTALL_DIR/bin" old="$INSTALL_DIR/bin.old" new="$INSTALL_DIR/bin.new"
+  local dotnet_win state=0 updating=0 bin="$INSTALL_DIR/bin" old="$INSTALL_DIR/bin.old" new="$INSTALL_DIR/bin.new"
   require_dotnet
   dotnet_win=$("$WSLPATH" -w "$DOTNET") && [[ -n "$dotnet_win" ]] ||
     die "dotnet のパスを Windows 形式へ変換できません: $DOTNET"
@@ -131,6 +138,11 @@ cmd_install() {
 
   daemon_state || state=$?
   ((state != 2)) || die_unknown
+  # DLL のパスは版によらないため、更新時は旧版の停止前に登録できる
+  if [[ -f "$DLL" ]]; then
+    updating=1
+    register_autostart "$dotnet_win" || die "自動起動を登録できません。'$NAME install' を再実行してください"
+  fi
   if ((state == 0)); then
     cmd_stop >/dev/null
   fi
@@ -145,12 +157,10 @@ cmd_install() {
     abort_swap "$state"
   fi
 
-  # ログオン時の自動起動。管理者権限もスクリプトファイルの追加配置も要らないので、
-  # schtasks やスタートアップフォルダではなく HKCU の Run キーを使う
-  echo "registering autostart ..."
-  "$REG_EXE" add "$RUN_KEY" /v "$NAME" /t REG_SZ /f \
-    /d "\"$dotnet_win\" \"$WIN_DLL\" watch" >/dev/null ||
-    die "新版は配備しましたが、自動起動を登録できません。'$NAME install' を再実行してください"
+  if ((updating == 0)); then
+    register_autostart "$dotnet_win" ||
+      die "新版は配備しましたが、自動起動を登録できません。'$NAME install' を再実行してください"
+  fi
 
   rm -rf "$old"
   echo "done. '$NAME start' で起動します"

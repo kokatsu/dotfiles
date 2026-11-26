@@ -203,7 +203,7 @@ running_v1() {
     mkdir "$snapshot"
     cp -R "$test_dir/Taro & Co" "$test_dir/daemon" "$test_dir/pid" "$snapshot/"
   fi
-  # 配備の失敗時に Run キーが書き直されないことを見るため、実際の登録値と区別できる値にする
+  # 登録の前後を区別するため、現行の起動コマンドと異なる値を用意する
   echo before >"$test_dir/run-key"
   cp "$test_dir/run-key" "$test_dir/run-key.before"
   export TEST_VERSION=2
@@ -214,15 +214,20 @@ check_kept() {
   check "$1: install fails" install_fails
   check "$1: the old version stays deployed" deployed_is 1
   check "$1: the old version keeps running" daemon_is 1
-  check "$1: the Run key is unchanged" run_key_unchanged
   check "$1: no stop request is left" no_stop_request
   check "$1: no swap under a running process" never_swapped_while_running
 }
 
-# 停止要求を出す前に失敗する
+# 登録が成功する前に失敗する
 check_untouched() {
   check_kept "$1"
+  check "$1: the Run key is unchanged" run_key_unchanged
   check "$1: the old version is never asked to stop" never_stopped
+}
+
+check_registered() {
+  check_kept "$1"
+  check "$1: the Run key points to the installed path" run_key_is_set
 }
 
 check_retry() {
@@ -246,7 +251,13 @@ test_watcher() {
 
   reset
   export TEST_VERSION=1
-  check "first install succeeds" run install
+  TEST_MV_FAIL=bin.new check "first install fails if the swap fails" install_fails
+  check "first install swap failure leaves no Run key" test ! -e "$test_dir/run-key"
+  check "first install swap failure leaves no DLL" test ! -e "$install_dir/bin/$TEST_ASSEMBLY.dll"
+  TEST_REG_FAIL=1 check "first install fails if registration fails" install_fails
+  check "first install registration failure leaves the DLL" deployed_is 1
+  check "first install registration failure leaves no Run key" test ! -e "$test_dir/run-key"
+  check "first install retry succeeds" run install
   check "first install deploys" deployed_is 1
   check "first install sets the Run key" run_key_is_set
   check "first install leaves nothing behind" no_leftovers
@@ -270,6 +281,10 @@ test_watcher() {
 
   running_v1
   run stop
+  TEST_REG_FAIL=1 check "stopped update fails if registration fails" install_fails
+  check "stopped update keeps the old version" deployed_is 1
+  check "stopped update does not alter the Run key on registration failure" run_key_unchanged
+  check "stopped update still starts nothing" no_daemon
   check "update of a stopped version succeeds" run install
   check "update of a stopped version starts nothing" no_daemon
 
@@ -282,7 +297,7 @@ test_watcher() {
   check_retry "publish without the DLL"
 
   running_v1
-  TEST_STUBBORN=1 check_kept "stop timeout"
+  TEST_STUBBORN=1 check_registered "stop timeout"
   check_retry "stop timeout"
 
   running_v1
@@ -290,7 +305,8 @@ test_watcher() {
   check_retry "unknown state"
 
   running_v1
-  TEST_TASKLIST_FAIL=1 check_untouched "tasklist failure"
+  TEST_TASKLIST_FAIL=1 check_registered "tasklist failure"
+  check "tasklist failure: the old version is never asked to stop" never_stopped
   check_retry "tasklist failure"
 
   running_v1
@@ -306,24 +322,24 @@ test_watcher() {
   check "slow exit: no swap under a running process" never_swapped_while_running
 
   running_v1
-  TEST_LINGER=3 TEST_MV_FAIL=bin.new check_kept "swap failure after a slow exit"
+  TEST_LINGER=3 TEST_MV_FAIL=bin.new check_registered "swap failure after a slow exit"
 
   # PID ファイルは消えたがプロセスが終わらない
   running_v1
-  TEST_LINGER=9999 check_kept "process outliving its PID file"
-  check_kept "retry while that process is alive"
+  TEST_LINGER=9999 check_registered "process outliving its PID file"
+  check_registered "retry while that process is alive"
   rm "$test_dir/daemon" "$test_dir/linger"
   check_retry "retry after that process exits"
 
   # 停止待ちが期限切れになった後で PID ファイルが消える
   running_v1
-  TEST_STUBBORN=1 check_kept "PID file vanishing during the check"
-  TEST_PID_VANISHES=1 check_kept "retry while the PID file vanishes"
+  TEST_STUBBORN=1 check_registered "PID file vanishing during the check"
+  TEST_PID_VANISHES=1 check_registered "retry while the PID file vanishes"
 
   running_v1
-  TEST_STUBBORN=1 check_kept "PID file vanishing after the timeout"
+  TEST_STUBBORN=1 check_registered "PID file vanishing after the timeout"
   rm "$state_dir/daemon.pid"
-  check_kept "retry after the PID file vanished"
+  check_registered "retry after the PID file vanished"
   check "start is refused while that process is alive" start_fails
   check "the PID file is not recreated" no_pid_file
   rm "$test_dir/daemon"
@@ -331,14 +347,14 @@ test_watcher() {
   check "no stopping file is left" no_stopping_file
 
   running_v1
-  TEST_TASKLIST_FAIL_WAITING=1 check_kept "tasklist failure while waiting"
+  TEST_TASKLIST_FAIL_WAITING=1 check_registered "tasklist failure while waiting"
 
   running_v1
-  TEST_MV_FAIL=bin check_kept "failure moving the old version away"
+  TEST_MV_FAIL=bin check_registered "failure moving the old version away"
   check_retry "failure moving the old version away"
 
   running_v1
-  TEST_MV_FAIL=bin.new check_kept "failure moving the new version in"
+  TEST_MV_FAIL=bin.new check_registered "failure moving the new version in"
   check_retry "failure moving the new version in"
 
   running_v1
@@ -346,10 +362,10 @@ test_watcher() {
   TEST_MV_FAIL=bin.new check "swap failure while stopped: install fails" install_fails
   check "swap failure while stopped: starts nothing" no_daemon
   check "swap failure while stopped: restores" deployed_is 1
+  check "swap failure while stopped: Run key points to the installed path" run_key_is_set
 
   running_v1
-  TEST_REG_FAIL=1 check "Run key failure: install fails" install_fails
-  check "Run key failure: the new version is deployed" deployed_is 2
+  TEST_REG_FAIL=1 check_untouched "Run key failure"
   check_retry "Run key failure"
 
   # 旧版を退避した直後に中断した状態
