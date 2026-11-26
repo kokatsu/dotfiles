@@ -145,4 +145,4 @@ jobs:
         run: nix flake check --fallback
       - name: Run tests
         # fmt / lint は OS に依存しないので lint job に任せ、ここではテストだけを実行する
-        run: nix develop --command just test
+        run: nix develop --command just test-parallel
