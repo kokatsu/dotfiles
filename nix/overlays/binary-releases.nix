@@ -12,11 +12,11 @@ in {
   # Renovate: datasource=github-releases depName=apple/pkl
   pkl = mkBinaryRelease rec {
     pname = "pkl";
-    version = "0.33.0";
+    version = "0.33.1";
     hashes = {
-      "aarch64-darwin" = "sha256-45wVffDwCjXTS0YnCnaHhO3K9Qmq+/dDhJsntMg++Ds=";
-      "aarch64-linux" = "sha256-7c6jYUAuyrDzqT+GsaiWxB0AqSQfSWL3AnglSwj70m0=";
-      "x86_64-linux" = "sha256-uabd6ms4K31NtM9453qjhY4Min4Ck50rophXS10fzGk=";
+      "aarch64-darwin" = "sha256-b5Pd9lJKV3G9S2694RAQxt/ujjqJBv/rqo9S+KC6Frc=";
+      "aarch64-linux" = "sha256-SnUgltqxPXQy4fCk8SGYM9+V4eNs4LjUJLDtss1UNvk=";
+      "x86_64-linux" = "sha256-rLypu08xE50J4pXQPJ+yX3ft9adK9OdytWsy3G3BfEQ=";
     };
     platformMap = {
       "aarch64-darwin" = "macos-aarch64";
