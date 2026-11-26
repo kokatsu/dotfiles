@@ -17,10 +17,27 @@ check: (_run-all "check-static nix-eval")
 # Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
-test_recipes := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test dc-agent-test nono-agent-test report-agent-session-test mods-test reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test llm-config-test nvim-test wezterm-links-test pi-statusline-test pi-guard-test pi-ai-writing-test"
+test_group_one := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test dc-agent-test nono-agent-test report-agent-session-test mods-test"
+test_group_two := "reliability-test hash-patterns-test renovate-patterns-test regex-dialect-test ai-writing-hook-test textlint-response-config-test llm-config-test nvim-test wezterm-links-test pi-statusline-test pi-guard-test pi-ai-writing-test"
+test_recipes := test_group_one + " " + test_group_two
 
 # Run every test recipe
 test: (_run-all test_recipes)
+
+# Run the same test recipes in two groups for comparison with `just test`.
+test-parallel: (_run-test-groups test_group_one test_group_two)
+
+_run-test-groups first second:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    just _run-all '{{ first }}' &
+    first_pid=$!
+    just _run-all '{{ second }}' &
+    second_pid=$!
+    status=0
+    wait "$first_pid" || status=1
+    wait "$second_pid" || status=1
+    exit "$status"
 
 # just stops at the first failed dependency, which would hide every later result
 _run-all recipes:

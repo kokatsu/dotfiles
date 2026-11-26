@@ -1,0 +1,74 @@
+name: macOS test benchmark
+
+on:
+  push:
+    branches: [codex/ci-test-parallel-benchmark]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: Compare macOS tests (pair ${{ matrix.pair }})
+    runs-on: macos-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        pair: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: DeterminateSystems/nix-installer-action@3138316df39ed29be04236d7ffc686fa525866aa # v23
+      - uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v17
+        with:
+          name: kokatsu
+      - name: Measure sequential and parallel tests
+        shell: bash
+        env:
+          PAIR: ${{ matrix.pair }}
+        run: |-
+          getconf _NPROCESSORS_ONLN
+          uptime
+          /usr/bin/time -p nix develop --command just --version
+          {
+            echo '| Recipe | Wall seconds | User seconds | System seconds | Mean CPU cores | Exit |'
+            echo '| --- | ---: | ---: | ---: | ---: | ---: |'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          recipes=(test test-parallel)
+          if (( PAIR % 2 == 0 )); then
+            recipes=(test-parallel test)
+          fi
+
+          failed=0
+          for recipe in "${recipes[@]}"; do
+            echo "::group::$recipe"
+            uptime
+            log="$RUNNER_TEMP/$recipe.log"
+            status=0
+            nix develop --command /usr/bin/time -p env JUST_TIME=true just "$recipe" > "$log" 2>&1 || status=$?
+            cat "$log"
+            echo "::endgroup::"
+            tail -n 3 "$log" | awk -v recipe="$recipe" -v status="$status" '
+              /^real / { wall = $2 }
+              /^user / { user = $2 }
+              /^sys /  { system = $2 }
+              END {
+                if (wall > 0) {
+                  printf "| %s | %.2f | %.2f | %.2f | %.2f | %s |\n", recipe, wall, user, system, (user + system) / wall, status
+                } else {
+                  printf "| %s | — | — | — | — | %s |\n", recipe, status
+                }
+              }
+            ' >> "$GITHUB_STEP_SUMMARY"
+            if (( status != 0 )); then
+              failed=1
+            fi
+          done
+          exit "$failed"
