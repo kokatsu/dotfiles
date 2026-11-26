@@ -7,7 +7,7 @@ in {
   # vite-plus@<version>, then expose a wrapper around node_modules/vite-plus/bin/vp as $out/bin/vp.
   # Renovate: datasource=npm depName=vite-plus
   vite-plus = _final: prev: let
-    version = "1.6.0";
+    version = "1.7.0";
   in {
     vite-plus = prev.buildNpmPackage {
       pname = "vite-plus";
@@ -15,7 +15,7 @@ in {
 
       src = ../npm-locks/vite-plus;
 
-      npmDepsHash = "sha256-PxM3XNddxWz8s3cVm4adecTOBB9UZBD7aKSOJ5qx0wk=";
+      npmDepsHash = "sha256-NkHp4rdhTM65YoNKEDQwUtwijcnGNcRnByF8sLfoj7w=";
       npmFlags = npmInstallFlags.vite-plus;
       dontNpmBuild = true;
 
