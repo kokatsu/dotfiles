@@ -58,10 +58,10 @@ jobs:
             tail -n 3 "$log" | awk -v recipe="$recipe" -v status="$status" '
               /^real / { wall = $2 }
               /^user / { user = $2 }
-              /^sys /  { system = $2 }
+              /^sys /  { system_cpu = $2 }
               END {
                 if (wall > 0) {
-                  printf "| %s | %.2f | %.2f | %.2f | %.2f | %s |\n", recipe, wall, user, system, (user + system) / wall, status
+                  printf "| %s | %.2f | %.2f | %.2f | %.2f | %s |\n", recipe, wall, user, system_cpu, (user + system_cpu) / wall, status
                 } else {
                   printf "| %s | — | — | — | — | %s |\n", recipe, status
                 }
