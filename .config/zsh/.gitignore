@@ -1,6 +1,12 @@
 **/*.*
 
 !.gitignore
+!config.d/
+config.d/*
+!config.d/.gitkeep
+!functions.d/
+functions.d/*
+!functions.d/.gitkeep
 
 # シェルの設定ファイル
 !.zshrc
