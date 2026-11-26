@@ -5,13 +5,7 @@
   isWSL,
   ...
 }: let
-  # lazygit 0.66 は旧キー gui.authorColors を見つけると移行結果を元ファイルへ書き戻そうとし、
-  # read-only の store パスでは permission denied になる。
-  # upstream 修正 (catppuccin/lazygit#65) が入るまで移行済みのコピーを渡す
-  catppuccinTheme = pkgs.runCommand "catppuccin-lazygit-theme.yml" {nativeBuildInputs = [pkgs.yq-go];} ''
-    yq '.gui.theme.authorColors = .gui.authorColors | del(.gui.authorColors)' \
-      ${config.catppuccin.sources.lazygit}/${config.catppuccin.flavor}/${config.catppuccin.accent}.yml > $out
-  '';
+  catppuccinTheme = "${config.catppuccin.sources.lazygit}/${config.catppuccin.flavor}/${config.catppuccin.accent}.yml";
 in {
   # catppuccin/nix は theme の store パスを LG_CONFIG_FILE として sessionVariables に書くが、
   # 起動時の環境を持ち続ける長寿命プロセス (herdr サーバー等) では旧パスが GC で消え

@@ -148,7 +148,7 @@ in {
       "${config.home.homeDirectory}/.local/bin/scripts"
       "${config.home.homeDirectory}/.local/share/pnpm/bin" # pnpm グローバルバイナリ (v11+ は bin/ サブディレクトリ)
       "${config.xdg.dataHome}/gem/bin" # 手動導入する gem 実行ファイル
-      "${config.xdg.dataHome}/cargo/bin" # rustup が入れる cargo/rustc 等
+      "${config.xdg.dataHome}/cargo/bin" # cargo install で入れる実行ファイル
     ];
 
     sessionVariables =
