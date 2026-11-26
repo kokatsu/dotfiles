@@ -46,25 +46,28 @@
           (lib.getExe pkgs.git)
           (lib.getExe pkgs.gh)
         ];
-        env.CODEX_STATUSLINE_COLORS = builtins.toJSON {
-          model-with-reasoning = palette.blue.hex;
-          current-dir = palette.teal.hex;
-          git-branch = palette.mauve.hex;
-          pull-request-number = palette.sky.hex;
-          branch-changes = palette.subtext0.hex;
-          branch-additions = palette.green.hex;
-          branch-deletions = palette.red.hex;
-          context-remaining = palette.lavender.hex;
-          context-used = palette.lavender.hex;
-          context-window-size = palette.subtext0.hex;
-          weekly-limit = palette.yellow.hex;
-          codex-version = palette.subtext0.hex;
-        };
-        env.CODEX_STATUSLINE_ICONS = builtins.toJSON {
-          model-with-reasoning = "🤖";
-          current-dir = "📁";
-          context-remaining = "🧠";
-          weekly-limit = "📅";
+        env = {
+          CODEX_STATUSLINE_COLORS = builtins.toJSON {
+            model-with-reasoning = palette.blue.hex;
+            current-dir = palette.teal.hex;
+            git-branch = palette.mauve.hex;
+            pull-request-number = palette.sky.hex;
+            branch-changes = palette.subtext0.hex;
+            branch-additions = palette.green.hex;
+            branch-deletions = palette.red.hex;
+            context-remaining = palette.lavender.hex;
+            context-used = palette.lavender.hex;
+            context-window-size = palette.subtext0.hex;
+            weekly-limit = palette.yellow.hex;
+            codex-version = palette.subtext0.hex;
+          };
+          CODEX_STATUSLINE_ICONS = builtins.toJSON {
+            model-with-reasoning = "🤖";
+            current-dir = "📁";
+            context-remaining = "🧠";
+            weekly-limit = "📅";
+          };
+          XDG_CACHE_HOME = config.xdg.cacheHome;
         };
       };
       openaiDeveloperDocs = {
@@ -139,6 +142,7 @@ in {
   home = {
     packages = [
       (lib.hiPrio (pkgs.writeShellScriptBin "codex" ''
+        export CODEX_HOME=''${CODEX_HOME:-${config.xdg.configHome}/codex}
         exec ${pkgs.bash}/bin/bash ${../../../scripts/codex-launch.sh} ${lib.getExe pkgs.codex} "$@"
       ''))
     ];
