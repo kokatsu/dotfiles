@@ -36,23 +36,6 @@ in {
 
   home = {
     activation = {
-      # config.d / functions.d のgit管理外ファイルを作業ツリーからコピーする。
-      setupZshExtraFiles =
-        lib.hm.dag.entryAfter ["linkGeneration"]
-        # bash
-        ''
-          for subdir in config.d functions.d; do
-            SOURCE="${validDotfilesDir}/.config/zsh/$subdir"
-            TARGET="${config.xdg.configHome}/zsh/$subdir"
-            if [ -d "$SOURCE" ]; then
-              $DRY_RUN_CMD mkdir -p "$TARGET"
-              for f in "$SOURCE"/*.zsh; do
-                [ -f "$f" ] && $DRY_RUN_CMD cp "$f" "$TARGET/" 2>/dev/null || true
-              done
-            fi
-          done
-        '';
-
       # evalcache は初期化コマンドの文字列だけをキーにするため、mise activate 等が
       # 出力に焼き込む store パス入りの PATH は世代が変わっても更新されない。
       # 世代切り替え時に消して次のシェルで再生成させる。
@@ -76,6 +59,8 @@ in {
       lib.mapAttrs' (name: source: lib.nameValuePair "${pluginDir}/${name}" {inherit source;}) plugins
       // {
         "${config.xdg.configHome}/zsh/.zshrc".source = ../../../.config/zsh/.zshrc;
+        "${config.xdg.configHome}/zsh/config.d".source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/zsh/config.d";
+        "${config.xdg.configHome}/zsh/functions.d".source = config.lib.file.mkOutOfStoreSymlink "${validDotfilesDir}/.config/zsh/functions.d";
         "${pluginDir}/zeno.zsh" = {
           source = pkgs.zeno-zsh;
           force = true;

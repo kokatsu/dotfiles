@@ -111,6 +111,8 @@ Yazi's `init.lua` and `git-changes.sh` also need
 `home-manager switch --flake . --impure` after editing to apply the changes.
 Lua, shell scripts, and repository tooling configurations remain under `.config/`.
 
+Home Manager links `~/.config/zsh/config.d` and `functions.d` to `.config/zsh/` in the checkout. Before the first switch to this layout, move any existing directories at the link destinations out of the way. Copy the local files you want to keep into the corresponding directories in the checkout and check for conflicting names first.
+
 Neovim's lazy.nvim, peek.nvim, blink.cmp, Pkl plugin, and Tree-sitter parsers
 are built by Nix and linked under `~/.local/share/nvim/nix-plugins/`.
 Other Lua plugins still use `lazy-lock.json` and `:Lazy`.

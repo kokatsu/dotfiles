@@ -54,7 +54,7 @@
     "source=${localWorkspaceFolder}/.claude/settings.local.json,target=${containerWorkspaceFolder}/.claude/settings.local.json,type=bind,readonly",
     "source=${localWorkspaceFolder}/.config/nvim/lua/plugins/snacks/exclude.lua,target=${containerWorkspaceFolder}/.config/nvim/lua/plugins/snacks/exclude.lua,type=bind,readonly",
     "source=${localWorkspaceFolder}/.config/wezterm/backgrounds.lua,target=${containerWorkspaceFolder}/.config/wezterm/backgrounds.lua,type=bind,readonly",
-    // home-manager switch がホストの ~/.config/zsh へコピーし、ホストの zsh が読む
+    // ホストの zsh は Home Manager のリンク経由で作業ツリーの設定を直接読む
     "source=${localWorkspaceFolder}/.config/zsh/config.d,target=${containerWorkspaceFolder}/.config/zsh/config.d,type=bind,readonly",
     "source=${localWorkspaceFolder}/.config/zsh/functions.d,target=${containerWorkspaceFolder}/.config/zsh/functions.d,type=bind,readonly"
   ]

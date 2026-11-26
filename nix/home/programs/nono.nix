@@ -14,6 +14,8 @@
     ".config/herdr/plugins"
     ".config/nvim"
     ".config/wezterm"
+    ".config/zsh/config.d"
+    ".config/zsh/functions.d"
     "bin"
   ];
   # 親ディレクトリの rename による差し替えも防ぐ

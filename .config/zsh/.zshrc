@@ -101,7 +101,7 @@ case $OSTYPE in
 esac
 [[ -n $os && -f $ZDOTDIR/"$os".zsh ]] && . $ZDOTDIR/"$os".zsh
 
-# 分離された設定ファイルを読み込む (ディレクトリは zsh.nix の activation が作る)
+# 作業ツリーにあるローカル設定を読み込む
 for conf in "$ZDOTDIR/config.d/"*.zsh(N); do
   source "${conf}"
 done
