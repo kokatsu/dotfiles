@@ -27,13 +27,13 @@
   mermaid-ascii = _final: prev: {
     mermaid-ascii = prev.buildGoModule rec {
       pname = "mermaid-ascii";
-      version = "1.6.1";
+      version = "1.6.2";
 
       src = prev.fetchFromGitHub {
         owner = "AlexanderGrooff";
         repo = "mermaid-ascii";
         rev = version;
-        hash = "sha256-KYCJIgLwjJR5RM1AdGrV47UhFgpLqwro42E54pzhYWE=";
+        hash = "sha256-yZVQoQ9ynCIgHxRuG4FagdWkOtuxkRcF3/1NaMvQzvo=";
       };
 
       vendorHash = "sha256-S/K6W8KC6YzwZPioucoiwOMd29LPv0J22T3MS0X+W5g=";
