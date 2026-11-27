@@ -19,6 +19,10 @@ STATUS_FILE="$STATUS_DIR/status.json"
   echo "status.json not found. Run feed-watch check first." >&2
   exit 1
 }
+command -v node >/dev/null || {
+  echo "Node.js is required for feed-summarize to read OPML." >&2
+  exit 127
+}
 
 exec 8>"$STATUS_FILE.summarize.lock"
 feed_lock 8 "$STATUS_FILE.summarize.lock"

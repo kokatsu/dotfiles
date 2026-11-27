@@ -416,7 +416,7 @@
             deno # fmt / lint / check
             claude-code
             codex # `just codex-rules-test` (execpolicy)
-            nodejs # `just pi-statusline-test`
+            nodejs_24 # Pi and feed tests
             pi-coding-agent # `just pi-statusline-test` が pi-tui の幅計算を基準にする
 
             # Markup / config

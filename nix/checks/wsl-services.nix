@@ -7,7 +7,7 @@
   # check 経路と共通処理が PATH から呼ぶ外部コマンド。
   commands = {
     disk-watch = "awk bash date df dirname jq mkdir mktemp mv readlink rm tr uname";
-    feed-watch = "bash cat curl deno dirname flock gh jq mkdir mktemp mv readlink rm sleep tr uname yq";
+    feed-watch = "bash cat curl dirname flock gh jq mkdir mktemp mv node readlink rm sleep tr uname yq";
     status-watch = "bash curl date dirname jq mkdir mktemp mv readlink rm tr uname";
   };
   probe = pkgs.writeShellScript "watch-probe" ''

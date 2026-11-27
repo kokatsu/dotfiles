@@ -395,8 +395,7 @@ mods-test:
 # Verify the feed, status, Windows watcher, daily and wallpaper scripts, check failure handling, and activation retries
 reliability-test:
     {{ without_ld_env }} deno test --no-prompt --allow-read --allow-write --allow-run --allow-env scripts/test-feed-summarize.ts
-    {{ without_ld_env }} deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-entries.ts -- "$(command -v yq)" "$(command -v deno)"
-    {{ without_ld_env }} deno test --no-prompt --allow-run="$(command -v yq),$(command -v deno)" scripts/test-feed-opml.ts -- "$(command -v yq)" "$(command -v deno)"
+    node --test scripts/test-feed-entries.ts scripts/test-feed-opml.ts
     bash scripts/test-check-failures.sh
     bash scripts/test-codex-config-activation.sh
     bash scripts/test-feed-status.sh

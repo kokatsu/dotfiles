@@ -1,3 +1,5 @@
+import process from "node:process";
+import { text } from "node:stream/consumers";
 import { rec } from "./feed-entries.ts";
 
 export interface OpmlFeed {
@@ -105,12 +107,12 @@ export function migrateFeedNames<T>(
 if (import.meta.main) {
   try {
     console.log(
-      JSON.stringify(parseOpml(await new Response(Deno.stdin.readable).text())),
+      JSON.stringify(parseOpml(await text(process.stdin))),
     );
   } catch (error) {
     console.error(
       `parse-opml: ${error instanceof Error ? error.message : String(error)}`,
     );
-    Deno.exit(1);
+    process.exitCode = 1;
   }
 }

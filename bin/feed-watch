@@ -35,7 +35,7 @@ fetch_feed_ids() {
   # 終了タグの不一致も通るが、--xml-raw-token=false なら途中で切れた応答は失敗する
   printf '%s' "$content" |
     feed_run yq -p=xml -o=json --xml-raw-token=false '.' |
-    feed_run deno run --no-prompt "$HELPER" feed-ids
+    feed_run node "$HELPER" feed-ids
 }
 
 cmd_check() (
@@ -107,7 +107,7 @@ apply_check_results() {
     printf '%s\0%s\0' "$status" "$entries"
     cat "$updates"
   } |
-    feed_run deno run --no-prompt "$HELPER" apply-check-results
+    feed_run node "$HELPER" apply-check-results
 }
 
 cmd_read() {

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --no-prompt
+#!/usr/bin/env node
 // feed-watch-helper.ts — bin/feed-watch のデータ変換
 //
 //   feed-ids             stdin: yq が出力したフィードの JSON
@@ -7,10 +7,11 @@
 //                        続けて 1 フィードあたり name/type/url/category/ids
 //                        stdout: 更新後の status JSON
 //
-// 入出力は stdin/stdout/argv だけなので Deno の権限フラグを一つも必要としない。
 // ids は改行を含むので区切りは NUL になる。シェル変数は NUL を保持できないため、
 // 呼び出し側は一時ファイルへ書き足してから渡す。
 
+import process from "node:process";
+import { text } from "node:stream/consumers";
 import { feedIds } from "./feed-entries.ts";
 import { migrateFeedNames, type OpmlFeed } from "./feed-opml.ts";
 
@@ -128,8 +129,8 @@ function applyCheckResults(input: string): string {
 }
 
 async function main(): Promise<number> {
-  const action = Deno.args[0] ?? "";
-  const input = await new Response(Deno.stdin.readable).text();
+  const action = process.argv[2] ?? "";
+  const input = await text(process.stdin);
 
   try {
     switch (action) {
@@ -151,4 +152,4 @@ async function main(): Promise<number> {
   }
 }
 
-Deno.exit(await main());
+process.exitCode = await main();

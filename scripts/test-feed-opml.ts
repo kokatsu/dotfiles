@@ -1,11 +1,17 @@
+import { deepStrictEqual as equal } from "node:assert/strict";
+import { execPath } from "node:process";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { migrateFeedNames, parseOpml } from "./feed-opml.ts";
-import { equal, run } from "./test-feed-lib.ts";
+import { run } from "./test-feed-lib.ts";
 
-const [yq, deno] = Deno.args;
-if (!yq || !deno) throw new Error("usage: test-feed-opml.ts -- <yq> <deno>");
+const opmlPath = fileURLToPath(new URL("./feed-opml.ts", import.meta.url));
+const helperPath = fileURLToPath(
+  new URL("./feed-watch-helper.ts", import.meta.url),
+);
 
-async function xml(input: string) {
-  return await run(yq, [
+function xml(input: string) {
+  return run("yq", [
     "eval-all",
     "-p=xml",
     "-o=json",
@@ -15,8 +21,8 @@ async function xml(input: string) {
   ], input);
 }
 
-Deno.test("OPML attributes, entities, hierarchy and delimiters", async () => {
-  const parsed = await xml(`<opml><body>
+test("OPML attributes, entities, hierarchy and delimiters", () => {
+  const parsed = xml(`<opml><body>
     <outline text="Blog &amp; News | Today">
       <outline htmlUrl='https://example.com/?a=1&amp;b=2|3'
         xmlUrl='https://example.com/feed?a=1&amp;b=2|3'
@@ -44,22 +50,18 @@ Deno.test("OPML attributes, entities, hierarchy and delimiters", async () => {
     { name: "Root", category: "", xmlUrl: "root", htmlUrl: "root" },
   ];
   equal(parseOpml(parsed.stdout), expected);
-  const result = await run(deno, [
-    "run",
-    "--no-prompt",
-    new URL("./feed-opml.ts", import.meta.url).pathname,
-  ], parsed.stdout);
+  const result = run(execPath, [opmlPath], parsed.stdout);
   equal(result.code, 0);
   equal(JSON.parse(result.stdout), expected);
 });
 
-Deno.test("empty OPML body is valid", async () => {
-  const parsed = await xml("<opml><body/></opml>");
+test("empty OPML body is valid", () => {
+  const parsed = xml("<opml><body/></opml>");
   equal(parsed.code, 0);
   equal(parseOpml(parsed.stdout), []);
 });
 
-Deno.test("invalid OPML cannot produce a partial feed list", async () => {
+test("invalid OPML cannot produce a partial feed list", () => {
   for (
     const input of [
       "",
@@ -71,13 +73,9 @@ Deno.test("invalid OPML cannot produce a partial feed list", async () => {
       '<opml><body><outline text="empty-url" xmlUrl=""/></body></opml>',
     ]
   ) {
-    const parsed = await xml(input);
+    const parsed = xml(input);
     if (parsed.code !== 0) continue;
-    const result = await run(deno, [
-      "run",
-      "--no-prompt",
-      new URL("./feed-opml.ts", import.meta.url).pathname,
-    ], parsed.stdout);
+    const result = run(execPath, [opmlPath], parsed.stdout);
     equal(result.code, 1);
     equal(result.stdout, "");
   }
@@ -90,7 +88,7 @@ const entry = (name: string) => ({
   htmlUrl: "page",
 });
 
-Deno.test("legacy keys migrate once without losing read or summary progress", () => {
+test("legacy keys migrate once without losing read or summary progress", () => {
   const progress = {
     last_seen_id: "seen",
     unread_count: 0,
@@ -114,7 +112,7 @@ Deno.test("legacy keys migrate once without losing read or summary progress", ()
   equal(migrateFeedNames(migrated, entries), migrated);
 });
 
-Deno.test("conflicting legacy keys fail without overwriting either state", () => {
+test("conflicting legacy keys fail without overwriting either state", () => {
   const fixtures: Record<string, { unread_count: number }>[] = [
     { "A &amp; B": { unread_count: 5 }, "A & B": { unread_count: 2 } },
     { "A &amp; B": { unread_count: 5 }, "A &#38; B": { unread_count: 2 } },
@@ -132,7 +130,7 @@ Deno.test("conflicting legacy keys fail without overwriting either state", () =>
   }
 });
 
-Deno.test("watch update migrates before counting and preserves failed fetch progress", async () => {
+test("watch update migrates before counting and preserves failed fetch progress", () => {
   const entries = [entry("A & B"), entry("Failed & feed")];
   const initial = {
     feeds: {
@@ -158,13 +156,7 @@ Deno.test("watch update migrates before counting and preserves failed fetch prog
     "a2\na1",
     "",
   ].join("\0");
-  const args = [
-    "run",
-    "--no-prompt",
-    new URL("./feed-watch-helper.ts", import.meta.url).pathname,
-    "apply-check-results",
-  ];
-  const result = await run(deno, args, payload);
+  const result = run(execPath, [helperPath, "apply-check-results"], payload);
   equal(result.code, 0);
   equal(JSON.parse(result.stdout).feeds, {
     "A & B": {

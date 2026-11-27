@@ -54,6 +54,20 @@ cat >"$FEED_WATCH_OPML_DIR/feeds.opml" <<'XML'
 </outline>
 </body></opml>
 XML
+no_node_path="$test_dir/no-node-bin"
+mkdir "$no_node_path"
+for command in bash dirname flock readlink yq; do
+  ln -s "$(command -v "$command")" "$no_node_path/$command"
+done
+printf '#!/usr/bin/env bash\nexit 0\n' >"$no_node_path/deno"
+chmod +x "$no_node_path/deno"
+cp "$STATUS_FILE" "$test_dir/before-no-node"
+summary_status=0
+PATH="$no_node_path" bash "$repo_root/bin/feed-summarize" test 2>"$test_dir/no-node-error" || summary_status=$?
+[[ $summary_status -eq 127 ]]
+grep -Fq 'Node.js is required' "$test_dir/no-node-error"
+cmp "$STATUS_FILE" "$test_dir/before-no-node"
+
 cat >"$test_dir/bin/gh" <<'MOCK'
 #!/usr/bin/env bash
 set -euo pipefail

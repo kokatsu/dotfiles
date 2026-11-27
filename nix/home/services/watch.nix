@@ -17,7 +17,7 @@
     feed-watch = {
       subject = "Check Atom and RSS feeds";
       purpose = "for the WezTerm status bar";
-      deps = with pkgs; [bash deno gh jq curl yq-go coreutils util-linux];
+      deps = with pkgs; [bash nodejs_24 gh jq curl yq-go coreutils util-linux];
       service.TimeoutStartSec = "10min";
     };
     status-watch = {

@@ -1,8 +1,13 @@
+import { deepStrictEqual as equal } from "node:assert/strict";
+import { execPath } from "node:process";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { feedIds, normalizeFeed } from "./feed-entries.ts";
-import { equal, run } from "./test-feed-lib.ts";
+import { run } from "./test-feed-lib.ts";
 
-const [yq, deno] = Deno.args;
-if (!yq || !deno) throw new Error("usage: test-feed-entries.ts -- <yq> <deno>");
+const helperPath = fileURLToPath(
+  new URL("./feed-watch-helper.ts", import.meta.url),
+);
 
 const fixtures: [string, string, string[]][] = [
   [
@@ -40,8 +45,8 @@ const fixtures: [string, string, string[]][] = [
 ];
 
 for (const [name, xml, expected] of fixtures) {
-  Deno.test(name, async () => {
-    const parsed = await run(yq, [
+  test(name, () => {
+    const parsed = run("yq", [
       "-p=xml",
       "-o=json",
       "--xml-raw-token=false",
@@ -49,20 +54,15 @@ for (const [name, xml, expected] of fixtures) {
     ], xml);
     equal(parsed.code, 0);
     equal(feedIds(parsed.stdout), expected);
-    const result = await run(deno, [
-      "run",
-      "--no-prompt",
-      new URL("./feed-watch-helper.ts", import.meta.url).pathname,
-      "feed-ids",
-    ], parsed.stdout);
+    const result = run(execPath, [helperPath, "feed-ids"], parsed.stdout);
     equal(result.code, 0);
     equal(result.stdout, expected.map((id) => `${id}\n`).join(""));
   });
 }
 
-Deno.test("truncated XML is rejected by the parser", async () => {
+test("truncated XML is rejected by the parser", () => {
   for (const xml of ["<feed>", "<feed><entry><id>a1</id>"]) {
-    const parsed = await run(yq, [
+    const parsed = run("yq", [
       "-p=xml",
       "-o=json",
       "--xml-raw-token=false",
@@ -72,7 +72,7 @@ Deno.test("truncated XML is rejected by the parser", async () => {
   }
 });
 
-Deno.test("lenient XML is accepted by the parser", async () => {
+test("lenient XML is accepted by the parser", () => {
   for (
     const [xml, expected] of [
       [
@@ -82,7 +82,7 @@ Deno.test("lenient XML is accepted by the parser", async () => {
       ["<feed><id>self</id><entry><id>a1</id></feed>", ["a1"]],
     ] as const
   ) {
-    const parsed = await run(yq, [
+    const parsed = run("yq", [
       "-p=xml",
       "-o=json",
       "--xml-raw-token=false",
@@ -93,22 +93,17 @@ Deno.test("lenient XML is accepted by the parser", async () => {
   }
 });
 
-Deno.test("empty or unrelated documents fail the watch CLI", async () => {
+test("empty or unrelated documents fail the watch CLI", () => {
   for (
     const json of ["", "null", "{}", '{"html":{}}', '{"feed":{},"rss":{}}']
   ) {
-    const result = await run(deno, [
-      "run",
-      "--no-prompt",
-      new URL("./feed-watch-helper.ts", import.meta.url).pathname,
-      "feed-ids",
-    ], json);
+    const result = run(execPath, [helperPath, "feed-ids"], json);
     equal(result.code, 1);
     equal(result.stdout, "");
   }
 });
 
-Deno.test("summary normalization keeps its link fallback and fields", () => {
+test("summary normalization keeps its link fallback and fields", () => {
   const input = JSON.stringify({
     feed: {
       entry: {

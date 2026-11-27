@@ -15,5 +15,5 @@ feed_opml_entries() {
   # shellcheck disable=SC2016 # $doc is a yq variable.
   feed_run yq eval-all -p=xml -o=json --xml-raw-token=false --xml-strict-mode \
     '. as $doc ireduce ([]; . + [$doc])' "${files[@]}" |
-    feed_run deno run --no-prompt "${BASH_SOURCE[0]%/*}/feed-opml.ts"
+    feed_run node "${BASH_SOURCE[0]%/*}/feed-opml.ts"
 }
