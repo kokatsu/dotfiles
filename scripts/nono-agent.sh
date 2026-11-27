@@ -92,6 +92,12 @@ env_args=(
   TMPPREFIX="$data/$agent/tmp/zsh"
   NONO_AGENT_DATA="$data"
 )
+if [[ $agent == pi ]]; then
+  env_args+=(
+    FFF_FRECENCY_DB="$data/pi/fff/frecency"
+    FFF_HISTORY_DB="$data/pi/fff/history"
+  )
+fi
 for name in "${!HERDR_@}" "${!CLAUDE_CODE_MESSAGING_@}" "${!CLAUDE_CODE_CHILD_@}" "${!CLAUDE_CODE_SESSION_@}" \
   CLAUDECODE WSL_INTEROP WSLENV DISPLAY WAYLAND_DISPLAY PULSE_SERVER DBUS_SESSION_BUS_ADDRESS SSH_AUTH_SOCK DOCKER_HOST; do
   env_args=(-u "$name" "${env_args[@]}")

@@ -41,6 +41,13 @@ export const packages: Package[] = [
     dependency: "@textlint-ja/textlint-rule-preset-ai-writing",
     npmFlags: npmInstallFlags["textlint-rule-preset-ai-writing"],
   },
+  {
+    name: "pi-fff",
+    file: "nix/overlays/npm-packages.nix",
+    kind: "npm",
+    dependency: "@ff-labs/pi-fff",
+    npmFlags: npmInstallFlags["pi-fff"],
+  },
   { name: "codex", file: binaryFile, kind: "binary" },
   {
     name: "mermaid-ascii",

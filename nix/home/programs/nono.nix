@@ -109,6 +109,7 @@ in {
     "nono/profiles/nono-agent-pi.json".text = mkProfile {
       name = "nono-agent-pi";
       allow = ["$HOME/.local/share/nono-agent/pi"];
+      read = map (kind: "${config.xdg.configHome}/pi/${kind}") ["extensions" "skills" "themes"];
       allowDomain = openaiDomains ++ ["pi.dev"];
     };
   };

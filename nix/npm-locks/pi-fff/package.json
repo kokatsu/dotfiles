@@ -1,0 +1,13 @@
+{
+  "name": "dotfiles-pi-fff",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@ff-labs/pi-fff": "0.11.0"
+  },
+  "pi": {
+    "extensions": [
+      "./node_modules/@ff-labs/pi-fff/src/index.ts"
+    ]
+  }
+}

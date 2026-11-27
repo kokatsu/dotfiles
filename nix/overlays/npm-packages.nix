@@ -115,6 +115,29 @@ in {
     };
   };
 
+  # Renovate: datasource=npm depName=@ff-labs/pi-fff
+  pi-fff = _final: prev: let
+    version = "0.11.0";
+  in {
+    pi-fff = prev.buildNpmPackage {
+      pname = "pi-fff";
+      inherit version;
+
+      src = ../npm-locks/pi-fff;
+      npmDepsHash = "sha256-jd5OuK3QjUWqsIXkgIiDrH/V40fC8jx0s2MGmpaylTw=";
+      # Pi の SDK は拡張ローダーが提供する。
+      npmFlags = npmInstallFlags.pi-fff;
+      dontNpmBuild = true;
+
+      installPhase = ''
+        runHook preInstall
+        mkdir -p "$out"
+        cp -r package.json node_modules "$out/"
+        runHook postInstall
+      '';
+    };
+  };
+
   # textlint-with-rules - textlint 本体と日本語校正ルールを 1 つの derivation にまとめる。
   # ルールは NODE_PATH 経由でしか解決されないため、本体と同じ closure に同居させないと
   # 見つからない。Home Manager の packages と開発シェルの双方が同じ構成を参照できるよう、

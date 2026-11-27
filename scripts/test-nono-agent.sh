@@ -180,6 +180,11 @@ run 0 pi
 has_arg /pi
 has_arg nono-agent-pi
 has_arg "PI_CODING_AGENT_DIR=$(realpath -- "$HOME")/.local/share/nono-agent/pi"
+has_arg "FFF_FRECENCY_DB=$HOME/.local/share/nono-agent/pi/fff/frecency"
+has_arg "FFF_HISTORY_DB=$HOME/.local/share/nono-agent/pi/fff/history"
+run 0 codex
+lacks_arg "FFF_FRECENCY_DB=$HOME/.local/share/nono-agent/pi/fff/frecency"
+lacks_arg "FFF_HISTORY_DB=$HOME/.local/share/nono-agent/pi/fff/history"
 
 # Herdr の socket や環境変数は渡さず、表示だけを外側で更新する
 HERDR_PANE_ID=p1 HERDR_SOCKET_PATH=/sock run 0 claude
