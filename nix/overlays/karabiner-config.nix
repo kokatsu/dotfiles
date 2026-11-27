@@ -1,7 +1,7 @@
 {
   karabiner-config = _final: prev: let
     source = ../../karabiner-config;
-    denoDepsHash = "sha256-ch6WJQ1te47lnML1WjIQtqC+4vecI891FsXJkBpbCa4=";
+    denoDepsHash = "sha256-creYNPpEdEb8NYLgrBIaGhYvnEulqO2jCb9DwUKO8so=";
     dependencies = (import ./fetch-deno-deps.nix {pkgs = prev;}) {
       pname = "karabiner";
       src = source;

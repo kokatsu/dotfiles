@@ -1,19 +1,6 @@
 interface Manifest {
   entrypoints: string[];
-  assets: Record<string, string>;
   config?: Record<string, unknown>;
-}
-
-interface Graph {
-  roots: string[];
-  modules: {
-    specifier: string;
-    local?: string;
-    mediaType?: string;
-    error?: string;
-    dependencies?: { code?: { specifier: string } }[];
-  }[];
-  redirects: Record<string, string>;
 }
 
 const [manifestPath, destination] = Deno.args;
@@ -28,20 +15,17 @@ if (manifest.config) {
     JSON.stringify({ ...config, ...manifest.config }, null, 2) + "\n",
   );
 }
-const moduleMap: Record<string, { path: string; mediaType: string }> = {};
-const redirects: Record<string, string> = {};
 
-async function command(args: string[]): Promise<string> {
+async function command(args: string[]): Promise<void> {
   const result = await new Deno.Command(Deno.execPath(), {
     args,
-    stdout: "piped",
+    stdout: "inherit",
     stderr: "inherit",
   }).output();
   if (!result.success) throw new Error(`deno ${args[0]} failed`);
-  return new TextDecoder().decode(result.stdout);
 }
 
-await Deno.mkdir(`${destination}/modules`, { recursive: true });
+await Deno.mkdir(destination, { recursive: true });
 await command([
   "cache",
   "--allow-import",
@@ -50,57 +34,6 @@ await command([
   `--frozen-lockfile=${Deno.env.get("DENO_DEPS_FROZEN") === "1"}`,
   ...manifest.entrypoints,
 ]);
-
-for (const entrypoint of manifest.entrypoints) {
-  const graph: Graph = JSON.parse(
-    await command([
-      "info",
-      "--json",
-      "--allow-import",
-      "--vendor=false",
-      entrypoint,
-    ]),
-  );
-  Object.assign(redirects, graph.redirects);
-  const bySpecifier = new Map(
-    graph.modules.map((module) => [module.specifier, module]),
-  );
-  const required = new Set<string>();
-  const visit = (specifier: string): void => {
-    while (graph.redirects[specifier]) specifier = graph.redirects[specifier];
-    if (required.has(specifier)) return;
-    required.add(specifier);
-    const module = bySpecifier.get(specifier);
-    if (!module) throw new Error(`Missing graph module: ${specifier}`);
-    for (const dependency of module.dependencies ?? []) {
-      if (dependency.code) visit(dependency.code.specifier);
-    }
-  };
-  // Deno info also reports declaration-only imports; emit does not load those.
-  for (const root of graph.roots) visit(root);
-  for (const specifier of required) {
-    const module = bySpecifier.get(specifier)!;
-    if (module.error) throw new Error(module.error);
-    if (!module.specifier.startsWith("https://")) continue;
-    if (!module.local) throw new Error(`No local module: ${module.specifier}`);
-    const digest = await crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(module.specifier),
-    );
-    const hash = Array.from(new Uint8Array(digest))
-      .map((byte) => byte.toString(16).padStart(2, "0")).join("");
-    const path = `modules/${hash}`;
-    // Cache timestamps and response headers must not change the dependency hash.
-    const source = (await Deno.readTextFile(module.local))
-      .replace(/\n?\/\/ denoCacheMetadata=.*\s*$/, "");
-    await Deno.writeTextFile(`${destination}/${path}`, source);
-    moduleMap[module.specifier] = {
-      path,
-      mediaType: module.mediaType ?? "JavaScript",
-    };
-  }
-}
-
 await command([
   "cache",
   "--allow-import",
@@ -124,15 +57,3 @@ if (manifest.config) {
   }
 }
 await Deno.copyFile("deno.lock", `${destination}/deno.lock`);
-await Deno.mkdir(`${destination}/assets`, { recursive: true });
-for (const [name, url] of Object.entries(manifest.assets)) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
-  const path = `${destination}/assets/${name}`;
-  await Deno.mkdir(path.slice(0, path.lastIndexOf("/")), { recursive: true });
-  await Deno.writeFile(path, new Uint8Array(await response.arrayBuffer()));
-}
-await Deno.writeTextFile(
-  `${destination}/module-map.json`,
-  JSON.stringify({ modules: moduleMap, redirects }, null, 2) + "\n",
-);

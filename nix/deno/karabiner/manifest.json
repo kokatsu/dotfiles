@@ -1,5 +1,4 @@
 {
   "entrypoints": ["karabiner.ts"],
-  "assets": {},
   "config": { "nodeModulesDir": "auto", "lock": true }
 }

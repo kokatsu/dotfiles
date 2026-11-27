@@ -1,6 +1,6 @@
 {inputs}: {
   zeno-zsh = _final: prev: let
-    denoDepsHash = "sha256-C+iys/I1V0Xu3rSA0F3r6lWgulokuMf0Hkt0UR0g2LA=";
+    denoDepsHash = "sha256-atUciBXrfzFUmFZiPxs48/6stMvwMsaQP9Y1EjtRUn8=";
     dependencies = (import ./fetch-deno-deps.nix {pkgs = prev;}) {
       pname = "zeno";
       src = inputs.zeno-zsh;

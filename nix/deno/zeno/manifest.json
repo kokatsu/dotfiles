@@ -1,6 +1,5 @@
 {
   "entrypoints": ["src/cli.ts", "src/server.ts", "src/mod.ts"],
-  "assets": {},
   "config": {
     "lock": true,
     "nodeModulesDir": "auto",
