@@ -8,6 +8,13 @@
   inherit (pkgs.stdenv.hostPlatform) isLinux isDarwin;
   inherit (config.lib.file) mkOutOfStoreSymlink;
 
+  openaiDomains = [
+    "api.openai.com"
+    "auth.openai.com"
+    "chatgpt.com"
+    "developers.openai.com"
+  ];
+
   # リポジトリを直接参照していて、switch を挟まず隔離の外で実行されるもの
   livePaths = [
     ".config/claude"
@@ -65,7 +72,7 @@
           ''(deny file-write* (regex #"/\.git$"))''
           ''(deny file-write* (regex #"/\.git/(hooks(/|$)|(config|config\.worktree|commondir)$)"))''
           ''(deny file-write* (regex #"/\.git/modules(/|$)"))''
-          ''(deny file-write* (regex #"/\.(claude|codex)(/|$)"))''
+          ''(deny file-write* (regex #"/\.(claude|codex|pi)(/|$)"))''
           ''(deny file-write* (regex #"/\.?lefthook(-local)?\.(ya?ml|toml|jsonc?)$"))''
         ]
         ++ map (path: ''(deny file-write* (subpath "${validDotfilesDir}/${path}"))'') livePaths
@@ -97,12 +104,12 @@ in {
     "nono/profiles/nono-agent-codex.json".text = mkProfile {
       name = "nono-agent-codex";
       allow = ["$HOME/.local/share/nono-agent/codex"];
-      allowDomain = [
-        "api.openai.com"
-        "auth.openai.com"
-        "chatgpt.com"
-        "developers.openai.com"
-      ];
+      allowDomain = openaiDomains;
+    };
+    "nono/profiles/nono-agent-pi.json".text = mkProfile {
+      name = "nono-agent-pi";
+      allow = ["$HOME/.local/share/nono-agent/pi"];
+      allowDomain = openaiDomains ++ ["pi.dev"];
     };
   };
 
@@ -125,6 +132,7 @@ in {
       runtimeEnv = {
         NONO_AGENT_CLAUDE = lib.getExe pkgs.claude-code;
         NONO_AGENT_CODEX = lib.getExe pkgs.codex;
+        NONO_AGENT_PI = lib.getExe' pkgs.pi-coding-agent "pi";
         NONO_AGENT_WATCH = "${../../../scripts/nono-agent-watch.pl}";
         NONO_AGENT_DOTFILES = validDotfilesDir;
         NONO_AGENT_LIVE_PATHS = lib.concatStringsSep " " livePaths;

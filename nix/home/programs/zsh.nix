@@ -110,7 +110,7 @@ in {
             fi
             # nono-agent の中では専用の設定ディレクトリを保つ
             if [ -n "''${NONO_AGENT_DATA:-}" ]; then
-              export CLAUDE_CONFIG_DIR="$NONO_AGENT_DATA/claude" CODEX_HOME="$NONO_AGENT_DATA/codex"
+              export CLAUDE_CONFIG_DIR="$NONO_AGENT_DATA/claude" CODEX_HOME="$NONO_AGENT_DATA/codex" PI_CODING_AGENT_DIR="$NONO_AGENT_DATA/pi"
             fi
             # XDG_CONFIG_HOME / ZDOTDIR は hm-session-vars.sh と ~/.zshenv が設定する
           '';

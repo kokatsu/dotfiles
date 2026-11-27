@@ -1,20 +1,20 @@
 # shellcheck shell=bash
-# nono-agent: Claude Code / Codex を nono の中で起動する。
+# nono-agent: Claude Code / Codex / Pi を nono の中で起動する。
 #
 # Usage:
-#   nono-agent [nono run のオプション...] <claude|codex> [args...]
+#   nono-agent [nono run のオプション...] <claude|codex|pi> [args...]
 #
 # Landlock は pathname Unix socket への connect を止めず、WSL2 では nono の
 # af_unix_mediation も使えない。systemd・docker・herdr・WSL interop の socket から
 # サンドボックスの外でプロセスを起動できてしまうため、外側の bwrap で隠す。
 
 usage() {
-  echo "Usage: nono-agent [nono run options...] <claude|codex> [args...]" >&2
+  echo "Usage: nono-agent [nono run options...] <claude|codex|pi> [args...]" >&2
   exit 2
 }
 
 nono_args=()
-while (($# > 0)) && [[ $1 != claude && $1 != codex ]]; do
+while (($# > 0)) && [[ $1 != claude && $1 != codex && $1 != pi ]]; do
   nono_args+=("$1")
   shift
 done
@@ -64,7 +64,7 @@ if [[ $(uname) == Darwin && $hooks == "$cwd"/* && $hooks != "$cwd/.git/hooks" ]]
 fi
 
 data=$home/.local/share/nono-agent
-mkdir -p "$data/claude/tmp" "$data/codex/tmp"
+mkdir -p "$data/claude/tmp" "$data/codex/tmp" "$data/pi/tmp"
 
 case $agent in
 claude)
@@ -78,12 +78,16 @@ codex)
   esac
   command+=("$@")
   ;;
+pi)
+  command=("$NONO_AGENT_PI" "$@")
+  ;;
 esac
 
 env_args=(
   CLAUDE_CONFIG_DIR="$data/claude"
   CLAUDE_CODE_TMPDIR="$data/claude/tmp"
   CODEX_HOME="$data/codex"
+  PI_CODING_AGENT_DIR="$data/pi"
   TMPDIR="$data/$agent/tmp"
   TMPPREFIX="$data/$agent/tmp/zsh"
   NONO_AGENT_DATA="$data"
@@ -112,7 +116,6 @@ list_risky() {
 }
 
 locked=''
-created=()
 # shellcheck disable=SC2329 # trap から呼ぶ
 cleanup() {
   if [[ -n $locked ]]; then
@@ -122,10 +125,19 @@ cleanup() {
       printf 'nono-agent: セッション中に作られました。外で git や lefthook を使う前に確認してください:\n%s\n' "$added" >&2
     fi
     # マスクは外側で実体を消すと外れるため、最後のセッションだけが消す
+    flock -x 10
     if flock -xn 9; then
       rm -f .git/commondir
-      for path in "${created[@]}"; do rmdir "$path" 2>/dev/null || true; done
+      if [[ -f $created ]]; then
+        while IFS= read -r path; do
+          case $path in
+          .claude | .codex | .pi) rmdir -- "$path" 2>/dev/null || true ;;
+          esac
+        done <"$created"
+        rm -f -- "$created"
+      fi
     fi
+    flock -u 10
   fi
   if [[ -n ${HERDR_PANE_ID:-} ]]; then
     herdr pane report-metadata "$HERDR_PANE_ID" --source nono \
@@ -165,24 +177,35 @@ if [[ -d $home/.config/herdr ]]; then
     mounts+=(--ro-bind "$home/.config/herdr/hooks" "$home/.config/herdr/hooks")
 fi
 
-# 後で隔離の外の git や Claude Code / Codex が実行するものを書き換えさせない。
+# 後で隔離の外の git や Claude Code / Codex / Pi が実行するものを書き換えさせない。
 # commondir があると git は config と hooks を別の場所から読むため、無害な値で先に作って固定する。
 # "." だと libgit2 (Nix) がリポジトリを認識できない。
 # 親を rename して差し替えられないよう、途中のディレクトリもマウントポイントにする
-for path in .claude .codex; do
-  [[ -e $path || -L $path ]] || created+=("$path")
-done
-mkdir -p .git/hooks .git/modules .claude .codex
-[[ $hooks != "$cwd"/* ]] || mkdir -p "$hooks"
+workspace_id=$(printf '%s' "$cwd" | sha256sum)
+workspace_state="$data/workspaces/${workspace_id%% *}"
+mkdir -p "$workspace_state"
+created="$workspace_state/created"
+# config の共有ロックでセッションを数え、別のロックで作成記録と後始末を直列化する。
+exec 10>"$workspace_state/lock"
+flock -x 10
 exec 9<.git/config
 flock -s 9
 risky_before=$(list_risky)
 locked=1
+for path in .claude .codex .pi; do
+  if [[ ! -e $path && ! -L $path ]]; then
+    mkdir -- "$path"
+    printf '%s\n' "$path" >>"$created"
+  fi
+done
+mkdir -p .git/hooks .git/modules
+[[ $hooks != "$cwd"/* ]] || mkdir -p "$hooks"
 [[ -e .git/commondir ]] || echo ./ >.git/commondir
 if [[ $(git config --bool extensions.worktreeConfig) == true ]]; then
   touch .git/config.worktree
 fi
-protected=(.git/hooks .git/config .git/config.worktree .git/commondir .git/modules .claude .codex)
+flock -u 10
+protected=(.git/hooks .git/config .git/config.worktree .git/commondir .git/modules .claude .codex .pi)
 [[ $hooks != "$cwd"/* ]] || protected+=("${hooks#"$cwd"/}")
 mapfile -t lefthook < <(list_lefthook)
 protected+=("${lefthook[@]}")
@@ -224,7 +247,7 @@ watcher=$!
 status=0
 systemd-run --user --scope --quiet --collect --unit="$unit" --slice=claude.slice -p OOMPolicy=continue -- \
   bwrap "${mounts[@]}" --die-with-parent --chdir "$cwd" -- \
-  perl "$NONO_AGENT_WATCH" "${watched[@]}" -- "${nono_command[@]}" 9<&- || status=$?
+  perl "$NONO_AGENT_WATCH" "${watched[@]}" -- "${nono_command[@]}" 9<&- 10>&- || status=$?
 exec 8>&-
 wait "$watcher" || true
 [[ ! -t 0 ]] || stty sane

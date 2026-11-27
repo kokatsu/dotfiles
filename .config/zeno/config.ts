@@ -133,6 +133,7 @@ export default defineConfig(({ env }) => {
       keyword: "noxl",
       snippet: "nono-agent codex login --device-auth",
     },
+    { name: "nono pi", keyword: "nopi", snippet: "nono-agent pi" },
 
     // -------------------------------------------------------------------------
     // Nix

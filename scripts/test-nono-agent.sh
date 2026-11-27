@@ -41,7 +41,7 @@ echo "herdr $*" >>"$TEST_DIR/calls"
 EOF
 chmod +x "$test_dir"/bin/*
 export PATH="$test_dir/bin:$PATH"
-export NONO_AGENT_CLAUDE=/claude NONO_AGENT_CODEX=/codex NONO_AGENT_WATCH=/watch
+export NONO_AGENT_CLAUDE=/claude NONO_AGENT_CODEX=/codex NONO_AGENT_PI=/pi NONO_AGENT_WATCH=/watch
 export NONO_AGENT_DOTFILES="$repo_root" NONO_AGENT_LIVE_PATHS="live/dir"
 
 run() {
@@ -71,11 +71,11 @@ run 2 unknown
 # 保護、終了コード、後始末
 echo '{}' >.lefthook-local.jsonc
 BWRAP_STATUS=7 run 7 claude
-for path in .git/hooks .git/config .git/commondir .git/modules .claude .codex .lefthook-local.jsonc; do
+for path in .git/hooks .git/config .git/commondir .git/modules .claude .codex .pi .lefthook-local.jsonc; do
   read_only "$path"
 done
 lacks_arg "$PWD/live/dir"
-[[ ! -e .git/commondir && ! -e .claude && ! -e .codex ]]
+[[ ! -e .git/commondir && ! -e .claude && ! -e .codex && ! -e .pi ]]
 
 # 空でない .claude は消さない
 mkdir .claude && echo '{}' >.claude/settings.json
@@ -86,7 +86,31 @@ run 0 claude
 git init -q ../empty && cd ../empty
 mkdir .claude
 run 0 claude
-[[ -d .claude && ! -e .codex ]]
+[[ -d .claude && ! -e .codex && ! -e .pi ]]
+
+# 最初のセッションを先に閉じても、最後のセッションが作成記録を引き継ぐ
+wait_for_file() {
+  for ((attempt = 0; attempt < 200; attempt++)); do
+    [[ ! -f $1 ]] || return 0
+    sleep 0.01
+  done
+  return 1
+}
+export -f wait_for_file
+DURING='touch "$TEST_DIR/first-ready"; wait_for_file "$TEST_DIR/first-exit"' \
+  bash -euo pipefail "$test_dir/nono-agent.sh" claude &
+first=$!
+wait_for_file "$test_dir/first-ready"
+DURING='touch "$TEST_DIR/second-ready"; wait_for_file "$TEST_DIR/second-exit"' \
+  bash -euo pipefail "$test_dir/nono-agent.sh" pi &
+second=$!
+wait_for_file "$test_dir/second-ready"
+touch "$test_dir/first-exit"
+wait "$first"
+[[ -d .codex && -d .pi ]]
+touch "$test_dir/second-exit"
+wait "$second"
+[[ -d .claude && ! -e .codex && ! -e .pi ]]
 
 # git の参照先を別に持つリポジトリの commondir には触れない
 echo ../shared >.git/commondir
@@ -121,6 +145,13 @@ NONO_AGENT_DOTFILES=$PWD run 0 claude
 read_only live/dir
 has_arg "$PWD/live"
 
+# 通常ファイルの .pi も壊さずに守る
+echo x >.pi
+run 0 claude
+read_only .pi
+[[ $(<.pi) == x ]]
+rm .pi
+
 # symlink は守れないので拒否する
 mv .claude real && ln -s real .claude
 run 1 claude
@@ -143,6 +174,12 @@ run 0 codex
 has_arg --no-daemon
 run 0 codex review
 lacks_arg --no-daemon
+
+# Pi は専用の設定ディレクトリで起動する
+run 0 pi
+has_arg /pi
+has_arg nono-agent-pi
+has_arg "PI_CODING_AGENT_DIR=$(realpath -- "$HOME")/.local/share/nono-agent/pi"
 
 # Herdr の socket や環境変数は渡さず、表示だけを外側で更新する
 HERDR_PANE_ID=p1 HERDR_SOCKET_PATH=/sock run 0 claude
