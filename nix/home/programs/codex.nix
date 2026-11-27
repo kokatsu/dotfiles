@@ -226,38 +226,45 @@ in {
           CODEX_DIR=$1
           BASE=$2
           TARGET="$CODEX_DIR/config.toml"
-          $DRY_RUN_CMD mkdir -p "$CODEX_DIR"
-          if [ -f "$TARGET" ]; then
-            # セクション順に依存せず、Codexが管理するローカル状態だけを抽出する。
-            LOCAL_STATE=$(${pkgs.gawk}/bin/awk '
-              /^\[\[?/ {
-                keep = 0
-                if ($0 ~ /^\[\[?projects(\.|\])/) keep = 1
-                if ($0 ~ /^\[\[?tui\.model_availability_nux\]\]?$/) keep = 1
-                if ($0 ~ /^\[\[?notice(\.|\])/) keep = 1
-                if ($0 ~ /^\[\[?hooks\.state(\.|\])/) keep = 1
-              }
-              keep { print }
-            ' "$TARGET")
-            TMP="$TARGET.tmp"
-            $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TMP"
-            if [ -n "$LOCAL_STATE" ]; then
-              if [ -n "$DRY_RUN_CMD" ]; then
-                echo "Preserving Codex local state in $TARGET"
-              else
-                printf '\n%s\n' "$LOCAL_STATE" >> "$TMP"
-              fi
-            fi
-            $DRY_RUN_CMD ${pkgs.coreutils}/bin/mv -f "$TMP" "$TARGET"
-          else
-            $DRY_RUN_CMD ${pkgs.coreutils}/bin/install -m 600 "$BASE" "$TARGET"
+          if [ -n "$DRY_RUN_CMD" ]; then
+            echo "Merging Codex config into $TARGET"
+            return
           fi
+          mkdir -p "$CODEX_DIR/rules"
+          # nono-agent の中の Codex は CODEX_DIR に書け、ここと並行して中身を差し替えられる。
+          # 一時ファイルは書けない親に作り、config.toml は O_NOFOLLOW で一度だけ開き、
+          # mv -T で symlink を辿らずに置き換える。ハードリンクは Landlock が EXDEV で拒否する
+          TMP=$(${pkgs.coreutils}/bin/mktemp "$(dirname "$CODEX_DIR")/.codex-config.toml.XXXXXX")
+          cat "$BASE" > "$TMP"
+          if [ ! -L "$TARGET" ] && [ -f "$TARGET" ]; then
+            # セクション順に依存せず、Codexが管理するローカル状態だけを抽出する。
+            LOCAL_STATE=$(set -o pipefail
+              ${pkgs.coreutils}/bin/dd if="$TARGET" iflag=nofollow,nonblock status=none | ${pkgs.gawk}/bin/awk '
+                /^\[\[?/ {
+                  keep = 0
+                  if ($0 ~ /^\[\[?projects(\.|\])/) keep = 1
+                  if ($0 ~ /^\[\[?tui\.model_availability_nux\]\]?$/) keep = 1
+                  if ($0 ~ /^\[\[?notice(\.|\])/) keep = 1
+                  if ($0 ~ /^\[\[?hooks\.state(\.|\])/) keep = 1
+                }
+                keep { print }
+              ') || { rm -f "$TMP"; return 1; }
+            [ -z "$LOCAL_STATE" ] || printf '\n%s\n' "$LOCAL_STATE" >> "$TMP"
+          fi
+          chmod 600 "$TMP"
+          ${pkgs.coreutils}/bin/mv -fT "$TMP" "$TARGET"
 
-          RULES_DIR="$CODEX_DIR/rules"
-          RULES_BASE="${validDotfilesDir}/.config/codex/rules/managed.rules"
-          RULES_TARGET="$RULES_DIR/managed.rules"
-          $DRY_RUN_CMD mkdir -p "$RULES_DIR"
-          $DRY_RUN_CMD cp "$RULES_BASE" "$RULES_TARGET"
+          # rules は途中のディレクトリなので mv -T でも symlink を辿る。
+          # 実体を確かめたディレクトリに移って相対パスで置き換え、後の差し替えに影響されないようにする
+          RULES_TMP=$(${pkgs.coreutils}/bin/mktemp "$(dirname "$CODEX_DIR")/.codex-managed.rules.XXXXXX")
+          cat "${validDotfilesDir}/.config/codex/rules/managed.rules" > "$RULES_TMP"
+          chmod 644 "$RULES_TMP"
+          (cd -P "$CODEX_DIR/rules" && [ "$(pwd -P)" = "$(cd -P "$CODEX_DIR" && pwd -P)/rules" ] &&
+            ${pkgs.coreutils}/bin/mv -fT "$RULES_TMP" managed.rules) || {
+            rm -f "$RULES_TMP"
+            echo "mergeCodexConfig: $CODEX_DIR/rules is not a real directory" >&2
+            return 1
+          }
         }
         ${lib.concatLines (lib.mapAttrsToList (dir: base: ''mergeCodexConfig ${lib.escapeShellArgs [dir base]}'') codexConfigs)}
         CODEX_DIR="${config.xdg.configHome}/codex"
