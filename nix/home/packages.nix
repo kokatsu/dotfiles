@@ -1,10 +1,16 @@
 {
   pkgs,
   lib,
+  inputs,
   isCI ? false,
   ...
 }: let
   inherit (pkgs.stdenv.hostPlatform) isDarwin system;
+  inherit (inputs.latuicon.packages.${system}) latuicon;
+  clipboardCommand =
+    if isDarwin
+    then "/usr/bin/pbcopy"
+    else "xsel -ib";
 in {
   # bin/ のユーザースクリプト (feed-watch, memo, daily 等) は files.nix が
   # ~/.local/bin/scripts に symlink し、sessionPath で PATH に入る
@@ -322,6 +328,18 @@ in {
       #--- フォント (Nerd Fonts) ---#
       # https://github.com/ryanoasis/nerd-fonts
       nerd-fonts.symbols-only
+      # https://github.com/coko7/latuicon
+      latuicon # アイコンピッカー
+      (writeShellApplication {
+        name = "icon";
+        runtimeInputs = [latuicon] ++ lib.optionals (!isDarwin) [xsel];
+        text = ''
+          glyph=$(latuicon)
+          if [[ -n $glyph ]]; then
+            printf '%s' "$glyph" | ${clipboardCommand}
+          fi
+        '';
+      })
       # https://github.com/yuru7/udev-gothic
       udev-gothic-nf # UDEV Gothic + Nerd Fonts (35NFLG等、日本語対応)
       # https://github.com/yuru7/HackGen

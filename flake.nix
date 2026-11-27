@@ -24,6 +24,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Renovate: datasource=github-releases depName=coko7/latuicon
+    latuicon = {
+      url = "github:coko7/latuicon/v0.1.8";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # prefix バーの描画パッチを適用するため公式ソースからビルドする。
     # Rust/Zig は上流の nixpkgs とツールチェーンの組み合わせを使う。
     # 更新時はタグを変更し、描画パッチの適用を確認する。

@@ -129,6 +129,28 @@
         "type": "github"
       }
     },
+    "latuicon": {
+      "inputs": {
+        "naersk": "naersk",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793981091,
+        "narHash": "sha256-+lAnbFiIaE+YM85A67jAjL9VrW5Pp4ubXMgRUgEEYlk=",
+        "owner": "coko7",
+        "repo": "latuicon",
+        "rev": "90ff5d3105d24fa9069f21ae48284b7553fd8a12",
+        "type": "github"
+      },
+      "original": {
+        "owner": "coko7",
+        "ref": "v0.1.8",
+        "repo": "latuicon",
+        "type": "github"
+      }
+    },
     "lazy-nvim": {
       "flake": false,
       "locked": {
@@ -181,6 +203,22 @@
       "original": {
         "owner": "moonbit-community",
         "repo": "moonbit-overlay",
+        "type": "github"
+      }
+    },
+    "naersk": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1782220280,
+        "narHash": "sha256-thLTFbp9D5Qknmh8q/v4FRpLGphUSijT3E86cbLYTXo=",
+        "owner": "nix-community",
+        "repo": "naersk",
+        "rev": "9aa07bb0256d300219b30622d2454e85f7f3667e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "naersk",
         "type": "github"
       }
     },
@@ -282,6 +320,7 @@
         "herdr-nvim-src": "herdr-nvim-src",
         "herdr-src": "herdr-src",
         "home-manager": "home-manager",
+        "latuicon": "latuicon",
         "lazy-nvim": "lazy-nvim",
         "moonbit-grammar": "moonbit-grammar",
         "moonbit-overlay": "moonbit-overlay",
