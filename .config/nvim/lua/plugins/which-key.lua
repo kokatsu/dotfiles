@@ -13,7 +13,6 @@ return {
       { '<leader>p', group = 'profiler' },
       { '<leader>s', group = 'picker resume' },
       { '<leader>t', group = 'toggle' },
-      { '<leader>x', group = 'todo' },
       { '<leader>y', group = 'yank' },
       { '[', group = 'prev' },
       { ']', group = 'next' },

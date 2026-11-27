@@ -1,7 +1,7 @@
-local lazy_path, blink_path, peek_path, treesitter_path, pkl_path, after_path = unpack(arg)
+local lazy_path, blink_path, treesitter_path, pkl_path, after_path = unpack(arg)
 assert(
-  lazy_path and blink_path and peek_path and treesitter_path and pkl_path and after_path,
-  'usage: test-nix-neovim.lua <lazy> <blink> <peek> <treesitter> <pkl> <after>'
+  lazy_path and blink_path and treesitter_path and pkl_path and after_path,
+  'usage: test-nix-neovim.lua <lazy> <blink> <treesitter> <pkl> <after>'
 )
 
 local system = vim.system
@@ -15,7 +15,6 @@ vim.opt.rtp:prepend(lazy_path)
 require('lazy').setup({
   spec = {
     { name = 'blink.cmp', dir = blink_path, lazy = true },
-    { name = 'peek.nvim', dir = peek_path, lazy = true },
     { 'nvim-treesitter/nvim-treesitter', name = 'nvim-treesitter', dir = treesitter_path, lazy = true },
     { name = 'pkl-neovim', dir = pkl_path, lazy = true },
   },
@@ -26,7 +25,7 @@ require('lazy').setup({
   lockfile = vim.fn.stdpath('state') .. '/test-lazy-lock.json',
 })
 local plugins = require('lazy.core.config').plugins
-for _, name in ipairs({ 'lazy.nvim', 'blink.cmp', 'peek.nvim', 'nvim-treesitter', 'pkl-neovim' }) do
+for _, name in ipairs({ 'lazy.nvim', 'blink.cmp', 'nvim-treesitter', 'pkl-neovim' }) do
   assert(plugins[name]._.is_local, name .. ' must be local')
   assert(require('lazy.manage.task.git').fetch.skip(plugins[name]), name .. ' must skip fetch')
 end

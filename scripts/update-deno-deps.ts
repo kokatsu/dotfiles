@@ -23,11 +23,6 @@ const packages: {
   lockfile?: string;
   overlay: string;
 }[] = [
-  {
-    name: "peek",
-    input: "peek-nvim",
-    overlay: "nix/overlays/neovim-plugins.nix",
-  },
   { name: "zeno", input: "zeno-zsh", overlay: "nix/overlays/zeno.nix" },
   {
     name: "karabiner",
@@ -73,36 +68,6 @@ for (const pkg of packages) {
     const dependencyLock = `${root}/${
       pkg.lockfile ?? `nix/deno/${pkg.name}/deno.lock`
     }`;
-    if (pkg.name === "peek" && inputChanged) {
-      const build = await Deno.readTextFile(`${source}/scripts/build.js`);
-      if (!build.includes("https://deno.land/x/emit@0.38.1/mod.ts")) {
-        throw new Error(
-          "Peek emitter changed; review the offline bundler before updating",
-        );
-      }
-      const assets: Record<string, string> = {};
-      for (
-        const match of build.matchAll(
-          /download\(\s*'([^']+)',\s*'public\/([^']+)'/g,
-        )
-      ) {
-        assets[match[2]] = match[1];
-      }
-      const fontBase = build.match(/`(https:\/\/[^`]+)\$\{font\}`/);
-      const fonts = [...build.matchAll(/'(KaTeX_[^']+\.woff2)'/g)];
-      if (Object.keys(assets).length !== 3 || !fontBase || !fonts.length) {
-        throw new Error(
-          "Peek asset layout changed; review the manifest generator",
-        );
-      }
-      for (const font of fonts) {
-        assets[`fonts/${font[1]}`] = `${fontBase[1]}${font[1]}`;
-      }
-      assets["emit_bg.wasm"] = "https://deno.land/x/emit@0.38.1/emit_bg.wasm";
-      const data = JSON.parse(await Deno.readTextFile(manifest));
-      data.assets = assets;
-      await Deno.writeTextFile(manifest, JSON.stringify(data, null, 2) + "\n");
-    }
     if (!inputChanged) {
       await Deno.copyFile(dependencyLock, `${source}/deno.lock`);
     }

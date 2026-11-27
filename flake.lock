@@ -256,23 +256,6 @@
         "type": "github"
       }
     },
-    "peek-nvim": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1772544052,
-        "narHash": "sha256-m57rd+xtDT76MIFDGq1xViYWRU7auh79qxbymr+P5+8=",
-        "owner": "kokatsu",
-        "repo": "peek.nvim",
-        "rev": "d3b586b85efc6e0051a012405cc65b51cb25c0a5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "kokatsu",
-        "ref": "fix/deprecated-nvim-api",
-        "repo": "peek.nvim",
-        "type": "github"
-      }
-    },
     "pkl-neovim": {
       "flake": false,
       "locked": {
@@ -305,7 +288,6 @@
         "nix-darwin": "nix-darwin",
         "nix-index-database": "nix-index-database",
         "nixpkgs": "nixpkgs_2",
-        "peek-nvim": "peek-nvim",
         "pkl-neovim": "pkl-neovim",
         "tmux-grammar": "tmux-grammar",
         "yazi-flavors": "yazi-flavors",
