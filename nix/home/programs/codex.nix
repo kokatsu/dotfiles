@@ -38,10 +38,8 @@
     };
     mcp_servers = {
       dotfiles-statusline = {
-        command = lib.getExe pkgs.bun;
+        command = lib.getExe pkgs.nodejs_24;
         args = [
-          "--no-env-file"
-          "--no-install"
           "${../../../scripts/codex-statusline.ts}"
           (lib.getExe pkgs.git)
           (lib.getExe pkgs.gh)
