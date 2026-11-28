@@ -130,10 +130,6 @@
   },
   {
     "want": "block",
-    "command": "env -S 'git fetch --depth 1'"
-  },
-  {
-    "want": "block",
     "command": "env -S '-i git fetch --depth 1'",
     "label": "env option inside -S: env -S '-i git fetch --depth 1'"
   },

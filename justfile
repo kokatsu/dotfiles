@@ -385,9 +385,12 @@ report-agent-session-test:
     cd tools/agent-hooks/report-agent-session && go test ./...
     bash scripts/test-report-agent-session.sh
 
+# A deleted mod leaves its ignored .claude-plugin/types behind, so skip mods with no other file.
 # Run every Claude Code mod's tests
 mods-test:
     @for dir in .config/claude/mods/*/; do \
+      file=$(find "$dir" -path "${dir}.claude-plugin/types" -prune -o -type f -print -quit) || exit $?; \
+      [ -n "$file" ] || continue; \
       echo "claude plugin test: $dir"; \
       claude plugin test "$dir" || exit $?; \
     done

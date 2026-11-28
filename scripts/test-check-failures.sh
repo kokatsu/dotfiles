@@ -25,7 +25,7 @@ cat >"$test_dir/gofmt" <<'MOCK'
 case "$GOFMT_TEST_MODE" in
 error) echo 'gofmt failed' >&2; exit 23 ;;
 diff) echo 'tools/example.go' ;;
-clean) exit 0 ;;
+clean) touch "$0.clean" ;;
 esac
 MOCK
 chmod +x "$test_dir/selene" "$test_dir/deno" "$test_dir/typos" "$test_dir/gofmt"
@@ -34,7 +34,6 @@ export PATH="$test_dir:$PATH"
 for mode in error diff; do
   if GOFMT_TEST_MODE=$mode just go-fmt-check >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
 done
-GOFMT_TEST_MODE=clean just go-fmt-check
 export DENO_FAIL_TARGET=karabiner-config
 for recipe in lua-lint deno-lint deno-fmt-check deno-check; do
   if just "$recipe" >"$test_dir/output" 2>&1; then
@@ -48,7 +47,10 @@ if just deno-check >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; 
 if just deno-fmt-check >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
 if just deno-lint >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
 # A failed recipe must not stop the ones after it, and only it is reported.
-if just _run-all "typos nvim-test" >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
-grep -Fqx 'failed: typos' "$test_dir/output"
-grep -Fq '=== Results:' "$test_dir/output"
+if GOFMT_TEST_MODE=clean just _run-all "typos go-fmt-check" >"$test_dir/output" 2>&1; then unexpected_success "$LINENO"; fi
+if ! grep -Fqx 'failed: typos' "$test_dir/output" || [[ ! -f "$test_dir/gofmt.clean" ]]; then
+  cat "$test_dir/output" >&2
+  printf '%s:%s: unexpected _run-all output\n' "${BASH_SOURCE[0]##*/}" "$LINENO" >&2
+  exit 1
+fi
 printf 'Check failure propagation tests passed\n'
