@@ -8,26 +8,32 @@ repo_root=$(git rev-parse --show-toplevel)
 test_dir=$(mktemp -d)
 trap 'rm -rf "$test_dir"' EXIT
 
-# Exercise the actual activation branch with a read-only generated base.
-# shellcheck disable=SC2016
-awk '/^ *if \[ -f "\$TARGET" \]; then/ {active=1} /^ *RULES_DIR=/ {active=0} active' \
-  "$repo_root/nix/home/programs/codex.nix" |
-  sed -e 's|${pkgs.gawk}/bin/awk|awk|g' \
-    -e 's|${pkgs.coreutils}/bin/install|install|g' \
-    -e 's|${pkgs.coreutils}/bin/mv|mv|g' >"$test_dir/activate.sh"
-[[ -s "$test_dir/activate.sh" ]]
+# Run the evaluated merge function in the fixture, without invoking the other activation steps.
+# homeConfigurations read USER and DOTFILES_DIR from the environment, so the eval must be impure.
+if ! env -u SUDO_USER USER=activation-test DOTFILES_DIR="$repo_root" \
+  nix eval --impure --raw "$repo_root#homeConfigurations.activation-test.config.home.activation.mergeCodexConfig.data" |
+  awk '/^mergeCodexConfig\(\) \{$/ { body = 1 } body { print } body && /^}$/ { body = 0; done = 1 } END { exit !done }' \
+    >"$test_dir/merge.sh"; then
+  echo 'Could not extract mergeCodexConfig from the Home Manager activation script' >&2
+  exit 1
+fi
+# shellcheck source=/dev/null
+source "$test_dir/merge.sh"
 
-export BASE="$test_dir/base.toml" TARGET="$test_dir/config.toml" DRY_RUN_CMD=''
-printf 'model = "managed-model"\n[sandbox_workspace_write]\nwritable_roots = ["/home/test/.local/share/Trash"]\n[tui]\nnotifications = true\n' >"$BASE"
-chmod 444 "$BASE"
+export DRY_RUN_CMD=''
+codex_dir="$test_dir/codex"
+base="$test_dir/base.toml"
+target="$codex_dir/config.toml"
+printf 'model = "managed-model"\n[sandbox_workspace_write]\nwritable_roots = ["/home/test/.local/share/Trash"]\n[tui]\nnotifications = true\n' >"$base"
+chmod 444 "$base"
 
 # A fresh installation must be writable even though the store source is not.
-bash -eu "$test_dir/activate.sh"
-cmp "$BASE" "$TARGET"
-[[ -w "$TARGET" ]]
-[[ $(stat -c '%a' "$TARGET" 2>/dev/null || stat -f '%Lp' "$TARGET") == 600 ]]
+mergeCodexConfig "$codex_dir" "$base"
+cmp "$base" "$target"
+[[ -w "$target" ]]
+[[ $(stat -c '%a' "$target" 2>/dev/null || stat -f '%Lp' "$target") == 600 ]]
 
-cat >"$TARGET" <<'TOML'
+cat >"$target" <<'TOML'
 model = "old-model"
 [notice]
 hide_tip = true
@@ -44,32 +50,61 @@ trusted = true
 TOML
 
 # Dry runs preserve both content and mode.
-cp "$TARGET" "$test_dir/before.toml"
-DRY_RUN_CMD='echo' bash -eu "$test_dir/activate.sh" >/dev/null
-cmp "$TARGET" "$test_dir/before.toml"
+cp "$target" "$test_dir/before.toml"
+DRY_RUN_CMD='echo' mergeCodexConfig "$codex_dir" "$base" >/dev/null
+cmp "$target" "$test_dir/before.toml"
 
-bash -eu "$test_dir/activate.sh"
-grep -Fq 'model = "managed-model"' "$TARGET"
-grep -Fq 'notifications = true' "$TARGET"
-grep -Fq 'writable_roots = ["/home/test/.local/share/Trash"]' "$TARGET"
-grep -Fq '[notice]' "$TARGET"
-grep -Fq 'hide_tip = true' "$TARGET"
-grep -Fq '[projects."/tmp/project with spaces"]' "$TARGET"
-grep -Fq 'trust_level = "trusted"' "$TARGET"
-grep -Fq '[tui.model_availability_nux]' "$TARGET"
-grep -Fq '"test-model" = 1' "$TARGET"
-grep -Fq '[hooks.state."session-start"]' "$TARGET"
-grep -Fq 'trusted = true' "$TARGET"
-if grep -Eq 'old-model|obsolete|notifications = false' "$TARGET"; then
+mergeCodexConfig "$codex_dir" "$base"
+grep -Fq 'model = "managed-model"' "$target"
+grep -Fq 'notifications = true' "$target"
+grep -Fq 'writable_roots = ["/home/test/.local/share/Trash"]' "$target"
+grep -Fq '[notice]' "$target"
+grep -Fq 'hide_tip = true' "$target"
+grep -Fq '[projects."/tmp/project with spaces"]' "$target"
+grep -Fq 'trust_level = "trusted"' "$target"
+grep -Fq '[tui.model_availability_nux]' "$target"
+grep -Fq '"test-model" = 1' "$target"
+grep -Fq '[hooks.state."session-start"]' "$target"
+grep -Fq 'trusted = true' "$target"
+if grep -Eq 'old-model|obsolete|notifications = false' "$target"; then
   echo 'Unmanaged base settings survived activation' >&2
   exit 1
 fi
 
 # Repeated activations must not duplicate local tables.
-cp "$TARGET" "$test_dir/once.toml"
-bash -eu "$test_dir/activate.sh"
-cmp "$TARGET" "$test_dir/once.toml"
-[[ -w "$TARGET" ]]
-[[ $(stat -c '%a' "$TARGET" 2>/dev/null || stat -f '%Lp' "$TARGET") == 600 ]]
-[[ ! -e "$TARGET.tmp" ]]
+cp "$target" "$test_dir/once.toml"
+mergeCodexConfig "$codex_dir" "$base"
+cmp "$target" "$test_dir/once.toml"
+[[ -w "$target" ]]
+[[ $(stat -c '%a' "$target" 2>/dev/null || stat -f '%Lp' "$target") == 600 ]]
+if compgen -G "$test_dir/.codex-*" >/dev/null; then
+  echo 'Activation left temporary files in the parent directory' >&2
+  exit 1
+fi
+
+# A symlinked config.toml is replaced, and the file it points to is left alone.
+printf '[notice]\nhide_tip = true\n' >"$test_dir/outside.toml"
+cp "$test_dir/outside.toml" "$test_dir/outside.orig"
+link_dir="$test_dir/codex-link"
+mkdir -p "$link_dir"
+ln -s "$test_dir/outside.toml" "$link_dir/config.toml"
+mergeCodexConfig "$link_dir" "$base"
+[[ ! -L "$link_dir/config.toml" && -f "$link_dir/config.toml" ]]
+cmp "$base" "$link_dir/config.toml"
+cmp "$test_dir/outside.toml" "$test_dir/outside.orig"
+
+# A symlinked rules directory is refused without touching its target.
+rules_dir="$test_dir/codex-rules"
+mkdir -p "$rules_dir" "$test_dir/outside-rules"
+printf 'outside\n' >"$test_dir/outside-rules/managed.rules"
+ln -s "$test_dir/outside-rules" "$rules_dir/rules"
+if mergeCodexConfig "$rules_dir" "$base" 2>/dev/null; then
+  echo 'Activation accepted a symlinked rules directory' >&2
+  exit 1
+fi
+[[ $(<"$test_dir/outside-rules/managed.rules") == outside ]]
+if compgen -G "$test_dir/.codex-*" >/dev/null; then
+  echo 'Refused activation left temporary files in the parent directory' >&2
+  exit 1
+fi
 printf 'Codex configuration activation tests passed\n'
