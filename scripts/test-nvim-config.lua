@@ -186,18 +186,13 @@ test('Trailspace match is added in normal buffers', function()
   assert_true(found, 'Trailspace match not found in window')
 end)
 
-test('BufWritePre autocmd exists for trailing whitespace trim', function()
-  local autocmds = vim.api.nvim_get_autocmds({ group = 'trailspace', event = 'BufWritePre' })
-  assert_true(#autocmds > 0, 'BufWritePre not found')
-end)
-
-test('trailing whitespace is trimmed on BufWritePre', function()
+test('trailspace trims trailing whitespace on BufWritePre', function()
   local buf = vim.api.nvim_create_buf(true, false)
   vim.api.nvim_set_current_buf(buf)
   vim.bo.buftype = ''
   vim.bo.filetype = 'lua'
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, { 'hello   ', 'world  ', 'clean' })
-  vim.api.nvim_exec_autocmds('BufWritePre', { buffer = buf })
+  vim.api.nvim_exec_autocmds('BufWritePre', { group = 'trailspace', buffer = buf })
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   assert_true(lines[1] == 'hello', 'line 1: expected "hello", got "' .. lines[1] .. '"')
   assert_true(lines[2] == 'world', 'line 2: expected "world", got "' .. lines[2] .. '"')
@@ -211,7 +206,7 @@ test('trailing whitespace is NOT trimmed for markdown', function()
   vim.bo.buftype = ''
   vim.bo.filetype = 'markdown'
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, { 'hello   ', 'world  ' })
-  vim.api.nvim_exec_autocmds('BufWritePre', { buffer = buf })
+  vim.api.nvim_exec_autocmds('BufWritePre', { group = 'trailspace', buffer = buf })
   local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
   assert_true(lines[1] == 'hello   ', 'line 1: trailing spaces were removed')
   assert_true(lines[2] == 'world  ', 'line 2: trailing spaces were removed')

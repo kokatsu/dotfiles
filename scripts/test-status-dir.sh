@@ -64,9 +64,8 @@ expect_fallback() {
 }
 
 profile_cache="$test_dir/Profiles/Taro Yamada/.cache/feed-watch"
-expect_path "profile with a space" "$profile_cache"
 mkdir "$fallback"
-expect_path "profile wins over the same-named directory" "$profile_cache"
+expect_path "profile with a space wins over the same-named directory" "$profile_cache"
 rmdir "$fallback"
 
 TEST_VARS_BEFORE=$'USERPROFILE1=D:\\Users\r\n' TEST_VARS_AFTER=$'USERPROFILE_OLD=D:\\Users\r\n' \

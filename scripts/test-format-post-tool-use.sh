@@ -37,5 +37,4 @@ chmod +x "$workdir/bin/biome"
 output=$(jq -nc --arg path "$workdir/probe.json" \
   '{tool_name:"Write", tool_input:{file_path:$path}}' | PATH="$workdir/bin:$PATH" bash "$hook")
 printf '%s' "$output" | jq -e '.systemMessage | contains("formatter-failed")' >/dev/null
-[[ -n $output ]]
 printf 'format hook: actual formatter and failure diagnostic passed\n'
