@@ -10,13 +10,26 @@ trap 'rm -rf "$test_dir"' EXIT
 
 # Run the evaluated merge function in the fixture, without invoking the other activation steps.
 # homeConfigurations read USER and DOTFILES_DIR from the environment, so the eval must be impure.
-if ! env -u SUDO_USER USER=activation-test DOTFILES_DIR="$repo_root" \
-  nix eval --impure --raw "$repo_root#homeConfigurations.activation-test.config.home.activation.mergeCodexConfig.data" |
-  awk '/^mergeCodexConfig\(\) \{$/ { body = 1 } body { print } body && /^}$/ { body = 0; done = 1 } END { exit !done }' \
-    >"$test_dir/merge.sh"; then
+env -u SUDO_USER USER=activation-test DOTFILES_DIR="$repo_root" \
+  nix eval --impure --raw "$repo_root#homeConfigurations.activation-test.config.home.activation.mergeCodexConfig.data" \
+  >"$test_dir/activation.sh"
+if ! awk '/^mergeCodexConfig\(\) \{$/ { body = 1 } body { print } body && /^}$/ { body = 0; done = 1 } END { exit !done }' \
+  "$test_dir/activation.sh" >"$test_dir/merge.sh"; then
   echo 'Could not extract mergeCodexConfig from the Home Manager activation script' >&2
   exit 1
 fi
+
+# The activation must merge both the host and the nono-agent Codex configs.
+calls=$(
+  # shellcheck disable=SC2329 # called by the sourced activation lines
+  mergeCodexConfig() { printf '%s %s\n' "$1" "$2"; }
+  # shellcheck source=/dev/null
+  source <(grep '^mergeCodexConfig ' "$test_dir/activation.sh")
+)
+[[ $(wc -l <<<"$calls") -eq 2 ]]
+grep -Eq '^/[^ ]*/\.config/codex /nix/store/[^ ]+-codex-config\.toml$' <<<"$calls"
+grep -Eq '^/[^ ]*/\.local/share/nono-agent/codex /nix/store/[^ ]+-codex-config\.toml$' <<<"$calls"
+
 # shellcheck source=/dev/null
 source "$test_dir/merge.sh"
 
@@ -98,10 +111,14 @@ rules_dir="$test_dir/codex-rules"
 mkdir -p "$rules_dir" "$test_dir/outside-rules"
 printf 'outside\n' >"$test_dir/outside-rules/managed.rules"
 ln -s "$test_dir/outside-rules" "$rules_dir/rules"
-if mergeCodexConfig "$rules_dir" "$base" 2>/dev/null; then
+# A separate bash -e keeps errexit on inside the function, so only the rules guard can explain the refusal.
+if bash -eu -c 'source "$1"; mergeCodexConfig "$2" "$3"' _ "$test_dir/merge.sh" "$rules_dir" "$base" \
+  2>"$test_dir/refusal.err"; then
   echo 'Activation accepted a symlinked rules directory' >&2
   exit 1
 fi
+grep -Fq "$rules_dir/rules is not a real directory" "$test_dir/refusal.err"
+cmp "$base" "$rules_dir/config.toml"
 [[ $(<"$test_dir/outside-rules/managed.rules") == outside ]]
 if compgen -G "$test_dir/.codex-*" >/dev/null; then
   echo 'Refused activation left temporary files in the parent directory' >&2

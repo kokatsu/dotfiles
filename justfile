@@ -14,7 +14,7 @@ default:
 # Run all checks
 check: (_run-all "check-static nix-eval")
 
-# Run all checks except flake evaluation (CI entry point; nix-eval is covered by `nix flake check`)
+# Run all checks except nix-eval (CI entry point; nix-eval is covered by `nix flake check`)
 check-static: (_run-all "fmt-check lint typos " + test_recipes)
 
 test_group_one := "banned-commands-test codex-guard-test codex-rules-test gh-api-guard-test agent-guard-cases-test managed-paths-test herdr-peer-test herdr-macos-notify-test herdr-scripts-test dc-agent-test nono-agent-test report-agent-session-test mods-test"
